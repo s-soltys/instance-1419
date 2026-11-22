@@ -1,0 +1,13 @@
+node_modules/
+dist/
+build/
+.vite/
+playwright-report/
+test-results/
+artifacts/visual-check/
+*.local
+.env
+.env.*
+.DS_Store
+Thumbs.db
+*.log
