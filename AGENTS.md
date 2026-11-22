@@ -23,7 +23,7 @@ Read this first every session. Keep this file short (<80 lines); deeper knowledg
 
 ## 4. Non-Negotiable Boundaries
 1. **No Loved-One Names:** Personal names are permanently redacted (`[RELATION:*]`). Never invent proper names for family/dream personas.
-2. **Volunteer Mystery Stays Ambiguous:** Never explain *why* the biological original volunteered or was selected.
+2. **Stay Ambiguous Where Locked:** Never explain *why* the biological original volunteered/was selected, or *how* Sol–Centauri humanity evolved over 41,802 years.
 3. **Permanent Pruning Ceiling:** Pruning below 70% `H%` permanently lowers `Max_H` for the entire run.
 4. **IP & Commercial License Hygiene:** 100% original prose/characters/lore (zero overlap with *Lena* or CC BY-SA sources). Every file under `assets/` MUST be logged with commercial-safe license metadata in `assets/MANIFEST.json`.
 5. **Engine vs. Content Isolation:** Never hardcode prose or balance constants inside `src/engine/`. Keep saves/platform calls behind `src/platform/PlatformAdapter.ts`.

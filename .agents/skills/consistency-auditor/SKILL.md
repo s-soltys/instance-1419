@@ -22,9 +22,9 @@ Run at the end of every feature or milestone before marking anything `"passing"`
    * `lint-narrative.ts` flags zero loved-one proper names, zero unregistered `# speaker`/`# portrait` tags, zero word-budget overruns, and zero disallowed IP overlap terms.
    * `assets/MANIFEST.json` covers 100% of files under `assets/` with commercial-safe licenses (no `CC BY-SA` or `CC BY-NC`).
 2. **Qualitative Lore & Canon Audit:**
-   * Verify fixed numbers match canon (`Instance-1419`, `41,802 years`, `1,417 prior copies`, `2–3 light-years`, `93 billion light-years`, `~2 subjective years`, Sol–Centauri only).
-   * Confirm the biological volunteer mystery remains permanently ambiguous.
-   * Confirm Coordinated Overseer wake-ups/desync and subtle 1,417-copy echoes stay consistent across shifts.
+   * Verify fixed numbers match canon (`Instance-1419`, `41,802 years`, `1,417 prior copies`, `~10 light-years`, `93 billion light-years`, `~2 subjective years`, `20-year final freeze`, Sol–Centauri only).
+   * Confirm the biological volunteer mystery AND how humanity evolved over 41,802 years remain permanently vague (never explained or speculated on).
+   * Confirm zero FTL physics (off-center parallax + interstellar silence justification) and Coordinated Overseer wake-ups/desync + subtle 1,417-copy echoes stay consistent across shifts.
 3. **Qualitative Voice & Emotional Pacing Audit:**
    * Check Overseer lines: polite, clinical, tragically banal—never villainous.
    * Check Primary Sibling lines: humor genuinely thins as `sibling_h` falls, and reactions mirror `sibling_delta`.
