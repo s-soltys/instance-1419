@@ -44,4 +44,13 @@ Each agent session reads the latest entries here before starting work and append
 * **Verified:** `npm run verify`, `npm run build:single` (668 kB self-contained HTML), and Playwright visual checks across desktop (`1280x720`) and mobile landscape (`844x390`).
 * **Next Recommended Feature(s):** `P1-01` & `P1-02` (finalize 14-persona pool, `balance.json`, and 500-run automated playthrough simulator `scripts/sim-playthroughs.ts`).
 
+---
+
+## Session 1b — 2026-11-22 — Diegetic Visual Overhaul (Zero "HTML" Look)
+* **Art Direction Locked (`docs/ART_DIRECTION.md`):**
+  * **3D Diegetic Observatory:** Real NASA/STScI public-domain astrophotography (`assets/astro/jwst_smacs0723.webp` + `assets/astro/hubble_udf.webp`) feathered into the 16,000-star skyfield; replaced all boxed cards and `<input type="range">` sliders with curved optical glass vernier arcs, live scrolling RA/DEC scales, etched bare telemetry, and a custom pointer-draggable true-spectrum vernier (`400–1800 nm`).
+  * **2D Full-Bleed Expressionist Oil Impasto:** Generated 16:9 *Disco Elysium*-style impasto oil painting (`assets/characters/dream_spouse_impasto.webp`) rendered full-bleed (`100vw × 100vh`) through our aspect-preserving Voronoi `H%` degradation shader, paired with a feathered ink-wash floating dialogue ribbon and numbered literary serif choices.
+  * **Licensing Hygiene:** All 3 assets logged cleanly in `assets/MANIFEST.json` and verified by `npm run verify` + Playwright (`0` errors across desktop & mobile landscape).
+
+
 

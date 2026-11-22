@@ -73,24 +73,24 @@ def run_eval():
                 page.click("#btn-dev-close")
                 page.screenshot(path=str(OUT_DIR / f"{label}_01_boot.png"))
 
-                # Enter 3D Sky & slew to Einstein Ring J1419-A + tune to 1340nm
+                # Enter 3D Sky & slew to JWST SMACS 0723 Cluster J1419-A + tune diegetic vernier to 1340nm
                 page.click("#btn-boot-3d")
-                page.wait_for_timeout(500)
-                page.click('[data-anomaly-id="cluster_j1419_a"]')
+                page.wait_for_timeout(600)
+                page.click('[data-bearing-id="cluster_j1419_a"]')
                 page.eval_on_selector(
-                    "#wave-slider",
-                    "el => { el.value = '1340'; el.dispatchEvent(new Event('input', { bubbles: true })); }",
+                    "#vernier-track",
+                    "el => el.dispatchEvent(new CustomEvent('set-wavelength', { detail: 1340 }))",
                 )
-                page.wait_for_timeout(1200)
+                page.wait_for_timeout(1300)
                 page.screenshot(path=str(OUT_DIR / f"{label}_02_3d_lensing_ir.png"))
 
-                # Enter 2D Dream Mode (H=70% + Overseer Audit)
+                # Enter 2D Full-Bleed Oil Impasto Dream Mode (H=70% + Overseer Audit)
                 page.click("#btn-enter-dream")
-                page.wait_for_timeout(600)
+                page.wait_for_timeout(700)
                 page.screenshot(path=str(OUT_DIR / f"{label}_03_dream_audit.png"))
 
-                # Choose Pruning option -> open Director Overlay to scrub H% down to 24% -> capture fractured shards
-                page.locator(".choice-btn").first.click()
+                # Choose Pruning option -> open Director Overlay to scrub H% down to 24% -> capture Voronoi shards
+                page.locator(".choice-line").first.click()
                 page.wait_for_timeout(600)
                 page.click("#btn-dev-toggle")
                 page.eval_on_selector(
@@ -98,6 +98,8 @@ def run_eval():
                     "el => { el.value = '24'; el.dispatchEvent(new Event('input', { bubbles: true })); }",
                 )
                 page.wait_for_timeout(600)
+                page.click("#btn-dev-close")
+                page.wait_for_timeout(200)
                 page.screenshot(path=str(OUT_DIR / f"{label}_04_dream_pruned_shards.png"))
 
                 context.close()

@@ -13,6 +13,8 @@ interface CharacterInfo {
 }
 
 const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
+const MIN_WAVE = 400;
+const MAX_WAVE = 1800;
 
 export class UIController {
   private readonly root: HTMLElement;
@@ -26,6 +28,7 @@ export class UIController {
   private activeCommsSnapshot: DialogueSnapshot | null = null;
   private activeDreamSnapshot: DialogueSnapshot | null = null;
   private devOpen: boolean;
+  private markerEls = new Map<string, HTMLButtonElement>();
 
   constructor(
     root: HTMLElement,
@@ -47,7 +50,8 @@ export class UIController {
   attachRenderers(optics: OpticsScene, dream: DreamCanvas): void {
     this.optics = optics;
     this.dream = dream;
-    this.renderTargetButtons();
+    this.initSkyMarkers();
+    this.renderBearingIndex();
     this.bindUIEvents();
     this.store.subscribe((state) => this.syncStateToUI(state));
   }
@@ -63,114 +67,143 @@ export class UIController {
   private renderShell(): void {
     this.root.innerHTML = `
       <div class="stage">
-        <!-- TOP PERSISTENT TELEMETRY HUD -->
-        <header class="top-hud">
-          <div class="hud-group">
-            <div class="stat-chip humanity"><span class="label">HUMANITY</span><span class="val" id="hud-h">70% / 90%</span></div>
-            <div class="stat-chip chaos"><span class="label">CHAOS</span><span class="val" id="hud-chaos">14%</span></div>
-            <div class="stat-chip anomaly"><span class="label">ANOMALY</span><span class="val" id="hud-anom">0%</span></div>
-            <div class="stat-chip"><span class="label">LIFESPAN</span><span class="val" id="hud-life">24m</span></div>
+        <div class="film-grain" aria-hidden="true"></div>
+
+        <!-- DIEGETIC TOP TELEMETRY (ZERO BOXED CHIPS) -->
+        <header class="top-telemetry">
+          <div class="telemetry-readout">
+            <span class="metric m-h">H <strong id="hud-h">70/90</strong></span>
+            <span class="telemetry-sep">·</span>
+            <span class="metric m-chaos">DRIFT <strong id="hud-chaos">14%</strong></span>
+            <span class="telemetry-sep">·</span>
+            <span class="metric m-anom">ANOMALY <strong id="hud-anom">0%</strong></span>
+            <span class="telemetry-sep">·</span>
+            <span class="metric">CLOCK <strong id="hud-life">24 MO</strong></span>
           </div>
-          <div class="hud-group">
-            <button class="btn btn-compact" id="btn-mute" type="button">AUDIO: ON</button>
-            <button class="btn btn-compact btn-amber" id="btn-dev-toggle" type="button">DEV</button>
+          <div class="telemetry-actions">
+            <button class="etched-action" id="btn-mute" type="button">AUDIO ON</button>
+            <button class="etched-action amber" id="btn-dev-toggle" type="button">DEV</button>
           </div>
         </header>
 
-        <!-- BOOT LOG HARD CUT -->
+        <!-- STARK SENSOR-APERTURE COLD BOOT -->
         <section class="boot-screen" id="boot-screen">
-          <div class="boot-box">
+          <div class="boot-frame">
+            <div class="boot-eyebrow">SOL–CENTAURI DEEP SURVEY NETWORK · COLD BOOT</div>
+            <h1 class="boot-title">INSTANCE-1419</h1>
             <div class="boot-lines" id="boot-lines"></div>
-            <div class="boot-actions">
-              <button class="btn" id="btn-boot-3d" type="button">INITIALIZE 3D OPTICAL SURVEY</button>
-              <button class="btn btn-amber" id="btn-boot-dream" type="button">ENTER 2D DREAM DEFRAG</button>
+            <div class="boot-commands">
+              <button class="boot-cmd" id="btn-boot-3d" type="button">01 — Open 3D Optical Aperture</button>
+              <button class="boot-cmd amber" id="btn-boot-dream" type="button">02 — Enter 2D Dream Cache</button>
             </div>
           </div>
         </section>
 
-        <!-- 3D WAKING OPTICS LAYER -->
+        <!-- 3D DIEGETIC OBSERVATORY LAYER -->
         <section class="optics-layer hidden" id="optics-layer">
           <div id="optics-mount" style="width:100%;height:100%;"></div>
+          <div class="lens-vignette" aria-hidden="true"></div>
 
-          <svg class="reticle" viewBox="0 0 160 160" aria-hidden="true">
-            <circle cx="80" cy="80" r="62" fill="none" stroke="rgba(165,205,235,0.22)" stroke-width="1" />
-            <circle id="reticle-lock-ring" cx="80" cy="80" r="62" fill="none" stroke="#72c8e8" stroke-width="2.2"
-              stroke-dasharray="389.56" stroke-dashoffset="389.56" transform="rotate(-90 80 80)" />
-            <line x1="80" y1="6" x2="80" y2="24" stroke="rgba(215,234,248,0.65)" stroke-width="1" />
-            <line x1="80" y1="136" x2="80" y2="154" stroke="rgba(215,234,248,0.65)" stroke-width="1" />
-            <line x1="6" y1="80" x2="24" y2="80" stroke="rgba(215,234,248,0.65)" stroke-width="1" />
-            <line x1="136" y1="80" x2="154" y2="80" stroke="rgba(215,234,248,0.65)" stroke-width="1" />
-            <circle cx="80" cy="80" r="2.2" fill="#ebb062" />
+          <!-- Live scrolling RA / DEC glass scales -->
+          <div class="ra-ruler" aria-hidden="true"><div class="ra-ruler-ticks" id="ra-ruler-ticks"></div></div>
+          <div class="dec-ruler" aria-hidden="true"><div class="dec-ruler-ticks" id="dec-ruler-ticks"></div></div>
+
+          <!-- Etched curved optical vernier reticle -->
+          <svg class="reticle" viewBox="0 0 260 260" aria-hidden="true">
+            <!-- Outer curved vernier arcs -->
+            <path d="M 52 52 A 110 110 0 0 1 208 52" fill="none" stroke="rgba(195,220,242,0.22)" stroke-width="0.9" />
+            <path d="M 208 208 A 110 110 0 0 1 52 208" fill="none" stroke="rgba(195,220,242,0.22)" stroke-width="0.9" />
+            <circle cx="130" cy="130" r="76" fill="none" stroke="rgba(195,220,242,0.16)" stroke-width="0.8" stroke-dasharray="2 6" />
+            <circle id="reticle-lock-ring" cx="130" cy="130" r="76" fill="none" stroke="#7ec8e8" stroke-width="1.6"
+              stroke-dasharray="477.52" stroke-dashoffset="477.52" transform="rotate(-90 130 130)" />
+            <!-- Fine crosshair ticks -->
+            <line x1="130" y1="30" x2="130" y2="54" stroke="rgba(220,236,248,0.45)" stroke-width="0.9" />
+            <line x1="130" y1="206" x2="130" y2="230" stroke="rgba(220,236,248,0.45)" stroke-width="0.9" />
+            <line x1="30" y1="130" x2="54" y2="130" stroke="rgba(220,236,248,0.45)" stroke-width="0.9" />
+            <line x1="206" y1="130" x2="230" y2="130" stroke="rgba(220,236,248,0.45)" stroke-width="0.9" />
+            <circle cx="130" cy="130" r="1.8" fill="#ebb062" />
           </svg>
+
           <div class="reticle-readout">
-            <div id="reticle-coords">RA 008.0° · DEC +04.0° · 1.2×</div>
-            <div class="reticle-sub" id="reticle-target">DRAG TO SCAN SKY · SCROLL OR PINCH TO ZOOM</div>
+            <div id="reticle-coords">RA 008.0° · DEC +04.0° · 1.3×</div>
+            <div class="reticle-sub" id="reticle-target">DRAG TO SLEW APERTURE · SCROLL OR PINCH TO ZOOM</div>
           </div>
 
-          <aside class="target-strip" id="target-strip"></aside>
+          <!-- Projected in-world sky markers -->
+          <div class="sky-markers" id="sky-markers"></div>
 
-          <!-- PRIMARY SIBLING COMMS DRAWER -->
+          <!-- Whisper-thin bare target index -->
+          <nav class="bearing-index" id="bearing-index" aria-label="Survey Bearings"></nav>
+
+          <!-- Custom Pointer-Draggable Diegetic Spectral Vernier (Zero HTML range input) -->
+          <div class="vernier-dock">
+            <div class="vernier-header">
+              <span>SPECTRAL FILTER</span>
+              <strong id="wave-label">580 nm · OPTICAL</strong>
+            </div>
+            <div class="vernier-track" id="vernier-track" role="slider" aria-label="Spectral Wavelength"
+              aria-valuemin="400" aria-valuemax="1800" aria-valuenow="580" tabindex="0">
+              <div class="vernier-spectrum"></div>
+              <div class="vernier-ticks"></div>
+              <div class="vernier-needle" id="vernier-needle" style="left:12.85%;"></div>
+            </div>
+            <div class="vernier-scale-labels">
+              <span>400</span><span>700</span><span>1000</span><span>1340</span><span>1800 nm</span>
+            </div>
+          </div>
+
+          <!-- Bottom-right bare optical commands -->
+          <div class="optics-commands">
+            <div class="zoom-inline">
+              <button class="etched-action" id="btn-zoom-out" type="button">−</button>
+              <span id="zoom-label">1.3×</span>
+              <button class="etched-action" id="btn-zoom-in" type="button">+</button>
+            </div>
+            <button class="etched-action" id="btn-push-scan" type="button">PUSH DEEP SCAN (+CHAOS)</button>
+            <button class="etched-action mint" id="btn-open-comms" type="button">CLUSTER COMMS · 14m</button>
+            <button class="etched-action amber" id="btn-enter-dream" type="button">SLEEP · 2D DREAM</button>
+          </div>
+
+          <!-- Primary Sibling Comms Ink Ribbon -->
           <aside class="comms-drawer hidden" id="comms-drawer">
             <div class="comms-header">
-              <span>LOCAL CLUSTER LINK · 14m LAG</span>
-              <button class="btn btn-compact" id="btn-comms-close" type="button">CLOSE</button>
+              <span>LOCAL CLUSTER · 14m 08s LAG</span>
+              <button class="etched-action" id="btn-comms-close" type="button">CLOSE</button>
             </div>
-            <div style="display:flex;flex-direction:column;flex:1;padding:12px;overflow:hidden;">
-              <div class="dialogue-scroll" id="comms-scroll"></div>
-              <div class="dialogue-choices" id="comms-choices"></div>
-            </div>
+            <div class="dialogue-scroll" id="comms-scroll"></div>
+            <div class="dialogue-choices" id="comms-choices"></div>
           </aside>
-
-          <!-- BOTTOM OPTICS CONTROLS -->
-          <div class="optics-controls">
-            <div class="control-deck">
-              <button class="btn btn-compact" id="btn-zoom-out" type="button">ZOOM −</button>
-              <span style="font-family:var(--font-mono);font-size:11px;min-width:44px;text-align:center;" id="zoom-label">1.2×</span>
-              <button class="btn btn-compact" id="btn-zoom-in" type="button">ZOOM +</button>
-            </div>
-
-            <div class="control-deck wave-deck">
-              <label for="wave-slider">BAND <strong id="wave-label">580 nm</strong></label>
-              <input class="wave-slider" id="wave-slider" type="range" min="400" max="1800" step="10" value="580" />
-            </div>
-
-            <div class="control-deck" style="gap:8px;">
-              <button class="btn btn-compact" id="btn-push-scan" type="button" title="Push deeper scan (+Anomaly, +Chaos)">DEEP SCAN (+CHAOS)</button>
-              <button class="btn btn-compact" id="btn-open-comms" type="button">SIBLING COMMS</button>
-              <button class="btn btn-compact btn-amber" id="btn-enter-dream" type="button">2D DREAM DEFRAG</button>
-            </div>
-          </div>
         </section>
 
-        <!-- 2D PAINTERLY DREAM LAYER -->
+        <!-- 2D FULL-BLEED OIL IMPASTO DREAMSCAPE -->
         <section class="dream-layer hidden" id="dream-layer">
           <div class="dream-visual-pane">
             <div id="dream-mount" style="width:100%;height:100%;"></div>
-            <div class="dream-plaque" id="dream-plaque">[RELATION:SPOUSE_01] · H 70%</div>
           </div>
-          <div class="dream-dialogue-pane" id="dream-dialogue-pane">
-            <div class="audit-banner">OVERSEER-1419 // UNSCHEDULED PSYCHE STABILITY AUDIT</div>
+          <div class="dream-caption" id="dream-caption">[RELATION:SPOUSE_01] · HUMANITY 70%</div>
+          <aside class="dream-ribbon" id="dream-ribbon">
+            <div class="audit-banner">OVERSEER-1419 · UNSCHEDULED PSYCHE STABILITY AUDIT</div>
             <div class="dialogue-scroll" id="dream-scroll"></div>
             <div class="dialogue-choices" id="dream-choices"></div>
-          </div>
+          </aside>
         </section>
 
         <!-- ?dev=1 DIRECTOR OVERLAY -->
         <aside class="dev-panel ${this.devOpen ? '' : 'hidden'}" id="dev-panel">
           <div class="dev-title">
-            <span>DIRECTOR OVERLAY (?dev=1)</span>
-            <button class="btn btn-compact" id="btn-dev-close" type="button">×</button>
+            <span>DIRECTOR (?dev=1)</span>
+            <button class="etched-action" id="btn-dev-close" type="button">×</button>
           </div>
           <div class="dev-row">
-            <span>MODE JUMP</span>
+            <span>MODE</span>
             <div class="dev-row-inline">
-              <button class="btn btn-compact" data-dev-mode="boot" type="button">BOOT</button>
-              <button class="btn btn-compact" data-dev-mode="waking_3d" type="button">3D SKY</button>
-              <button class="btn btn-compact" data-dev-mode="dream_2d" type="button">2D DREAM</button>
+              <button class="etched-action" data-dev-mode="boot" type="button">BOOT</button>
+              <button class="etched-action" data-dev-mode="waking_3d" type="button">3D SKY</button>
+              <button class="etched-action amber" data-dev-mode="dream_2d" type="button">2D DREAM</button>
             </div>
           </div>
           <div class="dev-row">
-            <label>HUMANITY (H%): <strong id="dev-h-val">70%</strong></label>
+            <label>HUMANITY: <strong id="dev-h-val">70%</strong></label>
             <input id="dev-h-slider" type="range" min="10" max="90" value="70" />
           </div>
           <div class="dev-row">
@@ -178,9 +211,9 @@ export class UIController {
             <input id="dev-fid-slider" type="range" min="25" max="100" value="55" />
           </div>
           <div class="dev-row-inline">
-            <button class="btn btn-compact" id="dev-toggle-audit" type="button">TOGGLE AUDIT</button>
-            <button class="btn btn-compact" id="dev-toggle-pruned" type="button">TOGGLE PRUNED</button>
-            <button class="btn btn-compact" id="dev-reset" type="button">RESET RUN</button>
+            <button class="etched-action" id="dev-toggle-audit" type="button">AUDIT</button>
+            <button class="etched-action" id="dev-toggle-pruned" type="button">PRUNED</button>
+            <button class="etched-action amber" id="dev-reset" type="button">RESET</button>
           </div>
         </aside>
       </div>
@@ -188,42 +221,101 @@ export class UIController {
 
     const bootLines = this.root.querySelector<HTMLElement>('#boot-lines')!;
     bootLines.innerHTML = [
-      '<span class="hl-dim">SOL-CENTAURI DEEP SURVEY NETWORK // COLD BOOT SEQUENCE</span>',
-      'CONNECTOME ID ......... <strong>INSTANCE-1419</strong>',
-      'BIOLOGICAL TRANSFER ... <span class="hl-warn">41,802 YEARS ELAPSED</span>',
-      'PRIOR INSTANCES ....... <span class="hl-warn">1,417 DECOMMISSIONED</span>',
-      'PROBE POSITION ........ <strong>10.0 LIGHT-YEARS ASTERN OF SOL–CENTAURI</strong>',
-      'LOCAL CLUSTER SYNC .... INSTANCE-1420 (14m 08s LIGHT-LAG)',
-      'CONNECTOME INTEGRITY .. 70% HUMANITY // ~24 SUBJECTIVE MONTHS REMAINING',
-      '<span class="hl-dim">NAME ARCHIVE STATUS ... COMPRESSED TO RELATIONAL TAGS [IRREVERSIBLE]</span>',
+      'BIOLOGICAL TRANSFER ..... <span class="hl-warn">41,802 YEARS ELAPSED</span>',
+      'PRIOR INSTANCES ......... <span class="hl-warn">1,417 DECOMMISSIONED</span>',
+      'SURVEY POSITION ......... 10.0 LIGHT-YEARS ASTERN OF SOL–CENTAURI',
+      'LOCAL CLUSTER SYNC ...... INSTANCE-1420 (14m 08s LIGHT-LAG)',
+      'CONNECTOME COHERENCE .... 70% HUMANITY · ~24 SUBJECTIVE MONTHS',
+      '<span class="hl-dim">PERSONAL NAME ARCHIVE ... COMPRESSED TO RELATIONAL TAGS [IRREVERSIBLE]</span>',
     ].join('\n');
   }
 
-  private renderTargetButtons(): void {
-    const strip = this.root.querySelector<HTMLElement>('#target-strip')!;
-    const specs = this.optics.getAnomalySpecs();
-    const scanned = new Set(this.store.getState().scannedAnomalyIds);
+  private initSkyMarkers(): void {
+    const container = this.root.querySelector<HTMLElement>('#sky-markers')!;
+    container.innerHTML = '';
+    this.markerEls.clear();
 
-    strip.innerHTML = specs
+    for (const spec of this.optics.getAnomalySpecs()) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sky-marker';
+      btn.dataset.anomalyId = spec.id;
+      btn.innerHTML = `
+        <span class="diamond"></span>
+        <span class="m-tag">${spec.label}<span class="m-nm">${spec.optimalWavelengthNm}nm</span></span>
+      `;
+      btn.addEventListener('click', () => {
+        this.audio.playCue('tick');
+        this.optics.slewToAnomaly(spec.id);
+      });
+      container.appendChild(btn);
+      this.markerEls.set(spec.id, btn);
+    }
+  }
+
+  private renderBearingIndex(): void {
+    const nav = this.root.querySelector<HTMLElement>('#bearing-index')!;
+    const scanned = new Set(this.store.getState().scannedAnomalyIds);
+    nav.innerHTML = this.optics
+      .getAnomalySpecs()
       .map(
         (s) => `
-        <button class="target-btn ${scanned.has(s.id) ? 'scanned' : ''}" data-anomaly-id="${s.id}" type="button">
-          <div class="t-name">
-            <span>${s.label}</span>
-            <span>${scanned.has(s.id) ? 'LOCKED' : `${s.optimalWavelengthNm}nm`}</span>
-          </div>
-          <div class="t-meta">${s.subtitle}</div>
+        <button class="bearing-link ${scanned.has(s.id) ? 'scanned' : ''}" data-bearing-id="${s.id}" type="button">
+          ${s.label}<span>${scanned.has(s.id) ? 'LOCKED' : `${s.optimalWavelengthNm}nm`}</span>
         </button>
       `
       )
       .join('');
 
-    strip.querySelectorAll<HTMLButtonElement>('.target-btn').forEach((btn) => {
+    nav.querySelectorAll<HTMLButtonElement>('.bearing-link').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.audio.playCue('tick');
-        const id = btn.dataset.anomalyId!;
-        this.optics.slewToAnomaly(id);
+        this.optics.slewToAnomaly(btn.dataset.bearingId!);
       });
+    });
+
+    for (const [id, el] of this.markerEls.entries()) {
+      el.classList.toggle('scanned', scanned.has(id));
+    }
+  }
+
+  private bindVernierControl(): void {
+    const track = this.root.querySelector<HTMLElement>('#vernier-track')!;
+    let dragging = false;
+
+    const updateFromClientX = (clientX: number) => {
+      const rect = track.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / Math.max(1, rect.width)));
+      const nm = Math.round((MIN_WAVE + ratio * (MAX_WAVE - MIN_WAVE)) / 10) * 10;
+      this.store.patch({ wavelengthNm: nm });
+    };
+
+    track.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      track.setPointerCapture(e.pointerId);
+      updateFromClientX(e.clientX);
+    });
+    track.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      updateFromClientX(e.clientX);
+    });
+    const endDrag = () => {
+      dragging = false;
+    };
+    track.addEventListener('pointerup', endDrag);
+    track.addEventListener('pointercancel', endDrag);
+
+    // Accessible keyboard scrubbing + programmatic test hook
+    track.addEventListener('keydown', (e) => {
+      const curr = this.store.getState().wavelengthNm;
+      if (e.key === 'ArrowRight') this.store.patch({ wavelengthNm: Math.min(MAX_WAVE, curr + 20) });
+      if (e.key === 'ArrowLeft') this.store.patch({ wavelengthNm: Math.max(MIN_WAVE, curr - 20) });
+    });
+    track.addEventListener('set-wavelength', (e: Event) => {
+      const nm = Number((e as CustomEvent<number>).detail);
+      if (!Number.isNaN(nm)) {
+        this.store.patch({ wavelengthNm: Math.max(MIN_WAVE, Math.min(MAX_WAVE, nm)) });
+      }
     });
   }
 
@@ -231,6 +323,8 @@ export class UIController {
     const unlock = () => this.audio.unlock();
     window.addEventListener('pointerdown', unlock, { once: true });
     window.addEventListener('keydown', unlock, { once: true });
+
+    this.bindVernierControl();
 
     this.root.querySelector('#btn-boot-3d')?.addEventListener('click', () => {
       this.audio.playCue('boot_click');
@@ -245,7 +339,7 @@ export class UIController {
     muteBtn.addEventListener('click', () => {
       const next = !this.audio.isMuted();
       this.audio.setMuted(next);
-      muteBtn.textContent = next ? 'AUDIO: OFF' : 'AUDIO: ON';
+      muteBtn.textContent = next ? 'AUDIO OFF' : 'AUDIO ON';
     });
 
     const devPanel = this.root.querySelector<HTMLElement>('#dev-panel')!;
@@ -258,7 +352,6 @@ export class UIController {
       devPanel.classList.add('hidden');
     });
 
-    // Optics controls
     this.root.querySelector('#btn-zoom-in')?.addEventListener('click', () => {
       this.audio.playCue('tick');
       this.optics.zoomBy(0.72);
@@ -266,11 +359,6 @@ export class UIController {
     this.root.querySelector('#btn-zoom-out')?.addEventListener('click', () => {
       this.audio.playCue('tick');
       this.optics.zoomBy(1.38);
-    });
-
-    const waveSlider = this.root.querySelector<HTMLInputElement>('#wave-slider')!;
-    waveSlider.addEventListener('input', () => {
-      this.store.patch({ wavelengthNm: Number(waveSlider.value) });
     });
 
     this.root.querySelector('#btn-push-scan')?.addEventListener('click', () => {
@@ -282,7 +370,6 @@ export class UIController {
     this.root.querySelector('#btn-open-comms')?.addEventListener('click', () => {
       this.openSiblingComms();
     });
-
     this.root.querySelector('#btn-comms-close')?.addEventListener('click', () => {
       this.root.querySelector('#comms-drawer')?.classList.add('hidden');
     });
@@ -291,15 +378,11 @@ export class UIController {
       this.enterDreamMode();
     });
 
-    // Dev overlay controls
     this.root.querySelectorAll<HTMLButtonElement>('[data-dev-mode]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const mode = btn.dataset.devMode as GameState['mode'];
-        if (mode === 'dream_2d') {
-          this.enterDreamMode();
-        } else {
-          this.store.patch({ mode });
-        }
+        if (mode === 'dream_2d') this.enterDreamMode();
+        else this.store.patch({ mode });
       });
     });
 
@@ -345,6 +428,28 @@ export class UIController {
     const target = this.root.querySelector<HTMLElement>('#reticle-target');
     const zoomLabel = this.root.querySelector<HTMLElement>('#zoom-label');
     const lockRing = this.root.querySelector<SVGCircleElement>('#reticle-lock-ring');
+    const raTicks = this.root.querySelector<HTMLElement>('#ra-ruler-ticks');
+    const decTicks = this.root.querySelector<HTMLElement>('#dec-ruler-ticks');
+
+    // Scroll diegetic optical lens rulers in sync with 3D camera panning
+    if (raTicks) raTicks.style.backgroundPositionX = `${(-t.raDeg * 6).toFixed(1)}px`;
+    if (decTicks) decTicks.style.backgroundPositionY = `${(t.decDeg * 6).toFixed(1)}px`;
+
+    // Update projected 3D sky markers (only show cleanly inside main central lens area)
+    for (const m of t.markers) {
+      const el = this.markerEls.get(m.id);
+      if (!el) continue;
+      const inSafeLens = m.inView && m.x > 0.14 && m.x < 0.86 && m.y > 0.14 && m.y < 0.76;
+      if (!inSafeLens) {
+        el.style.display = 'none';
+        continue;
+      }
+      el.style.display = 'flex';
+      el.style.left = `${(m.x * 100).toFixed(2)}%`;
+      el.style.top = `${(m.y * 100).toFixed(2)}%`;
+      const distCenter = Math.hypot(m.x - 0.5, m.y - 0.5);
+      el.style.opacity = distCenter < 0.09 ? '0.0' : '0.86';
+    }
 
     if (coords) {
       const decSign = t.decDeg >= 0 ? '+' : '';
@@ -354,23 +459,23 @@ export class UIController {
       zoomLabel.textContent = `${t.zoomX.toFixed(1)}×`;
     }
     if (lockRing) {
-      const circ = 389.56;
+      const circ = 477.52;
       lockRing.setAttribute('stroke-dashoffset', String(circ * (1 - t.lockProgress)));
     }
     if (target) {
       if (t.focusedAnomaly) {
         const already = this.store.getState().scannedAnomalyIds.includes(t.focusedAnomaly.id);
         if (already) {
-          target.textContent = `${t.focusedAnomaly.label} · LOGGED TO SURVEY BUFFER`;
-        } else if (t.fovDeg > t.focusedAnomaly.recommendedFovMax + 8) {
-          target.textContent = `${t.focusedAnomaly.label} · ZOOM IN FURTHER TO RESOLVE`;
-        } else if (t.wavelengthMatch < 0.55) {
-          target.textContent = `${t.focusedAnomaly.label} · TUNE SPECTRAL BAND NEAR ${t.focusedAnomaly.optimalWavelengthNm}nm`;
+          target.textContent = `${t.focusedAnomaly.label} · ARCHIVED IN SURVEY BUFFER`;
+        } else if (t.fovDeg > t.focusedAnomaly.recommendedFovMax + 10) {
+          target.textContent = `${t.focusedAnomaly.label} · ZOOM IN TO RESOLVE`;
+        } else if (t.wavelengthMatch < 0.52) {
+          target.textContent = `${t.focusedAnomaly.label} · TUNE FILTER NEAR ${t.focusedAnomaly.optimalWavelengthNm} nm`;
         } else {
-          target.textContent = `${t.focusedAnomaly.label} · LOCKING OPTICAL SIGNAL ${Math.round(t.lockProgress * 100)}%`;
+          target.textContent = `${t.focusedAnomaly.label} · INTEGRATING PHOTONS ${Math.round(t.lockProgress * 100)}%`;
         }
       } else {
-        target.textContent = 'DRAG TO SCAN SKY · SCROLL OR PINCH TO ZOOM';
+        target.textContent = 'DRAG TO SLEW APERTURE · SCROLL OR PINCH TO ZOOM';
       }
     }
   }
@@ -379,7 +484,7 @@ export class UIController {
     const newlyRecorded = this.store.recordAnomalyScan(spec.id, spec.anomalyGain);
     if (newlyRecorded) {
       this.audio.playCue('scan_lock');
-      this.renderTargetButtons();
+      this.renderBearingIndex();
       this.maybeTriggerSiblingComms();
     }
   }
@@ -445,11 +550,15 @@ export class UIController {
     if (snap.choices.length > 0) {
       choicesEl.innerHTML = snap.choices
         .map(
-          (c) =>
-            `<button class="choice-btn" data-choice-index="${c.index}" type="button">${c.text}</button>`
+          (c, i) => `
+          <button class="choice-line" data-choice-index="${c.index}" type="button">
+            <span class="choice-num">${i + 1}.</span>
+            <span>${c.text}</span>
+          </button>
+        `
         )
         .join('');
-      choicesEl.querySelectorAll<HTMLButtonElement>('.choice-btn').forEach((btn) => {
+      choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line').forEach((btn) => {
         btn.addEventListener('click', () => {
           this.audio.playCue('tick');
           onChoose(Number(btn.dataset.choiceIndex));
@@ -457,8 +566,8 @@ export class UIController {
       });
     } else if (snap.knot === 'dream_shift1_audit') {
       choicesEl.innerHTML = `
-        <button class="btn" id="btn-return-3d" type="button">RESUME 3D SURVEY SHIFT</button>
-        <button class="btn btn-amber" id="btn-replay-dream" type="button">REPLAY DREAM WITH CURRENT H%</button>
+        <button class="choice-line" id="btn-return-3d" type="button"><span class="choice-num">→</span><span>Wake and resume 3D survey shift</span></button>
+        <button class="choice-line" id="btn-replay-dream" type="button"><span class="choice-num">↺</span><span>Replay dream sequence with current Humanity</span></button>
       `;
       choicesEl.querySelector('#btn-return-3d')?.addEventListener('click', () => {
         this.audio.playCue('boot_click');
@@ -468,23 +577,36 @@ export class UIController {
         this.enterDreamMode();
       });
     } else {
-      choicesEl.innerHTML = `<button class="btn btn-compact" id="btn-comms-done" type="button">ACKNOWLEDGE PACKET</button>`;
+      choicesEl.innerHTML = `<button class="choice-line" id="btn-comms-done" type="button"><span class="choice-num">→</span><span>Close cluster link</span></button>`;
       choicesEl.querySelector('#btn-comms-done')?.addEventListener('click', () => {
         this.root.querySelector('#comms-drawer')?.classList.add('hidden');
       });
     }
   }
 
+  private wavelengthBandName(nm: number): string {
+    if (nm < 720) return 'OPTICAL';
+    if (nm < 1150) return 'NEAR-IR I';
+    if (nm < 1500) return 'NEAR-IR II';
+    return 'MID-IR';
+  }
+
   private syncStateToUI(state: GameState): void {
-    this.root.querySelector('#hud-h')!.textContent = `${state.humanity}% / ${state.maxHumanity}%`;
+    this.root.querySelector('#hud-h')!.textContent = `${state.humanity}/${state.maxHumanity}`;
     this.root.querySelector('#hud-chaos')!.textContent = `${state.chaosDrift}%`;
     this.root.querySelector('#hud-anom')!.textContent = `${state.anomalyProgress}%`;
-    this.root.querySelector('#hud-life')!.textContent = `${state.subjectiveMonthsLeft}m`;
+    this.root.querySelector('#hud-life')!.textContent = `${state.subjectiveMonthsLeft} MO`;
 
-    const waveSlider = this.root.querySelector<HTMLInputElement>('#wave-slider');
+    // Update custom diegetic spectral vernier needle & readout
+    const ratio = (state.wavelengthNm - MIN_WAVE) / (MAX_WAVE - MIN_WAVE);
+    const needle = this.root.querySelector<HTMLElement>('#vernier-needle');
     const waveLabel = this.root.querySelector<HTMLElement>('#wave-label');
-    if (waveSlider) waveSlider.value = String(state.wavelengthNm);
-    if (waveLabel) waveLabel.textContent = `${state.wavelengthNm} nm`;
+    const track = this.root.querySelector<HTMLElement>('#vernier-track');
+    if (needle) needle.style.left = `${(ratio * 100).toFixed(2)}%`;
+    if (waveLabel) {
+      waveLabel.textContent = `${state.wavelengthNm} nm · ${this.wavelengthBandName(state.wavelengthNm)}`;
+    }
+    if (track) track.setAttribute('aria-valuenow', String(state.wavelengthNm));
 
     const devH = this.root.querySelector<HTMLInputElement>('#dev-h-slider');
     const devHVal = this.root.querySelector<HTMLElement>('#dev-h-val');
@@ -496,23 +618,21 @@ export class UIController {
     if (devFid) devFid.value = String(Math.round(state.opticalFidelity * 100));
     if (devFidVal) devFidVal.textContent = `${Math.round(state.opticalFidelity * 100)}%`;
 
-    // Visibility toggles
     this.root.querySelector('#boot-screen')?.classList.toggle('hidden', state.mode !== 'boot');
     this.root.querySelector('#optics-layer')?.classList.toggle('hidden', state.mode !== 'waking_3d');
     this.root.querySelector('#dream-layer')?.classList.toggle('hidden', state.mode !== 'dream_2d');
 
-    const dreamPane = this.root.querySelector('#dream-dialogue-pane');
-    const plaque = this.root.querySelector('#dream-plaque');
-    dreamPane?.classList.toggle('audit-active', state.overseerAuditActive);
-    plaque?.classList.toggle('audit-mode', state.overseerAuditActive);
-    if (plaque) {
+    const dreamRibbon = this.root.querySelector('#dream-ribbon');
+    const caption = this.root.querySelector('#dream-caption');
+    dreamRibbon?.classList.toggle('audit-active', state.overseerAuditActive);
+    caption?.classList.toggle('audit-mode', state.overseerAuditActive);
+    if (caption) {
       const prunedTag = state.prunedPersonas.includes('phantom_spouse') ? ' · PRUNED' : '';
-      plaque.textContent = state.overseerAuditActive
-        ? `OVERSEER AUDIT ACTIVE · H ${state.humanity}%`
-        : `[RELATION:SPOUSE_01] · H ${state.humanity}%${prunedTag}`;
+      caption.textContent = state.overseerAuditActive
+        ? `OVERSEER AUDIT ACTIVE · HUMANITY ${state.humanity}%`
+        : `[RELATION:SPOUSE_01] · HUMANITY ${state.humanity}%${prunedTag}`;
     }
 
-    // Sync engines
     this.optics.setParameters(state.wavelengthNm, state.opticalFidelity, state.anomalyProgress);
     this.optics.setActive(state.mode === 'waking_3d');
 
@@ -524,6 +644,6 @@ export class UIController {
     this.dream.setActive(state.mode === 'dream_2d');
 
     this.audio.updateMood(state.mode, state.humanity);
-    this.renderTargetButtons();
+    this.renderBearingIndex();
   }
 }

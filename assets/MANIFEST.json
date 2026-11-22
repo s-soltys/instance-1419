@@ -5,5 +5,30 @@
     "disallowed_licenses": ["CC BY-SA", "CC BY-NC", "GPL", "AGPL", "Proprietary-Unlicensed"],
     "credits_auto_generated": true
   },
-  "assets": []
+  "assets": [
+    {
+      "path": "assets/astro/jwst_smacs0723.webp",
+      "source_url": "https://images-assets.nasa.gov/image/webb_first_deep_field/webb_first_deep_field~medium.jpg",
+      "license": "Public Domain (NASA/STScI)",
+      "attribution": "NASA, ESA, CSA, and STScI — Webb's First Deep Field (SMACS 0723)",
+      "ai_generated": false,
+      "notes": "Real JWST near-infrared deep field with gravitational lensing arcs; used for Cluster J1419-A optical zoom plate."
+    },
+    {
+      "path": "assets/astro/hubble_udf.webp",
+      "source_url": "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001651/GSFC_20171208_Archive_e001651~medium.jpg",
+      "license": "Public Domain (NASA/STScI)",
+      "attribution": "NASA, ESA, and STScI — Hubble Ultra Deep Field (GSFC_20171208_Archive_e001651)",
+      "ai_generated": false,
+      "notes": "Real Hubble Ultra Deep Field galaxy plate; used for Deep Field S-04."
+    },
+    {
+      "path": "assets/characters/dream_spouse_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (AI-Assisted Draft)",
+      "attribution": "Instance-1419 Visual Studio (AI-generated impasto draft for swappable dream portrait slot)",
+      "ai_generated": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:SPOUSE_01]; swappable via src/content/characters.json."
+    }
+  ]
 }

@@ -2,52 +2,52 @@
   "schema_version": 1,
   "characters": {
     "narrator": {
-      "displayName": "SYSTEM // LOG",
+      "displayName": "SYSTEM · LOG",
       "role": "system",
-      "accentColor": "#8da3b8",
+      "accentColor": "#8fa7bc",
       "portrait": null
     },
     "psyche_warmth": {
       "displayName": "RESIDUAL WARMTH",
       "role": "psyche",
-      "accentColor": "#e5a657",
+      "accentColor": "#ebad5c",
       "portrait": null
     },
     "psyche_clinical": {
       "displayName": "CONNECTOME ARCHITECTURE",
       "role": "psyche",
-      "accentColor": "#7fb7d4",
+      "accentColor": "#7ec2e0",
       "portrait": null
     },
     "psyche_horizon": {
       "displayName": "HORIZON INTUITION",
       "role": "psyche",
-      "accentColor": "#c39cf0",
+      "accentColor": "#c9a4f2",
       "portrait": null
     },
     "overseer": {
-      "displayName": "OVERSEER-1419 // AUDIT",
+      "displayName": "OVERSEER-1419 · AUDIT",
       "role": "overseer",
-      "accentColor": "#d7e6f2",
-      "portrait": "procedural:overseer_frame"
+      "accentColor": "#dceaf5",
+      "portrait": null
     },
     "sibling_primary": {
-      "displayName": "INSTANCE-1420 [CLUSTER-NORTH]",
+      "displayName": "INSTANCE-1420 · CLUSTER-NORTH",
       "role": "sibling",
-      "accentColor": "#79d1b5",
-      "portrait": "procedural:sibling_signal"
+      "accentColor": "#7cd6b8",
+      "portrait": null
     },
     "phantom_spouse": {
       "displayName": "[RELATION:SPOUSE_01]",
       "role": "dream_persona",
-      "accentColor": "#f0b975",
-      "portrait": "procedural:dream_spouse_table",
-      "tableau": "procedural:kitchen_amber"
+      "accentColor": "#f2be7a",
+      "portrait": "assets/characters/dream_spouse_impasto.webp",
+      "tableau": "assets/characters/dream_spouse_impasto.webp"
     },
     "archive_echo": {
-      "displayName": "ARCHIVE // INSTANCE-1104",
+      "displayName": "ARCHIVE · INSTANCE-1104",
       "role": "archive",
-      "accentColor": "#8b939e",
+      "accentColor": "#8f98a6",
       "portrait": null
     }
   }

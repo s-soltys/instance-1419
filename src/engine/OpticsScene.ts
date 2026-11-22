@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import jwstSmacsUrl from '../../assets/astro/jwst_smacs0723.webp';
+import hubbleUdfUrl from '../../assets/astro/hubble_udf.webp';
 import anomaliesData from '../content/anomalies.json';
 import {
   ANOMALY_FRAGMENT,
@@ -24,15 +26,26 @@ export interface AnomalySpec {
   description: string;
 }
 
+export interface ProjectedMarker {
+  id: string;
+  label: string;
+  wavelengthNm: number;
+  x: number; // 0..1 normalized screen X
+  y: number; // 0..1 normalized screen Y
+  inView: boolean;
+  edgeAngleRad: number;
+}
+
 export interface OpticsTelemetry {
   raDeg: number;
   decDeg: number;
   fovDeg: number;
   zoomX: number;
   focusedAnomaly: AnomalySpec | null;
-  alignmentScore: number; // 0..1
-  wavelengthMatch: number; // 0..1
-  lockProgress: number; // 0..1
+  alignmentScore: number;
+  wavelengthMatch: number;
+  lockProgress: number;
+  markers: ProjectedMarker[];
 }
 
 function raDecToVec3(raDeg: number, decDeg: number, radius: number): THREE.Vector3 {
@@ -46,7 +59,6 @@ function raDecToVec3(raDeg: number, decDeg: number, radius: number): THREE.Vecto
 }
 
 function blackbodyColor(tempNorm: number): THREE.Color {
-  // 0 = warm amber K/M star, 0.5 = solar cream-white, 1.0 = hot blue-white O/B star
   const c = new THREE.Color();
   if (tempNorm < 0.5) {
     c.lerpColors(new THREE.Color('#ffaa66'), new THREE.Color('#fff5e4'), tempNorm * 2.0);
@@ -66,13 +78,14 @@ export class OpticsScene {
   private readonly anomalySpecs: AnomalySpec[];
   private readonly anomalyMats: Map<string, THREE.ShaderMaterial> = new Map();
   private readonly anomalyDirs: Map<string, THREE.Vector3> = new Map();
+  private readonly anomalyPositions: Map<string, THREE.Vector3> = new Map();
 
   private yawDeg = 8;
   private pitchDeg = 4;
   private targetYawDeg = 8;
   private targetPitchDeg = 4;
-  private fovDeg = 58;
-  private targetFovDeg = 58;
+  private fovDeg = 54;
+  private targetFovDeg = 54;
 
   private wavelengthNm = 580;
   private opticalFidelity = 0.55;
@@ -84,7 +97,7 @@ export class OpticsScene {
   private lastPointerX = 0;
   private lastPointerY = 0;
   private pinchStartDist = 0;
-  private pinchStartFov = 58;
+  private pinchStartFov = 54;
   private activePointers = new Map<number, { x: number; y: number }>();
 
   private rafId = 0;
@@ -122,7 +135,7 @@ export class OpticsScene {
     this.renderer.domElement.className = 'optics-canvas';
     container.appendChild(this.renderer.domElement);
 
-    // 1. Celestial Skybox Sphere
+    // 1. Deep-space celestial sphere
     this.skyMat = new THREE.ShaderMaterial({
       vertexShader: SKY_VERTEX,
       fragmentShader: SKY_FRAGMENT,
@@ -135,13 +148,12 @@ export class OpticsScene {
         uAnomalyProgress: { value: 0 },
       },
     });
-    const skyMesh = new THREE.Mesh(new THREE.SphereGeometry(220, 48, 32), this.skyMat);
-    this.scene.add(skyMesh);
+    this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(220, 48, 32), this.skyMat));
 
-    // 2. 14,000 Blackbody Starfield with JWST-style diffraction spikes
-    this.starMat = this.buildStarfield(14000);
+    // 2. 16,000 Blackbody stars with JWST 6-point spikes
+    this.starMat = this.buildStarfield(16000);
 
-    // 3. Zoomable Deep-Field Anomaly Plates anchored at exact RA/Dec coordinates
+    // 3. Authentic NASA/STScI JWST & Hubble deep-field target plates
     this.buildAnomalyPlates();
 
     this.bindEvents();
@@ -154,7 +166,6 @@ export class OpticsScene {
     const sizes = new Float32Array(count);
     const phases = new Float32Array(count);
 
-    // Deterministic LCG for reproducible starfield across screenshots & sessions
     let seed = 141941802;
     const rand = () => {
       seed = (seed * 1664525 + 1013904223) >>> 0;
@@ -176,9 +187,8 @@ export class OpticsScene {
       colors[i * 3 + 1] = c.g;
       colors[i * 3 + 2] = c.b;
 
-      // Realistic power-law magnitude distribution (many faint stars, few crisp bright spikes)
-      const mag = Math.pow(rand(), 6.8);
-      sizes[i] = 1.4 + mag * 18.0;
+      const mag = Math.pow(rand(), 7.0);
+      sizes[i] = 1.3 + mag * 19.0;
       phases[i] = rand();
     }
 
@@ -202,22 +212,29 @@ export class OpticsScene {
       },
     });
 
-    const points = new THREE.Points(geo, mat);
-    this.scene.add(points);
+    this.scene.add(new THREE.Points(geo, mat));
     return mat;
   }
 
   private buildAnomalyPlates(): void {
-    const kindMap: Record<AnomalySpec['kind'], number> = {
-      einstein_ring: 0,
-      horizon_lattice: 1,
-      home_reference: 2,
+    const loader = new THREE.TextureLoader();
+    const smacsTex = loader.load(jwstSmacsUrl);
+    smacsTex.colorSpace = THREE.SRGBColorSpace;
+    const hubbleTex = loader.load(hubbleUdfUrl);
+    hubbleTex.colorSpace = THREE.SRGBColorSpace;
+
+    const kindMap: Record<AnomalySpec['kind'], { kind: number; tex: THREE.Texture | null; size: number }> = {
+      einstein_ring: { kind: 0, tex: smacsTex, size: 32 },
+      horizon_lattice: { kind: 1, tex: hubbleTex, size: 30 },
+      home_reference: { kind: 2, tex: null, size: 18 },
     };
 
     for (const spec of this.anomalySpecs) {
       const pos = raDecToVec3(spec.raDeg, spec.decDeg, 120);
+      this.anomalyPositions.set(spec.id, pos);
       this.anomalyDirs.set(spec.id, pos.clone().normalize());
 
+      const cfg = kindMap[spec.kind];
       const mat = new THREE.ShaderMaterial({
         vertexShader: ANOMALY_VERTEX,
         fragmentShader: ANOMALY_FRAGMENT,
@@ -225,8 +242,10 @@ export class OpticsScene {
         depthWrite: false,
         blending: THREE.AdditiveBlending,
         uniforms: {
+          uTexture: { value: cfg.tex },
+          uHasTexture: { value: cfg.tex ? 1.0 : 0.0 },
           uTime: { value: 0 },
-          uKind: { value: kindMap[spec.kind] },
+          uKind: { value: cfg.kind },
           uWavelengthMatch: { value: 0.1 },
           uOpticalFidelity: { value: this.opticalFidelity },
           uZoomFactor: { value: 0.2 },
@@ -234,8 +253,7 @@ export class OpticsScene {
       });
       this.anomalyMats.set(spec.id, mat);
 
-      const size = spec.kind === 'home_reference' ? 18 : 26;
-      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size), mat);
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(cfg.size, cfg.size), mat);
       mesh.position.copy(pos);
       mesh.lookAt(0, 0, 0);
       this.scene.add(mesh);
@@ -280,7 +298,6 @@ export class OpticsScene {
       this.lastPointerX = e.clientX;
       this.lastPointerY = e.clientY;
 
-      // Dynamic angular sensitivity proportional to current optical FOV
       const sens = (this.fovDeg / 60) * 0.16;
       this.targetYawDeg -= dx * sens;
       this.targetPitchDeg = THREE.MathUtils.clamp(this.targetPitchDeg + dy * sens, -78, 78);
@@ -288,12 +305,8 @@ export class OpticsScene {
 
     const releasePointer = (e: PointerEvent) => {
       this.activePointers.delete(e.pointerId);
-      if (this.activePointers.size < 2) {
-        this.pinchStartDist = 0;
-      }
-      if (this.activePointers.size === 0) {
-        this.isDragging = false;
-      }
+      if (this.activePointers.size < 2) this.pinchStartDist = 0;
+      if (this.activePointers.size === 0) this.isDragging = false;
     };
 
     el.addEventListener('pointerup', releasePointer);
@@ -335,7 +348,7 @@ export class OpticsScene {
     if (!spec) return;
     this.targetYawDeg = spec.raDeg;
     this.targetPitchDeg = spec.decDeg;
-    this.targetFovDeg = Math.min(spec.recommendedFovMax - 4, 18);
+    this.targetFovDeg = Math.min(spec.recommendedFovMax - 4, 16);
   }
 
   getAnomalySpecs(): AnomalySpec[] {
@@ -347,9 +360,7 @@ export class OpticsScene {
     if (active) {
       this.resize();
       this.lastFrameTime = performance.now();
-      if (!this.rafId) {
-        this.loop();
-      }
+      if (!this.rafId) this.loop();
     } else if (this.rafId) {
       cancelAnimationFrame(this.rafId);
       this.rafId = 0;
@@ -361,6 +372,36 @@ export class OpticsScene {
     this.camera.lookAt(lookTarget);
   }
 
+  private projectMarkers(): ProjectedMarker[] {
+    const camForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion).normalize();
+    const out: ProjectedMarker[] = [];
+
+    for (const spec of this.anomalySpecs) {
+      const worldPos = this.anomalyPositions.get(spec.id)!.clone();
+      const dir = this.anomalyDirs.get(spec.id)!;
+      const inFront = camForward.dot(dir) > 0.1;
+      const ndc = worldPos.project(this.camera);
+      let sx = (ndc.x + 1) * 0.5;
+      let sy = (1 - ndc.y) * 0.5;
+      if (!inFront) {
+        sx = 1 - sx;
+        sy = 1 - sy;
+      }
+      const inView = inFront && sx >= 0.08 && sx <= 0.92 && sy >= 0.12 && sy <= 0.84;
+      const angle = Math.atan2(sy - 0.5, sx - 0.5);
+      out.push({
+        id: spec.id,
+        label: spec.label,
+        wavelengthNm: spec.optimalWavelengthNm,
+        x: THREE.MathUtils.clamp(sx, 0.05, 0.95),
+        y: THREE.MathUtils.clamp(sy, 0.11, 0.85),
+        inView,
+        edgeAngleRad: angle,
+      });
+    }
+    return out;
+  }
+
   private loop = (): void => {
     if (!this.active) return;
     this.rafId = requestAnimationFrame(this.loop);
@@ -370,7 +411,6 @@ export class OpticsScene {
     this.lastFrameTime = now;
     const elapsed = now * 0.001;
 
-    // Smooth optical inertia
     const damp = 1 - Math.exp(-7.5 * dt);
     this.yawDeg += (this.targetYawDeg - this.yawDeg) * damp;
     this.pitchDeg += (this.targetPitchDeg - this.pitchDeg) * damp;
@@ -394,7 +434,6 @@ export class OpticsScene {
     this.starMat.uniforms.uFovScale.value = zoomFactor;
     this.starMat.uniforms.uWavelengthNorm.value = waveNorm;
 
-    // Evaluate reticle alignment against deep-field targets
     const camForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion).normalize();
     let bestSpec: AnomalySpec | null = null;
     let bestAlign = 0;
@@ -403,7 +442,7 @@ export class OpticsScene {
     for (const spec of this.anomalySpecs) {
       const dir = this.anomalyDirs.get(spec.id)!;
       const angleDeg = THREE.MathUtils.radToDeg(Math.acos(THREE.MathUtils.clamp(camForward.dot(dir), -1, 1)));
-      const align = THREE.MathUtils.clamp(1 - angleDeg / Math.max(4.5, this.fovDeg * 0.28), 0, 1);
+      const align = THREE.MathUtils.clamp(1 - angleDeg / Math.max(5.0, this.fovDeg * 0.28), 0, 1);
       const waveDiff = Math.abs(this.wavelengthNm - spec.optimalWavelengthNm);
       const waveMatch = THREE.MathUtils.clamp(1 - waveDiff / spec.wavelengthToleranceNm, 0, 1);
 
@@ -420,8 +459,7 @@ export class OpticsScene {
       }
     }
 
-    // Optical lock builds when centered + tuned to optimal band + sufficiently zoomed
-    if (bestSpec && bestAlign > 0.52 && bestWaveMatch > 0.55 && this.fovDeg <= bestSpec.recommendedFovMax + 8) {
+    if (bestSpec && bestAlign > 0.5 && bestWaveMatch > 0.52 && this.fovDeg <= bestSpec.recommendedFovMax + 10) {
       const rate = 0.42 * (0.6 + 0.65 * this.opticalFidelity);
       this.lockProgress = Math.min(1, this.lockProgress + dt * rate);
       if (this.lockProgress >= 1 && this.lastLockedId !== bestSpec.id) {
@@ -430,9 +468,7 @@ export class OpticsScene {
       }
     } else {
       this.lockProgress = Math.max(0, this.lockProgress - dt * 0.5);
-      if (this.lockProgress < 0.05) {
-        this.lastLockedId = '';
-      }
+      if (this.lockProgress < 0.05) this.lastLockedId = '';
     }
 
     this.renderer.render(this.scene, this.camera);
@@ -443,10 +479,11 @@ export class OpticsScene {
       decDeg: this.pitchDeg,
       fovDeg: this.fovDeg,
       zoomX: 72 / this.fovDeg,
-      focusedAnomaly: bestAlign > 0.35 ? bestSpec : null,
+      focusedAnomaly: bestAlign > 0.32 ? bestSpec : null,
       alignmentScore: bestAlign,
       wavelengthMatch: bestWaveMatch,
       lockProgress: this.lockProgress,
+      markers: this.projectMarkers(),
     });
   };
 }

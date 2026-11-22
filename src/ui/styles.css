@@ -1,15 +1,16 @@
 :root {
-  --bg-void: #04060a;
-  --panel-bg: rgba(8, 12, 19, 0.84);
-  --panel-border: rgba(154, 188, 214, 0.22);
-  --text-main: #e6ecf2;
-  --text-dim: #8b9eb2;
-  --accent-amber: #ebb062;
-  --accent-cyan: #72c8e8;
-  --accent-mint: #74d4b5;
-  --accent-danger: #e06c75;
+  --bg-void: #020306;
+  --text-main: #edf1f5;
+  --text-soft: rgba(226, 234, 242, 0.78);
+  --text-dim: rgba(154, 174, 194, 0.56);
+  --hairline: rgba(186, 212, 235, 0.22);
+  --hairline-strong: rgba(215, 234, 248, 0.52);
+  --amber: #ebb062;
+  --cyan: #7ec8e8;
+  --mint: #7ad4b6;
+  --danger: #e27880;
   --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
-  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
@@ -37,57 +38,231 @@ body,
   width: 100%;
   height: 100%;
   overflow: hidden;
+  background: #020306;
 }
 
-/* ==================== BOOT LOG (HARD CUT) ==================== */
+/* Subtle photographic film grain across the entire viewport (eliminates flat digital/HTML sheen) */
+.film-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.036;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ==================== DIEGETIC TOP TELEMETRY (ZERO BOXED CHIPS) ==================== */
+.top-telemetry {
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(20px, env(safe-area-inset-left));
+  right: max(20px, env(safe-area-inset-right));
+  z-index: 35;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.95);
+}
+
+.telemetry-readout {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--text-dim);
+  pointer-events: auto;
+}
+
+.telemetry-readout .metric strong {
+  color: var(--text-main);
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.telemetry-readout .metric.m-h strong {
+  color: var(--amber);
+}
+
+.telemetry-readout .metric.m-chaos strong {
+  color: var(--danger);
+}
+
+.telemetry-readout .metric.m-anom strong {
+  color: var(--cyan);
+}
+
+.telemetry-sep {
+  opacity: 0.28;
+}
+
+.telemetry-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  pointer-events: auto;
+}
+
+/* Bare typographic etched link (NO boxes, NO rounded pills) */
+.etched-action {
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  color: var(--text-soft);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 6px 2px;
+  min-height: 36px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, opacity 0.2s;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.95);
+}
+
+.etched-action:hover {
+  color: #ffffff;
+  border-bottom-color: var(--hairline-strong);
+}
+
+.etched-action.amber {
+  color: var(--amber);
+}
+
+.etched-action.amber:hover {
+  color: #ffd394;
+  border-bottom-color: var(--amber);
+}
+
+.etched-action.mint {
+  color: var(--mint);
+}
+
+/* ==================== COLD BOOT APERTURE SCREEN ==================== */
 .boot-screen {
   position: absolute;
   inset: 0;
   z-index: 40;
-  background: #030508;
+  background: radial-gradient(circle at 38% 48%, #0a1019 0%, #030508 62%, #010204 100%);
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  align-items: flex-start;
-  padding: max(24px, env(safe-area-inset-top)) max(32px, env(safe-area-inset-right))
-    max(24px, env(safe-area-inset-bottom)) max(32px, env(safe-area-inset-left));
-  font-family: var(--font-mono);
+  padding: max(28px, env(safe-area-inset-top)) max(36px, env(safe-area-inset-right))
+    max(28px, env(safe-area-inset-bottom)) max(36px, env(safe-area-inset-left));
 }
 
 .boot-screen.hidden {
   display: none;
 }
 
-.boot-box {
+.boot-frame {
+  position: relative;
   max-width: 720px;
   width: 100%;
-  border-left: 2px solid rgba(114, 200, 232, 0.45);
-  padding-left: 20px;
+  padding: 28px 32px;
+}
+
+/* Subtle corner optical calibration brackets */
+.boot-frame::before,
+.boot-frame::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+
+.boot-frame::before {
+  top: 0;
+  left: 0;
+  border-top: 1px solid rgba(190, 218, 240, 0.35);
+  border-left: 1px solid rgba(190, 218, 240, 0.35);
+}
+
+.boot-frame::after {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1px solid rgba(235, 176, 98, 0.4);
+  border-right: 1px solid rgba(235, 176, 98, 0.4);
+}
+
+.boot-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--text-dim);
+  margin-bottom: 18px;
+}
+
+.boot-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(26px, 3.6vw, 40px);
+  letter-spacing: 0.14em;
+  color: #f4f7fa;
+  margin-bottom: 22px;
 }
 
 .boot-lines {
-  font-size: clamp(12px, 1.5vw, 14px);
-  line-height: 1.7;
-  color: #b7ccde;
+  font-family: var(--font-mono);
+  font-size: clamp(11.5px, 1.3vw, 13px);
+  line-height: 1.9;
+  color: rgba(196, 214, 230, 0.85);
   white-space: pre-wrap;
-  margin-bottom: 24px;
+  margin-bottom: 30px;
+  letter-spacing: 0.04em;
 }
 
 .boot-lines .hl-warn {
-  color: var(--accent-amber);
+  color: var(--amber);
 }
 
 .boot-lines .hl-dim {
-  color: #5d7388;
+  color: rgba(130, 152, 174, 0.52);
 }
 
-.boot-actions {
+.boot-commands {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 28px;
+  align-items: center;
 }
 
-/* ==================== 3D OPTICS MODE ==================== */
+.boot-cmd {
+  background: none;
+  border: none;
+  border-left: 1px solid rgba(215, 234, 248, 0.4);
+  padding: 8px 0 8px 14px;
+  color: var(--text-main);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  min-height: 44px;
+  transition: border-color 0.2s, color 0.2s, padding-left 0.2s;
+}
+
+.boot-cmd:hover {
+  border-left-color: var(--cyan);
+  color: #ffffff;
+  padding-left: 20px;
+}
+
+.boot-cmd.amber {
+  border-left-color: rgba(235, 176, 98, 0.55);
+  color: var(--amber);
+}
+
+.boot-cmd.amber:hover {
+  border-left-color: var(--amber);
+  color: #ffd79b;
+}
+
+/* ==================== 3D DIEGETIC OBSERVATORY LENS ==================== */
 .optics-layer {
   position: absolute;
   inset: 0;
@@ -103,215 +278,361 @@ body,
   height: 100%;
   display: block;
   touch-action: none;
-  cursor: grab;
+  cursor: crosshair;
 }
 
-.optics-canvas:active {
-  cursor: grabbing;
+/* Circular physical telescope vignette + ultra-thin etched glass overlay */
+.lens-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 11;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(0, 0, 0, 0) 56%,
+    rgba(2, 4, 8, 0.42) 84%,
+    rgba(1, 2, 5, 0.82) 100%
+  );
 }
 
-/* Hairline center reticle */
+/* Live scrolling RA azimuth & DEC elevation glass scales */
+.ra-ruler {
+  position: absolute;
+  top: max(36px, calc(env(safe-area-inset-top) + 28px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, 58vw);
+  height: 16px;
+  pointer-events: none;
+  z-index: 13;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+.ra-ruler-ticks {
+  width: 100%;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(195, 220, 240, 0.36) 0px,
+    rgba(195, 220, 240, 0.36) 1px,
+    transparent 1px,
+    transparent 14px
+  );
+  background-size: 140px 8px;
+  background-repeat: repeat-x;
+  background-position-y: top;
+}
+
+.dec-ruler {
+  position: absolute;
+  left: max(18px, env(safe-area-inset-left));
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: min(320px, 46vh);
+  pointer-events: none;
+  z-index: 13;
+  overflow: hidden;
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+.dec-ruler-ticks {
+  width: 100%;
+  height: 100%;
+  background-image: repeating-linear-gradient(
+    180deg,
+    rgba(195, 220, 240, 0.34) 0px,
+    rgba(195, 220, 240, 0.34) 1px,
+    transparent 1px,
+    transparent 14px
+  );
+  background-size: 8px 140px;
+  background-repeat: repeat-y;
+}
+
+/* Curved optical vernier reticle */
 .reticle {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 156px;
-  height: 156px;
+  width: min(260px, 44vh);
+  height: min(260px, 44vh);
   transform: translate(-50%, -50%);
   pointer-events: none;
-  z-index: 12;
+  z-index: 14;
 }
 
 .reticle-readout {
   position: absolute;
   left: 50%;
-  top: calc(50% + 86px);
+  top: calc(50% + min(132px, 23vh));
   transform: translateX(-50%);
   text-align: center;
   pointer-events: none;
-  z-index: 12;
+  z-index: 14;
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: rgba(215, 234, 248, 0.88);
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(215, 232, 246, 0.78);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.95);
   white-space: nowrap;
 }
 
 .reticle-sub {
-  font-size: 10px;
-  color: var(--accent-amber);
-  margin-top: 3px;
+  margin-top: 4px;
+  color: var(--amber);
+  letter-spacing: 0.14em;
 }
 
-/* Top Telemetry HUD */
-.top-hud {
+/* In-world 3D projected diamond markers directly over deep-space targets */
+.sky-markers {
   position: absolute;
-  top: max(10px, env(safe-area-inset-top));
-  left: max(14px, env(safe-area-inset-left));
-  right: max(14px, env(safe-area-inset-right));
-  z-index: 30;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
+  inset: 0;
   pointer-events: none;
+  z-index: 15;
 }
 
-.hud-group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  pointer-events: auto;
-  flex-wrap: wrap;
-}
-
-.stat-chip {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  backdrop-filter: blur(8px);
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.stat-chip .label {
-  color: var(--text-dim);
-}
-
-.stat-chip .val {
-  color: var(--text-main);
-  font-weight: 600;
-}
-
-.stat-chip.humanity .val {
-  color: var(--accent-amber);
-}
-
-.stat-chip.chaos .val {
-  color: var(--accent-danger);
-}
-
-.stat-chip.anomaly .val {
-  color: var(--accent-cyan);
-}
-
-/* Left Target Bearing Strip */
-.target-strip {
+.sky-marker {
   position: absolute;
-  left: max(14px, env(safe-area-inset-left));
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 18;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
-  max-width: 220px;
+  padding: 8px;
+  color: rgba(220, 235, 248, 0.78);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.95);
+  transition: color 0.2s, opacity 0.2s;
 }
 
-.target-btn {
-  background: rgba(7, 11, 18, 0.78);
-  border: 1px solid rgba(145, 182, 210, 0.24);
-  color: var(--text-main);
-  padding: 8px 11px;
-  border-radius: 4px;
-  text-align: left;
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  min-height: 44px;
+.sky-marker:hover {
+  color: #ffffff;
+}
+
+.sky-marker .diamond {
+  width: 9px;
+  height: 9px;
+  border: 1px solid rgba(190, 224, 246, 0.65);
+  transform: rotate(45deg);
+  flex-shrink: 0;
   transition: border-color 0.2s, background 0.2s;
 }
 
-.target-btn:hover,
-.target-btn.active {
-  border-color: var(--accent-cyan);
-  background: rgba(16, 28, 44, 0.9);
+.sky-marker.scanned .diamond {
+  border-color: var(--mint);
+  background: rgba(122, 212, 182, 0.35);
 }
 
-.target-btn.scanned {
-  border-color: rgba(116, 212, 181, 0.55);
+.sky-marker.offscreen {
+  opacity: 0.52;
 }
 
-.target-btn .t-name {
-  display: flex;
-  justify-content: space-between;
-  gap: 6px;
-  font-weight: 600;
+.sky-marker .m-tag {
+  white-space: nowrap;
 }
 
-.target-btn .t-meta {
-  font-size: 10px;
-  color: var(--text-dim);
-  margin-top: 2px;
+.sky-marker .m-nm {
+  color: var(--amber);
+  margin-left: 4px;
 }
 
-/* Bottom Optics Control Bar */
-.optics-controls {
+/* Whisper-thin bare target index (bottom-left) */
+.bearing-index {
   position: absolute;
-  left: max(14px, env(safe-area-inset-left));
-  right: max(14px, env(safe-area-inset-right));
-  bottom: max(12px, env(safe-area-inset-bottom));
+  left: max(22px, env(safe-area-inset-left));
+  bottom: max(18px, env(safe-area-inset-bottom));
   z-index: 18;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.control-deck {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  backdrop-filter: blur(8px);
-  border-radius: 6px;
-  padding: 8px 12px;
+.bearing-link {
+  background: none;
+  border: none;
+  border-left: 1px solid rgba(180, 208, 232, 0.25);
+  padding: 4px 0 4px 10px;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  color: rgba(198, 218, 236, 0.7);
+  min-height: 28px;
+  transition: border-color 0.2s, color 0.2s, padding-left 0.2s;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.95);
+}
+
+.bearing-link:hover {
+  border-left-color: var(--cyan);
+  color: #ffffff;
+  padding-left: 14px;
+}
+
+.bearing-link.scanned {
+  border-left-color: var(--mint);
+  color: var(--mint);
+}
+
+.bearing-link span {
+  opacity: 0.55;
+  margin-left: 6px;
+}
+
+/* Custom Diegetic Spectral Vernier (Replaces browser <input type="range">) */
+.vernier-dock {
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 18;
+  width: min(440px, 46vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.vernier-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: var(--text-dim);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.95);
+}
+
+.vernier-header strong {
+  color: var(--cyan);
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.vernier-track {
+  position: relative;
+  width: 100%;
+  height: 36px;
+  cursor: ew-resize;
+  touch-action: none;
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
-.wave-deck {
-  flex: 1 1 260px;
-  max-width: 440px;
+/* True-spectrum optical-to-IR hairline thread */
+.vernier-spectrum {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    rgba(108, 146, 232, 0.72) 0%,
+    rgba(220, 232, 245, 0.65) 24%,
+    rgba(235, 176, 98, 0.78) 64%,
+    rgba(196, 86, 86, 0.72) 100%
+  );
 }
 
-.wave-deck label {
+/* Fine graduated ruler ticks under the spectrum line */
+.vernier-ticks {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 17px;
+  height: 9px;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(205, 224, 242, 0.35) 0px,
+    rgba(205, 224, 242, 0.35) 1px,
+    transparent 1px,
+    transparent 10%
+  );
+}
+
+.vernier-needle {
+  position: absolute;
+  top: 5px;
+  width: 1px;
+  height: 26px;
+  background: #ffffff;
+  box-shadow: 0 0 10px rgba(126, 200, 232, 0.95);
+  pointer-events: none;
+  transform: translateX(-0.5px);
+}
+
+.vernier-needle::before {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--cyan);
+  transform: rotate(45deg);
+  background: #04070d;
+}
+
+.vernier-scale-labels {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: rgba(164, 184, 204, 0.48);
+  pointer-events: none;
+}
+
+/* Bottom-Right Bare Optical Command Column */
+.optics-commands {
+  position: absolute;
+  right: max(22px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 18;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.zoom-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
   color: var(--text-dim);
-  white-space: nowrap;
-  min-width: 112px;
 }
 
-.wave-deck label strong {
-  color: var(--accent-cyan);
-}
-
-.wave-slider {
-  flex: 1;
-  accent-color: var(--accent-cyan);
-  cursor: pointer;
-  min-height: 28px;
-}
-
-/* Sibling Comms Drawer (Overlay in 3D Waking Mode) */
+/* Primary Sibling Comms Ribbon (Feathered translucent ink overlay in 3D space) */
 .comms-drawer {
   position: absolute;
-  right: max(14px, env(safe-area-inset-right));
-  top: 62px;
-  bottom: 82px;
-  width: min(410px, 44vw);
-  z-index: 24;
-  background: rgba(7, 12, 19, 0.93);
-  border: 1px solid rgba(116, 212, 181, 0.42);
-  border-radius: 6px;
-  backdrop-filter: blur(12px);
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: min(440px, 44vw);
+  z-index: 26;
+  background: linear-gradient(
+    90deg,
+    rgba(4, 7, 12, 0) 0%,
+    rgba(4, 7, 12, 0.84) 12%,
+    rgba(4, 7, 12, 0.94) 100%
+  );
+  padding: max(54px, calc(env(safe-area-inset-top) + 42px)) max(26px, env(safe-area-inset-right))
+    max(22px, env(safe-area-inset-bottom)) 46px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -325,33 +646,46 @@ body,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid rgba(116, 212, 181, 0.25);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(122, 212, 182, 0.28);
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--accent-mint);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--mint);
 }
 
-/* ==================== 2D PAINTERLY DREAM MODE ==================== */
+/* ==================== 2D FULL-BLEED OIL IMPASTO DREAMSCAPE ==================== */
 .dream-layer {
   position: absolute;
   inset: 0;
   z-index: 20;
-  display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  background: #0d0b0e;
+  overflow: hidden;
+  background: #08090e;
 }
 
 .dream-layer.hidden {
   display: none;
 }
 
+/* Full 100vw x 100vh oil painting */
 .dream-visual-pane {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+}
+
+.dream-visual-pane::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 68px;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(4, 6, 10, 0.72) 0%, rgba(4, 6, 10, 0) 100%);
 }
 
 .dream-canvas {
@@ -360,188 +694,180 @@ body,
   display: block;
 }
 
-.dream-plaque {
+/* Subtle gallery caption in bottom-left negative space (no box) */
+.dream-caption {
   position: absolute;
-  left: max(16px, env(safe-area-inset-left));
-  bottom: max(16px, env(safe-area-inset-bottom));
-  background: rgba(11, 10, 14, 0.78);
-  border: 1px solid rgba(235, 176, 98, 0.35);
-  padding: 8px 12px;
-  border-radius: 4px;
+  left: max(24px, env(safe-area-inset-left));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 22;
+  pointer-events: none;
   font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--accent-amber);
-  letter-spacing: 0.06em;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  color: rgba(242, 198, 134, 0.88);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
 }
 
-.dream-plaque.audit-mode {
-  border-color: rgba(215, 230, 242, 0.7);
-  color: #e4eff8;
+.dream-caption.audit-mode {
+  color: #e4f0fa;
 }
 
-.dream-dialogue-pane {
+/* Floating Disco-Elysium Textured Ink-Wash Ribbon (ZERO hard CSS split divider) */
+.dream-ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(490px, 44vw);
+  z-index: 24;
   display: flex;
   flex-direction: column;
-  height: 100%;
-  background: linear-gradient(180deg, rgba(16, 15, 20, 0.98), rgba(10, 11, 16, 0.99));
-  border-left: 1px solid rgba(235, 176, 98, 0.22);
-  padding-top: max(54px, calc(env(safe-area-inset-top) + 46px));
-  padding-right: max(16px, env(safe-area-inset-right));
-  padding-bottom: max(14px, env(safe-area-inset-bottom));
-  padding-left: 20px;
+  background: linear-gradient(
+    90deg,
+    rgba(6, 8, 14, 0) 0%,
+    rgba(8, 10, 16, 0.74) 13%,
+    rgba(8, 10, 16, 0.91) 36%,
+    rgba(7, 9, 15, 0.95) 100%
+  );
+  padding: max(56px, calc(env(safe-area-inset-top) + 44px)) max(28px, env(safe-area-inset-right))
+    max(22px, env(safe-area-inset-bottom)) 54px;
   overflow: hidden;
+  transition: background 0.35s ease;
 }
 
-.dream-dialogue-pane.audit-active {
-  border-left: 2px solid #d7e6f2;
-  background: linear-gradient(180deg, rgba(11, 15, 21, 0.99), rgba(7, 10, 15, 0.99));
+.dream-ribbon.audit-active {
+  background: linear-gradient(
+    90deg,
+    rgba(5, 9, 15, 0) 0%,
+    rgba(6, 11, 18, 0.82) 12%,
+    rgba(6, 11, 18, 0.95) 40%,
+    rgba(5, 9, 15, 0.97) 100%
+  );
 }
 
 .audit-banner {
   display: none;
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  color: #081018;
-  background: #d7e6f2;
-  padding: 6px 10px;
-  border-radius: 3px;
-  margin-bottom: 10px;
-  font-weight: 700;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #dcebf7;
+  border-top: 1px solid rgba(220, 235, 247, 0.65);
+  border-bottom: 1px solid rgba(220, 235, 247, 0.28);
+  padding: 7px 0;
+  margin-bottom: 16px;
 }
 
-.dream-dialogue-pane.audit-active .audit-banner {
+.dream-ribbon.audit-active .audit-banner {
   display: block;
 }
 
-/* Shared Dialogue Feed & Choices */
+/* Editorial Dialogue Feed */
 .dialogue-scroll {
   flex: 1;
   overflow-y: auto;
-  padding-right: 6px;
+  padding-right: 8px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
   user-select: text;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(235, 176, 98, 0.28) transparent;
 }
 
 .dialogue-entry {
-  border-left: 2px solid rgba(255, 255, 255, 0.15);
-  padding-left: 12px;
-  animation: fadeInLine 0.25s ease-out;
+  border-left: 1.5px solid rgba(255, 255, 255, 0.14);
+  padding-left: 14px;
+  animation: fadeInLine 0.3s ease-out;
 }
 
 .dialogue-speaker {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  margin-bottom: 4px;
-  font-weight: 700;
+  margin-bottom: 5px;
+  font-weight: 600;
 }
 
 .dialogue-text {
   font-family: var(--font-serif);
-  font-size: clamp(14px, 1.35vw, 16px);
-  line-height: 1.56;
-  color: #edf1f6;
+  font-size: clamp(14.5px, 1.35vw, 17px);
+  line-height: 1.62;
+  color: rgba(242, 238, 231, 0.94);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.65);
 }
 
 .dialogue-entry.role-overseer .dialogue-text,
 .dialogue-entry.role-system .dialogue-text,
 .dialogue-entry.role-archive .dialogue-text {
   font-family: var(--font-mono);
-  font-size: clamp(12px, 1.15vw, 13px);
-  line-height: 1.62;
+  font-size: clamp(11.5px, 1.05vw, 12.8px);
+  line-height: 1.68;
+  color: rgba(215, 232, 245, 0.9);
 }
 
+/* Literary Disco-Elysium Numbered Choices (ZERO grey HTML boxes!) */
 .dialogue-choices {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(235, 176, 98, 0.18);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.choice-btn {
-  background: rgba(24, 30, 42, 0.82);
-  border: 1px solid rgba(164, 196, 222, 0.3);
-  color: var(--text-main);
-  padding: 10px 12px;
-  border-radius: 4px;
+.choice-line {
+  background: none;
+  border: none;
+  border-left: 2px solid transparent;
+  padding: 6px 4px 6px 12px;
   text-align: left;
   cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  line-height: 1.35;
-  min-height: 44px;
-  transition: border-color 0.18s, background 0.18s;
+  min-height: 40px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  color: rgba(235, 198, 146, 0.88);
+  font-family: var(--font-serif);
+  font-size: clamp(13.5px, 1.2vw, 15px);
+  line-height: 1.44;
+  transition: color 0.18s, border-color 0.18s, padding-left 0.18s;
 }
 
-.choice-btn:hover {
-  border-color: var(--accent-amber);
-  background: rgba(38, 42, 54, 0.95);
-}
-
-/* Buttons */
-.btn {
-  background: rgba(16, 25, 38, 0.88);
-  border: 1px solid rgba(145, 185, 215, 0.35);
-  color: var(--text-main);
-  padding: 8px 13px;
-  border-radius: 4px;
+.choice-line .choice-num {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: border-color 0.2s, background 0.2s;
+  font-size: 10.5px;
+  color: rgba(235, 176, 98, 0.6);
+  flex-shrink: 0;
 }
 
-.btn:hover {
-  border-color: var(--accent-cyan);
-  background: rgba(24, 38, 56, 0.96);
+.choice-line:hover {
+  color: #fff6e6;
+  border-left-color: var(--amber);
+  padding-left: 16px;
 }
 
-.btn-amber {
-  border-color: rgba(235, 176, 98, 0.6);
-  color: var(--accent-amber);
+.choice-line:hover .choice-num {
+  color: var(--amber);
 }
 
-.btn-amber:hover {
-  border-color: var(--accent-amber);
-  background: rgba(58, 40, 20, 0.92);
-}
-
-.btn-compact {
-  min-height: 34px;
-  padding: 5px 10px;
-}
-
-/* ==================== ?dev=1 DIRECTOR OVERLAY ==================== */
+/* ==================== ?dev=1 DIRECTOR OVERLAY (SUBTLE DEV TOOL ONLY) ==================== */
 .dev-panel {
   position: absolute;
-  left: max(14px, env(safe-area-inset-left));
-  top: 52px;
-  width: 264px;
-  max-height: calc(100vh - 110px);
+  left: max(18px, env(safe-area-inset-left));
+  top: 48px;
+  width: 256px;
+  max-height: calc(100vh - 108px);
   overflow-y: auto;
-  z-index: 50;
-  background: rgba(6, 10, 16, 0.94);
-  border: 1px solid rgba(235, 176, 98, 0.55);
-  border-radius: 6px;
-  padding: 10px 12px;
+  z-index: 55;
+  background: rgba(5, 8, 13, 0.93);
+  border: 1px solid rgba(235, 176, 98, 0.42);
+  padding: 12px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 10.5px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+  gap: 10px;
 }
 
 .dev-panel.hidden {
@@ -552,32 +878,32 @@ body,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--accent-amber);
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  color: var(--amber);
+  letter-spacing: 0.14em;
 }
 
 .dev-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
+  color: var(--text-soft);
 }
 
 .dev-row-inline {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
 .dev-panel input[type='range'] {
   width: 100%;
-  accent-color: var(--accent-amber);
+  accent-color: var(--amber);
 }
 
 @keyframes fadeInLine {
   from {
     opacity: 0;
-    transform: translateY(4px);
+    transform: translateY(5px);
   }
   to {
     opacity: 1;
@@ -587,60 +913,74 @@ body,
 
 /* ==================== MOBILE LANDSCAPE ERGONOMICS (844x390) ==================== */
 @media (max-height: 480px) {
-  .stat-chip {
-    padding: 4px 8px;
-    font-size: 10px;
+  .top-telemetry {
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
   }
 
-  .target-strip {
-    max-width: 172px;
-    gap: 5px;
-  }
-
-  .target-btn {
-    padding: 5px 8px;
-    min-height: 38px;
-    font-size: 10px;
-  }
-
-  .reticle {
-    width: 118px;
-    height: 118px;
-  }
-
-  .reticle-readout {
-    top: calc(50% + 64px);
-    font-size: 10px;
-  }
-
-  .control-deck {
-    padding: 5px 8px;
+  .telemetry-readout {
     gap: 8px;
   }
 
-  .btn {
-    min-height: 36px;
-    padding: 5px 9px;
-    font-size: 10px;
+  .ra-ruler {
+    top: 30px;
+    height: 11px;
   }
 
-  .dream-layer {
-    grid-template-columns: 1.08fr 1fr;
+  .reticle {
+    width: 164px;
+    height: 164px;
   }
 
-  .dream-dialogue-pane {
-    padding-top: 44px;
-    padding-left: 14px;
+  .reticle-readout {
+    top: calc(50% + 84px);
+    font-size: 9px;
+  }
+
+  .vernier-dock {
+    bottom: 10px;
+    width: min(320px, 44vw);
+    gap: 2px;
+  }
+
+  .vernier-track {
+    height: 28px;
+  }
+
+  .bearing-index,
+  .optics-commands {
+    bottom: 10px;
+  }
+
+  .bearing-link {
+    font-size: 9px;
+    min-height: 22px;
+    padding: 2px 0 2px 8px;
+  }
+
+  .dream-ribbon {
+    width: 52vw;
+    padding: 40px 18px 12px 34px;
+  }
+
+  .dialogue-scroll {
+    gap: 11px;
   }
 
   .dialogue-text {
     font-size: 13px;
-    line-height: 1.45;
+    line-height: 1.46;
   }
 
-  .choice-btn {
-    min-height: 38px;
-    padding: 7px 10px;
+  .dialogue-choices {
+    margin-top: 8px;
+    padding-top: 8px;
+    gap: 4px;
+  }
+
+  .choice-line {
     font-size: 12px;
+    min-height: 32px;
+    padding: 4px 4px 4px 10px;
   }
 }
