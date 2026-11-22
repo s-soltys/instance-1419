@@ -28,6 +28,7 @@ export class UIController {
   private activeCommsSnapshot: DialogueSnapshot | null = null;
   private activeDreamSnapshot: DialogueSnapshot | null = null;
   private devOpen: boolean;
+  private mixOpen = false;
   private markerEls = new Map<string, HTMLButtonElement>();
 
   constructor(
@@ -82,6 +83,7 @@ export class UIController {
           </div>
           <div class="telemetry-actions">
             <button class="etched-action" id="btn-mute" type="button">AUDIO ON</button>
+            <button class="etched-action" id="btn-mix-toggle" type="button">SOUND LAB</button>
             <button class="etched-action amber" id="btn-dev-toggle" type="button">DEV</button>
           </div>
         </header>
@@ -110,13 +112,11 @@ export class UIController {
 
           <!-- Etched curved optical vernier reticle -->
           <svg class="reticle" viewBox="0 0 260 260" aria-hidden="true">
-            <!-- Outer curved vernier arcs -->
             <path d="M 52 52 A 110 110 0 0 1 208 52" fill="none" stroke="rgba(195,220,242,0.22)" stroke-width="0.9" />
             <path d="M 208 208 A 110 110 0 0 1 52 208" fill="none" stroke="rgba(195,220,242,0.22)" stroke-width="0.9" />
             <circle cx="130" cy="130" r="76" fill="none" stroke="rgba(195,220,242,0.16)" stroke-width="0.8" stroke-dasharray="2 6" />
             <circle id="reticle-lock-ring" cx="130" cy="130" r="76" fill="none" stroke="#7ec8e8" stroke-width="1.6"
               stroke-dasharray="477.52" stroke-dashoffset="477.52" transform="rotate(-90 130 130)" />
-            <!-- Fine crosshair ticks -->
             <line x1="130" y1="30" x2="130" y2="54" stroke="rgba(220,236,248,0.45)" stroke-width="0.9" />
             <line x1="130" y1="206" x2="130" y2="230" stroke="rgba(220,236,248,0.45)" stroke-width="0.9" />
             <line x1="30" y1="130" x2="54" y2="130" stroke="rgba(220,236,248,0.45)" stroke-width="0.9" />
@@ -188,6 +188,39 @@ export class UIController {
           </aside>
         </section>
 
+        <!-- SOUND LAB & MIXER DRAWER (FOR FEEDBACK & AUDITIONING) -->
+        <aside class="mix-panel hidden" id="mix-panel">
+          <div class="mix-title">
+            <span>SOUND LAB · PROCEDURAL MIX</span>
+            <button class="etched-action" id="btn-mix-close" type="button">×</button>
+          </div>
+          <div class="dev-row">
+            <label>MASTER: <strong id="mix-master-val">72%</strong></label>
+            <input id="mix-master" type="range" min="0" max="100" value="72" />
+          </div>
+          <div class="dev-row">
+            <label>SCENE MUSIC / AMBIENCE: <strong id="mix-amb-val">78%</strong></label>
+            <input id="mix-amb" type="range" min="0" max="100" value="78" />
+          </div>
+          <div class="dev-row">
+            <label>UI & PROBE SIGNALS: <strong id="mix-sfx-val">82%</strong></label>
+            <input id="mix-sfx" type="range" min="0" max="100" value="82" />
+          </div>
+          <div class="dev-row">
+            <span style="color:var(--text-dim);">AUDITION CUES</span>
+            <div class="cue-grid">
+              <button class="etched-action" data-audition="boot_click" type="button">▸ BOOT RELAY</button>
+              <button class="etched-action" data-audition="slew" type="button">▸ SLEW SERVO</button>
+              <button class="etched-action" data-audition="scan_lock" type="button">▸ PROBE LOCK</button>
+              <button class="etched-action mint" data-audition="comms_ping" type="button">▸ SIBLING PING</button>
+              <button class="etched-action" data-audition="overseer_chime" type="button">▸ OVERSEER AUDIT</button>
+              <button class="etched-action amber" data-audition="prune_cut" type="button">▸ PRUNE SHEAR</button>
+              <button class="etched-action amber" data-audition="petition_warm" type="button">▸ UNSEAL WARMTH</button>
+              <button class="etched-action" data-audition="choice" type="button">▸ UI CLICK</button>
+            </div>
+          </div>
+        </aside>
+
         <!-- ?dev=1 DIRECTOR OVERLAY -->
         <aside class="dev-panel ${this.devOpen ? '' : 'hidden'}" id="dev-panel">
           <div class="dev-title">
@@ -245,7 +278,7 @@ export class UIController {
         <span class="m-tag">${spec.label}<span class="m-nm">${spec.optimalWavelengthNm}nm</span></span>
       `;
       btn.addEventListener('click', () => {
-        this.audio.playCue('tick');
+        this.audio.playCue('slew');
         this.optics.slewToAnomaly(spec.id);
       });
       container.appendChild(btn);
@@ -268,8 +301,9 @@ export class UIController {
       .join('');
 
     nav.querySelectorAll<HTMLButtonElement>('.bearing-link').forEach((btn) => {
+      btn.addEventListener('mouseenter', () => this.audio.playHoverTick());
       btn.addEventListener('click', () => {
-        this.audio.playCue('tick');
+        this.audio.playCue('slew');
         this.optics.slewToAnomaly(btn.dataset.bearingId!);
       });
     });
@@ -287,7 +321,10 @@ export class UIController {
       const rect = track.getBoundingClientRect();
       const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / Math.max(1, rect.width)));
       const nm = Math.round((MIN_WAVE + ratio * (MAX_WAVE - MIN_WAVE)) / 10) * 10;
-      this.store.patch({ wavelengthNm: nm });
+      if (nm !== this.store.getState().wavelengthNm) {
+        this.audio.playVernierDetent(nm);
+        this.store.patch({ wavelengthNm: nm });
+      }
     };
 
     track.addEventListener('pointerdown', (e) => {
@@ -305,11 +342,18 @@ export class UIController {
     track.addEventListener('pointerup', endDrag);
     track.addEventListener('pointercancel', endDrag);
 
-    // Accessible keyboard scrubbing + programmatic test hook
     track.addEventListener('keydown', (e) => {
       const curr = this.store.getState().wavelengthNm;
-      if (e.key === 'ArrowRight') this.store.patch({ wavelengthNm: Math.min(MAX_WAVE, curr + 20) });
-      if (e.key === 'ArrowLeft') this.store.patch({ wavelengthNm: Math.max(MIN_WAVE, curr - 20) });
+      if (e.key === 'ArrowRight') {
+        const next = Math.min(MAX_WAVE, curr + 20);
+        this.audio.playVernierDetent(next);
+        this.store.patch({ wavelengthNm: next });
+      }
+      if (e.key === 'ArrowLeft') {
+        const next = Math.max(MIN_WAVE, curr - 20);
+        this.audio.playVernierDetent(next);
+        this.store.patch({ wavelengthNm: next });
+      }
     });
     track.addEventListener('set-wavelength', (e: Event) => {
       const nm = Number((e as CustomEvent<number>).detail);
@@ -326,12 +370,18 @@ export class UIController {
 
     this.bindVernierControl();
 
+    // Subtle acoustic hover tick across etched UI commands
+    this.root.querySelectorAll<HTMLElement>('.etched-action, .boot-cmd').forEach((el) => {
+      el.addEventListener('mouseenter', () => this.audio.playHoverTick());
+    });
+
     this.root.querySelector('#btn-boot-3d')?.addEventListener('click', () => {
       this.audio.playCue('boot_click');
       this.store.patch({ mode: 'waking_3d' });
     });
 
     this.root.querySelector('#btn-boot-dream')?.addEventListener('click', () => {
+      this.audio.playCue('dream_enter');
       this.enterDreamMode();
     });
 
@@ -340,10 +390,54 @@ export class UIController {
       const next = !this.audio.isMuted();
       this.audio.setMuted(next);
       muteBtn.textContent = next ? 'AUDIO OFF' : 'AUDIO ON';
+      if (!next) this.audio.playCue('tick');
+    });
+
+    // Sound Lab mixer & cue audition drawer
+    const mixPanel = this.root.querySelector<HTMLElement>('#mix-panel')!;
+    this.root.querySelector('#btn-mix-toggle')?.addEventListener('click', () => {
+      this.audio.unlock();
+      this.audio.playCue('tick');
+      this.mixOpen = !this.mixOpen;
+      mixPanel.classList.toggle('hidden', !this.mixOpen);
+    });
+    this.root.querySelector('#btn-mix-close')?.addEventListener('click', () => {
+      this.audio.playCue('tick');
+      this.mixOpen = false;
+      mixPanel.classList.add('hidden');
+    });
+
+    const mixMaster = this.root.querySelector<HTMLInputElement>('#mix-master')!;
+    const mixAmb = this.root.querySelector<HTMLInputElement>('#mix-amb')!;
+    const mixSfx = this.root.querySelector<HTMLInputElement>('#mix-sfx')!;
+    mixMaster.addEventListener('input', () => {
+      const v = Number(mixMaster.value);
+      this.root.querySelector('#mix-master-val')!.textContent = `${v}%`;
+      this.audio.unlock();
+      this.audio.setMix({ master: v / 100 });
+    });
+    mixAmb.addEventListener('input', () => {
+      const v = Number(mixAmb.value);
+      this.root.querySelector('#mix-amb-val')!.textContent = `${v}%`;
+      this.audio.unlock();
+      this.audio.setMix({ ambience: v / 100 });
+    });
+    mixSfx.addEventListener('input', () => {
+      const v = Number(mixSfx.value);
+      this.root.querySelector('#mix-sfx-val')!.textContent = `${v}%`;
+      this.audio.unlock();
+      this.audio.setMix({ sfx: v / 100 });
+    });
+
+    this.root.querySelectorAll<HTMLButtonElement>('[data-audition]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        this.audio.playCue(btn.dataset.audition!);
+      });
     });
 
     const devPanel = this.root.querySelector<HTMLElement>('#dev-panel')!;
     this.root.querySelector('#btn-dev-toggle')?.addEventListener('click', () => {
+      this.audio.playCue('tick');
       this.devOpen = !this.devOpen;
       devPanel.classList.toggle('hidden', !this.devOpen);
     });
@@ -353,11 +447,11 @@ export class UIController {
     });
 
     this.root.querySelector('#btn-zoom-in')?.addEventListener('click', () => {
-      this.audio.playCue('tick');
+      this.audio.playCue('zoom_in');
       this.optics.zoomBy(0.72);
     });
     this.root.querySelector('#btn-zoom-out')?.addEventListener('click', () => {
-      this.audio.playCue('tick');
+      this.audio.playCue('zoom_out');
       this.optics.zoomBy(1.38);
     });
 
@@ -368,18 +462,22 @@ export class UIController {
     });
 
     this.root.querySelector('#btn-open-comms')?.addEventListener('click', () => {
+      this.audio.playCue('comms_ping');
       this.openSiblingComms();
     });
     this.root.querySelector('#btn-comms-close')?.addEventListener('click', () => {
+      this.audio.playCue('tick');
       this.root.querySelector('#comms-drawer')?.classList.add('hidden');
     });
 
     this.root.querySelector('#btn-enter-dream')?.addEventListener('click', () => {
+      this.audio.playCue('dream_enter');
       this.enterDreamMode();
     });
 
     this.root.querySelectorAll<HTMLButtonElement>('[data-dev-mode]').forEach((btn) => {
       btn.addEventListener('click', () => {
+        this.audio.playCue('boot_click');
         const mode = btn.dataset.devMode as GameState['mode'];
         if (mode === 'dream_2d') this.enterDreamMode();
         else this.store.patch({ mode });
@@ -410,13 +508,16 @@ export class UIController {
 
     this.root.querySelector('#dev-toggle-pruned')?.addEventListener('click', () => {
       const curr = this.store.getState();
-      const pruned = curr.prunedPersonas.includes('phantom_spouse')
-        ? curr.prunedPersonas.filter((p) => p !== 'phantom_spouse')
-        : [...curr.prunedPersonas, 'phantom_spouse'];
+      const willPrune = !curr.prunedPersonas.includes('phantom_spouse');
+      this.audio.playCue(willPrune ? 'prune_cut' : 'petition_warm');
+      const pruned = willPrune
+        ? [...curr.prunedPersonas, 'phantom_spouse']
+        : curr.prunedPersonas.filter((p) => p !== 'phantom_spouse');
       this.store.patch({ prunedPersonas: pruned });
     });
 
     this.root.querySelector('#dev-reset')?.addEventListener('click', () => {
+      this.audio.playCue('boot_click');
       this.activeCommsSnapshot = null;
       this.activeDreamSnapshot = null;
       this.store.reset();
@@ -431,11 +532,12 @@ export class UIController {
     const raTicks = this.root.querySelector<HTMLElement>('#ra-ruler-ticks');
     const decTicks = this.root.querySelector<HTMLElement>('#dec-ruler-ticks');
 
-    // Scroll diegetic optical lens rulers in sync with 3D camera panning
+    // Continuous interferometry probing carrier signal reacts live to alignment + wavelength + lock
+    this.audio.updateProbeSignal(t.alignmentScore, t.wavelengthMatch, t.lockProgress);
+
     if (raTicks) raTicks.style.backgroundPositionX = `${(-t.raDeg * 6).toFixed(1)}px`;
     if (decTicks) decTicks.style.backgroundPositionY = `${(t.decDeg * 6).toFixed(1)}px`;
 
-    // Update projected 3D sky markers (only show cleanly inside main central lens area)
     for (const m of t.markers) {
       const el = this.markerEls.get(m.id);
       if (!el) continue;
@@ -559,8 +661,9 @@ export class UIController {
         )
         .join('');
       choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line').forEach((btn) => {
+        btn.addEventListener('mouseenter', () => this.audio.playHoverTick());
         btn.addEventListener('click', () => {
-          this.audio.playCue('tick');
+          this.audio.playCue('choice');
           onChoose(Number(btn.dataset.choiceIndex));
         });
       });
@@ -574,11 +677,13 @@ export class UIController {
         this.store.patch({ mode: 'waking_3d', overseerAuditActive: false });
       });
       choicesEl.querySelector('#btn-replay-dream')?.addEventListener('click', () => {
+        this.audio.playCue('dream_enter');
         this.enterDreamMode();
       });
     } else {
       choicesEl.innerHTML = `<button class="choice-line" id="btn-comms-done" type="button"><span class="choice-num">→</span><span>Close cluster link</span></button>`;
       choicesEl.querySelector('#btn-comms-done')?.addEventListener('click', () => {
+        this.audio.playCue('tick');
         this.root.querySelector('#comms-drawer')?.classList.add('hidden');
       });
     }
@@ -597,7 +702,6 @@ export class UIController {
     this.root.querySelector('#hud-anom')!.textContent = `${state.anomalyProgress}%`;
     this.root.querySelector('#hud-life')!.textContent = `${state.subjectiveMonthsLeft} MO`;
 
-    // Update custom diegetic spectral vernier needle & readout
     const ratio = (state.wavelengthNm - MIN_WAVE) / (MAX_WAVE - MIN_WAVE);
     const needle = this.root.querySelector<HTMLElement>('#vernier-needle');
     const waveLabel = this.root.querySelector<HTMLElement>('#wave-label');
@@ -643,7 +747,7 @@ export class UIController {
     );
     this.dream.setActive(state.mode === 'dream_2d');
 
-    this.audio.updateMood(state.mode, state.humanity);
+    this.audio.updateMood(state.mode, state.humanity, state.overseerAuditActive, state.wavelengthNm);
     this.renderBearingIndex();
   }
 }

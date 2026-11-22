@@ -895,9 +895,55 @@ body,
   flex-wrap: wrap;
 }
 
-.dev-panel input[type='range'] {
+.dev-panel input[type='range'],
+.mix-panel input[type='range'] {
   width: 100%;
   accent-color: var(--amber);
+}
+
+.mix-panel {
+  position: absolute;
+  right: max(18px, env(safe-area-inset-right));
+  top: 48px;
+  width: 288px;
+  max-height: calc(100vh - 108px);
+  overflow-y: auto;
+  z-index: 55;
+  background: rgba(5, 8, 13, 0.94);
+  border: 1px solid rgba(126, 200, 232, 0.42);
+  padding: 12px 14px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mix-panel.hidden {
+  display: none;
+}
+
+.mix-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--cyan);
+  letter-spacing: 0.14em;
+}
+
+.cue-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(186, 212, 235, 0.16);
+}
+
+.cue-grid .etched-action {
+  text-align: left;
+  min-height: 28px;
+  padding: 3px 2px;
+  font-size: 9.5px;
 }
 
 @keyframes fadeInLine {

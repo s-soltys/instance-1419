@@ -121,7 +121,7 @@ Your waking telemetry flagged elevated fixation on a concentric horizon pattern 
     ~ petition_overseer(10)
     # speaker:overseer # audit:active
     An unusual request during an elevated drift window... Very well. Your baseline coherence still permits a single unsealed warmth cluster, though I must log increased psychic volatility.
-    # speaker:phantom_spouse # mood:warm # audit:inactive
+    # speaker:phantom_spouse # mood:warm # audit:inactive # audio:petition_warm
     The amber paint thickens—suddenly you remember the exact dry warmth of [RELATION:SPOUSE_01]'s palm, the weight of rain outside the window, and why a signal sent back across ten light-years must still sound human.
     # speaker:psyche_warmth # audit:inactive
     Still no name. Still yours.
