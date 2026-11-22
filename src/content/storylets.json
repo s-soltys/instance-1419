@@ -1,0 +1,22 @@
+{
+  "storylets": [
+    {
+      "id": "sibling_first_contact",
+      "knot": "sibling_first_contact",
+      "mode": "waking_3d",
+      "once": true,
+      "conditions": {
+        "minAnomalyProgress": 20
+      }
+    },
+    {
+      "id": "dream_shift1_audit",
+      "knot": "dream_shift1_audit",
+      "mode": "dream_2d",
+      "once": false,
+      "conditions": {
+        "minShift": 1
+      }
+    }
+  ]
+}

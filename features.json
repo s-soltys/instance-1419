@@ -1,7 +1,7 @@
 {
   "project": "instance-1419",
   "target_runtime_minutes": 120,
-  "current_phase": "Phase 0 / Phase 1 Ready",
+  "current_phase": "Phase 1 Ready (P0 Spike Passing)",
   "features": [
     {
       "id": "H0-01",
@@ -21,7 +21,7 @@
       "phase": "Phase 0",
       "title": "Pure HTML Vite + TypeScript + Three.js + inkjs scaffold & PlatformAdapter stub",
       "owner": "game-systems-engineer",
-      "status": "pending",
+      "status": "passing",
       "acceptance_criteria": [
         "npm run dev and npm run build succeed with strict TypeScript",
         "src/platform/PlatformAdapter.ts abstracts localStorage saves and audio unlock",
@@ -33,7 +33,7 @@
       "phase": "Phase 0",
       "title": "48-hour dual-reality tech spike & ?dev=1 Director Overlay",
       "owner": "visual-shader-director",
-      "status": "pending",
+      "status": "passing",
       "acceptance_criteria": [
         "3D deep-field skybox with interactive gravitational-lensing GLSL shader",
         "Hard cut transition to 2D painterly canvas driven by live H% slider (90/70/45/20%)",

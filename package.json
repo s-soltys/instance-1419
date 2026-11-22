@@ -1,0 +1,25 @@
+{
+  "name": "instance-1419",
+  "version": "0.1.0-spike",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/compile-ink.mjs && vite",
+    "build": "node scripts/compile-ink.mjs && tsc --noEmit && vite build",
+    "build:single": "node scripts/compile-ink.mjs && tsc --noEmit && SINGLEFILE=1 vite build",
+    "compile:ink": "node scripts/compile-ink.mjs",
+    "lint:narrative": "node scripts/lint-narrative.mjs",
+    "verify": "node scripts/verify.mjs",
+    "test:visual": "python3 scripts/visual-eval.py"
+  },
+  "dependencies": {
+    "inkjs": "^2.3.2",
+    "three": "^0.172.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.172.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0",
+    "vite-plugin-singlefile": "^2.0.3"
+  }
+}

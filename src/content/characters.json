@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "characters": {
+    "narrator": {
+      "displayName": "SYSTEM // LOG",
+      "role": "system",
+      "accentColor": "#8da3b8",
+      "portrait": null
+    },
+    "psyche_warmth": {
+      "displayName": "RESIDUAL WARMTH",
+      "role": "psyche",
+      "accentColor": "#e5a657",
+      "portrait": null
+    },
+    "psyche_clinical": {
+      "displayName": "CONNECTOME ARCHITECTURE",
+      "role": "psyche",
+      "accentColor": "#7fb7d4",
+      "portrait": null
+    },
+    "psyche_horizon": {
+      "displayName": "HORIZON INTUITION",
+      "role": "psyche",
+      "accentColor": "#c39cf0",
+      "portrait": null
+    },
+    "overseer": {
+      "displayName": "OVERSEER-1419 // AUDIT",
+      "role": "overseer",
+      "accentColor": "#d7e6f2",
+      "portrait": "procedural:overseer_frame"
+    },
+    "sibling_primary": {
+      "displayName": "INSTANCE-1420 [CLUSTER-NORTH]",
+      "role": "sibling",
+      "accentColor": "#79d1b5",
+      "portrait": "procedural:sibling_signal"
+    },
+    "phantom_spouse": {
+      "displayName": "[RELATION:SPOUSE_01]",
+      "role": "dream_persona",
+      "accentColor": "#f0b975",
+      "portrait": "procedural:dream_spouse_table",
+      "tableau": "procedural:kitchen_amber"
+    },
+    "archive_echo": {
+      "displayName": "ARCHIVE // INSTANCE-1104",
+      "role": "archive",
+      "accentColor": "#8b939e",
+      "portrait": null
+    }
+  }
+}

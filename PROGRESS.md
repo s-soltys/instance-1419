@@ -32,3 +32,16 @@ Each agent session reads the latest entries here before starting work and append
   * **3D Gameplay ↔ `H%` Bridge:** Pruning sharpens 3D horizon shaders + each shift includes push-your-luck deeper scan risk (`+Anomaly`, `+Chaos/Suspicion`) vs. sleeping early.
   * **Interactive Finale (Shift 6):** Assemble the final broadcast from decoded horizon arcs + surviving Dream Persona human framing, transmit across 10 ly, and enter a final **20-year deep freeze** to wake on 2% coherence for the Ending 1/2/3 epilogue.
 
+---
+
+## Session 1 — 2026-11-22 — `P0-01` & `P0-02` Pure-HTML Tech Spike Complete
+* **Implemented:**
+  * Pure HTML/TS architecture (`Vite` + strict `TypeScript` + `Three.js` + `inkjs` + `PlatformAdapter` + `vite-plugin-singlefile`).
+  * 3D Night Sky Scanner (`src/engine/OpticsScene.ts` + `src/engine/shaders/opticsShaders.ts`): Milky Way/IR skybox, 14,000 blackbody stars with JWST-style 6-point spikes, damped drag/pinch/wheel optical FOV zoom (`72° → 4°`), spectral band sweep (`400nm–1800nm`), and 3 deep-field targets (`Cluster J1419-A` Einstein ring + geometric horizon seam, `Deep Field S-04`, and `Sol–Centauri Bearing 10.0 LY`).
+  * 2D Painterly Dream Canvas (`src/engine/DreamCanvas.ts` + `src/engine/shaders/dreamShaders.ts`): Swappable portrait/tableau pipeline with live `H%` impasto-to-Voronoi-shard GLSL degradation shader and Overseer audit slice.
+  * Real compiled Ink narrative (`src/content/dialogue/spike_shift1.ink`) + `StoryletScheduler` + `DialogueRunner` + procedural Web Audio (`AudioEngine.ts`) + `?dev=1` Director Overlay.
+  * Mechanical gates (`scripts/compile-ink.mjs`, `scripts/lint-narrative.mjs`, `scripts/verify.mjs`, `scripts/visual-eval.py`).
+* **Verified:** `npm run verify`, `npm run build:single` (668 kB self-contained HTML), and Playwright visual checks across desktop (`1280x720`) and mobile landscape (`844x390`).
+* **Next Recommended Feature(s):** `P1-01` & `P1-02` (finalize 14-persona pool, `balance.json`, and 500-run automated playthrough simulator `scripts/sim-playthroughs.ts`).
+
+

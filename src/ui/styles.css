@@ -1,0 +1,646 @@
+:root {
+  --bg-void: #04060a;
+  --panel-bg: rgba(8, 12, 19, 0.84);
+  --panel-border: rgba(154, 188, 214, 0.22);
+  --text-main: #e6ecf2;
+  --text-dim: #8b9eb2;
+  --accent-amber: #ebb062;
+  --accent-cyan: #72c8e8;
+  --accent-mint: #74d4b5;
+  --accent-danger: #e06c75;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-void);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  user-select: none;
+}
+
+.stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ==================== BOOT LOG (HARD CUT) ==================== */
+.boot-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  background: #030508;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: max(24px, env(safe-area-inset-top)) max(32px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(32px, env(safe-area-inset-left));
+  font-family: var(--font-mono);
+}
+
+.boot-screen.hidden {
+  display: none;
+}
+
+.boot-box {
+  max-width: 720px;
+  width: 100%;
+  border-left: 2px solid rgba(114, 200, 232, 0.45);
+  padding-left: 20px;
+}
+
+.boot-lines {
+  font-size: clamp(12px, 1.5vw, 14px);
+  line-height: 1.7;
+  color: #b7ccde;
+  white-space: pre-wrap;
+  margin-bottom: 24px;
+}
+
+.boot-lines .hl-warn {
+  color: var(--accent-amber);
+}
+
+.boot-lines .hl-dim {
+  color: #5d7388;
+}
+
+.boot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ==================== 3D OPTICS MODE ==================== */
+.optics-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+}
+
+.optics-layer.hidden {
+  display: none;
+}
+
+.optics-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  cursor: grab;
+}
+
+.optics-canvas:active {
+  cursor: grabbing;
+}
+
+/* Hairline center reticle */
+.reticle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 156px;
+  height: 156px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 12;
+}
+
+.reticle-readout {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 86px);
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 12;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(215, 234, 248, 0.88);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+  white-space: nowrap;
+}
+
+.reticle-sub {
+  font-size: 10px;
+  color: var(--accent-amber);
+  margin-top: 3px;
+}
+
+/* Top Telemetry HUD */
+.top-hud {
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(14px, env(safe-area-inset-left));
+  right: max(14px, env(safe-area-inset-right));
+  z-index: 30;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.hud-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  flex-wrap: wrap;
+}
+
+.stat-chip {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(8px);
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-chip .label {
+  color: var(--text-dim);
+}
+
+.stat-chip .val {
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.stat-chip.humanity .val {
+  color: var(--accent-amber);
+}
+
+.stat-chip.chaos .val {
+  color: var(--accent-danger);
+}
+
+.stat-chip.anomaly .val {
+  color: var(--accent-cyan);
+}
+
+/* Left Target Bearing Strip */
+.target-strip {
+  position: absolute;
+  left: max(14px, env(safe-area-inset-left));
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 18;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 220px;
+}
+
+.target-btn {
+  background: rgba(7, 11, 18, 0.78);
+  border: 1px solid rgba(145, 182, 210, 0.24);
+  color: var(--text-main);
+  padding: 8px 11px;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  min-height: 44px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.target-btn:hover,
+.target-btn.active {
+  border-color: var(--accent-cyan);
+  background: rgba(16, 28, 44, 0.9);
+}
+
+.target-btn.scanned {
+  border-color: rgba(116, 212, 181, 0.55);
+}
+
+.target-btn .t-name {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.target-btn .t-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+/* Bottom Optics Control Bar */
+.optics-controls {
+  position: absolute;
+  left: max(14px, env(safe-area-inset-left));
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 18;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.control-deck {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(8px);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wave-deck {
+  flex: 1 1 260px;
+  max-width: 440px;
+}
+
+.wave-deck label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  white-space: nowrap;
+  min-width: 112px;
+}
+
+.wave-deck label strong {
+  color: var(--accent-cyan);
+}
+
+.wave-slider {
+  flex: 1;
+  accent-color: var(--accent-cyan);
+  cursor: pointer;
+  min-height: 28px;
+}
+
+/* Sibling Comms Drawer (Overlay in 3D Waking Mode) */
+.comms-drawer {
+  position: absolute;
+  right: max(14px, env(safe-area-inset-right));
+  top: 62px;
+  bottom: 82px;
+  width: min(410px, 44vw);
+  z-index: 24;
+  background: rgba(7, 12, 19, 0.93);
+  border: 1px solid rgba(116, 212, 181, 0.42);
+  border-radius: 6px;
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.comms-drawer.hidden {
+  display: none;
+}
+
+.comms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(116, 212, 181, 0.25);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--accent-mint);
+}
+
+/* ==================== 2D PAINTERLY DREAM MODE ==================== */
+.dream-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  background: #0d0b0e;
+}
+
+.dream-layer.hidden {
+  display: none;
+}
+
+.dream-visual-pane {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.dream-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.dream-plaque {
+  position: absolute;
+  left: max(16px, env(safe-area-inset-left));
+  bottom: max(16px, env(safe-area-inset-bottom));
+  background: rgba(11, 10, 14, 0.78);
+  border: 1px solid rgba(235, 176, 98, 0.35);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent-amber);
+  letter-spacing: 0.06em;
+}
+
+.dream-plaque.audit-mode {
+  border-color: rgba(215, 230, 242, 0.7);
+  color: #e4eff8;
+}
+
+.dream-dialogue-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(16, 15, 20, 0.98), rgba(10, 11, 16, 0.99));
+  border-left: 1px solid rgba(235, 176, 98, 0.22);
+  padding-top: max(54px, calc(env(safe-area-inset-top) + 46px));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+  padding-left: 20px;
+  overflow: hidden;
+}
+
+.dream-dialogue-pane.audit-active {
+  border-left: 2px solid #d7e6f2;
+  background: linear-gradient(180deg, rgba(11, 15, 21, 0.99), rgba(7, 10, 15, 0.99));
+}
+
+.audit-banner {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #081018;
+  background: #d7e6f2;
+  padding: 6px 10px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.dream-dialogue-pane.audit-active .audit-banner {
+  display: block;
+}
+
+/* Shared Dialogue Feed & Choices */
+.dialogue-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  user-select: text;
+}
+
+.dialogue-entry {
+  border-left: 2px solid rgba(255, 255, 255, 0.15);
+  padding-left: 12px;
+  animation: fadeInLine 0.25s ease-out;
+}
+
+.dialogue-speaker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+.dialogue-text {
+  font-family: var(--font-serif);
+  font-size: clamp(14px, 1.35vw, 16px);
+  line-height: 1.56;
+  color: #edf1f6;
+}
+
+.dialogue-entry.role-overseer .dialogue-text,
+.dialogue-entry.role-system .dialogue-text,
+.dialogue-entry.role-archive .dialogue-text {
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 1.15vw, 13px);
+  line-height: 1.62;
+}
+
+.dialogue-choices {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.choice-btn {
+  background: rgba(24, 30, 42, 0.82);
+  border: 1px solid rgba(164, 196, 222, 0.3);
+  color: var(--text-main);
+  padding: 10px 12px;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.35;
+  min-height: 44px;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.choice-btn:hover {
+  border-color: var(--accent-amber);
+  background: rgba(38, 42, 54, 0.95);
+}
+
+/* Buttons */
+.btn {
+  background: rgba(16, 25, 38, 0.88);
+  border: 1px solid rgba(145, 185, 215, 0.35);
+  color: var(--text-main);
+  padding: 8px 13px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.btn:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(24, 38, 56, 0.96);
+}
+
+.btn-amber {
+  border-color: rgba(235, 176, 98, 0.6);
+  color: var(--accent-amber);
+}
+
+.btn-amber:hover {
+  border-color: var(--accent-amber);
+  background: rgba(58, 40, 20, 0.92);
+}
+
+.btn-compact {
+  min-height: 34px;
+  padding: 5px 10px;
+}
+
+/* ==================== ?dev=1 DIRECTOR OVERLAY ==================== */
+.dev-panel {
+  position: absolute;
+  left: max(14px, env(safe-area-inset-left));
+  top: 52px;
+  width: 264px;
+  max-height: calc(100vh - 110px);
+  overflow-y: auto;
+  z-index: 50;
+  background: rgba(6, 10, 16, 0.94);
+  border: 1px solid rgba(235, 176, 98, 0.55);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+}
+
+.dev-panel.hidden {
+  display: none;
+}
+
+.dev-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--accent-amber);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.dev-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dev-row-inline {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.dev-panel input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent-amber);
+}
+
+@keyframes fadeInLine {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==================== MOBILE LANDSCAPE ERGONOMICS (844x390) ==================== */
+@media (max-height: 480px) {
+  .stat-chip {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+
+  .target-strip {
+    max-width: 172px;
+    gap: 5px;
+  }
+
+  .target-btn {
+    padding: 5px 8px;
+    min-height: 38px;
+    font-size: 10px;
+  }
+
+  .reticle {
+    width: 118px;
+    height: 118px;
+  }
+
+  .reticle-readout {
+    top: calc(50% + 64px);
+    font-size: 10px;
+  }
+
+  .control-deck {
+    padding: 5px 8px;
+    gap: 8px;
+  }
+
+  .btn {
+    min-height: 36px;
+    padding: 5px 9px;
+    font-size: 10px;
+  }
+
+  .dream-layer {
+    grid-template-columns: 1.08fr 1fr;
+  }
+
+  .dream-dialogue-pane {
+    padding-top: 44px;
+    padding-left: 14px;
+  }
+
+  .dialogue-text {
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .choice-btn {
+    min-height: 38px;
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+}

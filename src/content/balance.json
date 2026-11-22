@@ -1,0 +1,34 @@
+{
+  "version": "0.1.0-spike",
+  "startingState": {
+    "shift": 1,
+    "humanity": 70,
+    "maxHumanity": 90,
+    "chaosDrift": 14,
+    "subjectiveMonthsLeft": 24,
+    "anomalyProgress": 0,
+    "primarySiblingH": 68,
+    "overseerSuspicion": 0
+  },
+  "pruning": {
+    "defaultDelta": 12,
+    "chaosRelief": 14,
+    "lifespanGainMonths": 4,
+    "opticalFidelityBonus": 0.28,
+    "permanentCeilingDrop": true
+  },
+  "petitionUpward": {
+    "defaultDelta": 10,
+    "chaosCost": 16,
+    "lifespanCostMonths": 2,
+    "maxHumanityCap": 90
+  },
+  "deeperScanPush": {
+    "anomalyGain": 18,
+    "chaosCost": 15,
+    "suspicionGain": 1
+  },
+  "dreamDefrag": {
+    "chaosRelief": 18
+  }
+}
