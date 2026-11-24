@@ -1034,7 +1034,7 @@ export class ExoplanetTransitGame extends BaseCosmicMinigame {
     }
     return this.scenario.flareSpikes
       ? 'Match both orbits & planet radius (R⊕) while ignoring upward stellar flare spikes.'
-      : 'Align both orbits and select planet radius (1.6 / 4.2 / 11.2 R⊕) to match transit depth.';
+      : 'Align both orbits and select planet radius (4.6 / 7.7 / 10.4 R⊕) to match transit depth.';
   }
 
   protected solveCurrentStage(stage: 1 | 2 | 3): void {
