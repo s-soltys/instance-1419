@@ -1505,6 +1505,17 @@ body,
   display: none;
 }
 
+/* Hide underlying global & inspect HUD elements while optical instrument reticle is active */
+.stage:has(#minigame-overlay:not(.hidden)) .top-telemetry,
+.stage:has(#minigame-overlay:not(.hidden)) .inspect-caption,
+.stage:has(#minigame-overlay:not(.hidden)) .inspect-spectrum-bar,
+.stage:has(#minigame-overlay:not(.hidden)) .inspect-actions,
+.stage:has(#minigame-overlay:not(.hidden)) .inspect-breadcrumb,
+.stage:has(#minigame-overlay:not(.hidden)) .showcase-zoom-rail {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .mg-top-hud {
   position: relative;
   z-index: 3;

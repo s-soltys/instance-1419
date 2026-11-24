@@ -6,6 +6,7 @@ build/
 playwright-report/
 test-results/
 artifacts/visual-check/
+artifacts/e2e-visual/
 *.local
 .env
 .env.*

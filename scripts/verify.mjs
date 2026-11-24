@@ -54,8 +54,10 @@ function verifyAssetManifest() {
 
 run('node scripts/compile-ink.mjs');
 run('npx tsc --noEmit');
+run('npx vitest run');
 run('node scripts/sim-playthroughs.mjs');
 run('node scripts/lint-narrative.mjs');
 verifyAssetManifest();
 run('npx vite build');
-console.log('\n[verify] ALL 6 GATES PASSED.');
+run('node scripts/e2e-visual.mjs');
+console.log('\n[verify] ALL 8 GATES PASSED.');

@@ -84,6 +84,19 @@ Each agent session reads the latest entries here before starting work and append
 * **Verified:** All 6 `npm run verify` gates pass cleanly (`compile:ink`, `tsc --noEmit` with 0 errors, `sim-playthroughs` 500 runs / 0 soft-locks, `lint-narrative` 83 clips & anti-HTML check, `MANIFEST.json`, `vite build`).
 * **Next Recommended Action:** Interactive human playtest of all 5 instruments + Warm/Cold vibe parity via `?dev=1`, then advance to `P3-01` Prologue & Multi-Shift Ink expansion.
 
+---
+
+## Session 4 — 2026-11-24 — `MinigameHostView` Showcase Lifecycle Fix & 4-Layer Test Spine
+* **Fixed (`MinigameHostView.ts`, `UIController.ts`, `styles.css`):**
+  * Resolved `Uncaught TypeError: Cannot read properties of undefined (reading 'getInstrumentBridge')` caused by passing uninitialized `this.showcase` to `MinigameHostView` before `attachRenderers()` ran. Converted `showcase` wiring to safe `attachShowcase(showcase)` with null-guarded `getInstrumentBridge()` fallback.
+  * Fixed two subtle lifecycle bugs: guarded `updateSignalProfile` via state signature (`humanity:opticalFidelity:chaosDrift:overseerSuspicion`) + `isFinishing` so spectral band switches (`1–4`) or capture completion patches do not reset an active minigame; ensured `DevHarness.launchMinigame` switches 3D target showcase whenever `activeTargetId !== preferredTarget`.
+  * Suppressed underlying `.top-telemetry` / `.inspect-*` HUD layers while `#minigame-overlay` is open so reticle edges stay completely collision-free.
+* **Built Deterministic 4-Layer Automated Test Spine (`vitest.config.ts`, `tests/`, `scripts/e2e-visual.mjs`, `scripts/verify.mjs`):**
+  * **Unit (`tests/unit/`):** `stateStore.test.ts`, `tactilePhysics.test.ts`, `minigameRegistry.test.ts` (13 tests covering canon permanent pruning ceiling, graded payouts, 8-input Warm/Balanced/Cold vibe parity, springs, latch gating, StuckTimeDirector, and registry integrity).
+  * **Integration (`tests/integration/`):** `minigameHost.test.ts` and `uiControllerWiring.test.ts` (4 tests reproducing and guarding the exact DevHarness → UIController → MinigameHostView → TargetShowcaseScene path).
+  * **E2E & Visual (`scripts/e2e-visual.mjs`):** Real headless Chromium (`playwright-core` + SwiftShader WebGL) exercising Boot, 3D Sky Aperture, all 5 tactile instruments (Warm + Cold presets, mouse drags, spectral keys `1–4`, `[R]` RAW Residual toggle, clean close), and 2D Dream Cache with zero console/page/network errors.
+* **Verified:** All 8 `verify.mjs` gates pass (`compile:ink`, `tsc --noEmit`, `vitest run` 5 files / 17 tests, `sim-playthroughs`, `lint-narrative`, `MANIFEST.json`, `vite build`, `e2e-visual.mjs` with 0 errors).
+
 
 
 

@@ -100,14 +100,13 @@ export class UIController {
       this.root,
       store,
       audio,
-      this.showcase,
       minigames,
       this.telemetry
     );
     this.minigameHost.setBandSwitchCallback((bandIdx) => {
       const ratios = [0.04, 0.23, 0.61, 0.86];
       const val = ratios[bandIdx] ?? 0.23;
-      this.showcase.setWaveBand(val);
+      this.showcase?.setWaveBand(val);
       this.store.patch({ wavelengthNm: Math.round(200 + val * 1600) });
       this.root.querySelectorAll<HTMLButtonElement>('#inspect-spectrum-bar .spec-btn').forEach((b) => {
         b.classList.toggle('active', Math.abs(Number(b.dataset.band) - val) < 0.08);
@@ -119,6 +118,7 @@ export class UIController {
     this.optics = optics;
     this.showcase = showcase;
     this.dream = dream;
+    this.minigameHost.attachShowcase(showcase);
     this.initSkyMarkers();
     this.renderBearingIndex();
     this.bindUIEvents();
@@ -1335,7 +1335,10 @@ export class UIController {
         const preferredTarget =
           this.optics.getAnomalySpecs().find((a) => a.minigameId === minigameId)?.id ?? 'cluster_j1419_a';
 
-        if (this.store.getState().mode !== 'target_inspect') {
+        if (
+          this.store.getState().mode !== 'target_inspect' ||
+          this.store.getState().activeTargetId !== preferredTarget
+        ) {
           this.enterTargetInspect(preferredTarget, () => this.launchTargetMinigame(minigameId));
         } else {
           this.launchTargetMinigame(minigameId);

@@ -33,21 +33,35 @@ function bandIndexFromNm(wavelengthNm: number): number {
  * Stereo Beat Synth audio, peripheral console controls, and Proof Capture Finale.
  */
 export class MinigameHostView {
+  private showcase: TargetShowcaseScene | null = null;
   private activeMinigame: IMinigame | null = null;
   private activeSpec: AnomalySpec | null = null;
   private activeBandIdx = 1;
   private finaleTimerId: number | null = null;
   private unbindControls: (() => void) | null = null;
   private onSwitchBandCb: ((bandIdx: number) => void) | null = null;
+  private lastProfileSig = '';
+  private isFinishing = false;
 
   constructor(
     private readonly root: HTMLElement,
     private readonly store: StateStore,
     private readonly audio: AudioEngine,
-    private readonly showcase: TargetShowcaseScene,
     private readonly minigames: MinigameRegistry,
-    private readonly telemetry: TelemetryLogger
-  ) {}
+    private readonly telemetry: TelemetryLogger,
+    showcase: TargetShowcaseScene | null = null
+  ) {
+    this.showcase = showcase;
+  }
+
+  attachShowcase(showcase: TargetShowcaseScene): void {
+    this.showcase = showcase;
+  }
+
+  private computeProfileSig(): string {
+    const s = this.store.getState();
+    return `${Math.round(s.humanity)}:${s.opticalFidelity.toFixed(2)}:${Math.round(s.chaosDrift)}:${s.overseerSuspicion}`;
+  }
 
   setBandSwitchCallback(cb: (bandIdx: number) => void): void {
     this.onSwitchBandCb = cb;
@@ -60,6 +74,8 @@ export class MinigameHostView {
     this.destroy();
     this.activeSpec = spec;
     this.activeBandIdx = bandIndexFromNm(s.wavelengthNm);
+    this.lastProfileSig = this.computeProfileSig();
+    this.isFinishing = false;
 
     const overlay = this.root.querySelector<HTMLElement>('#minigame-overlay');
     const mount = this.root.querySelector<HTMLElement>('#minigame-mount');
@@ -100,7 +116,7 @@ export class MinigameHostView {
       minigameId: mg.id,
       state: vector,
       bandIdx: this.activeBandIdx,
-      showcase: this.showcase.getInstrumentBridge(),
+      showcase: this.showcase ? this.showcase.getInstrumentBridge() : null,
       audio: this.audio.getInstrumentHandle(),
       onTelemetry: (hud) => this.renderHudHeartbeat(hud),
       onSwitchBand: (bandIdx) => this.selectBand(bandIdx),
@@ -129,6 +145,8 @@ export class MinigameHostView {
       this.destroy();
       return;
     }
+
+    this.isFinishing = true;
 
     this.store.recordMinigameCompletion(spec.id, spec.label, {
       anomalyGain: result.anomalyGain,
@@ -282,8 +300,10 @@ export class MinigameHostView {
 
   updateSignalProfile(humanity: number, _opticalFidelity: number): void {
     this.applyVibeChrome(humanity);
-    // Live re-mount active instrument cleanly so all 8 physics weights reflect DevHarness overrides!
-    if (this.activeMinigame && this.activeSpec) {
+    // Live re-mount active instrument only when Humanity/Clarity/Chaos/Suspicion weights actually changed
+    // (ignores wavelength/anomaly completion patches and capture finale transitions).
+    const nextSig = this.computeProfileSig();
+    if (!this.isFinishing && this.activeMinigame && this.activeSpec && nextSig !== this.lastProfileSig) {
       const id = this.activeMinigame.id;
       const spec = this.activeSpec;
       this.launch(spec, id);
@@ -291,6 +311,8 @@ export class MinigameHostView {
   }
 
   destroy(): void {
+    this.isFinishing = false;
+    this.lastProfileSig = '';
     if (this.finaleTimerId !== null) {
       clearTimeout(this.finaleTimerId);
       this.finaleTimerId = null;
