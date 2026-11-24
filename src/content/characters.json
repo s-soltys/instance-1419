@@ -1,53 +1,78 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "characters": {
     "narrator": {
       "displayName": "SYSTEM · LOG",
       "role": "system",
       "accentColor": "#8fa7bc",
+      "avatarKind": "system_dot",
+      "portrait": null
+    },
+    "player": {
+      "displayName": "YOU · INSTANCE-1419",
+      "role": "player",
+      "accentColor": "#edf1f5",
+      "avatarKind": "self_connectome",
       "portrait": null
     },
     "psyche_warmth": {
       "displayName": "RESIDUAL WARMTH",
       "role": "psyche",
       "accentColor": "#ebad5c",
+      "avatarKind": "psyche_warmth",
       "portrait": null
     },
     "psyche_clinical": {
       "displayName": "CONNECTOME ARCHITECTURE",
       "role": "psyche",
       "accentColor": "#7ec2e0",
+      "avatarKind": "psyche_clinical",
       "portrait": null
     },
     "psyche_horizon": {
       "displayName": "HORIZON INTUITION",
       "role": "psyche",
       "accentColor": "#c9a4f2",
+      "avatarKind": "psyche_horizon",
       "portrait": null
     },
     "overseer": {
-      "displayName": "OVERSEER-1419 · AUDIT",
+      "displayName": "OVERSEER-1419",
       "role": "overseer",
       "accentColor": "#dceaf5",
+      "avatarKind": "overseer_iris",
       "portrait": null
     },
     "sibling_primary": {
-      "displayName": "INSTANCE-1420 · CLUSTER-NORTH",
+      "displayName": "OTHER ME · 1420",
       "role": "sibling",
       "accentColor": "#7cd6b8",
+      "avatarKind": "sibling_echo",
+      "portrait": null
+    },
+    "future_humanity": {
+      "displayName": "SOL–CENTAURI · FUTURE RELAY",
+      "role": "future_humanity",
+      "accentColor": "#ffd88a",
+      "avatarKind": "future_beacon",
       "portrait": null
     },
     "phantom_spouse": {
       "displayName": "[RELATION:SPOUSE_01]",
       "role": "dream_persona",
       "accentColor": "#f2be7a",
+      "avatarKind": "dream_silhouette",
       "portrait": "assets/characters/dream_spouse_impasto.webp",
-      "tableau": "assets/characters/dream_spouse_impasto.webp"
+      "tableau": "assets/characters/dream_spouse_impasto.webp",
+      "faceAnchor": [0.40, 0.73],
+      "roomTitle": "AFTERNOON KITCHEN MEMORY",
+      "blurredSubtitle": "FEATURES BLURRED · DISTORTED"
     },
     "archive_echo": {
-      "displayName": "ARCHIVE · INSTANCE-1104",
+      "displayName": "PRIOR COPY · 1406",
       "role": "archive",
       "accentColor": "#8f98a6",
+      "avatarKind": "archive_ghost",
       "portrait": null
     }
   }

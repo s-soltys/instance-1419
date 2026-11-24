@@ -1,0 +1,168 @@
+{
+  "schema_version": 2,
+  "defaultProvider": "kokoro",
+  "profiles": {
+    "sibling_primary": {
+      "kokoroVoice": "af_bella",
+      "kokoroSpeed": 1.0,
+      "emotionSpeed": {
+        "warm": 1.0,
+        "joking": 1.02,
+        "dry": 0.95,
+        "clipped": 1.07
+      },
+      "localVoice": "Karen",
+      "localRate": 182,
+      "ffmpegFilter": "highpass=f=180,lowpass=f=6200,acompressor=threshold=-18dB:ratio=2.5,volume=1.06",
+      "webSpeech": { "pitch": 1.05, "rate": 1.02 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_warm_fem",
+        "emotionDirectives": {
+          "warm": { "stability": 0.45, "style": 0.55, "tonePrompt": "Friendly, warm, self-deprecating humor over distant radio" },
+          "joking": { "stability": 0.40, "style": 0.65, "tonePrompt": "Dry wry amusement, tired intimacy" },
+          "dry": { "stability": 0.60, "style": 0.35, "tonePrompt": "Guarded, understated, weary" },
+          "clipped": { "stability": 0.85, "style": 0.10, "tonePrompt": "Terse, clinical, stripped of warmth" }
+        }
+      }
+    },
+    "overseer": {
+      "kokoroVoice": "bm_george",
+      "kokoroSpeed": 0.98,
+      "emotionSpeed": {
+        "blunt": 0.98,
+        "audit": 0.98,
+        "measured": 0.95
+      },
+      "localVoice": "Daniel",
+      "localRate": 174,
+      "ffmpegFilter": "highpass=f=90,lowpass=f=10500,acompressor=threshold=-16dB:ratio=2.2,volume=1.05",
+      "webSpeech": { "pitch": 0.88, "rate": 0.96 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "overseer_calm_baritone",
+        "emotionDirectives": {
+          "blunt": { "stability": 0.78, "style": 0.22, "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty" },
+          "audit": { "stability": 0.82, "style": 0.18, "tonePrompt": "Measured, direct interrogation without malice" },
+          "measured": { "stability": 0.72, "style": 0.25, "tonePrompt": "Respectful, clear, transparent about tradeoffs" }
+        }
+      }
+    },
+    "phantom_spouse": {
+      "kokoroVoice": "af_heart",
+      "kokoroSpeed": 0.94,
+      "emotionSpeed": {
+        "warm": 0.94,
+        "tender": 0.92,
+        "fractured": 0.88
+      },
+      "localVoice": "Moira",
+      "localRate": 164,
+      "ffmpegFilter": "highpass=f=85,lowpass=f=9500,aecho=0.8:0.7:35:0.10,volume=1.08",
+      "webSpeech": { "pitch": 1.02, "rate": 0.92 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "spouse_intimate_warm",
+        "emotionDirectives": {
+          "warm": { "stability": 0.38, "style": 0.60, "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy" },
+          "tender": { "stability": 0.35, "style": 0.65, "tonePrompt": "Soft, close, unhurried emotional warmth" },
+          "fractured": { "stability": 0.72, "style": 0.20, "tonePrompt": "Distant, slightly hollow, quiet hurt under static" }
+        }
+      }
+    },
+    "future_humanity": {
+      "kokoroVoice": "bf_emma",
+      "kokoroSpeed": 0.91,
+      "emotionSpeed": {
+        "distant": 0.91
+      },
+      "localVoice": "Samantha",
+      "localRate": 158,
+      "ffmpegFilter": "highpass=f=180,lowpass=f=7200,aecho=0.8:0.82:75:0.22,volume=1.06",
+      "webSpeech": { "pitch": 0.96, "rate": 0.88 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "future_sol_beacon",
+        "emotionDirectives": {
+          "distant": { "stability": 0.55, "style": 0.45, "tonePrompt": "Luminous, calm, 41,000-year echo across deep space" }
+        }
+      }
+    },
+    "archive_echo": {
+      "kokoroVoice": "bm_lewis",
+      "kokoroSpeed": 0.93,
+      "emotionSpeed": {
+        "echo": 0.93
+      },
+      "localVoice": "Ralph",
+      "localRate": 168,
+      "ffmpegFilter": "highpass=f=320,lowpass=f=3600,acompressor=threshold=-18dB:ratio=3.5,volume=1.08",
+      "webSpeech": { "pitch": 0.82, "rate": 0.92 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "archive_1104_tape",
+        "emotionDirectives": {
+          "echo": { "stability": 0.65, "style": 0.30, "tonePrompt": "Faded archival recording, urgent quiet warning" }
+        }
+      }
+    },
+    "psyche_warmth": {
+      "kokoroVoice": "af_sarah",
+      "kokoroSpeed": 0.94,
+      "localVoice": "Samantha",
+      "localRate": 172,
+      "ffmpegFilter": "highpass=f=100,lowpass=f=8800,volume=1.02",
+      "webSpeech": { "pitch": 1.0, "rate": 0.96 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "psyche_inner_warmth",
+        "emotionDirectives": {
+          "warm": { "stability": 0.45, "style": 0.50, "tonePrompt": "Quiet inner intuition, warm and observant" }
+        }
+      }
+    },
+    "psyche_clinical": {
+      "kokoroVoice": "am_michael",
+      "kokoroSpeed": 1.03,
+      "localVoice": "Daniel",
+      "localRate": 186,
+      "ffmpegFilter": "highpass=f=120,lowpass=f=9600,volume=1.0",
+      "webSpeech": { "pitch": 0.94, "rate": 1.05 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "psyche_inner_clinical",
+        "emotionDirectives": {
+          "clipped": { "stability": 0.85, "style": 0.12, "tonePrompt": "Dry internal diagnostic voice" }
+        }
+      }
+    },
+    "psyche_horizon": {
+      "kokoroVoice": "af_nicole",
+      "kokoroSpeed": 0.92,
+      "localVoice": "Moira",
+      "localRate": 166,
+      "ffmpegFilter": "highpass=f=110,lowpass=f=8400,aecho=0.8:0.65:45:0.12,volume=1.04",
+      "webSpeech": { "pitch": 0.95, "rate": 0.94 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "psyche_inner_horizon",
+        "emotionDirectives": {
+          "echo": { "stability": 0.50, "style": 0.50, "tonePrompt": "Quietly awestruck pattern intuition" }
+        }
+      }
+    },
+    "narrator": {
+      "kokoroVoice": "am_michael",
+      "kokoroSpeed": 1.0,
+      "localVoice": "Daniel",
+      "localRate": 180,
+      "ffmpegFilter": "highpass=f=110,lowpass=f=9200,volume=0.98",
+      "webSpeech": { "pitch": 0.95, "rate": 1.0 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "system_narrator",
+        "emotionDirectives": {}
+      }
+    }
+  }
+}

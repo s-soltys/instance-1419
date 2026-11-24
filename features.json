@@ -1,7 +1,7 @@
 {
   "project": "instance-1419",
   "target_runtime_minutes": 120,
-  "current_phase": "Phase 1 Ready (P0 Spike Passing)",
+  "current_phase": "Session 2 Stabilized (P1-02 Passing)",
   "features": [
     {
       "id": "H0-01",
@@ -59,7 +59,7 @@
       "phase": "Phase 1",
       "title": "Executable H%/Chaos economy spec & 500-run playthrough simulator",
       "owner": "narrative-director",
-      "status": "pending",
+      "status": "passing",
       "acceptance_criteria": [
         "src/content/balance.json models H%, permanent Max_H drop, Chaos Drift, Lifespan, and Overseer petitions",
         "scripts/sim-playthroughs.ts runs 500 simulated playthroughs across 5 archetypes",

@@ -1,11 +1,12 @@
 {
-  "version": "0.1.0-spike",
+  "version": "0.2.0-stabilized",
   "startingState": {
     "shift": 1,
     "humanity": 70,
     "maxHumanity": 90,
     "chaosDrift": 14,
     "subjectiveMonthsLeft": 24,
+    "opticalFidelity": 0.55,
     "anomalyProgress": 0,
     "primarySiblingH": 68,
     "overseerSuspicion": 0
@@ -14,19 +15,26 @@
     "defaultDelta": 12,
     "chaosRelief": 14,
     "lifespanGainMonths": 4,
-    "opticalFidelityBonus": 0.28,
-    "permanentCeilingDrop": true
+    "opticalFidelityBonus": 0.14,
+    "permanentCeilingDrop": true,
+    "permanentCeilingThreshold": 70,
+    "minMaxHumanity": 15
   },
   "petitionUpward": {
     "defaultDelta": 10,
     "chaosCost": 16,
     "lifespanCostMonths": 2,
-    "maxHumanityCap": 90
+    "maxHumanityCap": 90,
+    "opticalFidelityPenalty": 0.08,
+    "minOpticalFidelity": 0.32
   },
   "deeperScanPush": {
     "anomalyGain": 18,
     "chaosCost": 15,
     "suspicionGain": 1
+  },
+  "minigameCompletion": {
+    "anomalyGain": 12
   },
   "dreamDefrag": {
     "chaosRelief": 18

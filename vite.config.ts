@@ -10,6 +10,16 @@ export default defineConfig({
     target: 'es2022',
     outDir: isSingleFile ? 'dist-single' : 'dist',
     assetsInlineLimit: isSingleFile ? 100000000 : 4096,
+    rollupOptions: isSingleFile
+      ? undefined
+      : {
+          output: {
+            manualChunks: {
+              three: ['three'],
+              inkjs: ['inkjs'],
+            },
+          },
+        },
   },
   server: {
     host: true,

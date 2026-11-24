@@ -1,14 +1,17 @@
 import { Story } from 'inkjs';
 import compiledSpikeStory from '../content/dialogue/compiled/spike_shift1.ink.json';
-import type { StateStore } from './StateStore';
+import type { AuditOutcome, StateStore } from './StateStore';
 
 export interface DialogueEntry {
   text: string;
   speaker: string;
+  lineId?: string;
   portrait?: string;
   mood?: string;
+  emotion?: string;
   audioCue?: string;
   auditState?: 'active' | 'inactive';
+  isPlayerChoice?: boolean;
 }
 
 export interface DialogueChoice {
@@ -19,12 +22,20 @@ export interface DialogueChoice {
 export interface DialogueSnapshot {
   knot: string;
   entries: DialogueEntry[];
+  lastAddedEntries: DialogueEntry[];
   choices: DialogueChoice[];
   ended: boolean;
+  autoInterruptKnot?: string;
+  resumeDreamKnot?: string;
 }
 
-function parseTags(rawTags: string[] | null): Omit<DialogueEntry, 'text'> {
-  const meta: Omit<DialogueEntry, 'text'> = { speaker: 'narrator' };
+interface ParsedTags extends Omit<DialogueEntry, 'text' | 'isPlayerChoice'> {
+  autoInterruptKnot?: string;
+  resumeDreamKnot?: string;
+}
+
+function parseTags(rawTags: string[] | null): ParsedTags {
+  const meta: ParsedTags = { speaker: 'narrator' };
   if (!rawTags) return meta;
   for (const tag of rawTags) {
     const trimmed = tag.trim();
@@ -33,14 +44,26 @@ function parseTags(rawTags: string[] | null): Omit<DialogueEntry, 'text'> {
     const key = trimmed.slice(0, colon).trim().toLowerCase();
     const val = trimmed.slice(colon + 1).trim();
     if (key === 'speaker') meta.speaker = val;
+    else if (key === 'id') meta.lineId = val;
     else if (key === 'portrait') meta.portrait = val;
     else if (key === 'mood') meta.mood = val;
+    else if (key === 'emotion') meta.emotion = val;
     else if (key === 'audio') meta.audioCue = val;
     else if (key === 'audit' && (val === 'active' || val === 'inactive')) {
       meta.auditState = val;
+    } else if (key === 'auto_interrupt' && val) {
+      meta.autoInterruptKnot = val;
+    } else if (key === 'resume_dream' && val) {
+      meta.resumeDreamKnot = val;
     }
   }
   return meta;
+}
+
+function formatPlayerEcho(rawChoiceText: string): string {
+  return rawChoiceText
+    .replace(/\s*\([^)]*(?:%\s*H|Max\s*H|Drift|Optics|Clock|Suspicion)[^)]*\)\s*$/i, '')
+    .trim();
 }
 
 export class DialogueRunner {
@@ -88,6 +111,16 @@ export class DialogueRunner {
       },
       false
     );
+    story.BindExternalFunction(
+      'set_audit_outcome',
+      (outcome: string) => {
+        const valid = outcome === 'pruned' || outcome === 'unsealed' || outcome === 'held' || outcome === 'none';
+        if (valid) {
+          this.store.setAuditOutcome(outcome as AuditOutcome);
+        }
+      },
+      false
+    );
     return story;
   }
 
@@ -99,9 +132,26 @@ export class DialogueRunner {
     this.story.variablesState.$('anomaly_progress', s.anomalyProgress);
     this.story.variablesState.$('primary_sibling_h', s.primarySiblingH);
     this.story.variablesState.$('overseer_suspicion', s.overseerSuspicion);
+    this.story.variablesState.$('subjective_months', s.subjectiveMonthsLeft);
     this.story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
+    this.story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
   }
 
+  exportStateJson(): string {
+    return this.story.state.ToJson();
+  }
+
+  importStateJson(json: string): void {
+    try {
+      this.story.state.LoadJson(json);
+    } catch {
+      this.story = this.createStory();
+    }
+  }
+
+  /**
+   * Starts a fresh isolated conversation at the given knot (used for scene resets & QA previews).
+   */
   startKnot(knotName: string): DialogueSnapshot {
     this.story = this.createStory();
     this.syncVarsToInk();
@@ -112,24 +162,73 @@ export class DialogueRunner {
     return this.advance();
   }
 
-  choose(choiceIndex: number): DialogueSnapshot {
+  /**
+   * Navigates to a knot on the existing Ink story instance, preserving visit counts and once-only choices.
+   */
+  goToKnot(knotName: string, resetLog = false): DialogueSnapshot {
     this.syncVarsToInk();
+    this.currentKnot = knotName;
+    if (resetLog) {
+      this.entries = [];
+    }
+    this.story.ChoosePathString(knotName);
+    return this.advance();
+  }
+
+  appendKnot(knotName: string): DialogueSnapshot {
+    this.story = this.createStory();
+    this.syncVarsToInk();
+    this.currentKnot = knotName;
+    this.story.ChoosePathString(knotName);
+    return this.advance();
+  }
+
+  choose(choiceIndex: number, echoPlayer = true): DialogueSnapshot {
+    this.syncVarsToInk();
+    if (echoPlayer) {
+      const selected = this.story.currentChoices.find((c) => c.index === choiceIndex);
+      if (selected?.text) {
+        const echoText = formatPlayerEcho(selected.text);
+        if (echoText) {
+          this.entries.push({
+            text: echoText,
+            speaker: 'player',
+            isPlayerChoice: true,
+          });
+        }
+      }
+    }
     this.story.ChooseChoiceIndex(choiceIndex);
     return this.advance();
   }
 
   private advance(): DialogueSnapshot {
     let lastSpeaker = 'narrator';
+    let lastEmotion: string | undefined;
+    let autoInterruptKnot: string | undefined;
+    let resumeDreamKnot: string | undefined;
+    const newlyAdded: DialogueEntry[] = [];
+
     while (this.story.canContinue) {
       const rawLine = this.story.Continue();
       const text = rawLine ? rawLine.trim() : '';
       const meta = parseTags(this.story.currentTags);
+
+      if (meta.autoInterruptKnot) autoInterruptKnot = meta.autoInterruptKnot;
+      if (meta.resumeDreamKnot) resumeDreamKnot = meta.resumeDreamKnot;
+
       if (meta.speaker !== 'narrator') {
         lastSpeaker = meta.speaker;
       } else if (this.story.currentTags && this.story.currentTags.some((t) => t.startsWith('speaker:'))) {
         lastSpeaker = 'narrator';
       } else {
         meta.speaker = lastSpeaker;
+      }
+
+      if (meta.emotion) {
+        lastEmotion = meta.emotion;
+      } else {
+        meta.emotion = lastEmotion;
       }
 
       if (meta.auditState === 'active') {
@@ -143,7 +242,18 @@ export class DialogueRunner {
       }
 
       if (text.length > 0) {
-        this.entries.push({ text, ...meta });
+        const entry: DialogueEntry = {
+          text,
+          speaker: meta.speaker,
+          lineId: meta.lineId,
+          portrait: meta.portrait,
+          mood: meta.mood,
+          emotion: meta.emotion,
+          audioCue: meta.audioCue,
+          auditState: meta.auditState,
+        };
+        this.entries.push(entry);
+        newlyAdded.push(entry);
       }
     }
 
@@ -155,8 +265,11 @@ export class DialogueRunner {
     return {
       knot: this.currentKnot,
       entries: [...this.entries],
+      lastAddedEntries: newlyAdded,
       choices,
       ended: choices.length === 0 && !this.story.canContinue,
+      autoInterruptKnot,
+      resumeDreamKnot,
     };
   }
 }

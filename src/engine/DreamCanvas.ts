@@ -1,6 +1,29 @@
 import * as THREE from 'three';
-import spousePaintingUrl from '../../assets/characters/dream_spouse_impasto.webp';
+import charactersData from '../content/characters.json';
 import { DREAM_FRAGMENT, DREAM_VERTEX } from './shaders/dreamShaders';
+
+interface CharacterEntry {
+  tableau?: string | null;
+  portrait?: string | null;
+  faceAnchor?: number[];
+}
+
+const CHAR_MAP = charactersData.characters as Record<string, CharacterEntry>;
+const CHAR_ASSETS = import.meta.glob('../../assets/characters/*.webp', {
+  eager: true,
+  import: 'default',
+}) as Record<string, string>;
+
+function resolveCharacterAssetUrl(assetPath: string | null | undefined): string | null {
+  if (!assetPath) return null;
+  const normalized = assetPath.replace(/^\/+/, '');
+  for (const [globKey, url] of Object.entries(CHAR_ASSETS)) {
+    if (globKey.endsWith(normalized)) {
+      return url;
+    }
+  }
+  return null;
+}
 
 export class DreamCanvas {
   private readonly container: HTMLElement;
@@ -8,7 +31,11 @@ export class DreamCanvas {
   private readonly scene: THREE.Scene;
   private readonly camera: THREE.OrthographicCamera;
   private readonly mat: THREE.ShaderMaterial;
+  private readonly loader = new THREE.TextureLoader();
+  private readonly textureCache = new Map<string, THREE.Texture>();
+  private readonly onResizeBound = () => this.resize();
 
+  private currentPersonaId = 'phantom_spouse';
   private humanity = 70;
   private pruned = false;
   private overseerActive = false;
@@ -24,24 +51,15 @@ export class DreamCanvas {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
     this.renderer.domElement.className = 'dream-canvas';
+    this.renderer.domElement.addEventListener('webglcontextlost', (e) => e.preventDefault());
     container.appendChild(this.renderer.domElement);
 
-    const loader = new THREE.TextureLoader();
-    const tex = loader.load(spousePaintingUrl, (loaded) => {
-      const img = loaded.image as { width?: number; height?: number } | undefined;
-      if (img?.width && img?.height) {
-        this.mat.uniforms.uTexAspect.value = img.width / img.height;
-      }
-    });
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.minFilter = THREE.LinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-
+    const initialAnchor = CHAR_MAP[this.currentPersonaId]?.faceAnchor ?? [0.4, 0.73];
     this.mat = new THREE.ShaderMaterial({
       vertexShader: DREAM_VERTEX,
       fragmentShader: DREAM_FRAGMENT,
       uniforms: {
-        uTexture: { value: tex },
+        uTexture: { value: null },
         uTime: { value: 0 },
         uHumanity: { value: 0.7 },
         uPruned: { value: 0.0 },
@@ -50,11 +68,48 @@ export class DreamCanvas {
           value: Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight),
         },
         uTexAspect: { value: 1280 / 714 },
+        uFaceAnchor: { value: new THREE.Vector2(initialAnchor[0], initialAnchor[1]) },
       },
     });
 
     this.scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), this.mat));
-    window.addEventListener('resize', () => this.resize());
+    this.setPersona(this.currentPersonaId);
+    window.addEventListener('resize', this.onResizeBound);
+  }
+
+  setPersona(personaId: string): void {
+    const entry = CHAR_MAP[personaId] ?? CHAR_MAP.phantom_spouse;
+    const anchor = entry?.faceAnchor ?? [0.4, 0.73];
+    (this.mat.uniforms.uFaceAnchor.value as THREE.Vector2).set(anchor[0], anchor[1]);
+
+    const url =
+      resolveCharacterAssetUrl(entry?.tableau ?? entry?.portrait) ??
+      Object.values(CHAR_ASSETS)[0];
+    if (!url) return;
+
+    this.currentPersonaId = personaId;
+    const cached = this.textureCache.get(url);
+    if (cached) {
+      this.applyTexture(cached);
+      return;
+    }
+
+    const tex = this.loader.load(url, (loaded) => {
+      this.applyTexture(loaded);
+    });
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    this.textureCache.set(url, tex);
+    this.mat.uniforms.uTexture.value = tex;
+  }
+
+  private applyTexture(tex: THREE.Texture): void {
+    this.mat.uniforms.uTexture.value = tex;
+    const img = tex.image as { width?: number; height?: number } | undefined;
+    if (img?.width && img?.height) {
+      this.mat.uniforms.uTexAspect.value = img.width / img.height;
+    }
   }
 
   resize(): void {
@@ -64,10 +119,13 @@ export class DreamCanvas {
     this.mat.uniforms.uViewAspect.value = w / h;
   }
 
-  setState(humanity: number, pruned: boolean, overseerActive: boolean): void {
+  setState(humanity: number, pruned: boolean, overseerActive: boolean, personaId?: string): void {
     this.humanity = humanity;
     this.pruned = pruned;
     this.overseerActive = overseerActive;
+    if (personaId && personaId !== this.currentPersonaId) {
+      this.setPersona(personaId);
+    }
   }
 
   setActive(active: boolean): void {
@@ -79,6 +137,17 @@ export class DreamCanvas {
       cancelAnimationFrame(this.rafId);
       this.rafId = 0;
     }
+  }
+
+  dispose(): void {
+    this.setActive(false);
+    window.removeEventListener('resize', this.onResizeBound);
+    for (const tex of this.textureCache.values()) {
+      tex.dispose();
+    }
+    this.textureCache.clear();
+    this.mat.dispose();
+    this.renderer.dispose();
   }
 
   private loop = (): void => {

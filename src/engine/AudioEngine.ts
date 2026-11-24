@@ -18,8 +18,11 @@ export class AudioEngine {
   private masterGain: GainNode | null = null;
   private ambienceGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;
+  private voiceBus: GainNode | null = null;
   private reverbNode: ConvolverNode | null = null;
   private reverbGain: GainNode | null = null;
+  private voiceDucking = false;
+  private visibilityListenerBound = false;
 
   // Continuous bed oscillators & filters
   private subOsc: OscillatorNode | null = null;
@@ -87,6 +90,9 @@ export class AudioEngine {
       this.sfxGain = ctx.createGain();
       this.sfxGain.gain.value = this.settings.sfx;
 
+      this.voiceBus = ctx.createGain();
+      this.voiceBus.gain.value = 1.0;
+
       // Algorithmic 3.4s stereo reverb for cosmic & painterly depth
       this.reverbNode = ctx.createConvolver();
       this.reverbNode.buffer = this.createImpulseResponse(ctx, 3.4, 2.7);
@@ -97,6 +103,7 @@ export class AudioEngine {
       this.ambienceGain.connect(this.reverbNode);
       this.sfxGain.connect(this.masterGain);
       this.sfxGain.connect(this.reverbNode);
+      this.voiceBus.connect(this.masterGain);
       this.reverbNode.connect(this.reverbGain);
       this.reverbGain.connect(this.masterGain);
 
@@ -106,9 +113,41 @@ export class AudioEngine {
       this.initContinuousBeds(ctx);
       this.startGenerativeScheduler();
       this.applyBedMood();
+      this.bindVisibilityHandler();
     } catch {
       // Headless or restricted audio contexts stay safely silent.
     }
+  }
+
+  private bindVisibilityHandler(): void {
+    if (this.visibilityListenerBound || typeof document === 'undefined') return;
+    this.visibilityListenerBound = true;
+    document.addEventListener('visibilitychange', () => {
+      if (!this.ctx) return;
+      if (document.hidden) {
+        if (this.ctx.state === 'running') {
+          void this.ctx.suspend();
+        }
+      } else if (!this.settings.muted && this.ctx.state === 'suspended') {
+        void this.ctx.resume();
+      }
+    });
+  }
+
+  getAudioContext(): AudioContext | null {
+    return this.ctx;
+  }
+
+  getVoiceBus(): GainNode | null {
+    return this.voiceBus;
+  }
+
+  setVoiceDucking(ducking: boolean): void {
+    this.voiceDucking = ducking;
+    if (!this.ctx || !this.ambienceGain) return;
+    const now = this.ctx.currentTime;
+    const target = this.settings.ambience * (ducking ? 0.48 : 1.0);
+    this.ambienceGain.gain.setTargetAtTime(target, now, ducking ? 0.08 : 0.28);
   }
 
   private createImpulseResponse(ctx: AudioContext, durationSec: number, decay: number): AudioBuffer {
@@ -262,10 +301,10 @@ export class AudioEngine {
       return;
     }
 
-    if (this.mode === 'waking_3d') {
+    if (this.mode === 'waking_3d' || this.mode === 'target_inspect') {
       // Meditative D-Lydian deep-space observatory glass harmonics
       const spaceScale = [293.66, 329.63, 369.99, 440.0, 554.37, 659.25, 739.99];
-      const waveNorm = Math.max(0, Math.min(1, (this.wavelengthNm - 400) / 1400));
+      const waveNorm = Math.max(0, Math.min(1, (this.wavelengthNm - 200) / 1600));
       const idx = (this.chordStep * 2 + (waveNorm > 0.55 ? 1 : 0)) % spaceScale.length;
       const root = spaceScale[idx];
       const fifth = spaceScale[(idx + 2) % spaceScale.length];
@@ -389,7 +428,8 @@ export class AudioEngine {
       );
     }
     if (this.ambienceGain) {
-      this.ambienceGain.gain.setTargetAtTime(this.settings.ambience, now, 0.05);
+      const target = this.settings.ambience * (this.voiceDucking ? 0.48 : 1.0);
+      this.ambienceGain.gain.setTargetAtTime(target, now, 0.05);
     }
     if (this.sfxGain) {
       this.sfxGain.gain.setTargetAtTime(this.settings.sfx, now, 0.05);
@@ -425,7 +465,7 @@ export class AudioEngine {
 
     const now = this.ctx.currentTime;
     const hNorm = Math.max(0, Math.min(1, this.humanity / 100));
-    const waveNorm = Math.max(0, Math.min(1, (this.wavelengthNm - 400) / 1400));
+    const waveNorm = Math.max(0, Math.min(1, (this.wavelengthNm - 200) / 1600));
 
     if (this.mode === 'boot') {
       this.subOsc.frequency.setTargetAtTime(42, now, 0.4);
@@ -435,7 +475,7 @@ export class AudioEngine {
       this.noiseFilter.frequency.setTargetAtTime(240, now, 0.4);
       this.noiseGain.gain.setTargetAtTime(0.018, now, 0.3);
       this.auditHumGain.gain.setTargetAtTime(0.0001, now, 0.25);
-    } else if (this.mode === 'waking_3d') {
+    } else if (this.mode === 'waking_3d' || this.mode === 'target_inspect') {
       // Deep space D2/A2 observatory drone subtly shifting with spectral wavelength
       this.subOsc.frequency.setTargetAtTime(73.42, now, 0.5);
       this.fifthOsc.frequency.setTargetAtTime(110.0 + waveNorm * 6.0, now, 0.5);
@@ -495,9 +535,58 @@ export class AudioEngine {
     this.lastVernierTickTime = nowMs;
 
     const now = this.ctx.currentTime;
-    const norm = Math.max(0, Math.min(1, (wavelengthNm - 400) / 1400));
-    const freq = 520 + norm * 620;
+    const norm = Math.max(0, Math.min(1, (wavelengthNm - 200) / 1600));
+    const freq = 480 + norm * 680;
     this.shortClick(freq, 0.018, 0.038, now, 'sine');
+  }
+
+  playSonarPing(proximity01: number): void {
+    this.unlock();
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    const p = Math.max(0, Math.min(1, proximity01));
+    const freq = 280 + p * 460;
+    this.playGlassNote(freq, 0.03 + p * 0.045, 0.02, 0.65, now, 'sine', this.sfxGain);
+    if (p > 0.72) {
+      this.playGlassNote(freq * 1.5, 0.025, 0.03, 0.55, now + 0.06, 'triangle', this.sfxGain);
+    }
+  }
+
+  playHarmonicTone(match01: number): void {
+    this.unlock();
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    const m = Math.max(0, Math.min(1, match01));
+    const base = 293.66;
+    this.playGlassNote(base, 0.025, 0.04, 0.38, now, 'sine', this.sfxGain);
+    this.playGlassNote(base * (1.2 + m * 0.3), 0.02 + m * 0.03, 0.04, 0.42, now + 0.03, 'triangle', this.sfxGain);
+  }
+
+  playRingSnap(): void {
+    this.unlock();
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    this.shortClick(660, 0.05, 0.07, now, 'triangle');
+    this.playGlassNote(880, 0.045, 0.02, 0.5, now + 0.03, 'sine', this.sfxGain);
+  }
+
+  playStatusShift(tone: 'warm' | 'cold' | 'discovery'): void {
+    this.unlock();
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    if (tone === 'warm') {
+      this.playGlassNote(261.63, 0.06, 0.08, 1.4, now, 'triangle', this.sfxGain);
+      this.playGlassNote(329.63, 0.05, 0.1, 1.5, now + 0.08, 'sine', this.sfxGain);
+      this.playGlassNote(392.0, 0.04, 0.12, 1.6, now + 0.16, 'sine', this.sfxGain);
+    } else if (tone === 'cold') {
+      this.shortClick(520, 0.06, 0.12, now, 'triangle');
+      this.playGlassNote(220.0, 0.05, 0.04, 1.2, now + 0.06, 'sine', this.sfxGain);
+      this.playGlassNote(311.13, 0.035, 0.05, 1.2, now + 0.14, 'sine', this.sfxGain);
+    } else {
+      this.playGlassNote(293.66, 0.055, 0.04, 1.2, now, 'sine', this.sfxGain);
+      this.playGlassNote(440.0, 0.055, 0.05, 1.4, now + 0.09, 'sine', this.sfxGain);
+      this.playGlassNote(587.33, 0.05, 0.06, 1.6, now + 0.18, 'triangle', this.sfxGain);
+    }
   }
 
   playHoverTick(): void {

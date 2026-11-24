@@ -9,8 +9,9 @@ void main() {
 /**
  * Full-bleed 2D Expressionist Oil Impasto Degradation Shader.
  * Aspect-corrects the 16:9 oil painting cleanly across any desktop or mobile viewport,
- * preserving rich impasto warmth at high H% and fracturing into Voronoi glass shards
- * and clinical cyan wireframe telemetry as Humanity is pruned.
+ * preserving rich impasto warmth at high H% and fracturing into localized face-blur,
+ * chromatic aberration, Voronoi glass shards, and clinical cyan wireframe telemetry
+ * as Humanity is pruned.
  */
 export const DREAM_FRAGMENT = /* glsl */ `
 precision highp float;
@@ -23,6 +24,7 @@ uniform float uPruned;      // 0.0..1.0
 uniform float uOverseer;    // 0.0..1.0
 uniform float uViewAspect;  // viewport width / height
 uniform float uTexAspect;   // texture width / height
+uniform vec2 uFaceAnchor;   // per-persona normalized face center (0..1)
 
 vec2 hash22(vec2 p) {
   p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
@@ -62,9 +64,26 @@ vec2 coverUv(vec2 uv, float viewAspect, float texAspect) {
   return clamp(outUv, 0.002, 0.998);
 }
 
+vec3 sampleBlurred(sampler2D tex, vec2 uv, float radius) {
+  if (radius <= 0.0005) {
+    return texture2D(tex, uv).rgb;
+  }
+  vec3 acc = texture2D(tex, uv).rgb * 0.20;
+  acc += texture2D(tex, clamp(uv + vec2( radius,  0.0), 0.002, 0.998)).rgb * 0.12;
+  acc += texture2D(tex, clamp(uv + vec2(-radius,  0.0), 0.002, 0.998)).rgb * 0.12;
+  acc += texture2D(tex, clamp(uv + vec2( 0.0,  radius), 0.002, 0.998)).rgb * 0.12;
+  acc += texture2D(tex, clamp(uv + vec2( 0.0, -radius), 0.002, 0.998)).rgb * 0.12;
+  acc += texture2D(tex, clamp(uv + vec2( radius,  radius) * 0.72, 0.002, 0.998)).rgb * 0.08;
+  acc += texture2D(tex, clamp(uv + vec2(-radius,  radius) * 0.72, 0.002, 0.998)).rgb * 0.08;
+  acc += texture2D(tex, clamp(uv + vec2( radius, -radius) * 0.72, 0.002, 0.998)).rgb * 0.08;
+  acc += texture2D(tex, clamp(uv + vec2(-radius, -radius) * 0.72, 0.002, 0.998)).rgb * 0.08;
+  return acc;
+}
+
 void main() {
   float h = clamp(uHumanity, 0.0, 1.0);
   float decay = clamp(1.0 - h + uPruned * 0.26, 0.0, 1.0);
+  float lowH = clamp(smoothstep(0.55, 0.18, h) + uPruned * 0.35, 0.0, 1.0);
 
   vec2 uv = coverUv(vUv, uViewAspect, uTexAspect);
 
@@ -83,13 +102,26 @@ void main() {
   float glitchBand = step(0.972, sin(uv.y * 46.0 + uTime * 1.9)) * (shardAmt * 0.014 + uOverseer * 0.006);
   sampleUv.x = clamp(sampleUv.x + glitchBand, 0.002, 0.998);
 
-  vec3 baseCol = texture2D(uTexture, sampleUv).rgb;
+  // Localized facial/figure blur + mild full-frame defocus + chromatic split at low H%
+  float faceMask = smoothstep(0.28, 0.04, length((sampleUv - uFaceAnchor) * vec2(1.05, 0.85)));
+  float blurRadius = lowH * (0.0045 + 0.0175 * faceMask);
+  vec3 baseCol = sampleBlurred(uTexture, sampleUv, blurRadius);
+
+  if (lowH > 0.05) {
+    float chroma = lowH * (0.0022 + 0.0038 * faceMask);
+    float rCh = sampleBlurred(uTexture, clamp(sampleUv + vec2(chroma, 0.0), 0.002, 0.998), blurRadius * 0.65).r;
+    float bCh = sampleBlurred(uTexture, clamp(sampleUv - vec2(chroma, 0.0), 0.002, 0.998), blurRadius * 0.65).b;
+    baseCol = vec3(mix(baseCol.r, rCh, 0.68), baseCol.g, mix(baseCol.b, bCh, 0.68));
+  }
 
   // Warm impasto enhancement at high H% -> cool silver-cyan clinical drain at low H%
   vec3 warmGrade = baseCol * vec3(1.06, 1.01, 0.94) + vec3(0.025, 0.012, 0.0);
   float lum = dot(baseCol, vec3(0.299, 0.587, 0.114));
   vec3 coldGrade = mix(vec3(lum), vec3(lum * 0.76, lum * 0.95, lum * 1.14), 0.78) * 0.88;
   vec3 col = mix(warmGrade, coldGrade, smoothstep(0.20, 0.84, decay));
+
+  // Softly smudge/wash facial region toward cool static when heavily blurred
+  col = mix(col, vec3(lum * 0.72, lum * 0.86, lum * 1.02), faceMask * lowH * 0.28);
 
   // Shard fracture edges & subtle geometric wireframe telemetry at low H%
   float crack = smoothstep(0.48, 0.64, vor.x) * shardAmt;
@@ -103,14 +135,14 @@ void main() {
   float vig = smoothstep(1.05, 0.34, length((vUv - vec2(0.42, 0.5)) * vec2(1.15, 1.05)));
   col *= mix(0.56, 1.0, vig);
 
-  // Overseer Audit clinical desaturation & razor-thin telemetry bars
+  // Overseer Audit interrogation dimming, clinical desaturation & razor-thin telemetry bars
   if (uOverseer > 0.01) {
-    float scan = sin(vUv.y * 320.0 + uTime * 2.4) * 0.022 * uOverseer;
+    float scan = sin(vUv.y * 320.0 + uTime * 2.4) * 0.018 * uOverseer;
     float desat = dot(col, vec3(0.3, 0.59, 0.11));
-    col = mix(col, vec3(desat * 0.86, desat * 0.96, desat * 1.06) + scan, uOverseer * 0.44);
+    col = mix(col, vec3(desat * 0.62, desat * 0.72, desat * 0.82) + scan, uOverseer * 0.68);
     float topLine = smoothstep(0.003, 0.0, abs(vUv.y - 0.935));
     float botLine = smoothstep(0.003, 0.0, abs(vUv.y - 0.065));
-    col = mix(col, vec3(0.78, 0.90, 0.98), clamp(topLine + botLine, 0.0, 1.0) * uOverseer * 0.65);
+    col = mix(col, vec3(0.84, 0.93, 1.0), clamp(topLine + botLine, 0.0, 1.0) * uOverseer * 0.75);
   }
 
   gl_FragColor = vec4(col, 1.0);

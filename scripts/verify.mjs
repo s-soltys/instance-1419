@@ -9,6 +9,17 @@ function run(cmd) {
   execSync(cmd, { stdio: 'inherit', cwd: ROOT });
 }
 
+function matchesGlob(relPath, registered) {
+  if (registered.has(relPath)) return true;
+  for (const pattern of registered) {
+    if (pattern.includes('*')) {
+      const rx = new RegExp('^' + pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^/]+') + '$');
+      if (rx.test(relPath)) return true;
+    }
+  }
+  return false;
+}
+
 function verifyAssetManifest() {
   const manifestPath = path.join(ROOT, 'assets', 'MANIFEST.json');
   const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
@@ -21,27 +32,30 @@ function verifyAssetManifest() {
     }
   }
 
-  const assetsDir = path.join(ROOT, 'assets');
-  const walk = (dir) => {
+  const scanDir = (dir) => {
+    if (!fs.existsSync(dir)) return;
     for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, item.name);
       if (item.isDirectory()) {
-        walk(full);
+        scanDir(full);
       } else if (item.name !== 'MANIFEST.json') {
         const rel = path.relative(ROOT, full).replace(/\\/g, '/');
-        if (!registered.has(rel)) {
+        if (!matchesGlob(rel, registered)) {
           throw new Error(`Unregistered asset file missing from assets/MANIFEST.json: ${rel}`);
         }
       }
     }
   };
-  walk(assetsDir);
-  console.log('[verify] Asset MANIFEST.json check PASS.');
+
+  scanDir(path.join(ROOT, 'assets'));
+  scanDir(path.join(ROOT, 'public', 'voices'));
+  console.log('[verify] Asset & Public Voice MANIFEST.json check PASS.');
 }
 
 run('node scripts/compile-ink.mjs');
 run('npx tsc --noEmit');
+run('node scripts/sim-playthroughs.mjs');
 run('node scripts/lint-narrative.mjs');
 verifyAssetManifest();
 run('npx vite build');
-console.log('\n[verify] ALL GATES PASSED.');
+console.log('\n[verify] ALL 6 GATES PASSED.');

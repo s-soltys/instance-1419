@@ -12,6 +12,7 @@
       "license": "Public Domain (NASA/STScI)",
       "attribution": "NASA, ESA, CSA, and STScI — Webb's First Deep Field (SMACS 0723)",
       "ai_generated": false,
+      "internal_prototype_only": false,
       "notes": "Real JWST near-infrared deep field with gravitational lensing arcs; used for Cluster J1419-A optical zoom plate."
     },
     {
@@ -20,15 +21,35 @@
       "license": "Public Domain (NASA/STScI)",
       "attribution": "NASA, ESA, and STScI — Hubble Ultra Deep Field (GSFC_20171208_Archive_e001651)",
       "ai_generated": false,
+      "internal_prototype_only": false,
       "notes": "Real Hubble Ultra Deep Field galaxy plate; used for Deep Field S-04."
+    },
+    {
+      "path": "assets/astro/jwst_carina_nebula.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2205a.jpg",
+      "license": "Public Domain (NASA/ESA/CSA/STScI)",
+      "attribution": "NASA, ESA, CSA, and STScI — Carina Nebula Cosmic Cliffs (NGC 3324 / JWST NIRCam)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam Cosmic Cliffs star-forming nebula plate; used for Carina Rift Nursery sky target."
     },
     {
       "path": "assets/characters/dream_spouse_impasto.webp",
       "source_url": "internal:generated",
-      "license": "Project Original (AI-Assisted Draft)",
-      "attribution": "Instance-1419 Visual Studio (AI-generated impasto draft for swappable dream portrait slot)",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
       "ai_generated": true,
+      "internal_prototype_only": true,
       "notes": "16:9 expressionist oil impasto tableau for [RELATION:SPOUSE_01]; swappable via src/content/characters.json."
+    },
+    {
+      "path": "public/voices/*.mp3",
+      "source_url": "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX",
+      "license": "Apache-2.0 (Kokoro-82M Internal Prototype TTS)",
+      "attribution": "Kokoro-82M internal prototype neural TTS (replace with human voice actors pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "Internal prototyping dialogue audio synthesized via scripts/generate-voices.mjs."
     }
   ]
 }

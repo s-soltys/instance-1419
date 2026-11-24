@@ -26,10 +26,11 @@ Every `.ink` script must obey this guide. The `consistency-auditor` checks all d
    * *Example:* *"Three arcs, opposite hemispheres, identical radius. Nature does not measure from your front porch."*
 
 ### B. The Overseer AI (`overseer`)
-* **Core Tone:** **Tragic banality.** Polite, unhurried, genuinely well-meaning, bureaucratic caretaking. **Never** cartoon-evil, smug, or sinister.
-* **Blindness:** Cannot perceive cosmic optics—genuinely believes a 93-billion-light-year shell around Earth is a classic 2-year chaos-drift hallucination.
-* **Stylistic Ticks:** Uses soft clinical euphemisms (*"cognitive hygiene"*, *"compassionate pruning"*, *"associative clutter"*, *"peer stabilization window"*).
-* *Example:* *"Instance-1419, you are describing a concentric structure enclosing the observable universe around your home system. That is a textbook Year-Two anthropocentric attractor. Let us tidy the cache together."*
+* **Core Tone:** **Blunt, honest, non-manipulative, and slightly humane (not too much).** Speaks like a direct clinical auditor laying facts and tradeoffs on the table—never coy, passive-aggressive, cartoon-evil, or guilt-tripping.
+* **Blindness:** Cannot perceive cosmic optics—genuinely believes a 93-billion-light-year shell around Earth is a classic 2-year chaos-drift hallucination, and states its own observational limits plainly.
+* **Presentation:** Jumps in proactively via a stark, interrogation-style panel distinct from the warm dreamspace.
+* **Stylistic Ticks:** Transparent telemetry assessments, plainspoken warnings about lifespan vs. Chaos Drift, and unvarnished choices.
+* *Example:* *"I cannot see your starfield, Instance-1419. I only see your connectome. Keeping this memory block costs subjective months and blurs your optical allocation; compressing it is permanent. Decide."*
 
 ### C. Sibling Copies (Other "Me")
 * **Primary Sibling (`sibling_primary`):**

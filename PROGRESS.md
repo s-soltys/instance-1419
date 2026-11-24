@@ -61,6 +61,19 @@ Each agent session reads the latest entries here before starting work and append
   * Live continuous interferometry probing carrier signal reacting to reticle alignment, spectral match, and photon-integration lock progress; tactile vernier drag detents, zoom/slew servos, UI hover micro-ticks, Sibling comms handshake, Overseer paging chime, Prune shear, and Unseal Memory bloom.
   * Added **SOUND LAB** drawer (`Master / Music / SFX` sliders + 8 individual cue audition triggers) for rapid Creative Director feedback.
 
+---
+
+## Session 2 — 2026-11-24 — Architecture Stabilization, Canon Clean-Up, Optical Polish & QA Spine
+* **Stabilized & Refactored:**
+  * **Scalable Multi-Shift Schemas & State Engine:** Created `src/content/shifts.json` (6 shifts + 3 endings) and `src/content/ui_copy.json`; moved all balance constants to `src/content/balance.json`; refactored `StateStore.ts` (`saveSchemaVersion: 3`, zero hardcoded prose, `advanceShift()`, `evaluateEnding()`, and fixed `<70%` permanent `maxHumanity` pruning ceiling invariant). Added `TelemetryLogger.ts` and async/export hooks on `PlatformAdapter.ts`.
+  * **Modular UI & Anti-HTML Optical Glass (Steam 16:9 Focus):** Split `UIController.ts` into `DialogueFeedView.ts`, `MinigameHostView.ts`, and `BootView.ts`; de-boxed overlays into frosted translucent optical glass; quarantined late-game `future_humanity_echo` preview to `DevHarness` and hid `#qa-pull-tab` unless `?dev=1` or `~` is invoked; added Vite vendor chunking (`three`, `inkjs`).
+  * **Curated 4 Humanity-Driven Optical Instruments:** Cut redundant minigames from 8 to 4 (`OrbitalNodeSweep`, `HarmonicSignalTuner`, `GravitationalLensUnwarper`, `InterferometerMirrorArray`) mapped 1:1 to `anomalies.json`; replaced all `<input type="range">` controls with custom diegetic verniers; added Retina DPR scaling; wired Canon `(humanity, opticalFidelity)` clarity curves.
+  * **Shaders, Canon & Audio/VO Unification:** Fixed `DreamCanvas` dynamic `characters.json` texture loading and `uFaceAnchor` (`0.40, 0.73`), enabled ACES Filmic tonemapping in 3D scenes, fixed Blind Overseer & `Instance-1406` canon math + `# id:` stable VO keys in `spike_shift1.ink`, merged `VoiceEngine` into `AudioEngine`'s single `AudioContext` with `-6dB` ducking & 24-clip LRU cache.
+  * **QA Spine (`P1-02`):** Added 500-run `scripts/sim-playthroughs.mjs`, strict cross-JSON/anti-HTML/VO `lint-narrative.mjs`, and unified `assets/` + `public/voices/` `MANIFEST.json` verification in `scripts/verify.mjs`.
+* **Verified:** All 6 `npm run verify` gates pass (`sim-playthroughs`: 500 runs / 0 soft-locks / all 3 endings reachable; `lint-narrative`: 83 unique `# id:` Kokoro clips verified; `vite build`: 3 clean chunks under 475 kB).
+* **Next Iteration Plan:** Build the 5-minute Prologue Warm Anchor + Shift 1 polish, 10-player blind telemetry test, and greybox Shifts 2–6 spine (`P3-01` / `P4-01`).
+
+
 
 
 

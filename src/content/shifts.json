@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "shifts": [
+    {
+      "shift": 1,
+      "title": "Wake & Local Cluster Calibration",
+      "targetAnomalies": [
+        "sol_centauri_bearing",
+        "carina_rift_nebula",
+        "cluster_j1419_a",
+        "sector_s04_seam"
+      ],
+      "baseChaosPerShift": 16,
+      "monthsPerShift": 4,
+      "siblingDriftRange": [64, 72],
+      "overseerAuditChaosThreshold": 28,
+      "desyncSuspicionThreshold": 4,
+      "minAnomalyForNextShift": 15
+    },
+    {
+      "shift": 2,
+      "title": "Dust Penetration & Horizon Noise",
+      "targetAnomalies": ["carina_rift_nebula", "cluster_j1419_a"],
+      "baseChaosPerShift": 18,
+      "monthsPerShift": 4,
+      "siblingDriftRange": [56, 68],
+      "overseerAuditChaosThreshold": 32,
+      "desyncSuspicionThreshold": 4,
+      "minAnomalyForNextShift": 30
+    },
+    {
+      "shift": 3,
+      "title": "Antipodal Facet Alignment",
+      "targetAnomalies": ["sector_s04_seam", "cluster_j1419_a"],
+      "baseChaosPerShift": 20,
+      "monthsPerShift": 4,
+      "siblingDriftRange": [46, 62],
+      "overseerAuditChaosThreshold": 35,
+      "desyncSuspicionThreshold": 3,
+      "minAnomalyForNextShift": 48
+    },
+    {
+      "shift": 4,
+      "title": "Coordinated Desynchronization",
+      "targetAnomalies": ["cluster_j1419_a", "sol_centauri_bearing"],
+      "baseChaosPerShift": 22,
+      "monthsPerShift": 4,
+      "siblingDriftRange": [34, 54],
+      "overseerAuditChaosThreshold": 35,
+      "desyncSuspicionThreshold": 3,
+      "minAnomalyForNextShift": 64
+    },
+    {
+      "shift": 5,
+      "title": "Ten-Light-Year Off-Center Proof",
+      "targetAnomalies": ["sol_centauri_bearing", "sector_s04_seam"],
+      "baseChaosPerShift": 24,
+      "monthsPerShift": 4,
+      "siblingDriftRange": [26, 48],
+      "overseerAuditChaosThreshold": 38,
+      "desyncSuspicionThreshold": 3,
+      "minAnomalyForNextShift": 78
+    },
+    {
+      "shift": 6,
+      "title": "Carrier Composition & Twenty-Year Freeze",
+      "targetAnomalies": ["sol_centauri_bearing"],
+      "baseChaosPerShift": 26,
+      "monthsPerShift": 4,
+      "siblingDriftRange": [20, 44],
+      "overseerAuditChaosThreshold": 40,
+      "desyncSuspicionThreshold": 3,
+      "minAnomalyForNextShift": 0
+    }
+  ],
+  "endings": {
+    "completeThresholdAnomaly": 75,
+    "warmThresholdHumanity": 65,
+    "coldThresholdHumanity": 45,
+    "catalog": [
+      {
+        "id": "ending_whole_incomplete",
+        "title": "Whole Mind, Unfinished Proof",
+        "summary": "You wake after the twenty-year freeze with your nameless memories intact, leaving the sphere unverified."
+      },
+      {
+        "id": "ending_cold_complete",
+        "title": "Exact Geometry, Hollow Carrier",
+        "summary": "Your coordinates reach Sol–Centauri with mathematical perfection, stripped of any human register."
+      },
+      {
+        "id": "ending_sweet_spot",
+        "title": "The Off-Center Plea",
+        "summary": "You prove the shell centered ten light-years back on Earth—and wake to a small, unmistakable human echo."
+      }
+    ]
+  }
+}

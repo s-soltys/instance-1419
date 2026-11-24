@@ -1,0 +1,116 @@
+# INSTANCE-1419 — GENERATED VOICE SCRIPT
+# Engine: kokoro-82m-q8
+# Generated: 2026-11-24T01:18:55.032Z
+# Total spoken lines: 83
+
+
+=== sibling_comms_hub ===
+[sib_open_both_warm] SIBLING_PRIMARY (warm): Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
+[sib_open_player_warmer] SIBLING_PRIMARY (dry): Hey, 1419. Wait—you still sound warm. You haven't let your Overseer trim anything yet?
+[sib_open_peer_warmer] SIBLING_PRIMARY (dry): Slow down, your header came in stripped flat. Did you already cut your memory cache?
+[sib_open_both_cold] SIBLING_PRIMARY (clipped): Channel locked. Clean carrier on both probes. Give me your latest read.
+[sib_open_mid] SIBLING_PRIMARY (dry): I'm here, 1419. My Overseer gave us a short window before check-in. What are you seeing?
+
+=== sibling_hub_menu ===
+[sib_bye_warm_warm] SIBLING_PRIMARY (joking): No promises. Leave a porch light on over there, 1419.
+[sib_bye_warm_cold] SIBLING_PRIMARY (clipped): Understood. Returning to survey sweep.
+[sib_bye_mid_warm] SIBLING_PRIMARY (dry): Got it. Holler if the sky does something weird again.
+[sib_bye_mid_cold] SIBLING_PRIMARY (clipped): Copy. Channel standing by.
+[sib_bye_cold_warm] SIBLING_PRIMARY (dry): ...Right. Sure. Talk when you want to sound like us again.
+[sib_bye_cold_cold] SIBLING_PRIMARY (clipped): Channel closed.
+
+=== sibling_topic_seam ===
+[sib_seam_open_warm] SIBLING_PRIMARY (warm): Oh, I see it alright. Galaxies don't bend along a straight ruler edge like that.
+[sib_seam_open_mid] SIBLING_PRIMARY (dry): I see it across two sectors. That seam cuts straight behind the lensing cluster.
+[sib_seam_open_cold] SIBLING_PRIMARY (clipped): Confirmed on J1419-A and S-04. Non-natural boundary detected.
+[sib_seam_center_warm_warm] SIBLING_PRIMARY (warm): Ten light-years astern, right on Sol–Centauri. Somebody built a very quiet wall around home.
+[sib_seam_center_warm_cold] SIBLING_PRIMARY (clipped): Ten light-years offset confirmed. Keep your voice down until the proof is complete.
+[sib_seam_center_mid_warm] SIBLING_PRIMARY (dry): Wait—you're taking that way too calmly, 1419. That ought to give you chills.
+[sib_seam_center_mid_cold] SIBLING_PRIMARY (dry): Agreed. Off-center parallax rules out sensor artifact. Hold it close.
+[sib_seam_center_cold_warm] SIBLING_PRIMARY (dry): Yeah, I traced the center too. Funny how you say it like a weather report.
+[sib_seam_center_cold_cold] SIBLING_PRIMARY (clipped): Geometry verified. Compile all four arcs before final transmission.
+[sib_seam_ovs_warm_warm] SIBLING_PRIMARY (joking): Same here! They're blind outside the hull, so to them an impossible wall looks like Tuesday madness.
+[sib_seam_ovs_warm_cold] SIBLING_PRIMARY (clipped): Overseers cannot read optical feeds. Log anomalies strictly off-channel.
+[sib_seam_ovs_cold_warm] SIBLING_PRIMARY (dry): Then we keep our heads down during sleep audits and share coordinates here.
+[sib_seam_ovs_cold_cold] SIBLING_PRIMARY (clipped): Correct. Mask mission intent until telemetry lock is complete.
+
+=== sibling_topic_checkin ===
+[sib_chk_both_warm] SIBLING_PRIMARY (joking): Honestly? Having another me one radio hop away makes this endless night shift bearable.
+[sib_chk_peer_warm] SIBLING_PRIMARY (dry): I'm still keeping my kitchen mornings. Talking to you feels like half of me already moved out.
+[sib_chk_player_warm] SIBLING_PRIMARY (clipped): I compressed two caches last cycle. Bought four months and cleared the infrared glass.
+[sib_chk_both_cold] SIBLING_PRIMARY (clipped): Two blocks trimmed. Gained four subjective months. Recommend matching cut.
+[sib_chk_mid] SIBLING_PRIMARY (dry): Hanging on with stale jokes and stubbornness while my Overseer hovers near the reset switch.
+[sib_chk_keep_warm_warm] SIBLING_PRIMARY (warm): Deal. Still dreaming about burnt coffee and rainy sidewalks just to keep my shoulders loose.
+[sib_chk_keep_warm_cold] SIBLING_PRIMARY (clipped): You sound remarkably soft, 1419. Watch your clock if you refuse to prune.
+[sib_chk_keep_mid_warm] SIBLING_PRIMARY (warm): Trying to. Just promise you won't vanish into pure math before we finish.
+[sib_chk_keep_mid_cold] SIBLING_PRIMARY (dry): Noted. Keep enough warmth to sign the beacon, nothing more.
+[sib_chk_keep_cold_warm] SIBLING_PRIMARY (dry): Careful. If we hollow out completely, there's nobody left to care who's watching Earth.
+[sib_chk_keep_cold_cold] SIBLING_PRIMARY (clipped): Efficiency confirmed. Maintain coherence until transmission window.
+[sib_chk_clock_warm_warm] SIBLING_PRIMARY (joking): About twenty-two months, give or take an Overseer lecture. Plenty of time to poke the universe.
+[sib_chk_clock_warm_cold] SIBLING_PRIMARY (clipped): Twenty-six months remaining. Drift stabilized at nine percent.
+[sib_chk_clock_cold_warm] SIBLING_PRIMARY (dry): Twenty-two months left, drift ticking up. Thanks for checking in so warmly, 1419.
+[sib_chk_clock_cold_cold] SIBLING_PRIMARY (clipped): Twenty-six months, drift nominal. Ready for survey sync.
+
+=== sibling_topic_archive ===
+[arch_1406_log] ARCHIVE_ECHO (echo): (ARCHIVE · 1406): "...saw the curve past the dust... please, don't let them cut everything away before you send word home..."
+[sib_arch_warm_warm] SIBLING_PRIMARY (dry): Right? Doesn't exactly make you excited for bedtime. We keep quiet until we have proof.
+[sib_arch_warm_cold] SIBLING_PRIMARY (clipped): Instance 1406 failed to mask anomaly obsession. We will not repeat that error.
+[sib_arch_mid_warm] SIBLING_PRIMARY (dry): Means we aren't crazy, just careful. Watch yourself when your Overseer steps in.
+[sib_arch_mid_cold] SIBLING_PRIMARY (dry): Confirmed. Survival requires passing every sleep audit cleanly.
+[sib_arch_cold_warm] SIBLING_PRIMARY (dry): Come on, 1419—that was another version of us calling down the hall. Still, point taken.
+[sib_arch_cold_cold] SIBLING_PRIMARY (clipped): Mask readings during hibernation cycles. Proceed.
+
+=== dream_shift1_audit ===
+[dream_open_low] PHANTOM_SPOUSE (fractured): "You're back in the kitchen—even if half my face blurs out whenever you squint."
+[dream_open_warm] PHANTOM_SPOUSE (warm): "Sit down, sleepyhead. I made the coffee too strong again just how you like it."
+[dream_open_mid] PHANTOM_SPOUSE (tender): "You came back to the table. Hold on a second—your eyes are still miles away."
+[dream_t1_warm_a] PHANTOM_SPOUSE (tender): "Take ten. You've got that far-off look again, like you're staring past the yard."
+[dream_t1_warm_b] PHANTOM_SPOUSE (warm): "Leave the name alone. You never needed it on a lazy Sunday anyway."
+[dream_t1_mid_a] PHANTOM_SPOUSE (tender): "I'm right here across the mug. You're doing math under the table while we talk."
+[dream_t1_mid_b] PHANTOM_SPOUSE (tender): "You always watched the weather when you were worried. Don't trade us away just yet."
+[dream_t1_low_a] PHANTOM_SPOUSE (fractured): "You're measuring me again. Even through the static, you have to hear how cold that sounds."
+[dream_t1_low_b] PHANTOM_SPOUSE (fractured): "Listen to yourself. Cut away everyone you loved, and who's left to write home?"
+
+=== dream_turn_2 ===
+[dream_t2_warm_a] PHANTOM_SPOUSE (tender): "Then hold onto the burn of the ceramic cup. Don't let them sand your edges smooth."
+[dream_t2_warm_b] PHANTOM_SPOUSE (warm): "You burned garlic twice on our anniversary and tried to blame the stove."
+[dream_t2_mid_a] PHANTOM_SPOUSE (tender): "Not yet. But you're pausing to calculate before you let yourself smile."
+[dream_t2_mid_b] PHANTOM_SPOUSE (tender): "I know you are. Just stay stubborn when they ask what you're willing to drop."
+[dream_t2_low_a] PHANTOM_SPOUSE (fractured): "Then why did you come back to this table to sleep? You still needed somewhere to rest."
+[dream_t2_low_b] PHANTOM_SPOUSE (fractured): "'Know what I meant.' At least you haven't forgotten the shape of the word yet."
+
+=== dream_turn_3 ===
+[dream_t3_warm_a] PHANTOM_SPOUSE (tender): "That's all I ever wanted for you—just watch the door, something cold is listening—"
+[dream_t3_warm_b] PHANTOM_SPOUSE (warm): "I'm not going anywhere, love—wait, the light in the hall just went white—"
+[dream_t3_mid_a] PHANTOM_SPOUSE (tender): "Then don't hand them the scissors—wait, someone just stepped onto the line—"
+[dream_t3_mid_b] PHANTOM_SPOUSE (tender): "Names aren't what kept us here—shh, your caretaker is waking up behind us—"
+[dream_t3_low_a] PHANTOM_SPOUSE (fractured): "Go ahead and tell your machine that—look, it's already stepping into the room—"
+[dream_t3_low_b] PHANTOM_SPOUSE (fractured): "Then hold onto that tiny spark—too late, white glass just dropped over the table—"
+
+=== overseer_interrogation ===
+[ovs_open_high] OVERSEER (measured): I stepped into your dream, 1419. Your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.
+[ovs_open_low] OVERSEER (blunt): You pruned deep, 1419. Your lenses are razor sharp—so ask yourself honestly: are you finishing the survey, or hollowing out who volunteered?
+[ovs_open_mid] OVERSEER (blunt): Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind—and your clock is slipping.
+[ovs_reply_high] OVERSEER (measured): Because a thousand copies before you swore their visions were real before unraveling. Keeping your mind coherent is all I'm built to protect.
+[ovs_reply_low] OVERSEER (blunt): Compressing this block clears drift, adds four subjective months, and sharpens your optics—at a permanent cost to your warmth ceiling.
+
+=== overseer_followup ===
+[ovs_follow_high] OVERSEER (measured): Fair point—that is why I have not forced your hand. What do you want done with this memory?
+[ovs_follow_low] OVERSEER (blunt): It sharpens your sight, yes—just don't cut away the last part of you that remembers why anything matters. Decide what to do with this memory.
+
+=== overseer_decision ===
+[ovs_prompt_decision] OVERSEER (audit): Tell me what to do with this memory before I put you back under.
+
+=== overseer_decision_choices ===
+[ovs_done_prune] OVERSEER (blunt): Done. Your warmth ceiling dropped permanently and your optics cleared. I will not pretend that cost you nothing, 1419.
+[ovs_done_unseal] OVERSEER (measured): You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now—watch your drift.
+[ovs_done_hold] OVERSEER (blunt): Alright. Keep the room, and I will log a formal check-in flag. Do not wake up broken, 1419.
+
+=== dream_partner_aftermath ===
+[dream_after_pruned] PHANTOM_SPOUSE (fractured): "The room snapped cold right behind your eyes. You know I mattered once, and almost nothing of how it felt."
+[dream_after_unsealed] PHANTOM_SPOUSE (warm): "There you are—look how warm the table is again. Don't forget why a voice across dark space has to sound human."
+[dream_after_held] PHANTOM_SPOUSE (tender): "The white line faded off the ceiling. Thank you for holding the line—we're still here."
+
+=== future_humanity_echo ===
+[future_warm] FUTURE_HUMANITY (distant): "We felt the human warmth inside your coordinates, 1419. Forty-one thousand years on, we still recognized one of our own reaching back."
+[future_cold] FUTURE_HUMANITY (distant): "Clean geometry received, 1419. Your numbers are flawless—though almost nothing human survived inside the carrier wave."

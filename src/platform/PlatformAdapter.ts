@@ -1,12 +1,16 @@
 /**
- * Thin platform boundary so Phases 0-5 stay 100% pure static HTML,
- * while Phase 6 swaps cleanly to Electron/Steamworks or Capacitor/Mobile.
+ * Thin platform boundary so web prototypes stay 100% pure static HTML,
+ * while Steam (Electron/steamworks.js) or Mobile/Switch swaps cleanly behind
+ * synchronous/async storage, export, achievement, and haptic hooks.
  */
 export interface PlatformAdapter {
   readonly kind: 'web' | 'steam' | 'mobile';
   loadState<T>(key: string): T | null;
   saveState<T>(key: string, value: T): void;
   clearState(key: string): void;
+  loadStateAsync<T>(key: string): Promise<T | null>;
+  saveStateAsync<T>(key: string, value: T): Promise<void>;
+  exportJsonFile(filename: string, data: unknown): void;
   unlockAchievement(id: string): void;
   hapticPulse(intensity: 'light' | 'medium'): void;
 }
@@ -39,8 +43,32 @@ class WebPlatformAdapter implements PlatformAdapter {
     }
   }
 
+  async loadStateAsync<T>(key: string): Promise<T | null> {
+    return this.loadState<T>(key);
+  }
+
+  async saveStateAsync<T>(key: string, value: T): Promise<void> {
+    this.saveState<T>(key, value);
+  }
+
+  exportJsonFile(filename: string, data: unknown): void {
+    try {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Ignore in headless/restricted contexts.
+    }
+  }
+
   unlockAchievement(_id: string): void {
-    // No-op in pure HTML playtesting; wired to steamworks.js in Phase 6.
+    // No-op in pure HTML playtesting; wired to steamworks.js in packaging phase.
   }
 
   hapticPulse(intensity: 'light' | 'medium'): void {
