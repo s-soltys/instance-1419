@@ -694,6 +694,10 @@ export class TelescopeLensFocusGame extends BaseCosmicMinigame {
     this.currentMatch = this.computeMatch01();
   }
 
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
+    return this.isStageAligned();
+  }
+
   protected override onAllStagesCleared(): void {
     const avgAcc = clamp(this.accCount > 0 ? this.accSum / this.accCount : 0.94, 0.74, 1.0);
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);

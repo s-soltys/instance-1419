@@ -51,7 +51,7 @@ const VARIANT_PROFILES: readonly EchoVariantProfile[] = [
   { asymmetricHemisphere: false, sweepSpeed: 0.32, extraStage2Decoy: false, dualDepthRewind: false, remnantTag: 'CAS A' },
   { asymmetricHemisphere: false, sweepSpeed: 0.37, extraStage2Decoy: false, dualDepthRewind: true, remnantTag: 'M1 CRAB' },
   { asymmetricHemisphere: false, sweepSpeed: 0.34, extraStage2Decoy: true, dualDepthRewind: false, remnantTag: 'SN 1987A' },
-  { asymmetricHemisphere: true, sweepSpeed: 0.33, extraStage2Decoy: false, dualDepthRewind: true, remnantTag: 'V838 ARC' },
+  { asymmetricHemisphere: true, sweepSpeed: 0.33, extraStage2Decoy: false, dualDepthRewind: true, remnantTag: 'TYCHO 1572' },
 ];
 
 /**
@@ -532,9 +532,9 @@ export class SupernovaEchoesGame extends BaseCosmicMinigame {
       const waveR = 20 + Math.sqrt(waveT) * (bounds.maxR * 1.04);
       const hitGlow = clamp(1 - Math.abs(waveR - pos.cloudR) / 48, 0.22, 1);
 
-      // Layered wispy pre-baked interstellar dust cloud puffs (ZERO per-frame radial gradients!)
-      const dustTint = arc.isDecoy ? '#8a6852' : '#5e96ba';
-      const puffAlpha = (0.24 + hitGlow * 0.28 + arc.pingResonanceFlash * 0.24) * (arc.isDecoy ? 0.85 : 1);
+      // Uniform interstellar dust cloud tint & alpha regardless of isDecoy (ZERO visual color spoiler!)
+      const dustTint = '#5e96ba';
+      const puffAlpha = 0.24 + hitGlow * 0.28 + arc.pingResonanceFlash * 0.24;
       drawSoftDustPuff(c2d, pos.px, pos.py, this.compact ? 34 : 46, dustTint, puffAlpha);
       drawSoftDustPuff(
         c2d,
@@ -734,16 +734,18 @@ export class SupernovaEchoesGame extends BaseCosmicMinigame {
   protected solveCurrentStage(_stage: 1 | 2 | 3): void {
     this.compassNx = this.epicenterNx;
     this.compassNy = this.epicenterNy;
-    if (!this.isEpicenterLocked()) {
-      throw new Error(`ECH-16 stage ${this.stage} epicenter lock check failed`);
-    }
     if (this.stage >= 2) {
       this.phase = 'rewind';
       this.rewindVal = this.rewindTargetVal;
-      if (!this.isRewindFocused()) {
-        throw new Error(`ECH-16 stage ${this.stage} rewind focus check failed`);
-      }
     }
+  }
+
+  protected override verifySolved(stage: 1 | 2 | 3): boolean {
+    if (!this.isEpicenterLocked()) return false;
+    if (stage >= 2) {
+      return this.phase === 'rewind' && this.isRewindFocused();
+    }
+    return true;
   }
 
   getFieldGuide(): InstrumentFieldGuide {

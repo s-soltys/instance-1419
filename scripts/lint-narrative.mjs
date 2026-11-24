@@ -118,15 +118,23 @@ if (fs.existsSync(COMPILED_STORY)) {
   }
 }
 
-// 3. Anti-HTML rule enforcement in minigames (zero raw <input type="range">)
-for (const file of fs.readdirSync(MINIGAMES_DIR)) {
-  if (!file.endsWith('.ts')) continue;
-  const src = fs.readFileSync(path.join(MINIGAMES_DIR, file), 'utf8');
-  if (/type\s*=\s*['"]range['"]/i.test(src)) {
-    console.error(`[lint-narrative] Disallowed raw HTML <input type="range"> found in ${file}`);
-    errors++;
+// 3. Anti-HTML rule enforcement in minigames (recursive scan across games/, core/, render/: zero raw <input type="range">)
+function scanMinigamesTs(dir) {
+  for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      scanMinigamesTs(full);
+    } else if (item.name.endsWith('.ts')) {
+      const src = fs.readFileSync(full, 'utf8');
+      if (/type\s*=\s*['"]range['"]/i.test(src)) {
+        const rel = path.relative(ROOT, full).replace(/\\/g, '/');
+        console.error(`[lint-narrative] Disallowed raw HTML <input type="range"> found in ${rel}`);
+        errors++;
+      }
+    }
   }
 }
+scanMinigamesTs(MINIGAMES_DIR);
 
 // 4. Voice script audio file coverage
 if (fs.existsSync(VOICE_SCRIPT)) {

@@ -885,6 +885,15 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
     }
   }
 
+  protected override verifySolved(stage: 1 | 2 | 3): boolean {
+    if (this.exposure01 < 0.999) return false;
+    if (stage === 3) {
+      const bad = this.subFrames.find((c) => c.contaminated);
+      return Boolean(bad && bad.rejected);
+    }
+    return true;
+  }
+
   protected onAllStagesCleared(): void {
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
     this.finishSuccess({

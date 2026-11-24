@@ -664,6 +664,10 @@ export class PolarizationFilterGame extends BaseCosmicMinigame {
     }
   }
 
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
+    return this.knots.length > 0 && this.knots.every((k) => k.found);
+  }
+
   protected onAllStagesCleared(): void {
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
     this.finishSuccess({

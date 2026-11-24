@@ -27,6 +27,7 @@ interface GhostDecoy {
 
 interface RadioScenarioConfig {
   bandLabel: string;
+  freqGhz: number;
   baselineKm: number;
   stage1Ghosts: 1 | 2;
   stage3DishCount: 3 | 4;
@@ -52,6 +53,7 @@ const TRI_VARIANTS: readonly MinigameVariantSpec[] = [
 const SCENARIOS: readonly RadioScenarioConfig[] = [
   {
     bandLabel: '1.4 GHz HI',
+    freqGhz: 1.4,
     baselineKm: 4200,
     stage1Ghosts: 1,
     stage3DishCount: 3,
@@ -62,6 +64,7 @@ const SCENARIOS: readonly RadioScenarioConfig[] = [
   },
   {
     bandLabel: '8.4 GHz X-BAND',
+    freqGhz: 8.4,
     baselineKm: 6800,
     stage1Ghosts: 2,
     stage3DishCount: 3,
@@ -72,6 +75,7 @@ const SCENARIOS: readonly RadioScenarioConfig[] = [
   },
   {
     bandLabel: '22 GHz H₂O MASER',
+    freqGhz: 22,
     baselineKm: 8400,
     stage1Ghosts: 1,
     stage3DishCount: 3,
@@ -82,6 +86,7 @@ const SCENARIOS: readonly RadioScenarioConfig[] = [
   },
   {
     bandLabel: '230 GHz VLBI',
+    freqGhz: 230,
     baselineKm: 11200,
     stage1Ghosts: 1,
     stage3DishCount: 4,
@@ -733,9 +738,15 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
     c2d.font = '600 9px ui-monospace, SFMono-Regular, Menlo, monospace';
     c2d.fillStyle = 'rgba(204, 224, 244, 0.68)';
     c2d.textAlign = 'center';
-    const synthMas = lerp(1.85, 0.14, this.cachedAvgClose);
+    // Authentic VLBI diffraction-limited angular resolution: θ_mas = (c / (ν · B)) * 206,264,806
+    const freqHz = this.scenario.freqGhz * 1e9;
+    const baselineM = this.scenario.baselineKm * 1000;
+    const diffLimitMas = (299792458 / (freqHz * baselineM)) * 206264806;
+    const synthMas = diffLimitMas / lerp(0.15, 1.0, this.cachedAvgClose);
+    const thetaStr =
+      synthMas >= 10 ? synthMas.toFixed(1) : synthMas >= 1 ? synthMas.toFixed(2) : synthMas.toFixed(3);
     const infoLine = this.profile.showNumericDeltas
-      ? `${this.scenario.bandLabel} · B=${this.scenario.baselineKm} km · θ=${synthMas.toFixed(2)} mas · CORR ${Math.round(this.cachedAvgClose * 100)}%`
+      ? `${this.scenario.bandLabel} · B=${this.scenario.baselineKm} km · θ=${thetaStr} mas · CORR ${Math.round(this.cachedAvgClose * 100)}%`
       : `${this.scenario.bandLabel} · VLBI CORRELATION ${Math.round(this.cachedAvgClose * 100)}%`;
     c2d.fillText(infoLine, cx, compact ? cy - radius - 14 : cy - radius - 18);
     c2d.restore();
@@ -782,6 +793,10 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
       d.aimAngle = this.clampAimInward(d.rimAngle, this.getTrueAimForDish(d, src));
     }
     this.refreshDishMetrics();
+  }
+
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
+    return this.refreshDishMetrics();
   }
 
   protected onAllStagesCleared(): void {

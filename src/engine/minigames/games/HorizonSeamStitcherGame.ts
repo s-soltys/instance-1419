@@ -420,6 +420,18 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
       this.patchRot = clamp(this.patchRot + rotStep, -Math.PI * 0.5, Math.PI * 0.5);
       return;
     }
+    if (this.isScaleActive() && (e.key === '-' || e.key === '_' || e.key === '[' || e.key === 'z' || e.key === 'Z')) {
+      e.preventDefault();
+      const scStep = e.shiftKey ? 0.015 : 0.035;
+      this.patchScale = clamp(this.patchScale - scStep, 0.78, 1.26);
+      return;
+    }
+    if (this.isScaleActive() && (e.key === '=' || e.key === '+' || e.key === ']' || e.key === 'x' || e.key === 'X')) {
+      e.preventDefault();
+      const scStep = e.shiftKey ? 0.015 : 0.035;
+      this.patchScale = clamp(this.patchScale + scStep, 0.78, 1.26);
+      return;
+    }
     const moveStep = e.shiftKey ? 0.008 : 0.018;
     if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
       e.preventDefault();
@@ -880,9 +892,10 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
     this.patchRot = this.targetRot;
     this.patchScale = this.targetScale;
     this.patchFlipped = this.targetFlipped;
-    if (!this.isAlignedNow()) {
-      throw new Error(`SEM-17 stage ${this.stage} alignment check failed after solve`);
-    }
+  }
+
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
+    return this.isAlignedNow();
   }
 
   getFieldGuide(): InstrumentFieldGuide {
@@ -893,7 +906,7 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
       goalSummary:
         'Slide, rotate, mirror-flip, and scale-match the translucent South-Sky lens until all repeating distant galaxies fuse 1:1.',
       controlsDesktop:
-        'Drag the lens patch; rotate via PATCH ROTATION, bezel notch, Q/E, or scroll wheel; press M / MIRROR FLIP on Stage 3.',
+        'Drag the lens patch (or Arrows/WASD); rotate via Q/E or wheel; scale via -/= on V4 Stage 3; press M / MIRROR FLIP on Stage 3.',
       controlsTouch:
         'Touch-drag the comparison patch, slide PATCH ROTATION, and tap MIRROR FLIP on Stage 3.',
       warmthEffect:

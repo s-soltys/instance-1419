@@ -513,7 +513,7 @@ export class ParallaxDepthGame extends BaseCosmicMinigame {
     c2d.fill();
 
     const probeX = orbCx + bx * orbRx;
-    const probeY = orbCy + by * orbRy * 1.6;
+    const probeY = orbCy + (by / 0.52) * orbRy;
     c2d.fillStyle = this.palette.accentHex;
     c2d.beginPath();
     c2d.arc(probeX, probeY, 3.2, 0, Math.PI * 2);
@@ -640,10 +640,11 @@ export class ParallaxDepthGame extends BaseCosmicMinigame {
         this.stars[i].found = true;
       }
     }
+  }
+
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
     const targs = this.stars.filter((s) => s.isTarget);
-    if (targs.length === 0 || !targs.every((s) => s.found)) {
-      throw new Error(`PRX-21 stage ${this.stage} target stars not solved`);
-    }
+    return targs.length > 0 && targs.every((s) => s.found);
   }
 
   getFieldGuide(): InstrumentFieldGuide {

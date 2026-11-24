@@ -107,7 +107,7 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
     { index: 0, id: 'light_dispersion_v1', label: 'Eagle Pillar Veil', plateId: 'pillars', scenarioTag: 'eagle_pillars' },
     { index: 1, id: 'light_dispersion_v2', label: 'Horsehead Rim Refraction', plateId: 'horsehead', scenarioTag: 'horsehead_wall' },
     { index: 2, id: 'light_dispersion_v3', label: 'Carina IR Window', plateId: 'carina', scenarioTag: 'carina_window' },
-    { index: 3, id: 'light_dispersion_v4', label: 'Twin Prism Dispersion', plateId: 'pillars', scenarioTag: 'grating_split' },
+    { index: 3, id: 'light_dispersion_v4', label: 'Diffraction Grating Split', plateId: 'pillars', scenarioTag: 'grating_split' },
   ];
 
   private variantCfg: DispersionVariantProfile = VARIANT_PROFILES[0];
@@ -213,10 +213,15 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
     if (stage === 3) {
       const irBand = this.bands[0];
       const irAng = this.targetBaseAngle + irBand.offsetSign * this.targetSpread;
+      // In 4-band Stage 3 (V3), HA 656nm sits at 0.67 * targetSpread from IR:
+      // placing primaryDust at dist=0.48 with radius=0.068 gives min perp clearance
+      // 0.48 * sin(0.67 * 0.32) = 0.102 > 0.068 across 100% of seeds!
+      const dustDist = this.variantCfg.fourBandStage3 ? 0.48 : 0.37;
+      const dustRad = this.variantCfg.fourBandStage3 ? 0.068 : 0.092;
       const primaryDust: DustCloud = {
-        tx: this.prism.tx + Math.cos(irAng) * 0.37,
-        ty: this.prism.ty + Math.sin(irAng) * 0.37,
-        radius: 0.095,
+        tx: this.prism.tx + Math.cos(irAng) * dustDist,
+        ty: this.prism.ty + Math.sin(irAng) * dustDist,
+        radius: dustRad,
         extinctionAv: 8.4,
       };
       // Flanking cloud positioned safely outside all non-IR solution rays (clearance >= 0.065)
@@ -507,12 +512,22 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
       const a0 = this.baseAngle - this.spread;
       const a1 = this.baseAngle + this.spread;
       const fanR = this.detRadius * box.scale * 0.92;
-      const fanPalette = [
-        'rgba(184, 146, 255, 0.06)',
-        'rgba(120, 198, 255, 0.055)',
-        'rgba(255, 224, 130, 0.055)',
-        'rgba(255, 118, 110, 0.06)',
-      ];
+      // Prism: IR (red) sits at -spread (a0) and UV (violet) at +spread (a1).
+      // Diffraction grating (V4): reversed (UV at a0, IR at a1).
+      const fanPalette =
+        this.variantCfg.opticMode === 'grating'
+          ? [
+              'rgba(184, 146, 255, 0.06)',
+              'rgba(120, 198, 255, 0.055)',
+              'rgba(255, 224, 130, 0.055)',
+              'rgba(255, 118, 110, 0.06)',
+            ]
+          : [
+              'rgba(255, 118, 110, 0.06)',
+              'rgba(255, 224, 130, 0.055)',
+              'rgba(120, 198, 255, 0.055)',
+              'rgba(184, 146, 255, 0.06)',
+            ];
       c2d.save();
       if ('globalCompositeOperation' in c2d) c2d.globalCompositeOperation = 'lighter';
       for (let s = 0; s < fanPalette.length; s++) {
@@ -758,11 +773,12 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
   }
 
   protected override getPromptText(): string {
+    const opticWord = this.variantCfg.opticMode === 'grating' ? 'diffraction grating' : 'optical prism';
     if (this.stage === 1) {
-      return 'Rotate the optical prism to aim both UV & Infrared rays into their wavelength collectors.';
+      return `Rotate the ${opticWord} to aim both UV & Infrared rays into their wavelength collectors.`;
     }
     if (this.stage === 2) {
-      return 'Aim the prism AND tune DISPERSION Δθ below so UV, Visible, and Infrared collectors lock together.';
+      return `Aim the ${opticWord} AND tune DISPERSION Δθ below so UV, Visible, and Infrared collectors lock together.`;
     }
     return 'Infrared pierces dense Av dust while UV/Visible scatter — route short rays clear and punch IR through the cloud!';
   }
@@ -771,6 +787,18 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
     this.baseAngle = this.targetBaseAngle;
     this.spread = this.targetSpread;
     this.traceDispersion();
+    if (!this.bands.every((b) => b.hit)) {
+      throw new Error(
+        `DSP-05 stage ${this.stage} (${this.activeVariant?.id}) left unhit bands: ${this.bands
+          .filter((b) => !b.hit)
+          .map((b) => `${b.key}(blocked=${b.blockedByDust})`)
+          .join(',')}`
+      );
+    }
+  }
+
+  protected override verifySolved(): boolean {
+    return this.bands.length > 0 && this.bands.every((b) => b.hit);
   }
 
   protected override onAllStagesCleared(): void {

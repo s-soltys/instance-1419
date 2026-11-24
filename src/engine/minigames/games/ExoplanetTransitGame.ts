@@ -110,10 +110,12 @@ const SCENARIOS: readonly TransitScenarioConfig[] = [
   },
 ];
 
+// Physically quadratic transit depth ΔF = (Rp / R★)² for a compact 0.70 R☉ star (~76.4 R⊕):
+// (4.6/76.4)² = 3.6 ppt, (7.7/76.4)² = 10.2 ppt, (10.4/76.4)² = 18.5 ppt.
 const SIZE_CLASSES: readonly { idx: 0 | 1 | 2; label: string; subLabel: string; depthPpt: number; visualR: number }[] = [
-  { idx: 0, label: '1.6 R⊕', subLabel: 'TERRESTRIAL', depthPpt: 5.2, visualR: 5.0 },
-  { idx: 1, label: '4.2 R⊕', subLabel: 'SUPER-EARTH', depthPpt: 11.2, visualR: 7.4 },
-  { idx: 2, label: '11.2 R⊕', subLabel: 'GAS GIANT', depthPpt: 17.6, visualR: 10.6 },
+  { idx: 0, label: '4.6 R⊕', subLabel: 'MINI-NEPTUNE', depthPpt: 3.6, visualR: 5.2 },
+  { idx: 1, label: '7.7 R⊕', subLabel: 'SATURN-CLASS', depthPpt: 10.2, visualR: 7.6 },
+  { idx: 2, label: '10.4 R⊕', subLabel: 'GAS GIANT', depthPpt: 18.5, visualR: 10.6 },
 ];
 
 const CURVE_SAMPLES = 96;
@@ -329,10 +331,13 @@ export class ExoplanetTransitGame extends BaseCosmicMinigame {
   }
 
   private isParamMatched(kind: 'speedA' | 'speedB' | 'phase'): boolean {
-    const tol = 0.072 * this.profile.detentWellScale;
+    if (kind === 'phase') {
+      const tol = 0.022 * this.profile.detentWellScale;
+      return Math.abs(wrapDiff01(this.userPhase, this.targetPhase)) <= tol;
+    }
+    const tol = 0.032 * this.profile.detentWellScale;
     if (kind === 'speedA') return Math.abs(this.userSpeedA - this.targetSpeedA) <= tol;
-    if (kind === 'speedB') return Math.abs(this.userSpeedB - this.targetSpeedB) <= tol;
-    return Math.abs(wrapDiff01(this.userPhase, this.targetPhase)) <= tol;
+    return Math.abs(this.userSpeedB - this.targetSpeedB) <= tol;
   }
 
   private computeMatch01(): number {
@@ -1041,6 +1046,10 @@ export class ExoplanetTransitGame extends BaseCosmicMinigame {
     this.cachedMatch = this.computeMatch01();
     this.accSum += this.cachedMatch;
     this.accCount += 1;
+  }
+
+  protected override verifySolved(): boolean {
+    return this.cachedMatch >= this.getMatchThreshold();
   }
 
   protected onAllStagesCleared(): void {

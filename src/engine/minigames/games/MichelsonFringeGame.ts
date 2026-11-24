@@ -71,7 +71,7 @@ const VARIANT_PROFILES: readonly MichelsonVariantProfile[] = [
   },
   {
     wavelengthNm: 420,
-    bandLabel: '420 nm UV',
+    bandLabel: '420 nm B',
     targetKind: 'quasar_step',
     fringeFreq: 7.4,
     driftAmp: 0.128,
@@ -368,7 +368,7 @@ export class MichelsonFringeGame extends BaseCosmicMinigame {
   protected getPromptText(): string {
     const toneAdj = this.palette.mode === 'cold' ? 'crisp cyan' : 'luminous';
     if (this.stage === 1) {
-      return `Slide DELAY A along the trombone rail until the white-light packet snaps into ${toneAdj} coherent Airy fringes.`;
+      return `Slide DELAY A along the trombone rail until the white-light packet snaps into ${toneAdj} coherent Haidinger fringes.`;
     }
     if (this.stage === 2) {
       return `Actively track thermal mirror drift on DELAY A (watch visibility & audio beat) to hold coherent fringes locked.`;
@@ -611,7 +611,7 @@ export class MichelsonFringeGame extends BaseCosmicMinigame {
     c2d.fill();
     c2d.clip?.();
 
-    // Axis A: Gaussian-enveloped radial Airy interference rings with subtle 1st-order chromatic rim
+    // Axis A: Gaussian-enveloped concentric Haidinger / Michelson interference rings
     const ringCount = 15;
     const phaseA = errA * 22 + this.elapsedSec * (1 - visA) * 3.8;
     const fFreq = this.variantProfile.fringeFreq;
@@ -788,9 +788,10 @@ export class MichelsonFringeGame extends BaseCosmicMinigame {
   protected solveCurrentStage(_stage: 1 | 2 | 3): void {
     this.delayA = this.getEffectiveTargetA();
     this.delayB = this.targetB;
-    if (!this.isLockedNow()) {
-      throw new Error(`INT-18 stage ${this.stage} fringe lock check failed after solve`);
-    }
+  }
+
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
+    return this.isLockedNow();
   }
 
   getFieldGuide(): InstrumentFieldGuide {

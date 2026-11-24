@@ -486,25 +486,35 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
       this.previewDirty = true;
     }
     const step = e.shiftKey ? 0.025 : 0.06;
+    let moved = false;
     if (e.key === 'ArrowUp') {
       e.preventDefault();
-      this.aimVy = clamp(this.aimVy - step, -1.38, 1.38);
-      this.previewDirty = true;
+      this.aimVy -= step;
+      moved = true;
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      this.aimVy = clamp(this.aimVy + step, -1.38, 1.38);
-      this.previewDirty = true;
+      this.aimVy += step;
+      moved = true;
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
-      this.aimVx = clamp(this.aimVx - step, -1.38, 1.38);
-      this.previewDirty = true;
+      this.aimVx -= step;
+      moved = true;
     } else if (e.key === 'ArrowRight') {
       e.preventDefault();
-      this.aimVx = clamp(this.aimVx + step, -1.38, 1.38);
-      this.previewDirty = true;
+      this.aimVx += step;
+      moved = true;
     } else if ((e.code === 'Space' || e.key === 'Enter') && !e.repeat) {
       e.preventDefault();
       this.launchProbe();
+      return;
+    }
+    if (moved) {
+      const mag = Math.hypot(this.aimVx, this.aimVy);
+      if (mag > 1.38) {
+        this.aimVx = (this.aimVx / mag) * 1.38;
+        this.aimVy = (this.aimVy / mag) * 1.38;
+      }
+      this.previewDirty = true;
     }
   }
 
@@ -734,8 +744,12 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
     if (wells.length >= 2) {
       const w0 = wells[0];
       const w1 = wells[1];
-      const mx = toPxX((w0.tx + w1.tx) * 0.5);
-      const my = toPxY((w0.ty + w1.ty) * 0.5);
+      // Mass-weighted L1 Lagrange saddle point: heavier primary pushes L1 toward lighter companion
+      const s0 = Math.sqrt(Math.max(0.01, w0.gm));
+      const s1 = Math.sqrt(Math.max(0.01, w1.gm));
+      const l1Frac = s0 / (s0 + s1);
+      const mx = toPxX(w0.tx + (w1.tx - w0.tx) * l1Frac);
+      const my = toPxY(w0.ty + (w1.ty - w0.ty) * l1Frac);
       const span = Math.hypot(toPxX(w1.tx) - toPxX(w0.tx), toPxY(w1.ty) - toPxY(w0.ty));
       const ang = Math.atan2(w1.ty - w0.ty, w1.tx - w0.tx);
       c2d.save();
@@ -1027,11 +1041,16 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
 
     this.probeActive = false;
     if (!captured) {
+      this.stageClearTimer = 0;
       throw new Error(
         `ORB-07 physics solvability failed on variant ${this.iterationIndex} stage ${this.stage}`
       );
     }
     this.stageClearTimer = 0.01;
+  }
+
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
+    return this.stageClearTimer > 0;
   }
 
   protected override onAllStagesCleared(): void {
@@ -1050,7 +1069,7 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
     return {
       title: this.title,
       physicalPrinciple:
-        'Spacecraft harvest orbital momentum by diving close to stellar gravity wells (Oberth effect) and threading Lagrange saddle corridors around dust hazards.',
+        'Spacecraft accelerate through close periapsis swings around stellar gravity wells (vis-viva speed boost / Oberth regime) and thread Lagrange saddle corridors around dust hazards.',
       goalSummary:
         'Pull back to aim and release to curve the light-probe into the emerald collector gate across 3 distinct gravitational courses.',
       controlsDesktop: 'Click and pull back anywhere to preview your Verlet trajectory, then release to fire (pull back to origin to cancel; Arrows + Space also work).',

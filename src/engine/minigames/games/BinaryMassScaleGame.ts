@@ -86,14 +86,14 @@ const SCENARIOS: readonly BinaryScenarioConfig[] = [
     inclinationY: 1.0,
   },
   {
-    primaryMassSolar: 0.8,
+    primaryMassSolar: 0.55,
     primaryClass: 'M',
     companionClass: 'black_hole',
     companionShortTag: 'BH',
     companionTitle: 'DARK REMNANT',
-    massMinSolar: 2.4,
-    massMaxSolar: 4.8,
-    stage1CompanionMassSolar: 3.2,
+    massMinSolar: 3.0,
+    massMaxSolar: 5.5,
+    stage1CompanionMassSolar: 3.6,
     inclinationY: 0.82,
   },
 ];
@@ -538,7 +538,7 @@ export class BinaryMassScaleGame extends BaseCosmicMinigame {
       c2d.stroke();
       c2d.restore();
     } else {
-      const massOk = Math.abs(this.userMass - this.targetMass) <= 0.075;
+      const massOk = Math.abs(this.userMass - this.targetMass) <= this.getParamTol();
       const rimCol = massOk ? this.palette.lockHex : '#b9a2ff';
       c2d.save();
       if (this.scenario.companionClass === 'black_hole') {
@@ -634,14 +634,15 @@ export class BinaryMassScaleGame extends BaseCosmicMinigame {
     c2d.fillText(topReadout, g.cx, g.compact ? 54 : 68);
     c2d.restore();
 
-    // Bottom Zeiss Verniers (pre-allocated zero-GC)
+    // Bottom Zeiss Verniers (pre-allocated zero-GC, synced to exact H% lock tolerance!)
+    const paramTol = this.getParamTol();
     this.vernierItems.length = 0;
     if (this.stage === 3) {
       this.vernierItems.push({
         key: 'dist',
         label: 'DISTANCE (r₂)',
         val01: this.userDist,
-        locked: Math.abs(this.userDist - this.targetDist) <= 0.075,
+        locked: Math.abs(this.userDist - this.targetDist) <= paramTol,
         rightText: `${r2AU.toFixed(2)} AU`,
       });
     }
@@ -650,7 +651,7 @@ export class BinaryMassScaleGame extends BaseCosmicMinigame {
         key: 'mass',
         label: `${this.scenario.companionTitle} MASS (M₂)`,
         val01: this.userMass,
-        locked: Math.abs(this.userMass - this.targetMass) <= 0.075,
+        locked: Math.abs(this.userMass - this.targetMass) <= paramTol,
         rightText: `${m2Solar.toFixed(2)} M☉`,
       });
     }
@@ -695,12 +696,20 @@ export class BinaryMassScaleGame extends BaseCosmicMinigame {
     return `Drag companion DISTANCE onto the dashed violet track & weigh ${this.scenario.companionTitle} MASS (M₂).`;
   }
 
+  private getParamTol(): number {
+    return this.palette.mode === 'warm' ? 0.042 : this.palette.mode === 'cold' ? 0.024 : 0.032;
+  }
+
   protected solveCurrentStage(stage: 1 | 2 | 3): void {
     void stage;
     this.userDist = this.targetDist;
     this.userMass = this.targetMass;
     this.phaseUser = this.phaseTarget;
     this.cachedMatch = this.computeMatch01();
+  }
+
+  protected override verifySolved(): boolean {
+    return this.cachedMatch >= this.getLockThreshold();
   }
 
   protected onAllStagesCleared(): void {

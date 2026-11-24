@@ -256,10 +256,20 @@ export class WaveShaperGame extends BaseCosmicMinigame {
   }
 
   private isParamLocked(key: WaveParamKey): boolean {
-    const tol = this.profile.vibe === 'warm' ? 0.095 : this.profile.vibe === 'cold' ? 0.068 : 0.082;
-    if (key === 'phase') return circularDist01(this.userPhase, this.targetPhase) <= tol;
-    if (key === 'freq') return Math.abs(this.userFreq - this.targetFreq) <= tol;
-    if (key === 'amp') return Math.abs(this.userAmp - this.targetAmp) <= tol;
+    const mode = this.profile.vibe;
+    if (key === 'phase') {
+      const tol = mode === 'warm' ? 0.034 : mode === 'cold' ? 0.02 : 0.026;
+      return circularDist01(this.userPhase, this.targetPhase) <= tol;
+    }
+    if (key === 'freq') {
+      const tol = mode === 'warm' ? 0.038 : mode === 'cold' ? 0.022 : 0.03;
+      return Math.abs(this.userFreq - this.targetFreq) <= tol;
+    }
+    if (key === 'amp') {
+      const tol = mode === 'warm' ? 0.055 : mode === 'cold' ? 0.034 : 0.044;
+      return Math.abs(this.userAmp - this.targetAmp) <= tol;
+    }
+    const tol = mode === 'warm' ? 0.065 : mode === 'cold' ? 0.04 : 0.052;
     return Math.abs(this.userHarm - this.targetHarm) <= tol;
   }
 
@@ -619,7 +629,7 @@ export class WaveShaperGame extends BaseCosmicMinigame {
       c2d.font = '600 9px ui-monospace, SFMono-Regular, Menlo, monospace';
       c2d.fillStyle = this.palette.secondaryHex;
       c2d.textAlign = 'center';
-      c2d.fillText('← PHASE φ →   ↑ FREQ ν ↓', w * 0.5, waveCy + waveAmpPx + (this.compact ? 14 : 20));
+      c2d.fillText('← PHASE φ →   ↑ WAVENUMBER k ↓', w * 0.5, waveCy + waveAmpPx + (this.compact ? 14 : 20));
       c2d.restore();
     }
 
@@ -717,6 +727,10 @@ export class WaveShaperGame extends BaseCosmicMinigame {
     this.currentMatch = this.computeMatch01();
   }
 
+  protected override verifySolved(): boolean {
+    return this.currentMatch >= this.getLockThreshold();
+  }
+
   protected override onAllStagesCleared(): void {
     const avgAcc = clamp(this.accCount > 0 ? this.accSum / this.accCount : 0.94, 0.74, 1.0);
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
@@ -733,7 +747,7 @@ export class WaveShaperGame extends BaseCosmicMinigame {
     return {
       title: this.title,
       physicalPrinciple:
-        'JWST Fourier-transform spectroscopy decomposes nebular emission into coherent wave modes: wavenumber k sets spatial frequency, φ aligns interference phase, and higher harmonics shape ionized ridges.',
+        'Fourier-transform spectroscopy decomposes nebular emission into coherent wave modes: wavenumber k sets spatial frequency, φ aligns interference phase, and higher harmonics shape ionized ridges.',
       goalSummary:
         'Match the dashed emission reference across 3 stages (Phase+Wavenumber → +Flux Amplitude → +Harmonic Overtone) until resonance locks.',
       controlsDesktop: 'Drag directly on the wave (X=Phase, Y=Wavenumber) or drag strips below; Tab/1–4 + Arrows fine-tune every strip.',

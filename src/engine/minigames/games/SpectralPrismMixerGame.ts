@@ -53,7 +53,8 @@ const ELEMENTS: readonly ElementSpec[] = [
   { id: 'C', name: 'CARBON', wavelengthsNm: [426.7, 464.7, 569.6], color: '#9ee8ff' },
   { id: 'O', name: 'OXYGEN', wavelengthsNm: [495.9, 500.7, 630.0], color: '#8be9c0' },
   { id: 'Fe', name: 'IRON', wavelengthsNm: [438.4, 527.0, 614.8], color: '#ffb86c' },
-  { id: 'Na', name: 'SODIUM', wavelengthsNm: [588.9, 591.4], color: '#ffe570' },
+  // Real Na I lines: 568.8 nm + Fraunhofer D2/D1 doublet (589.0 / 589.6 nm)
+  { id: 'Na', name: 'SODIUM', wavelengthsNm: [568.8, 589.0, 589.6], color: '#ffe570' },
 ];
 
 const ELEMENT_BY_ID: Record<ElementId, ElementSpec> = {
@@ -293,18 +294,10 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
   }
 
   /**
-   * Single source of truth for Doppler tolerance — shared by lock logic AND green visual indicators!
+   * Single source of truth for Doppler tolerance — shared by lock logic AND per-line visual dots!
    */
   private getDopplerTol(): number {
     return this.palette.mode === 'warm' ? 0.018 : this.palette.mode === 'cold' ? 0.0105 : 0.014;
-  }
-
-  /**
-   * Line-alignment visual match tolerance in normalized u-space, synced directly to getDopplerTol().
-   */
-  private getLineMatchTolU(): number {
-    // At mean visible wavelength 550 nm, deltaZ * 550 / 400nm span
-    return (this.getDopplerTol() * 560) / (LAMBDA_MAX - LAMBDA_MIN) + 0.0025;
   }
 
   private rebuildLineBuffers(): void {
@@ -350,14 +343,20 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
     return this.isCompositionExact() && this.isDopplerMatched();
   }
 
+  private isLinePairMatchedU(uA: number, uB: number): boolean {
+    const nmA = LAMBDA_MIN + uA * (LAMBDA_MAX - LAMBDA_MIN);
+    const nmB = LAMBDA_MIN + uB * (LAMBDA_MAX - LAMBDA_MIN);
+    const refNm = Math.max(360, (nmA + nmB) * 0.5);
+    return Math.abs(nmA - nmB) / refNm <= this.getDopplerTol() + 0.001;
+  }
+
   private computeLineOverlapScore(): number {
     if (this.targetLineCount === 0 || this.userLineCount === 0) return 0;
-    const tolU = this.getLineMatchTolU();
     let hits = 0;
     for (let i = 0; i < this.userLineCount; i++) {
       const uu = this.userLineU[i];
       for (let j = 0; j < this.targetLineCount; j++) {
-        if (Math.abs(uu - this.targetLineU[j]) <= tolU) {
+        if (this.isLinePairMatchedU(uu, this.targetLineU[j])) {
           hits++;
           break;
         }
@@ -518,7 +517,7 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
     otherCount: number,
     isTargetStrip: boolean
   ): void {
-    const tolU = this.getLineMatchTolU();
+    const zTol = this.getDopplerTol();
     const continuum = getContinuumStripCanvas();
     const absorption = this.scenario.absorptionMode;
 
@@ -573,13 +572,16 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
       const el = ELEMENTS[eIdx];
       if (!elements.has(el.id)) continue;
       for (let lIdx = 0; lIdx < el.wavelengthsNm.length; lIdx++) {
-        const obsNm = el.wavelengthsNm[lIdx] * (1 + zShift);
+        const restNm = el.wavelengthsNm[lIdx];
+        const obsNm = restNm * (1 + zShift);
         const u = nmToNormU(obsNm);
         const lx = x + u * w;
 
+        // Per-line redshift comparison synced identically with getDopplerTol() across blue & red bands!
         let matched = false;
         for (let k = 0; k < otherCount; k++) {
-          if (Math.abs(otherU[k] - u) <= tolU) {
+          const otherNm = LAMBDA_MIN + otherU[k] * (LAMBDA_MAX - LAMBDA_MIN);
+          if (Math.abs(otherNm - obsNm) / restNm <= zTol + 0.001) {
             matched = true;
             break;
           }
@@ -689,7 +691,6 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
     }
 
     // Subtle vertical resonance beams linking aligned spectral lines between top & bottom strips
-    const tolU = this.getLineMatchTolU();
     c2d.save();
     c2d.strokeStyle = `rgba(${this.palette.lockRgb}, 0.26)`;
     c2d.lineWidth = 1;
@@ -697,7 +698,7 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
     for (let i = 0; i < this.userLineCount; i++) {
       const uu = this.userLineU[i];
       for (let j = 0; j < this.targetLineCount; j++) {
-        if (Math.abs(uu - this.targetLineU[j]) <= tolU) {
+        if (this.isLinePairMatchedU(uu, this.targetLineU[j])) {
           const lx = barX + uu * barW;
           c2d.moveTo(lx, topY + barH);
           c2d.lineTo(lx, midY);
@@ -889,6 +890,10 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
     this.userZ = this.targetZ;
     this.rebuildLineBuffers();
     this.cachedMatch = this.computeMatch01();
+  }
+
+  protected override verifySolved(): boolean {
+    return this.isCompositionExact() && this.isDopplerMatched();
   }
 
   protected onAllStagesCleared(): void {

@@ -1,8 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { BaseCosmicMinigame } from '../../src/engine/minigames/core/BaseCosmicMinigame';
 import { MinigameRegistry } from '../../src/engine/minigames/MinigameRegistry';
-import type { MinigameResult, MinigameStateVector } from '../../src/engine/minigames/types';
+import type {
+  InstrumentFieldGuide,
+  MinigameResult,
+  MinigameStateVector,
+} from '../../src/engine/minigames/types';
 import {
   createMockAudioEngine,
   createMockShowcaseScene,
@@ -227,5 +232,92 @@ describe('Minigame solvability matrix (all 21 cosmic games x 4 curated iteration
     }
 
     expect(violations).toEqual([]);
+  });
+
+  it('guarantees DSP-05 V3 Stage 3 unblocked 4-band solution across 36 seeds and enforces verifySolved() failure throwing', () => {
+    const dsp = reg.create('light_dispersion');
+    for (let s = 0; s < 36; s++) {
+      const mountEl = document.createElement('div');
+      document.body.appendChild(mountEl);
+      const audio = createMockAudioEngine();
+      const showcase = createMockShowcaseScene();
+      let completed: MinigameResult | null = null;
+      const shift = (s % 6) + 1;
+      const regime = s % 2 === 0 ? VARIANT_REGIMES[0].vec : VARIANT_REGIMES[1].vec;
+
+      dsp.mount({
+        container: mountEl,
+        targetId: `dsp_seed_${s}`,
+        targetName: 'CARINA IR WINDOW',
+        minigameId: 'light_dispersion',
+        state: { ...regime, shift },
+        bandIdx: 2,
+        iterationIndex: 2, // V3 (fourBandStage3)
+        variantSeed: `dsp_seed_${s}:light_dispersion:v2:s${shift}`,
+        showcase: showcase._bridge,
+        audio: audio._instrumentHandle,
+        onComplete: (res) => {
+          completed = res;
+        },
+      });
+      const h = dsp.getSolvabilityHarness!();
+      h.solveStage(1);
+      h.solveStage(2);
+      h.solveStage(3);
+      expect(h.getDiagnostics().completed).toBe(true);
+      expect(completed?.success).toBe(true);
+      dsp.destroy();
+      mountEl.remove();
+    }
+
+    // Verify BaseCosmicMinigame.solveStage() throws if a subclass fails verifySolved()
+    class BrokenSolvableGame extends BaseCosmicMinigame {
+      readonly id = 'broken_test';
+      readonly title = 'BROKEN';
+      readonly subtitle = 'Test';
+      readonly instrumentCode = 'BRK-00';
+      protected onSetupStage(): void {}
+      protected onUpdate(): void {}
+      protected onRender(): void {}
+      protected getStageProgress01(): number {
+        return 0;
+      }
+      protected getPromptText(): string {
+        return 'broken';
+      }
+      protected solveCurrentStage(): void {}
+      protected override verifySolved(): boolean {
+        return false;
+      }
+      protected onAllStagesCleared(): void {}
+      getFieldGuide(): InstrumentFieldGuide {
+        return {
+          title: 'BROKEN',
+          physicalPrinciple: 'Test',
+          goalSummary: 'Test',
+          controlsDesktop: 'Test',
+          controlsTouch: 'Test',
+          warmthEffect: 'Test',
+        };
+      }
+    }
+
+    const mountEl = document.createElement('div');
+    document.body.appendChild(mountEl);
+    const broken = new BrokenSolvableGame();
+    broken.mount({
+      container: mountEl,
+      targetId: 't',
+      targetName: 'T',
+      minigameId: 'broken_test',
+      state: VARIANT_REGIMES[0].vec,
+      bandIdx: 0,
+      showcase: null,
+      audio: null,
+      onComplete: () => {},
+    });
+    expect(() => broken.getSolvabilityHarness().solveStage(1)).toThrow(/Solvability invariant failed/);
+    broken.destroy();
+    mountEl.remove();
   });
 });

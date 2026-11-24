@@ -73,7 +73,7 @@ const VARIANT_PROFILES: readonly PulsarVariantProfile[] = [
 export class PulsarEchoGame extends BaseCosmicMinigame {
   readonly id = 'pulsar_echo';
   readonly title = 'PULSAR BEACON TIMING';
-  readonly subtitle = 'Accretion Ring & Jet Sync';
+  readonly subtitle = 'Synchrotron Ring & Jet Sync';
   readonly instrumentCode = 'PLS-03';
 
   readonly platePool: readonly CosmicPlateId[] = ['crab', 'cas_a', 'hudf'];
@@ -636,6 +636,10 @@ export class PulsarEchoGame extends BaseCosmicMinigame {
     this.catches = this.catchesNeeded;
   }
 
+  protected override verifySolved(): boolean {
+    return this.catches >= this.catchesNeeded;
+  }
+
   protected override onAllStagesCleared(): void {
     const acc = clamp(1 - this.wrongTapCount * 0.04, 0.72, 1.0);
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
@@ -643,7 +647,7 @@ export class PulsarEchoGame extends BaseCosmicMinigame {
     this.finishSuccess({
       accuracy: acc,
       proofFragmentSuffix: 'pulsar',
-      dossierSnippet: `Magnetized pulsar ephemeris (P = ${this.variantCfg.periodMs} ms) synced across 3 accretion banks on ${this.ctx.targetName}.`,
+      dossierSnippet: `Magnetized pulsar ephemeris (P = ${this.variantCfg.periodMs} ms) synced across 3 synchrotron nebula banks on ${this.ctx.targetName}.`,
       telemetrySummary: `${this.activeVariant?.label ?? 'Pulsar'} · Sync ${(acc * 100).toFixed(0)}%${phaseNote} · ${totalSec.toFixed(1)}s`,
       physicalPrinciple: 'Magnetized Neutron Star Lighthouse, Heterodyne Beat Phase & Pulsar Crust Glitches',
     });
@@ -653,7 +657,7 @@ export class PulsarEchoGame extends BaseCosmicMinigame {
     return {
       title: this.title,
       physicalPrinciple:
-        'Rapidly spinning magnetized neutron stars sweep twin synchrotron jets across orbiting accretion knots; superfluid crust glitches trigger abrupt heterodyne phase slips and spin surges.',
+        'Rapidly spinning magnetized neutron stars sweep twin synchrotron jets across orbiting synchrotron nebula knots; superfluid crust glitches trigger abrupt heterodyne phase slips and spin surges.',
       goalSummary:
         'Tap/click or press Space right when the luminous synchrotron cone crosses the glowing star-knot with the contracting halo.',
       controlsDesktop: 'Click anywhere or press Space / Enter as the beam intersects the lit star-knot.',

@@ -341,7 +341,29 @@ export class EinsteinCrossGame extends BaseCosmicMinigame {
       }
     }
     if (!clicked) return;
+    this.selectMirageCandidate(clicked);
+  }
 
+  protected onPointerMove(ev: PointerLocalEvent): void {
+    if (this.stageClearTimer > 0) return;
+    let hovered: number | null = null;
+    let best = 38;
+    for (let i = 0; i < this.stars.length; i++) {
+      const s = this.stars[i];
+      const d = Math.hypot(ev.x - s.nx * this.width, ev.y - s.ny * this.height);
+      if (d < best) {
+        best = d;
+        hovered = s.id;
+      }
+    }
+    if (hovered !== this.hoveredStarId) {
+      this.hoveredStarId = hovered;
+      this.lastHoverAuditionCycle = -1;
+    }
+  }
+
+  private selectMirageCandidate(clicked: MirageStar): void {
+    if (clicked.selected || this.stageClearTimer > 0) return;
     if (clicked.isMirage) {
       clicked.selected = true;
       const sx = clicked.nx * this.width;
@@ -373,21 +395,23 @@ export class EinsteinCrossGame extends BaseCosmicMinigame {
     }
   }
 
-  protected onPointerMove(ev: PointerLocalEvent): void {
-    if (this.stageClearTimer > 0) return;
-    let hovered: number | null = null;
-    let best = 38;
-    for (let i = 0; i < this.stars.length; i++) {
-      const s = this.stars[i];
-      const d = Math.hypot(ev.x - s.nx * this.width, ev.y - s.ny * this.height);
-      if (d < best) {
-        best = d;
-        hovered = s.id;
-      }
-    }
-    if (hovered !== this.hoveredStarId) {
-      this.hoveredStarId = hovered;
+  protected onKeyDown(e: KeyboardEvent): void {
+    if (this.stageClearTimer > 0 || this.stars.length === 0) return;
+    if (e.key === 'Tab' || e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+      e.preventDefault();
+      const unselected = this.stars.filter((s) => !s.selected);
+      if (unselected.length === 0) return;
+      const curIdx = unselected.findIndex((s) => s.id === this.hoveredStarId);
+      const step = e.key === 'ArrowLeft' || (e.key === 'Tab' && e.shiftKey) ? -1 : 1;
+      const nextIdx = curIdx < 0 ? 0 : (curIdx + step + unselected.length) % unselected.length;
+      this.hoveredStarId = unselected[nextIdx].id;
       this.lastHoverAuditionCycle = -1;
+      return;
+    }
+    if ((e.key === 'Enter' || e.code === 'Space') && !e.repeat && this.hoveredStarId !== null) {
+      e.preventDefault();
+      const target = this.stars.find((s) => s.id === this.hoveredStarId);
+      if (target) this.selectMirageCandidate(target);
     }
   }
 
@@ -397,7 +421,7 @@ export class EinsteinCrossGame extends BaseCosmicMinigame {
       if (s.rejectFlash > 0) s.rejectFlash = Math.max(0, s.rejectFlash - dt * 2.4);
     }
 
-    // Subtle hover-audition sonar on flare peak (especially helpful in Warm H%!)
+    // Subtle hover-audition sonar on flare peak — IDENTICAL pitch (420 Hz) for all stars so players read cadence, never pitch!
     if (this.hoveredStarId !== null && this.stageClearTimer <= 0) {
       const hs = this.stars.find((item) => item.id === this.hoveredStarId);
       if (hs) {
@@ -405,7 +429,7 @@ export class EinsteinCrossGame extends BaseCosmicMinigame {
         const cyc = Math.floor(this.elapsedSec * 4.2);
         if (amp > 0.78 && cyc > this.lastHoverAuditionCycle) {
           this.lastHoverAuditionCycle = cyc;
-          this.ctx.audio?.playStereoSonarEcho?.((hs.nx - 0.5) * 1.4, 0.55, hs.isMirage ? 460 : 310);
+          this.ctx.audio?.playStereoSonarEcho?.((hs.nx - 0.5) * 1.4, 0.55, 420);
         }
       }
     }
@@ -672,10 +696,11 @@ export class EinsteinCrossGame extends BaseCosmicMinigame {
         this.stars[i].selected = true;
       }
     }
+  }
+
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
     const mirages = this.stars.filter((s) => s.isMirage);
-    if (mirages.length === 0 || !mirages.every((s) => s.selected)) {
-      throw new Error(`MIR-20 stage ${this.stage} mirage images not solved`);
-    }
+    return mirages.length > 0 && mirages.every((s) => s.selected);
   }
 
   getFieldGuide(): InstrumentFieldGuide {
@@ -686,7 +711,7 @@ export class EinsteinCrossGame extends BaseCosmicMinigame {
       goalSummary:
         'Compare the scrolling light-curve cadence under each star against the top reference quasar burst and select every time-delayed mirage copy.',
       controlsDesktop:
-        'Hover stars to audition their flare cadence and click all mirage images matching the reference burst pattern.',
+        'Hover stars to audition their flare cadence and click all mirage images (or Tab/Arrows + Enter/Space).',
       controlsTouch:
         'Compare the scrolling cadence trace beneath each star and tap every time-delayed mirage image.',
       warmthEffect:

@@ -420,6 +420,9 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
     } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
       e.preventDefault();
       this.loupeNy = clamp(this.loupeNy + 0.035, 0.18, 0.68);
+    } else if ((e.key === 'Enter' || e.key === 'f' || e.key === 'F') && !e.repeat) {
+      e.preventDefault();
+      this.tryTagAt(this.loupeNx * this.width, this.loupeNy * this.height, false);
     }
   }
 
@@ -872,10 +875,11 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
         this.targets[i].found = true;
       }
     }
+  }
+
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
     const real = this.targets.filter((t) => !t.isDecoy);
-    if (real.length === 0 || !real.every((t) => t.found)) {
-      throw new Error(`BND-19 stage ${this.stage} targets not solved`);
-    }
+    return real.length > 0 && real.every((t) => t.found);
   }
 
   getFieldGuide(): InstrumentFieldGuide {
@@ -886,7 +890,7 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
       goalSummary:
         'Sweep the spectral loupe across dark molecular pillars, switch Optical / Infrared / X-Ray passbands, and tag the real hidden cores while ignoring plain foreground stars.',
       controlsDesktop:
-        'Drag the loupe across dust columns; click spectral tabs (or press 1/2/3/Space); click revealed protostars, bow shocks, or X-ray pulsars.',
+        'Drag the loupe (or Arrows/WASD); switch bands via tabs or 1/2/3/Space; click revealed cores or press Enter/F to tag inside the loupe.',
       controlsTouch:
         'Touch-drag the spectral loupe, tap Optical / IR / X-Ray tabs below, and tap revealed cosmic cores.',
       warmthEffect:

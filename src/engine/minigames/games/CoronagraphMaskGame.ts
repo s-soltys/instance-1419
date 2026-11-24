@@ -75,7 +75,7 @@ const SCENARIOS: readonly CoronagraphScenarioConfig[] = [
     starLabel: 'G5V · YOUNG GIANT SYSTEM',
   },
   {
-    starClass: 'F',
+    starClass: 'A',
     debrisRing: false,
     edgeOnDisk: true,
     diskTiltRad: -0.32,
@@ -362,16 +362,16 @@ export class CoronagraphMaskGame extends BaseCosmicMinigame {
       return;
     }
 
-    // 2. Check clicking revealed exoplanets (only clickable when star is occulted & planet not covered by mask!)
+    // 2. Check clicking revealed exoplanets (requires centered occultation AND valid IWA size!)
     const { visibility, centered } = this.getOccultationQuality();
-    if (centered && visibility >= 0.46) {
+    const sizeStatus = this.getMaskSizeStatus();
+    if (centered && sizeStatus === 'ok' && visibility >= 0.46) {
       const { sx, sy, scale } = this.getStarCenterPx(this.width, this.height);
       const mr = this.getMaskRadiusPx(scale);
       for (let i = 0; i < this.planets.length; i++) {
         const p = this.planets[i];
         if (p.found) continue;
         if (p.requiresTightMask && !this.isMaskSizeValid(true)) continue;
-        if (!p.requiresTightMask && this.getMaskSizeStatus() === 'too_small') continue;
         const pos = this.getPlanetScreenPos(p, sx, sy, scale);
         // Physical guard: planet must lie outside the opaque mask disc
         if (Math.hypot(pos.px - sx, pos.py - sy) <= mr + 3) continue;
@@ -481,19 +481,16 @@ export class CoronagraphMaskGame extends BaseCosmicMinigame {
     } else if (e.code === 'Space' || e.key === 'Enter') {
       e.preventDefault();
       const { centered, visibility } = this.getOccultationQuality();
-      if (!centered) {
-        const { sx, sy } = this.getStarCenterPx(this.width, this.height);
-        this.maskNx = sx / Math.max(1, this.width);
-        this.maskNy = sy / Math.max(1, this.height);
-        this.engageServoIfClose();
-      } else if (visibility >= 0.46) {
+      const sizeStatus = this.getMaskSizeStatus();
+      if (centered && sizeStatus === 'ok' && visibility >= 0.46) {
         const { sx, sy, scale } = this.getStarCenterPx(this.width, this.height);
+        const mr = this.getMaskRadiusPx(scale);
         for (let i = 0; i < this.planets.length; i++) {
           const p = this.planets[i];
           if (p.found) continue;
           if (p.requiresTightMask && !this.isMaskSizeValid(true)) continue;
-          if (this.getMaskSizeStatus() === 'too_small') continue;
           const pos = this.getPlanetScreenPos(p, sx, sy, scale);
+          if (Math.hypot(pos.px - sx, pos.py - sy) <= mr + 3) continue;
           this.tagPlanet(p, pos.px, pos.py);
           break;
         }
@@ -593,8 +590,8 @@ export class CoronagraphMaskGame extends BaseCosmicMinigame {
       const pos = this.getPlanetScreenPos(p, sx, sy, scale);
       const validInner = !p.requiresTightMask || this.isMaskSizeValid(true);
       const clearOfMask = Math.hypot(pos.px - mx, pos.py - my) > mr + 2;
-      const canSee = p.found || (centered && validInner && clearOfMask && sizeStatus !== 'too_small');
-      const alpha = p.found ? 1 : canSee ? visibility : visibility * 0.18;
+      const canSee = p.found || (centered && validInner && clearOfMask && sizeStatus === 'ok');
+      const alpha = p.found ? 1 : canSee ? visibility : visibility * 0.14;
 
       if (alpha > 0.16) {
         const pr = p.found ? 6.8 : 5.6;
@@ -641,13 +638,13 @@ export class CoronagraphMaskGame extends BaseCosmicMinigame {
     // Matte-Black Lyot Occulting Mask + Realistic Solar-Eclipse Bezel Corona
     c2d.save();
 
-    // Glare leak around undersized mask (works both during manual hold AND servo lock!)
+    // Glare leak around undersized mask (locked spider-vane axis, zero spinning spikes!)
     if (sizeStatus === 'too_small' && centered) {
       drawOpticalStar(c2d, mx, my, mr * 0.92, {
         spectralClass: this.scenario.starClass,
         spikes: 6,
         alpha: 0.78,
-        rotationRad: this.elapsedSec * 0.25,
+        rotationRad: 0,
         vibeMode: this.palette.mode,
       });
     }
@@ -770,6 +767,14 @@ export class CoronagraphMaskGame extends BaseCosmicMinigame {
     for (let i = 0; i < this.planets.length; i++) {
       this.planets[i].found = true;
     }
+  }
+
+  protected override verifySolved(): boolean {
+    return (
+      this.getMaskSizeStatus() === 'ok' &&
+      this.planets.length > 0 &&
+      this.planets.every((p) => p.found)
+    );
   }
 
   protected onAllStagesCleared(): void {

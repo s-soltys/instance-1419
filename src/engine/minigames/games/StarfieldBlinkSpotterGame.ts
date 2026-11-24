@@ -215,12 +215,12 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
 
       if (this.variantCfg.stage3TwinMass) {
         this.masses = [
-          { tx: x0 + 0.36, ty: y0 + curveSign * 0.24, gm: 0.024, massSolar: 9 },
-          { tx: x0 + 0.72, ty: y0 + curveSign * 0.14, gm: 0.02, massSolar: 7 },
+          { tx: x0 + 0.36, ty: y0 + curveSign * 0.24, gm: 0.019, massSolar: 9 },
+          { tx: x0 + 0.72, ty: y0 + curveSign * 0.14, gm: 0.016, massSolar: 7 },
         ];
       } else {
         this.masses = [
-          { tx: x0 + 0.44, ty: y0 + curveSign * 0.24, gm: 0.036, massSolar: 14 },
+          { tx: x0 + 0.44, ty: y0 + curveSign * 0.24, gm: 0.028, massSolar: 14 },
         ];
       }
 
@@ -256,7 +256,7 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
     return out;
   }
 
-  private evalGravityAccel(tx: number, ty: number): { ax: number; ay: number } {
+  private evalGravityAccel(tx: number, ty: number, gmScale = 1): { ax: number; ay: number } {
     let ax = 0;
     let ay = 0;
     for (let m = 0; m < this.masses.length; m++) {
@@ -264,7 +264,7 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
       const dx = mass.tx - tx;
       const dy = mass.ty - ty;
       const r2 = dx * dx + dy * dy + 0.038;
-      const inv = mass.gm / (r2 * Math.sqrt(r2));
+      const inv = (mass.gm * gmScale) / (r2 * Math.sqrt(r2));
       ax += dx * inv;
       ay += dy * inv;
     }
@@ -276,7 +276,8 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
     y0: number,
     vx0: number,
     vy0: number,
-    depth = 0
+    depth = 0,
+    gmScale = 1
   ): { epochs: EpochPt[]; finalSegment: EpochPt[] } {
     const substeps = 16;
     const h = 1 / substeps;
@@ -284,7 +285,7 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
     let ty = y0;
     let vx = vx0;
     let vy = vy0;
-    let { ax, ay } = this.evalGravityAccel(tx, ty);
+    let { ax, ay } = this.evalGravityAccel(tx, ty, gmScale);
 
     const epochs: EpochPt[] = [{ tx, ty }];
     const finalSegment: EpochPt[] = [];
@@ -295,7 +296,7 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
         // Velocity Verlet integration for smooth energy-conserving curvature
         tx += vx * h + 0.5 * ax * h * h;
         ty += vy * h + 0.5 * ay * h * h;
-        const nextAcc = this.evalGravityAccel(tx, ty);
+        const nextAcc = this.evalGravityAccel(tx, ty, gmScale);
         vx += 0.5 * (ax + nextAcc.ax) * h;
         vy += 0.5 * (ay + nextAcc.ay) * h;
         ax = nextAcc.ax;
@@ -305,9 +306,10 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
       epochs.push({ tx, ty });
     }
 
-    // Sanity safety: if an extreme seed drifted out of box, gently scale velocities inward (bounded recursion)
+    // If an extreme seed deflected outside safe bounds, reduce gravitational pull (gmScale)
+    // instead of shrinking vx0 (which would lengthen dwell time and increase deflection!).
     if (depth < 6 && !epochs.every((p) => inSafeBounds(p.tx, p.ty))) {
-      return this.integrateGravityEpochs(x0, y0, vx0 * 0.85, vy0 * 0.85, depth + 1);
+      return this.integrateGravityEpochs(x0, y0, vx0, vy0, depth + 1, gmScale * 0.76);
     }
     return { epochs, finalSegment };
   }
@@ -701,7 +703,7 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
           c2d.fillStyle = this.palette.secondaryHex;
           c2d.globalAlpha = 0.72;
           c2d.textAlign = 'left';
-          c2d.fillText(`Δμ ${muMas} mas`, cx + 14, cy - 6);
+          c2d.fillText(`Δθ ${muMas} mas`, cx + 14, cy - 6);
         }
       }
       c2d.restore();
@@ -742,6 +744,10 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
     }
   }
 
+  protected override verifySolved(): boolean {
+    return Boolean(this.guessPos?.ok);
+  }
+
   protected override onAllStagesCleared(): void {
     const acc = clamp(1 - this.wrongTapCount * 0.05, 0.72, 1.0);
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
@@ -763,7 +769,7 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
         'Study Epochs 1 → 2 → 3 and mark the star’s Epoch 4 destination across linear cadence, conjunction/acceleration, and gravity-deflected paths.',
       controlsDesktop: 'Click your predicted Epoch 4 landing (or Arrows + Enter); press E/Tab to toggle SHOW ALL 3 EPOCHS.',
       controlsTouch: 'Tap your predicted Epoch 4 destination; tap SHOW ALL 3 EPOCHS to compare exposures.',
-      warmthEffect: 'Warm H% widens the prediction capture radius; Cold H% sharpens pinpoint astrometry and adds Δμ mas telemetry.',
+      warmthEffect: 'Warm H% widens the prediction capture radius; Cold H% sharpens pinpoint astrometry and adds Δθ mas telemetry.',
     };
   }
 }

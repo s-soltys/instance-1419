@@ -153,43 +153,50 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
 
     const candidates: SkyNode[] = [];
     let guard = 0;
-    while (candidates.length < totalMain && guard < 600) {
+    while (candidates.length < totalMain && guard < 900) {
       guard++;
+      const minSep = guard < 450 ? 0.12 : 0.095;
       const bx = xMin + rng() * (xMax - xMin);
       const by = yMin + rng() * (yMax - yMin);
-      // Aspect-aware separation so nodes stay >= 64px apart even on 844x390
+      // Aspect-aware separation so nodes stay comfortably clickable on 844x390 without starving Stage 3 decoys
       const tooClose = candidates.some((c) => {
         const dx = c.bx - bx;
         const dy = (c.by - by) * 0.72;
-        return Math.hypot(dx, dy) < 0.145;
+        return Math.hypot(dx, dy) < minSep;
       });
       if (tooClose) continue;
 
       const idx = candidates.length;
-      const isDecoy = idx >= totalMain - decoyCount;
-      // Real physical distance & parallax (mas = 1000 / pc):
-      // True asterism stars sit at 16..95 pc; Stage 3 foreground decoys sit close at 4.5..7.5 pc (high parallax!)
-      const distancePc = isDecoy ? 4.5 + rng() * 3.0 : 16 + rng() * 78;
-      const parallaxMas = 1000 / distancePc;
-      const parallaxWeight = clamp(parallaxMas / 85, 0.14, 2.2) * this.variantCfg.parallaxBoost;
-
       candidates.push({
         id: idx,
         bx,
         by,
-        distancePc,
-        parallaxMas,
-        parallaxWeight,
+        distancePc: 16 + rng() * 78,
+        parallaxMas: 0,
+        parallaxWeight: 1,
         driftPhase: rng() * Math.PI * 2,
-        isDecoy,
-        spectralClass: isDecoy
-          ? this.variantCfg.decoyClass
-          : this.variantCfg.starPalette[idx % this.variantCfg.starPalette.length],
+        isDecoy: false,
+        spectralClass: this.variantCfg.starPalette[idx % this.variantCfg.starPalette.length],
         flash: 0,
         wrongFlash: 0,
         decoyFlare: 0,
-        size: isDecoy ? 7.6 + rng() * 1.4 : 7.0 + rng() * 2.2,
+        size: 7.0 + rng() * 2.2,
       });
+    }
+
+    // Assign decoys relative to placed candidates.length so Stage 3 ALWAYS spawns exact decoyCount foreground decoys
+    const decoyStart = Math.max(seqLen, candidates.length - decoyCount);
+    for (let idx = 0; idx < candidates.length; idx++) {
+      const node = candidates[idx];
+      const isDecoy = decoyCount > 0 && idx >= decoyStart;
+      node.isDecoy = isDecoy;
+      if (isDecoy) {
+        node.distancePc = 4.5 + rng() * 3.0;
+        node.spectralClass = this.variantCfg.decoyClass;
+        node.size = 7.6 + rng() * 1.4;
+      }
+      node.parallaxMas = 1000 / node.distancePc;
+      node.parallaxWeight = clamp(node.parallaxMas / 85, 0.14, 2.2) * this.variantCfg.parallaxBoost;
     }
     this.nodes = candidates;
 
@@ -637,13 +644,12 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
         spectral = node.spectralClass;
         rad *= 1 + node.decoyFlare * 0.32;
         alpha = 0.96;
-        spikes = 4;
       } else if (alreadyConnected) {
         spectral = 'LOCK';
         alpha = 0.96;
-      } else {
-        spikes = node.isDecoy ? 4 : 6;
       }
+      // Uniform 6-point JWST aperture spikes across all stars (single optical spider; zero decoy spoiler)
+      spikes = 6;
 
       drawOpticalStar(c2d, sx, sy, rad, {
         spectralClass: spectral,
@@ -708,6 +714,10 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
     this.recallIndex = this.sequence.length;
   }
 
+  protected override verifySolved(): boolean {
+    return this.sequence.length > 0 && this.recallIndex >= this.sequence.length;
+  }
+
   protected override onAllStagesCleared(): void {
     const acc = clamp(1 - this.wrongTapCount * 0.04, 0.72, 1.0);
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
@@ -724,7 +734,7 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
     return {
       title: this.title,
       physicalPrinciple:
-        'Astrometric parallax measures true distances (π = 1/d in milliarcseconds): nearby foreground stars shift markedly against deep background fields.',
+        'Astrometric parallax measures true distances (π = 1/d in arcseconds, or 1000/d in milliarcseconds): nearby foreground stars shift markedly against deep background fields.',
       goalSummary:
         'Watch the comet link stars in order, then trace them across 3 stages (3 → 4 parallax → 5 with high-parallax foreground decoys).',
       controlsDesktop: 'Click stars in order (or Tab/Arrows + Enter); move cursor to inspect parallax depth; press R to replay.',

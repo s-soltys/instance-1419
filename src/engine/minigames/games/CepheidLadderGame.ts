@@ -910,9 +910,10 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
     this.selectedRefIdx = this.targetRefIdx;
     this.userDist = this.targetDist;
     this.userRedden = this.targetRedden;
-    if (!this.isMatchNow()) {
-      throw new Error(`CEP-15 stage ${this.stage} failed match check after solve`);
-    }
+  }
+
+  protected override verifySolved(_stage: 1 | 2 | 3): boolean {
+    return this.isMatchNow();
   }
 
   getFieldGuide(): InstrumentFieldGuide {

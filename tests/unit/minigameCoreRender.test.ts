@@ -82,6 +82,10 @@ class DemoCosmicMinigame extends BaseCosmicMinigame {
 
   protected solveCurrentStage(): void {}
 
+  protected verifySolved(): boolean {
+    return true;
+  }
+
   protected onAllStagesCleared(): void {
     this.finishSuccess({
       accuracy: 0.96,

@@ -563,6 +563,11 @@ export abstract class BaseCosmicMinigame implements IMinigame {
           this.setupStage(targetStage);
         }
         this.solveCurrentStage(targetStage);
+        if (!this.verifySolved(targetStage)) {
+          throw new Error(
+            `[${this.instrumentCode} ${this.id}] Solvability invariant failed on Stage ${targetStage} (variant=${this.activeVariant?.id ?? this.iterationIndex})`
+          );
+        }
         if (!this.completed) {
           if (targetStage < 3) {
             this.setupStage((targetStage + 1) as 2 | 3);
@@ -620,6 +625,11 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   protected getHelperActionSpec(): HudActionButtonSpec | null {
     return null;
   }
+  /**
+   * Real-rules win predicate verified by `getSolvabilityHarness().solveStage()`
+   * immediately after `solveCurrentStage()` runs. Every game must enforce its true physical win condition.
+   */
+  protected abstract verifySolved(stage: 1 | 2 | 3): boolean;
 
   protected abstract onSetupStage(stage: 1 | 2 | 3, rng: () => number): void;
   protected abstract onUpdate(dt: number): void;
