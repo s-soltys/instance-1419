@@ -28,6 +28,17 @@ const validMinigames = new Set([
   'exoplanet_transit',
   'spectral_prism',
   'radio_triangulation',
+  'coronagraph_mask',
+  'polarization_filter',
+  'exposure_stacker',
+  'binary_mass_scale',
+  'cepheid_ladder',
+  'supernova_echoes',
+  'horizon_seam_stitcher',
+  'michelson_fringe',
+  'multiband_loupe',
+  'einstein_cross',
+  'parallax_depth',
 ]);
 const validAnomalyIds = new Set(anomaliesJson.anomalies.map((a) => a.id));
 

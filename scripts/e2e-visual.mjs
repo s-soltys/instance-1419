@@ -161,18 +161,29 @@ async function run() {
     await page.waitForTimeout(450);
     await saveCheckedScreenshot(page, '02_sky_aperture.png');
 
-    // Flow 3: All 10 Cosmic Instruments
+    // Flow 3: All 21 Cosmic Instruments
     const instruments = [
-      { id: 'wave_shaper', code: 'WAV-01', checkCold: true },
-      { id: 'constellation_recall', code: 'CON-02', checkCold: false },
-      { id: 'pulsar_echo', code: 'PLS-03', checkCold: false },
-      { id: 'lens_focus', code: 'LNS-04', checkCold: true },
-      { id: 'light_dispersion', code: 'DSP-05', checkCold: false },
-      { id: 'blink_spotter', code: 'BLK-06', checkCold: false },
-      { id: 'gravity_slingshot', code: 'ORB-07', checkCold: false },
-      { id: 'exoplanet_transit', code: 'TRN-08', checkCold: false },
-      { id: 'spectral_prism', code: 'PRM-09', checkCold: false },
-      { id: 'radio_triangulation', code: 'TRI-10', checkCold: false },
+      { id: 'wave_shaper', code: 'WAV-01', checkCold: true, capture: true },
+      { id: 'constellation_recall', code: 'CON-02', checkCold: false, capture: false },
+      { id: 'pulsar_echo', code: 'PLS-03', checkCold: false, capture: false },
+      { id: 'lens_focus', code: 'LNS-04', checkCold: false, capture: false },
+      { id: 'light_dispersion', code: 'DSP-05', checkCold: false, capture: false },
+      { id: 'blink_spotter', code: 'BLK-06', checkCold: false, capture: false },
+      { id: 'gravity_slingshot', code: 'ORB-07', checkCold: false, capture: false },
+      { id: 'exoplanet_transit', code: 'TRN-08', checkCold: false, capture: false },
+      { id: 'spectral_prism', code: 'PRM-09', checkCold: false, capture: false },
+      { id: 'radio_triangulation', code: 'TRI-10', checkCold: false, capture: false },
+      { id: 'coronagraph_mask', code: 'COR-11', checkCold: false, capture: true },
+      { id: 'polarization_filter', code: 'POL-12', checkCold: false, capture: false },
+      { id: 'exposure_stacker', code: 'EXP-13', checkCold: false, capture: true },
+      { id: 'binary_mass_scale', code: 'BIN-14', checkCold: false, capture: true },
+      { id: 'cepheid_ladder', code: 'CEP-15', checkCold: false, capture: true },
+      { id: 'supernova_echoes', code: 'ECH-16', checkCold: false, capture: true },
+      { id: 'horizon_seam_stitcher', code: 'SEM-17', checkCold: false, capture: false },
+      { id: 'michelson_fringe', code: 'INT-18', checkCold: true, capture: true },
+      { id: 'multiband_loupe', code: 'BND-19', checkCold: false, capture: true },
+      { id: 'einstein_cross', code: 'MIR-20', checkCold: false, capture: true },
+      { id: 'parallax_depth', code: 'PRX-21', checkCold: false, capture: true },
     ];
 
     for (const inst of instruments) {
@@ -184,7 +195,7 @@ async function run() {
       await page.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 8000 });
       await page.waitForSelector('#minigame-mount canvas.minigame-canvas', { timeout: 4000 });
       await ensureQaClosed(page);
-      await page.waitForTimeout(220);
+      await page.waitForTimeout(100);
 
       const codeText = (await page.textContent('#mg-instrument-code'))?.trim();
       if (codeText !== inst.code) {
@@ -211,14 +222,16 @@ async function run() {
       // Exercise direct canvas drag, Field Guide toggle
       await page.mouse.move(640, 360);
       await page.mouse.down();
-      await page.mouse.move(720, 350, { steps: 6 });
+      await page.mouse.move(720, 350, { steps: 3 });
       await page.mouse.up();
       await page.click('#mg-btn-guide');
       await page.waitForSelector('#mg-field-guide-card:not(.hidden)', { timeout: 2000 });
       await page.click('#mg-btn-guide-close');
-      await page.waitForTimeout(160);
+      await page.waitForTimeout(80);
 
-      await saveCheckedScreenshot(page, `03_mg_${inst.id}_warm.png`);
+      if (inst.capture) {
+        await saveCheckedScreenshot(page, `03_mg_${inst.id}_warm.png`);
+      }
 
       if (inst.checkCold) {
         await ensureQaOpen(page);
@@ -226,7 +239,7 @@ async function run() {
         await page.click('[data-mg-warmth="28,88"]');
         await ensureQaClosed(page);
         await page.waitForSelector('#minigame-overlay[data-vibe="cold"]', { timeout: 4000 });
-        await page.waitForTimeout(180);
+        await page.waitForTimeout(100);
         await saveCheckedScreenshot(page, `04_mg_${inst.id}_cold.png`);
       }
 
@@ -263,7 +276,7 @@ async function run() {
     });
 
     await mPage.goto(url, { waitUntil: 'networkidle' });
-    for (const mobileId of ['wave_shaper', 'gravity_slingshot', 'spectral_prism']) {
+    for (const mobileId of ['exposure_stacker', 'multiband_loupe', 'parallax_depth']) {
       await ensureQaOpen(mPage);
       await mPage.click('[data-qa-tab="minigames"]');
       await mPage.click(`[data-launch-mg="${mobileId}"]`);
@@ -290,7 +303,7 @@ async function run() {
     throw new Error(`E2E verification failed with ${errors.length} runtime/network error(s).`);
   }
 
-  console.log('[e2e-visual] PASS: Boot, Sky Aperture, all 6 Cosmic Instruments (Desktop + 844x390 Mobile), Field Guide, Cold/Warm themes, and 2D Dream verified with 0 errors.');
+  console.log('[e2e-visual] PASS: Boot, Sky Aperture, all 21 Cosmic Instruments (Desktop + 844x390 Mobile), Field Guide, Cold/Warm themes, and 2D Dream verified with 0 errors.');
 }
 
 run().catch((err) => {

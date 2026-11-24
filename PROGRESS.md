@@ -165,6 +165,97 @@ Each agent session reads the latest entries here before starting work and append
   10. `RadioTriangulationGame` (`TRI-10`): Varied perimeter dish slots per stage/seed, added Stage 1 ghost decoy rejection, balanced slow drift (`0.20–0.24 rad/s`) across Stages 2–3, and Stage 3 rhythmic beacon pings.
 * **Verified:** `npx tsc --noEmit`, `npx vitest run` (6 files / 58 tests including 40 solvability tests across all 10 games × 4 regimes), `node scripts/sim-playthroughs.mjs`, `node scripts/lint-narrative.mjs`, `npm run build`, and `node scripts/e2e-visual.mjs` (0 runtime/console/HTTP errors) with screenshot inspection across desktop and mobile `844×390`.
 
+---
+
+## Session 9 — 2026-11-24 — 18 New Cosmic Minigames (`HEX-11`..`SEM-28`, 28 Total)
+* **Expanded Suite from 10 → 28 Playable Cosmic Minigames** (each structured across **Stage 1 Easy → Stage 2 Medium → Stage 3 Hard**, Warm vs. Cold `H%` palettes, 2D lightweight canvas over existing NASA/JWST plates, zero `<input type="range">` HTML sliders, deterministic `getSolvabilityHarness()`):
+  * **Shared Helper (`src/engine/minigames/cosmicGameBase.ts`):** `VernierStripSpec`, `stageLabel`, `getAspectFieldBox`, `layoutVernierRow`, `hitVernierStrip`, `valueFromStripX`, and `drawVernierStrip`.
+  * **Family A — Optics & Telescopes (`#11–#15`):**
+    11. `HexMirrorStackerGame` (`HEX-11`, `hex_mirror_stacker`) — Segmented mirror ghost-star convergence (3 rays → coupled antipodal mirror pairs → gentle wavefront drift).
+    12. `CoronagraphMaskGame` (`COR-12`, `coronagraph_mask`) — Hold dark occulting disc over star glare to spot faint orbiting exoplanets (stationary → slow drift → flare sweep).
+    13. `PolarizationFilterGame` (`POL-13`, `polarization_filter`) — Rotate polarized ring / secondary dust plate & linear filter to extinguish foreground glare and reveal hidden perpendicular cosmic arcs.
+    14. `ExposureStackerGame` (`EXP-14`, `exposure_stacker`) — Press & hold shutter to integrate deep-sky photons while releasing before passing satellite/cosmic-ray streaks ruin the frame.
+    15. `AdaptiveOpticsGame` (`ADP-15`, `adaptive_optics`) — Pull mirror actuator pins to flatten an atmospheric wavefront onto the dashed plane and split unresolved double stars.
+  * **Family B — Gravity & Orbits (`#16–#20`):**
+    16. `LagrangeBalancerGame` (`LAG-16`, `lagrange_balancer`) — Keep probe parked inside orbiting L1 saddle pocket against radial/Coriolis drift and solar wind impulses.
+    17. `BinaryMassScaleGame` (`BIN-17`, `binary_mass_scale`) — Tune mass ratio (`M₂/M₁`), orbital radius, and vertical spin so the binary barycenter anchors onto the glowing crosshairs.
+    18. `TidalRingSculptorGame` (`RCH-18`, `tidal_ring_sculptor`) — Orbit shepherd moons at resonant ring radii (avoiding the inner Roche disruption limit) to carve clean Cassini gaps.
+    19. `HohmannTransferGame` (`HOH-19`, `hohmann_transfer`) — Launch probe burn when target planet enters the synodic tangent intercept reticle (with elliptic eccentric & drifting inner launchpad progression).
+    20. `GravWaveChirpGame` (`GWC-20`, `grav_wave_chirp`) — Match `CHIRP MASS`, `INCLINATION / PHASE`, and `SKY DELAY` vernier sliders to LIGO inspiral strain chirps.
+  * **Family C — Signals & Deduction (`#21–#25`):**
+    21. `NoiseGateWaterfallGame` (`SIG-21`, `noise_gate_waterfall`) — Frame faint radio beacons between low/high-cut spectrogram curtains, notch out narrow RFI spikes, and de-chirp sloped Doppler drift.
+    22. `CepheidLadderGame` (`CEP-22`, `cepheid_ladder`) — Sync `PERIOD` & `AMPLITUDE` to pulsating Cepheid standard candles and calibrate Mpc distance on the logarithmic Leavitt ruler.
+    23. `HRStarClassifierGame` (`HRD-23`, `hr_star_classifier`) — Classify specimens into Blue Supergiant / Red Giant / White Dwarf / Main Sequence (visual → raw spectroscopy → dust-reddened extinction curves).
+    24. `MagneticAuroraGame` (`AUR-24`, `magnetic_aurora`) — Balance planetary `DIPOLE STRENGTH` & `MAGNETIC TILT` so solar wind flares funnel cleanly into polar aurora ovals instead of stripping the atmosphere.
+    25. `ClusterAgeFitterGame` (`AGE-25`, `cluster_age_fitter`) — Slide the glowing `ISOCHRONE AGE` & `METALLICITY [Fe/H]` curve onto a globular cluster's main-sequence turnoff knee.
+  * **Family D — Geometry & Horizon Lore (`#26–#28`):**
+    26. `DarkMatterWebGame` (`WEB-26`, `dark_matter_web`) — Trace hidden dark-matter filaments connecting nodes by reading weak-lensing sheared galaxy ellipses & bypassing cluster decoys.
+    27. `SupernovaEchoesGame` (`ECH-27`, `supernova_echoes`) — Triangulate a central supernova flash point from concentric light-echo wavefront rings across dust knots.
+    28. `HorizonSeamStitcherGame` (`SEM-28`, `horizon_seam_stitcher`) — Drag & rotate translated enclosure sky-survey frames until every star overlaps identically across the horizon seam.
+* **Wiring & Tests:** Updated `MinigameRegistry.ts`, `scripts/lint-narrative.mjs`, `tests/unit/minigameRegistry.test.ts`, and `scripts/e2e-visual.mjs`; fixed `i === 1` partner lookup index in `HexMirrorStackerGame.ts` and removed 3 unused `lerp` imports.
+* **Verified:** `npx tsc --noEmit`, `npx vitest run` (6 files / **130 passed**, including **112 solvability tests** across all **28 games × 4 regimes**), `node scripts/sim-playthroughs.mjs` (500 runs / 0 soft-locks), `node scripts/lint-narrative.mjs`, `npm run build`, and `node scripts/e2e-visual.mjs` (all 28 instruments on `1280×720` Desktop + Cold parity + `844×390` Mobile Landscape, 0 errors) plus visual screenshot inspection across all 4 families and mobile viewports.
+
+---
+
+## Session 10 — 2026-11-24 — 18-Game Curation & Redesign of 6 Kept Minigames (`COR-11`..`SEM-18`)
+* **Curated Suite from 28 → 18 Games (`src/engine/minigames/`):**
+  * **Deleted 10 dropped games:** `HexMirrorStackerGame`, `AdaptiveOpticsGame`, `LagrangeBalancerGame`, `TidalRingSculptorGame`, `HohmannTransferGame`, `GravWaveChirpGame`, `NoiseGateWaterfallGame`, `HRStarClassifierGame`, `ClusterAgeFitterGame`, and `DarkMatterWebGame`.
+  * **Renumbered 2 keep-as-is games:** `PolarizationFilterGame` (`POL-13` → `POL-12`) and `HorizonSeamStitcherGame` (`SEM-28` → `SEM-18`).
+* **Deeply Developed / Tuned 6 Kept Games:**
+  * `CoronagraphMaskGame` (`COR-11`): Added Auto-Tracking Servo Lock (`6.0s → 3.5s → 2.8s`) when snapped onto star glare so players can release the pointer to click revealed exoplanets cleanly; calmed Stage 1 star drift and widened Stage 2–3 mask size bands.
+  * `ExposureStackerGame` (`EXP-13`): Redesigned into variable-iris integration (`APERTURE IRIS` strip / rim drag / wheel: wide integrates fast, narrow dodges off-center diagonal telegraphed streaks), seeded photon stipple accumulation, `HOLD / OPEN SHUTTER` button, and Stage 3 post-capture 4-card sub-frame inspection to reject 1 cosmic-ray artifact.
+  * `BinaryMassScaleGame` (`BIN-14`): Replaced overlapping sliders with an explicit Cosmic Seesaw balance beam + `+` fulcrum + Keplerian orbital cadence (`ghost cadence star`), non-degenerate stages (`1: Direct companion drag · 0 sliders`, `2: Known track + DARK MASS slider`, `3: Drag DISTANCE + tune DARK MASS`), and equal-mass `1.0 M☉` Stage 1 balance.
+  * `CepheidLadderGame` (`CEP-15`): Added expanding heartbeat pulse rings + soft pitch-mapped sonar pulses (`240–510 Hz`), randomized phase offsets in Stage 2, a circular **Split-Mirror Photometer Comparator** (`REF CANDLE | TARGET GALAXY`) with monotonic `DISTANCE (Mpc)` brightness matching, cosmic landmark ruler (`LMC — ANDROMEDA — VIRGO`), and Stage 3 `IR DE-REDDENING`.
+  * `MagneticAuroraGame` (`AUR-16`): Replaced static meter fill with a 44-particle live solar-wind physics simulation deflected into emerald/violet polar aurora curtains vs. red equator strikes, dynamic CME shockwave compression brackets on `FIELD STRENGTH`, and Stage 3 periodic `+ / -` magnetic polarity reversals (`FLIP POLARITY 180°`).
+  * `SupernovaEchoesGame` (`ECH-17`): Added misty cosmic dust patch clouds illuminated by sweeping light-echo arcs, interactive golden circular `TEST PING (SPACE)` curvature matching ripples, primary-vs-decoy discrimination, and Stages 2–3 `REWIND EPOCH (t → 0)` collapse back to the detonation origin.
+* **Wiring & Responsive Polish:** Updated `MinigameRegistry.ts`, `cosmicGameBase.ts` (`yOverride` for both desktop and mobile `844×390` clearance above action buttons), `scripts/lint-narrative.mjs`, `tests/unit/minigameRegistry.test.ts`, and `scripts/e2e-visual.mjs`.
+* **Verified:** `npx tsc --noEmit`, `npx vitest run` (6 files / **90 passed**, including **72 solvability tests** across **18 games × 4 regimes**), `node scripts/sim-playthroughs.mjs` (500 runs / 0 soft-locks), `node scripts/lint-narrative.mjs`, `npm run build`, and `node scripts/e2e-visual.mjs` (all 18 instruments Desktop `1280×720` Warm/Cold + Mobile `844×390`, 0 errors) with screenshot verification across every kept/reworked game.
+
+---
+
+## Session 11 — 2026-11-24 — Prototyped 16 New Cosmic Minigames (`INT-19`..`ARC-34`, 34 Total)
+* **Expanded Playable Suite from 18 → 34 Cosmic Minigames** (each Easy → Medium → Hard, Warm/Cold `H%` parity, zero `<input>` HTML controls, deterministic `getSolvabilityHarness()`):
+  * **Family 1 — Optics, Light & Filter Magic (`#19–#22`):**
+    19. `MichelsonFringeGame` (`INT-19`, `michelson_fringe`) — Optical delay laser rail mirror tuning resolving blurred light static into crisp interference rings + hidden twin star.
+    20. `MultiBandLoupeGame` (`BND-20`, `multiband_loupe`) — Circular Optical / IR / X-Ray spectral magnifier piercing Carina dust pillars to locate hidden cores.
+    21. `DiffractionMaskGame` (`DIF-21`, `diffraction_mask`) — Rotate bright foreground stars' 4-/6-point diffraction spikes cleanly between faint cluster galaxies.
+    22. `EinsteinCrossGame` (`MIR-22`, `einstein_cross`) — Spot & link mirrored lensed quasar images sharing staggered double-beat Morse flash cadence.
+  * **Family 2 — Spatial, Memory & Visual Deduction (`#23–#26`):**
+    23. `ParallaxDepthGame` (`PRX-23`, `parallax_depth`) — Rock `ORBITAL BASELINE` left/right to sort foreground/mid/deep layers and isolate a proper-motion rogue star.
+    24. `SkyPlateMosaicGame` (`MOS-24`, `sky_plate_mosaic`) — Reassemble translucent glass sky shards (`translate` + `ROTATE SHARD` + Stage 3 archival mirror flip).
+    25. `AsteroidOccultationGame` (`OCC-25`, `asteroid_occultation`) — Deduce dark moon / binary peanut / ringed world silhouettes from negative-space star blinks.
+    26. `EpochBlinkerGame` (`MEM-26`, `epoch_blinker`) — Scrub `0 → +40,000 YR` across eras to spot vanished/newborn, backward-moving, and frozen artificial anchor stars.
+  * **Family 3 — Tactile Space Physics & Steering (`#27–#30`):**
+    27. `AccretionSkimmerGame` (`ACC-27`, `accretion_skimmer`) — Sweep curved magnetic siphon arc across inner/outer black hole accretion lanes while dodging polar jets.
+    28. `SolarSailTackGame` (`SAL-28`, `solar_sail_tack`) — Mirror-angle photon pressure sailing through telemetry hoops across planetary umbra shadows & dual suns.
+    29. `CometTailSamplerGame` (`CMT-29`, `comet_tail_sampler`) — Dip sampler probe cleanly into both anti-solar blue Ion plumes & curved golden Dust tails.
+    30. `OrbitDeflectorGame` (`DEF-30`, `orbit_deflector`) — Position 1–2 repulsive laser impulse buoys to bend dotted asteroid paths past hazard worlds into the Capture Ring.
+  * **Family 4 — Cosmic Signals, Resonance & Lore (`#31–#34`):**
+    31. `DopplerSpinMapperGame` (`DOP-31`, `doppler_spin_mapper`) — Align spectrograph slit across rotating blue/red shifted spiral galaxies (including colliding twins).
+    32. `ChladniCmbGame` (`CMB-32`, `chladni_cmb`) — Morph polar Chladni acoustic resonance webs onto primordial CMB hotspots & isolate the Stage 3 Cold Spot.
+    33. `PulsarTimingArrayGame` (`PTA-33`, `pulsar_timing_array`) — Rotate quadrupole wave crosshair to cancel out early/late gravitational distortion across 4–6 pulsars.
+    34. `ArchiveDriftCatcherGame` (`ARC-34`, `archive_drift_catcher`) — Flag stars quietly resetting back onto cyan Instance-0088 anchor rings along skybox loop seams.
+* **Verified:** `npx tsc --noEmit`, `npx vitest run` (6 files / **154 passed**, including **136 solvability tests** across **34 games × 4 regimes**), `node scripts/sim-playthroughs.mjs` (500 runs / 0 soft-locks), `node scripts/lint-narrative.mjs`, `npm run build`, and `node scripts/e2e-visual.mjs` (all 34 instruments Desktop `1280×720` Warm/Cold + Mobile `844×390`, 0 errors) plus visual screenshot inspection across all 16 new games.
+
+---
+
+## Session 12 — 2026-11-24 — Final 21-Game Curation & Deep Refinement of All 9 Keepers
+* **Curated Suite from 34 → 21 Cosmic Minigames (`src/engine/minigames/`):**
+  * **Deleted 13 dropped games:** `MagneticAuroraGame`, `DiffractionMaskGame`, `SkyPlateMosaicGame`, `AsteroidOccultationGame`, `EpochBlinkerGame`, `AccretionSkimmerGame`, `SolarSailTackGame`, `CometTailSamplerGame`, `OrbitDeflectorGame`, `DopplerSpinMapperGame`, `ChladniCmbGame`, `PulsarTimingArrayGame`, and `ArchiveDriftCatcherGame`.
+  * **Renumbered seamlessly (`01`–`21`):** `WAV-01`..`TRI-10`, `COR-11`, `POL-12`, `EXP-13`, `BIN-14`, `CEP-15`, `ECH-16`, `SEM-17`, `INT-18`, `BND-19`, `MIR-20`, `PRX-21`.
+* **Deeply Refined the 5 Previously Adapted Keepers:**
+  * `CoronagraphMaskGame` (`COR-11`): Fixed accidental servo drop by unlocking mask only on disk clicks/un-locked grabs; extended calm servo windows (`8.0s / 5.0s / 4.2s`), added scroll-wheel size nudging, and added visual glare-leak flare spikes + `"TOO WIDE — HIDING INNER ORBIT"` warnings.
+  * `ExposureStackerGame` (`EXP-13`): Switched aperture clicks to a latched shutter toggle freeing pointer for iris dragging, rendered clipped deep-sky Carina development inside 8 animated mechanical iris blades, and upgraded Stage 3 4-card sub-frame crops.
+  * `BinaryMassScaleGame` (`BIN-14`): Replaced Stage 1 equal masses with `2.0 M☉` cyan vs `1.0 M☉` golden star so concentric seesaw orbits diverge (`r₁ = 2·r₂`), moved labels outward off star spikes, added obsidian+lensing Black Hole glow and trailed hollow cadence ring.
+  * `CepheidLadderGame` (`CEP-15`): Added miniature `54×14px` scrolling sine-wave sparklines beneath every Cepheid star plus live Split-Mirror diagnostics (`DUST TINTED` / `TARGET TOO BRIGHT` / `TARGET TOO DIM` / `PHOTOMETRIC FLUSH MATCH`).
+  * `SupernovaEchoesGame` (`ECH-16`): Enhanced glowing dust clouds, kept 3 concentric golden reference circles around compass while dragging, projected fading perpendicular normal rays on `TEST PING`, and placed true Stage 2–3 `t = 0.0` detonation focus at `0.26` with red over-collapse beyond `0`.
+* **Deeply Refined the 4 Promising Batch-2 Prototypes:**
+  * `MichelsonFringeGame` (`INT-18`): Added translucent beam-splitter prism bench, 16 cosine breathing Airy rings blurring into static at mismatch and snapping crisp over binary splitting stars, plus subtle Stage 2 thermal drift bar.
+  * `MultiBandLoupeGame` (`BND-19`): Added layered dark Carina dust pillars veiled outside the clipped circular loupe, warm IR dust-penetration vs. cryo X-ray pulsar views, and clickable on-canvas filter pills cleanly spaced above the console (`1/2/3/Space`).
+  * `EinsteinCrossGame` (`MIR-20`): Added elliptical lensing galaxy core, miniature `36px` scrolling cadence bars below pulsing stars, glowing curved geodesics on tag, and inward geodesic mirage collapse animation.
+  * `ParallaxDepthGame` (`PRX-21`): Added `AUTO-ROCK ORBIT` toggle button paired with stereoscopic horizontal motion streaks, elliptical deep galaxies, and dotted proper-motion trail on paused Stage 3 rogue stars.
+* **Verified:** `npx tsc --noEmit`, `npx vitest run` (6 files / **102 passed**, including **84 solvability tests** across **21 games × 4 regimes**), `node scripts/sim-playthroughs.mjs` (500 runs / 0 soft-locks), `node scripts/lint-narrative.mjs`, `npm run build`, zero `<input` tags, and `node scripts/e2e-visual.mjs` (all 21 instruments Desktop Warm/Cold + Mobile `844×390`, 0 errors) plus visual screenshot inspection of all 13 desktop and mobile captures.
+
 
 
 
