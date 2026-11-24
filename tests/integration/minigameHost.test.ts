@@ -181,7 +181,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     // Spatial game (wave_shaper) enables lightweight single-pass 3D backdrop mode
     host.launch(spec, 'wave_shaper', undefined, { iterationIndex: 2 });
     expect(mockShowcase._bridge.setMinigameBackdropMode).toHaveBeenCalledWith(
-      expect.objectContaining({ mode: 'coupled_showcase' })
+      expect.objectContaining({ mode: 'ambient_stars', propRig: 'dust_wisps' })
     );
     expect(root.querySelector('#mg-guide-title')?.textContent).toContain('Rho Ophiuchi Dust Echo');
 

@@ -32,8 +32,11 @@ const SPECTRAL_INDEX: Record<SpectralClass, number> = {
   ALERT: 8,
 };
 
-const ATLAS_WIDTH = 1152; // 9 columns * 128px
-const ATLAS_HEIGHT = 320; // Row 0: 64px (unspiked), Row 1: 128px (4-pt Hubble), Row 2: 128px (6-pt JWST)
+const ATLAS_CELL_STRIDE = 256; // 9 columns * 256px (native high-res spiked cells)
+const ATLAS_WIDTH = 2304; // 9 * 256
+const ATLAS_HEIGHT = 576; // Row 0: 64px (unspiked), Row 1: 256px (4-pt Hubble), Row 2: 256px (6-pt JWST)
+
+const SPECTRAL_RGB_NORM = SPECTRAL_PALETTE.map((d) => [d.rgb[0] / 255, d.rgb[1] / 255, d.rgb[2] / 255] as const);
 
 function smoothstep(edge0: number, edge1: number, x: number): number {
   const t = clamp((x - edge0) / (edge1 - edge0), 0, 1);
@@ -146,10 +149,10 @@ class StarPSFAtlasStore {
 
     // Row 0: 64x64 unspiked Moffat/Airy field star
     this.bakeRow(data, 0, 64, null, 1.35);
-    // Row 1: 128x128 Hubble-style 4-point spider-vane PSF
-    this.bakeRow(data, 64, 128, HUBBLE_4_AXES, 1.55);
-    // Row 2: 128x128 JWST 6-point hexagonal PSF + faint 90-deg strut
-    this.bakeRow(data, 192, 128, JWST_6_AXES, 1.6);
+    // Row 1: 256x256 Hubble-style 4-point spider-vane PSF (native high-res, above Nyquist)
+    this.bakeRow(data, 64, 256, HUBBLE_4_AXES, 1.55);
+    // Row 2: 256x256 JWST 6-point hexagonal PSF + faint 90-deg strut
+    this.bakeRow(data, 320, 256, JWST_6_AXES, 1.6);
 
     ctx.putImageData(imgData, 0, 0);
     this.atlasCanvas = canvas;
@@ -165,7 +168,9 @@ class StarPSFAtlasStore {
   ): void {
     const half = cellSize * 0.5;
     const invHalf = 1 / half;
-    const colStride = 128; // Columns aligned at 128px intervals across 1152px width
+    const colStride = ATLAS_CELL_STRIDE;
+    const coreScale = axes ? 0.052 : 0.068; // Slightly fuller unspiked core for pinpoint star legibility
+    const minSigmaV = 1.2 / half; // Strictly above Nyquist so 60°/120° diagonal spikes never bead
 
     for (let py = 0; py < cellSize; py++) {
       const dy = (py + 0.5) * invHalf - 1;
@@ -175,16 +180,16 @@ class StarPSFAtlasStore {
         if (r >= 0.99) continue;
 
         // Analytic Moffat optical core + 1st Airy diffraction ring
-        const coreRatio = r / 0.048;
-        const core = Math.pow(1 + coreRatio * coreRatio, -2.6);
-        const airyDelta = (r - 0.14) / 0.032;
-        const airy1 = 0.055 * Math.exp(-airyDelta * airyDelta);
+        const coreRatio = r / coreScale;
+        const core = Math.pow(1 + coreRatio * coreRatio, -2.55);
+        const airyDelta = (r - 0.145) / 0.032;
+        const airy1 = 0.052 * Math.exp(-airyDelta * airyDelta);
 
         // Two-scale mirror scattering halo with edge-free smoothstep window
         const edgeFade = smoothstep(0.98, 0.72, r);
         const halo = (0.28 * Math.exp(-r * 5.2) + 0.09 * Math.exp(-r * 2.1)) * edgeFade;
 
-        // Razor-tapered, chromatically fringed diffraction spikes (zero stroke sticks)
+        // Silky, chromatically fringed diffraction spikes (above-Nyquist Gaussian cross-section)
         let spikeR = 0;
         let spikeG = 0;
         let spikeB = 0;
@@ -195,19 +200,20 @@ class StarPSFAtlasStore {
             const v = -dx * ax.sin + dy * ax.cos;
             const absU = Math.abs(u);
             if (absU >= 0.96) continue;
-            const sigmaV = 0.0055 + 0.006 * Math.exp(-absU * 9.0);
-            const perp = Math.exp(-0.5 * (v / sigmaV) * (v / sigmaV));
-            if (perp < 0.001) continue;
+            const sigmaV = Math.max(minSigmaV, 0.0095 + 0.0085 * Math.exp(-absU * 8.0));
+            const vNorm = v / sigmaV;
+            if (vNorm * vNorm > 14) continue;
+            const perp = Math.exp(-0.5 * vNorm * vNorm);
 
-            const uR = absU * 0.94;
+            const uR = absU * 0.95;
             const uG = absU;
-            const uB = absU * 1.07;
+            const uB = absU * 1.06;
 
-            const envR = Math.exp(-uR * 3.4) * smoothstep(0.95, 0.55, uR) * (0.88 + 0.12 * Math.cos(uR * 28));
-            const envG = Math.exp(-uG * 3.4) * smoothstep(0.95, 0.55, uG) * (0.88 + 0.12 * Math.cos(uG * 28));
-            const envB = Math.exp(-uB * 3.4) * smoothstep(0.95, 0.55, uB) * (0.88 + 0.12 * Math.cos(uB * 28));
+            const envR = Math.exp(-uR * 3.4) * smoothstep(0.95, 0.55, uR) * (0.96 + 0.04 * Math.cos(uR * 16));
+            const envG = Math.exp(-uG * 3.4) * smoothstep(0.95, 0.55, uG) * (0.96 + 0.04 * Math.cos(uG * 16));
+            const envB = Math.exp(-uB * 3.4) * smoothstep(0.95, 0.55, uB) * (0.96 + 0.04 * Math.cos(uB * 16));
 
-            const w = ax.weight * 0.62 * perp;
+            const w = ax.weight * 0.58 * perp;
             spikeR += w * envR;
             spikeG += w * envG;
             spikeB += w * envB;
@@ -216,19 +222,19 @@ class StarPSFAtlasStore {
 
         const baseFlux = core + airy1 + halo;
         const spikePeak = Math.max(spikeR, spikeG, spikeB);
+        if ((baseFlux + spikePeak) * exposure < 0.003) continue;
+
         const whiteBlend = clamp((core + spikePeak * 0.55) * 1.15, 0, 1);
         const rowPixelY = yOffset + py;
+        const rowBaseIdx = rowPixelY * ATLAS_WIDTH + px;
 
-        for (let c = 0; c < SPECTRAL_PALETTE.length; c++) {
-          const rgb = SPECTRAL_PALETTE[c].rgb;
-          const sr = rgb[0] / 255;
-          const sg = rgb[1] / 255;
-          const sb = rgb[2] / 255;
+        for (let c = 0; c < SPECTRAL_RGB_NORM.length; c++) {
+          const rgb = SPECTRAL_RGB_NORM[c];
 
           // Filmic core roll-off: bright cores gently desaturate toward pure starlight white
-          const tintR = lerp(sr, 1.0, whiteBlend);
-          const tintG = lerp(sg, 1.0, whiteBlend);
-          const tintB = lerp(sb, 1.0, whiteBlend);
+          const tintR = rgb[0] + (1 - rgb[0]) * whiteBlend;
+          const tintG = rgb[1] + (1 - rgb[1]) * whiteBlend;
+          const tintB = rgb[2] + (1 - rgb[2]) * whiteBlend;
 
           const fluxR = (baseFlux + spikeR) * tintR;
           const fluxG = (baseFlux + spikeG) * tintG;
@@ -240,7 +246,7 @@ class StarPSFAtlasStore {
           const outA = Math.min(1, Math.max(outR, outG, outB) * 1.08);
           if (outA < 0.004) continue;
 
-          const idx = (rowPixelY * ATLAS_WIDTH + c * colStride + px) * 4;
+          const idx = (rowBaseIdx + c * colStride) * 4;
           data[idx] = Math.round(clamp(outR, 0, 1) * 255);
           data[idx + 1] = Math.round(clamp(outG, 0, 1) * 255);
           data[idx + 2] = Math.round(clamp(outB, 0, 1) * 255);
@@ -291,10 +297,15 @@ class StarPSFAtlasStore {
         if (r <= discR) {
           const rn = r / discR;
           const mu = Math.sqrt(Math.max(0, 1 - rn * rn));
-          // Eddington limb darkening: I(mu) = 0.4 + 0.6 * mu
+          // Eddington limb darkening: I(mu) = 0.36 + 0.64 * mu
           const limb = 0.36 + 0.64 * mu;
-          // Subtle warm-cool solar granulation mottling
-          const gran = 1 + 0.045 * Math.sin(dx * 28 + dy * 19) * Math.cos(dx * 17 - dy * 25);
+          // Ultra-subtle polar non-grid photospheric shimmer (±1.2% weighted by mu, zero waffle grid)
+          const ang = Math.atan2(dy, dx);
+          const organic =
+            Math.sin(rn * 9.5 + ang * 3.0) * 0.5 +
+            Math.cos(rn * 15.0 - ang * 5.0 + 1.1) * 0.35 +
+            Math.sin(rn * 23.0 + ang * 2.0 - 0.7) * 0.15;
+          const gran = 1 + 0.012 * mu * organic;
           const hotCenter = Math.pow(mu, 1.8) * 0.42;
           const rimShift = Math.pow(1 - mu, 2.2) * 0.22;
 
@@ -452,9 +463,9 @@ export function drawOpticalStar(
   }
 
   const col = SPECTRAL_INDEX[cls] ?? 3;
-  const sx = col * 128;
-  const sy = spikes === 0 ? 0 : spikes === 4 ? 64 : 192;
-  const sSize = spikes === 0 ? 64 : 128;
+  const sx = col * ATLAS_CELL_STRIDE;
+  const sy = spikes === 0 ? 0 : spikes === 4 ? 64 : 320;
+  const sSize = spikes === 0 ? 64 : 256;
   const rot = opts?.rotationRad ?? 0;
 
   c2d.save();
@@ -675,12 +686,12 @@ export function drawAmbientStarfield3Depth(
 
     if (hasAtlas && atlas) {
       const col = SPECTRAL_INDEX[s.spectralClass] ?? 3;
-      const atlasX = col * 128;
+      const atlasX = col * ATLAS_CELL_STRIDE;
       if (s.layer === 2) {
         // Near anchor star: subtle 4-point Hubble PSF
         const span = s.radius * 5.2;
         c2d.globalAlpha = a * 0.85;
-        c2d.drawImage(atlas, atlasX, 64, 128, 128, sx - span * 0.5, sy - span * 0.5, span, span);
+        c2d.drawImage(atlas, atlasX, 64, 256, 256, sx - span * 0.5, sy - span * 0.5, span, span);
       } else {
         // Far / Mid stars: unspiked Moffat Airy disc (zero harsh sticks)
         const span = s.layer === 0 ? Math.max(3.5, s.radius * 4.2) : s.radius * 4.8;

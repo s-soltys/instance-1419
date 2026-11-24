@@ -170,6 +170,7 @@ export class TargetShowcaseScene {
   private orbitingBodies: OrbitingBody[] = [];
   private companionStar: OrbitingBody | null = null;
   private spinObjects: { obj: THREE.Object3D; speedX: number; speedY: number }[] = [];
+  private softPointTexture: THREE.CanvasTexture | null = null;
 
   constructor(container: HTMLElement, onTelemetry?: (t: ShowcaseTelemetry) => void) {
     this.container = container;
@@ -1571,6 +1572,46 @@ export class TargetShowcaseScene {
     this.resize();
   }
 
+  /**
+   * Builds a shared 32x32 radial-Gaussian soft-circle CanvasTexture for THREE.PointsMaterial
+   * so 3D ambient stars and dust wisps never render as hard-edged translucent squares.
+   */
+  private getSoftPointTexture(): THREE.CanvasTexture | null {
+    if (this.softPointTexture) return this.softPointTexture;
+    if (typeof document === 'undefined') return null;
+    const size = 32;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx || typeof ctx.createImageData !== 'function' || typeof ctx.putImageData !== 'function') {
+      return null;
+    }
+    const img = ctx.createImageData(size, size);
+    const data = img.data;
+    const half = size * 0.5;
+    for (let y = 0; y < size; y++) {
+      const dy = (y + 0.5) / half - 1;
+      for (let x = 0; x < size; x++) {
+        const dx = (x + 0.5) / half - 1;
+        const r = Math.hypot(dx, dy);
+        if (r >= 1) continue;
+        const edge = Math.max(0, 1 - r);
+        const alpha = Math.exp(-r * r * 4.2) * edge * edge;
+        const idx = (y * size + x) * 4;
+        data[idx] = 255;
+        data[idx + 1] = 255;
+        data[idx + 2] = 255;
+        data[idx + 3] = Math.round(Math.min(1, alpha) * 255);
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    this.softPointTexture = tex;
+    return tex;
+  }
+
   private ensureMinigameStarDome(): void {
     if (this.minigameStarDome) return;
     const count = 900;
@@ -1594,11 +1635,14 @@ export class TargetShowcaseScene {
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const softMap = this.getSoftPointTexture();
     const mat = new THREE.PointsMaterial({
-      size: 0.34,
+      size: softMap ? 0.56 : 0.34,
+      map: softMap ?? undefined,
+      alphaTest: 0.01,
       vertexColors: true,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.72,
       depthWrite: false,
     });
     this.minigameStarDome = new THREE.Points(geo, mat);
@@ -1673,11 +1717,14 @@ export class TargetShowcaseScene {
       }
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const softMap = this.getSoftPointTexture();
       const mat = new THREE.PointsMaterial({
         color: accentHex,
-        size: 0.42,
+        size: softMap ? 0.68 : 0.42,
+        map: softMap ?? undefined,
+        alphaTest: 0.01,
         transparent: true,
-        opacity: 0.24,
+        opacity: 0.28,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
       });
@@ -1860,12 +1907,14 @@ export class TargetShowcaseScene {
       // Direct single-pass render (bypasses EffectComposer / UnrealBloomPass / OpticalPolish)
       this.renderer.render(this.scene, this.camera);
 
-      const frameElapsed = performance.now() - frameStart;
-      this.backdropAvgMs = this.backdropAvgMs * 0.88 + frameElapsed * 0.12;
-      if (this.backdropAvgMs > 22) {
-        // Hard perf guard: suspend 3D backdrop if device struggles so 2D gameplay stays 60fps
-        this.minigameSuspended = true;
-        this.pauseLoop();
+      const frameElapsed = Math.min(performance.now() - frameStart, 40);
+      if (this.backdropFrameCounter > 6) {
+        this.backdropAvgMs = this.backdropAvgMs * 0.88 + frameElapsed * 0.12;
+        if (this.backdropAvgMs > 22) {
+          // Hard perf guard: suspend 3D backdrop if device struggles so 2D gameplay stays 60fps
+          this.minigameSuspended = true;
+          this.pauseLoop();
+        }
       }
       return;
     }
@@ -2005,6 +2054,10 @@ export class TargetShowcaseScene {
       this.minigameStarDome.geometry.dispose();
       (this.minigameStarDome.material as THREE.Material).dispose();
       this.minigameStarDome = null;
+    }
+    if (this.softPointTexture) {
+      this.softPointTexture.dispose();
+      this.softPointTexture = null;
     }
     this.composer?.dispose();
     this.renderer.dispose();

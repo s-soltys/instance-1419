@@ -558,12 +558,12 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
     }
     c2d.stroke();
 
-    if (isTargetStrip) {
+    if (!isTargetStrip) {
       c2d.font = '600 8px ui-monospace, SFMono-Regular, Menlo, monospace';
       c2d.fillStyle = 'rgba(200, 222, 244, 0.56)';
       c2d.textAlign = 'center';
       for (let nm = 400; nm <= 700; nm += 100) {
-        c2d.fillText(`${nm}nm`, x + nmToNormU(nm) * w, y - 6);
+        c2d.fillText(`${nm}nm`, x + nmToNormU(nm) * w, y + h + 11);
       }
     }
 
@@ -744,7 +744,7 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
     const tileH = compact ? 52 : 70;
     const totalTilesW = count * tileW + (count - 1) * gap;
     const tileStartX = (w - totalTilesW) * 0.5;
-    const tileY = midY + barH + (compact ? 14 : 28);
+    const tileY = midY + barH + (compact ? 20 : 28);
 
     this.tileRects.length = count;
     c2d.save();
@@ -836,7 +836,7 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
       this.shiftItemInput[0].locked = dopplerOk;
       this.shiftItemInput[0].rightText = rightLabel;
 
-      const sY = compact ? Math.min(h - 92, tileY + tileH + 26) : tileY + tileH + 34;
+      const sY = compact ? Math.min(h - 92, tileY + tileH + 22) : tileY + tileH + 34;
       layoutVernierRowInto(this.shiftStripBuf, w, h, this.shiftItemInput, sY);
       const strip = this.shiftStripBuf[0];
       const baseCol =

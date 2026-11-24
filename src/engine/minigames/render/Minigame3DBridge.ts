@@ -12,7 +12,7 @@ import { setGlobal3DBackdropComposite } from './BackdropCachePipeline';
 export const DEFAULT_MINIGAME_3D_PRESETS: Record<string, Minigame3DConfig> = {
   // Spatial / Orbital / Field Games (Subtle Single-Pass 3D Backdrop Mode)
   wave_shaper: {
-    mode: 'coupled_showcase',
+    mode: 'ambient_stars',
     opacity: 0.48,
     parallaxScale: 0.03,
     propRig: 'dust_wisps',
@@ -28,7 +28,7 @@ export const DEFAULT_MINIGAME_3D_PRESETS: Record<string, Minigame3DConfig> = {
     driftSpeed: 0.012,
   },
   pulsar_echo: {
-    mode: 'coupled_showcase',
+    mode: 'orbital_rig',
     opacity: 0.5,
     parallaxScale: 0.028,
     propRig: 'orbital_plane',
@@ -100,7 +100,7 @@ export const DEFAULT_MINIGAME_3D_PRESETS: Record<string, Minigame3DConfig> = {
     driftSpeed: 0.012,
   },
   einstein_cross: {
-    mode: 'coupled_showcase',
+    mode: 'ambient_stars',
     opacity: 0.48,
     parallaxScale: 0.03,
     propRig: 'lensing_shell',

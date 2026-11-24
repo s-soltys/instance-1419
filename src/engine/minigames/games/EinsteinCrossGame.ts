@@ -626,13 +626,24 @@ export class EinsteinCrossGame extends BaseCosmicMinigame {
       }
 
       // Naturalized PSF Star Sprite (identical AGN tint across mirages & near-ring decoys!)
-      const starR = (4.6 + amp * 5.2) * s.magScale * (compact ? 0.88 : 1.0);
+      const starR = (6.8 + amp * 5.8) * s.magScale * (compact ? 0.92 : 1.0);
       drawOpticalStar(c2d, drawX, drawY, starR, {
         spectralClass: s.selected ? 'LOCK' : s.spectralClass,
         spikes: amp > 0.68 ? 4 : 0,
-        alpha: clamp(0.48 + amp * 0.52, 0.45, 1),
+        alpha: clamp(0.76 + amp * 0.24, 0.74, 1),
         vibeMode: this.palette.mode,
       });
+
+      // Subtle uniform neutral astrometric aperture ring (identical on mirages & decoys, 0 spoiler)
+      if (collapseFrac === 0) {
+        c2d.save();
+        c2d.strokeStyle = s.selected ? this.palette.lockHex : 'rgba(210, 232, 250, 0.28)';
+        c2d.lineWidth = s.selected ? 1.35 : 0.95;
+        c2d.beginPath();
+        c2d.arc(drawX, drawY, compact ? 7.5 : 9, 0, Math.PI * 2);
+        c2d.stroke();
+        c2d.restore();
+      }
 
       if (hovered && !s.selected && collapseFrac === 0) {
         c2d.save();

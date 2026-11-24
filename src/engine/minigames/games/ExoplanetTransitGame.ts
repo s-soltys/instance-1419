@@ -700,12 +700,13 @@ export class ExoplanetTransitGame extends BaseCosmicMinigame {
       );
     }
 
-    // Star classification micro-tag (placed safely to upper-right of star halo)
+    // Star classification micro-tag cleanly above outer astrometry ring (zero planet eclipse!)
+    const starLabelY = Math.max(g.compact ? 48 : 66, g.starCy - Math.max(g.ryB * 1.25, g.starR) - 10);
     c2d.save();
     c2d.font = '600 9px ui-monospace, SFMono-Regular, Menlo, monospace';
     c2d.fillStyle = 'rgba(212, 228, 244, 0.62)';
-    c2d.textAlign = 'left';
-    c2d.fillText(this.scenario.starLabel, g.starCx + g.starR + 12, g.starCy - g.starR * 0.55);
+    c2d.textAlign = 'center';
+    c2d.fillText(this.scenario.starLabel, g.starCx, starLabelY);
     c2d.restore();
 
     // 4. Photometric Light-Curve Instrument Panel (0.978 – 1.003 normalized flux)
@@ -859,12 +860,12 @@ export class ExoplanetTransitGame extends BaseCosmicMinigame {
     c2d.fillText('0.980', g.gLeft - 6, mapY(0.98) + 3);
 
     c2d.textAlign = 'left';
-    c2d.fillText('FLUX', g.gLeft + 6, g.gTop + 11);
+    c2d.fillText('FLUX', g.gLeft + 2, g.gTop - 5);
     c2d.textAlign = 'right';
     c2d.fillText(
       `WINDOW ${this.scenario.windowDays.toFixed(0)} DAYS · SCRUB TO SHIFT EPOCH`,
-      g.gRight - 6,
-      g.gTop + 11
+      g.gRight - 2,
+      g.gTop - 5
     );
     c2d.restore();
 
