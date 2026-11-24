@@ -9,12 +9,14 @@ const CHARACTERS_PATH = path.join(ROOT, 'src', 'content', 'characters.json');
 const ANOMALIES_PATH = path.join(ROOT, 'src', 'content', 'anomalies.json');
 const SHIFTS_PATH = path.join(ROOT, 'src', 'content', 'shifts.json');
 const STORYLETS_PATH = path.join(ROOT, 'src', 'content', 'storylets.json');
+const BALANCE_PATH = path.join(ROOT, 'src', 'content', 'balance.json');
 const MINIGAMES_DIR = path.join(ROOT, 'src', 'engine', 'minigames');
 
 const charactersJson = JSON.parse(fs.readFileSync(CHARACTERS_PATH, 'utf8'));
 const anomaliesJson = JSON.parse(fs.readFileSync(ANOMALIES_PATH, 'utf8'));
 const shiftsJson = JSON.parse(fs.readFileSync(SHIFTS_PATH, 'utf8'));
 const storyletsJson = JSON.parse(fs.readFileSync(STORYLETS_PATH, 'utf8'));
+const balanceJson = JSON.parse(fs.readFileSync(BALANCE_PATH, 'utf8'));
 
 const validSpeakers = new Set(Object.keys(charactersJson.characters));
 const validMinigames = new Set([
@@ -50,7 +52,7 @@ const ID_TAG = /# *id:([a-zA-Z0-9_-]+)/g;
 let errors = 0;
 const seenLineIds = new Map();
 
-// 1. Ink dialogue lint (IP guardrails, valid speakers/portraits, unique line IDs)
+// 1. Ink dialogue lint (IP guardrails, valid speakers/portraits, unique line IDs, clean # vo:true lines)
 for (const file of fs.readdirSync(DIALOGUE_DIR)) {
   if (!file.endsWith('.ink')) continue;
   const fullPath = path.join(DIALOGUE_DIR, file);
@@ -88,9 +90,33 @@ for (const file of fs.readdirSync(DIALOGUE_DIR)) {
       seenLineIds.set(id, file);
     }
   }
+
+  // Ban dynamic Ink {...} interpolation inside # vo:true spoken lines
+  const lines = text.split(/\r?\n/);
+  let pendingVoTrue = false;
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed || trimmed.startsWith('//')) continue;
+    if (trimmed.startsWith('#')) {
+      if (/# *vo:true\b/i.test(trimmed)) pendingVoTrue = true;
+      continue;
+    }
+    const inlineVo = /# *vo:true\b/i.test(trimmed);
+    const isSpoken = !trimmed.startsWith('VAR ') && !trimmed.startsWith('EXTERNAL ') && !trimmed.startsWith('~') && !trimmed.startsWith('->') && !trimmed.startsWith('*') && !trimmed.startsWith('+') && !trimmed.startsWith('===') && trimmed !== '{' && trimmed !== '}' && !trimmed.startsWith('- ');
+    if (isSpoken && (pendingVoTrue || inlineVo)) {
+      const textOnly = trimmed.split(' #')[0];
+      if (/\{[^}]+\}/.test(textOnly)) {
+        console.error(`[lint-narrative] # vo:true line contains dynamic {...} interpolation (${file}:${i + 1}): ${textOnly}`);
+        errors++;
+      }
+      pendingVoTrue = false;
+    } else if (trimmed.startsWith('*') || trimmed.startsWith('+') || trimmed.startsWith('===')) {
+      pendingVoTrue = false;
+    }
+  }
 }
 
-// 2. Cross-JSON referential integrity
+// 2. Cross-JSON referential integrity & shift clock budget
 for (const a of anomaliesJson.anomalies) {
   if (!validMinigames.has(a.minigameId)) {
     console.error(`[lint-narrative] Anomaly "${a.id}" references uncurated/unknown minigameId "${a.minigameId}"`);
@@ -98,13 +124,25 @@ for (const a of anomaliesJson.anomalies) {
   }
 }
 
+let totalShiftMonths = 0;
 for (const shift of shiftsJson.shifts) {
+  if (typeof shift.hibernationMonthsElapsed !== 'number') {
+    console.error(`[lint-narrative] Shift ${shift.shift} missing numeric hibernationMonthsElapsed`);
+    errors++;
+  }
+  totalShiftMonths += shift.monthsPerShift ?? 0;
   for (const targetId of shift.targetAnomalies) {
     if (!validAnomalyIds.has(targetId)) {
       console.error(`[lint-narrative] Shift ${shift.shift} references unknown targetAnomaly "${targetId}"`);
       errors++;
     }
   }
+}
+if (totalShiftMonths > balanceJson.startingState.subjectiveMonthsLeft) {
+  console.error(
+    `[lint-narrative] Sum of shift monthsPerShift (${totalShiftMonths}) exceeds starting subjectiveMonthsLeft (${balanceJson.startingState.subjectiveMonthsLeft})`
+  );
+  errors++;
 }
 
 if (fs.existsSync(COMPILED_STORY)) {
@@ -136,10 +174,14 @@ function scanMinigamesTs(dir) {
 }
 scanMinigamesTs(MINIGAMES_DIR);
 
-// 4. Voice script audio file coverage
+// 4. Voice script audio file coverage (selective # vo:true when tagged, or all lines otherwise)
 if (fs.existsSync(VOICE_SCRIPT)) {
   const vs = JSON.parse(fs.readFileSync(VOICE_SCRIPT, 'utf8'));
-  for (const line of vs.lines ?? []) {
+  const allLines = vs.lines ?? [];
+  const hasKeyFlags = allLines.some((l) => l.voKey === true);
+  const requiredLines = hasKeyFlags ? allLines.filter((l) => l.voKey === true) : allLines;
+
+  for (const line of requiredLines) {
     const mp3Path = path.join(ROOT, 'public', line.audioFile);
     if (!fs.existsSync(mp3Path) || fs.statSync(mp3Path).size <= 512) {
       console.error(`[lint-narrative] Missing or corrupt voice audio for lineId "${line.lineId}": ${line.audioFile}`);
@@ -154,5 +196,5 @@ if (errors > 0) {
 }
 
 console.log(
-  `[lint-narrative] PASS (speakers, portraits, ${seenLineIds.size} unique line IDs, cross-JSON refs, anti-HTML controls, and VO files verified).`
+  `[lint-narrative] PASS (speakers, portraits, ${seenLineIds.size} unique line IDs, cross-JSON refs, shift clocks, anti-HTML controls, and selective VO files verified).`
 );

@@ -15,7 +15,7 @@
       "anomalyGain": 3,
       "kind": "home_reference",
       "accentHex": "#ffd88a",
-      "description": "Ten light-years behind you, Sol and Alpha Centauri burn steady in visible light. Step inside to triangulate cluster parallax baselines and prove the horizon curvature points straight back home."
+      "description": "Ten light-years behind you, Sol and Alpha Centauri burn steady in visible light—the one pair of anchors on your star chart that still feels close to home."
     },
     {
       "id": "carina_rift_nebula",
@@ -32,12 +32,12 @@
       "anomalyGain": 3,
       "kind": "nebula_cloud",
       "accentHex": "#f49d6a",
-      "description": "Opaque molecular dust hides this stellar nursery in visible light. Sweep into infrared to slice through the dark veil and match spectral absorption lines against an un-redshifted comb behind it."
+      "description": "Thick interstellar dust hides newborn stars in visible light. Sweep into infrared to look straight through the dark cloud and catch whatever sharp signal is sitting behind it."
     },
     {
       "id": "cluster_j1419_a",
       "label": "CLUSTER J1419-A",
-      "subtitle": "Gravitational Lens & Horizon Seam",
+      "subtitle": "Gravitational Lens · Faint Straight Arc",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
       "minigameId": "lens_focus",
@@ -49,12 +49,12 @@
       "anomalyGain": 3,
       "kind": "einstein_ring",
       "accentHex": "#f4b96a",
-      "description": "A massive foreground cluster bends ancient starlight into bright arcs. Model the cluster mass and quadrupole shear to pull the lensed galaxies round and expose the rigid geometric seam behind them."
+      "description": "A massive galaxy cluster bends background starlight into bright rings. Untwist the optical warp in Near-IR—something behind those arcs looks suspiciously ruler-straight."
     },
     {
       "id": "sector_s04_seam",
       "label": "PULSAR RIFT S-04",
-      "subtitle": "High-Energy Shock & Repeating Facet",
+      "subtitle": "High-Energy Flare & Repeating Grid",
       "bandName": "UV / X-RAY",
       "showcaseType": "deep_field",
       "minigameId": "pulsar_echo",
@@ -66,12 +66,12 @@
       "anomalyGain": 3,
       "kind": "horizon_lattice",
       "accentHex": "#9cc8ff",
-      "description": "Violent ultraviolet and X-ray jets flare along the survey boundary. Route coherent beams around plasma occluders and equalize the optical delay line to resolve the repeating facet."
+      "description": "Fast ultraviolet pulses crackle along the outer survey sector. Lock onto the beacon timing to test whether that faint repeating lattice is sensor noise or actually out there."
     },
     {
       "id": "antipodal_poles_seam",
       "label": "ANTIPODAL POLE SEAM",
-      "subtitle": "180° Dual-Epoch Horizon Check",
+      "subtitle": "180° Opposite Sky Check",
       "bandName": "VISIBLE",
       "showcaseType": "antipodal_poles",
       "minigameId": "light_dispersion",
@@ -83,7 +83,7 @@
       "anomalyGain": 3,
       "kind": "horizon_lattice",
       "accentHex": "#a8e6ff",
-      "description": "Directly opposite J1419-A across 93 billion light-years, four-month shift plates reveal synchronized geometric shifts faster than light permits."
+      "description": "Dead opposite Cluster J1419-A on the far side of your sky. Split the incoming light to check whether the same impossible geometry repeats 180 degrees away."
     }
   ]
 }

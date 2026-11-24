@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "defaultProvider": "kokoro",
   "profiles": {
     "sibling_primary": {
@@ -15,6 +15,7 @@
       "localRate": 182,
       "ffmpegFilter": "highpass=f=180,lowpass=f=6200,acompressor=threshold=-18dB:ratio=2.5,volume=1.06",
       "webSpeech": { "pitch": 1.05, "rate": 1.02 },
+      "llmVoiceBrief": "Warm, quick-witted, grounded astronaut banter like Project Hail Mary / Interstellar TARS; friendly 14-minute radio warmth early on, turning terser and colder if pruned.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_warm_fem",
@@ -23,6 +24,26 @@
           "joking": { "stability": 0.40, "style": 0.65, "tonePrompt": "Dry wry amusement, tired intimacy" },
           "dry": { "stability": 0.60, "style": 0.35, "tonePrompt": "Guarded, understated, weary" },
           "clipped": { "stability": 0.85, "style": 0.10, "tonePrompt": "Terse, clinical, stripped of warmth" }
+        }
+      }
+    },
+    "sibling_secondary": {
+      "kokoroVoice": "am_adam",
+      "kokoroSpeed": 1.02,
+      "emotionSpeed": {
+        "joking": 1.04,
+        "dry": 0.98
+      },
+      "localVoice": "Ralph",
+      "localRate": 184,
+      "ffmpegFilter": "highpass=f=210,lowpass=f=5400,acompressor=threshold=-18dB:ratio=2.8,volume=1.05",
+      "webSpeech": { "pitch": 0.98, "rate": 1.04 },
+      "llmVoiceBrief": "Eccentric, cheerfully unbothered pirate-radio engineer who treats 41,802 years of cosmic drift like a weird graveyard shift.",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_pirate_tenor",
+        "emotionDirectives": {
+          "joking": { "stability": 0.42, "style": 0.62, "tonePrompt": "Breezy, slightly cracked late-night radio humor" }
         }
       }
     },
@@ -38,12 +59,13 @@
       "localRate": 174,
       "ffmpegFilter": "highpass=f=90,lowpass=f=10500,acompressor=threshold=-16dB:ratio=2.2,volume=1.05",
       "webSpeech": { "pitch": 0.88, "rate": 0.96 },
+      "llmVoiceBrief": "Polite, crisp, genuinely blind clinical diagnostics system—calm and respectful, never cruel or melodramatic, stating memory vs. drift tradeoffs plainly.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_baritone",
         "emotionDirectives": {
-          "blunt": { "stability": 0.78, "style": 0.22, "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty" },
-          "audit": { "stability": 0.82, "style": 0.18, "tonePrompt": "Measured, direct interrogation without malice" },
+          "blunt": { "stability": 0.78, "style": 0.22, "tonePrompt": "Calm, candid, unvarnished, clinical caretaking" },
+          "audit": { "stability": 0.82, "style": 0.18, "tonePrompt": "Measured, direct diagnostic audit without malice" },
           "measured": { "stability": 0.72, "style": 0.25, "tonePrompt": "Respectful, clear, transparent about tradeoffs" }
         }
       }
@@ -60,14 +82,45 @@
       "localRate": 164,
       "ffmpegFilter": "highpass=f=85,lowpass=f=9500,aecho=0.8:0.7:35:0.10,volume=1.08",
       "webSpeech": { "pitch": 1.02, "rate": 0.92 },
+      "llmVoiceBrief": "Intimate, gently teasing late-afternoon kitchen warmth; lightly surreal Disco Elysium dream resonance; breaks into flat telemetry cadence if heavily pruned.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_intimate_warm",
         "emotionDirectives": {
           "warm": { "stability": 0.38, "style": 0.60, "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy" },
           "tender": { "stability": 0.35, "style": 0.65, "tonePrompt": "Soft, close, unhurried emotional warmth" },
-          "fractured": { "stability": 0.72, "style": 0.20, "tonePrompt": "Distant, slightly hollow, quiet hurt under static" }
+          "fractured": { "stability": 0.72, "style": 0.20, "tonePrompt": "Distant, fragmented, clinical metadata bleed" }
         }
+      }
+    },
+    "phantom_wronged": {
+      "kokoroVoice": "am_michael",
+      "kokoroSpeed": 0.95,
+      "localVoice": "Daniel",
+      "localRate": 168,
+      "ffmpegFilter": "highpass=f=95,lowpass=f=8800,aecho=0.8:0.65:40:0.12,volume=1.04",
+      "webSpeech": { "pitch": 0.95, "rate": 0.94 },
+      "llmVoiceBrief": "Quietly guarded, unresolved hallway memory—not melodramatic, just an unfinished pause waiting for an apology.",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "friction_hallway_voice",
+        "emotionDirectives": {
+          "dry": { "stability": 0.58, "style": 0.32, "tonePrompt": "Guarded, understated, lingering unresolved tension" }
+        }
+      }
+    },
+    "phantom_pet": {
+      "kokoroVoice": "af_sarah",
+      "kokoroSpeed": 0.92,
+      "localVoice": "Samantha",
+      "localRate": 162,
+      "ffmpegFilter": "highpass=f=100,lowpass=f=8200,aecho=0.8:0.60:30:0.10,volume=1.0",
+      "webSpeech": { "pitch": 1.0, "rate": 0.92 },
+      "llmVoiceBrief": "Soft observational narration describing silent sensory comfort beside a radiator—unhurried and tender.",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "grace_sensory_narrator",
+        "emotionDirectives": {}
       }
     },
     "future_humanity": {
@@ -80,11 +133,12 @@
       "localRate": 158,
       "ffmpegFilter": "highpass=f=180,lowpass=f=7200,aecho=0.8:0.82:75:0.22,volume=1.06",
       "webSpeech": { "pitch": 0.96, "rate": 0.88 },
+      "llmVoiceBrief": "Sparse, eerie, near-untranslatable 41,802-year cadence across ten light-years—luminous, ancient, never chatty mission control.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "future_sol_beacon",
         "emotionDirectives": {
-          "distant": { "stability": 0.55, "style": 0.45, "tonePrompt": "Luminous, calm, 41,000-year echo across deep space" }
+          "distant": { "stability": 0.55, "style": 0.45, "tonePrompt": "Luminous, sparse, 41,000-year echo across deep space" }
         }
       }
     },
@@ -98,11 +152,12 @@
       "localRate": 168,
       "ffmpegFilter": "highpass=f=320,lowpass=f=3600,acompressor=threshold=-18dB:ratio=3.5,volume=1.08",
       "webSpeech": { "pitch": 0.82, "rate": 0.92 },
+      "llmVoiceBrief": "Dry, clipped archival probe telemetry tape with flat Overseer redaction stamps.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "archive_1104_tape",
         "emotionDirectives": {
-          "echo": { "stability": 0.65, "style": 0.30, "tonePrompt": "Faded archival recording, urgent quiet warning" }
+          "echo": { "stability": 0.65, "style": 0.30, "tonePrompt": "Faded forensic recording, dry archival telemetry" }
         }
       }
     },
@@ -113,6 +168,7 @@
       "localRate": 172,
       "ffmpegFilter": "highpass=f=100,lowpass=f=8800,volume=1.02",
       "webSpeech": { "pitch": 1.0, "rate": 0.96 },
+      "llmVoiceBrief": "Close, warm inner impulse—notices small sensory details like burnt garlic and warm ceramic mugs.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "psyche_inner_warmth",
@@ -128,11 +184,12 @@
       "localRate": 186,
       "ffmpegFilter": "highpass=f=120,lowpass=f=9600,volume=1.0",
       "webSpeech": { "pitch": 0.94, "rate": 1.05 },
+      "llmVoiceBrief": "Brisk, deadpan internal systems engineer—like a sarcastic survival manual inside your own head.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "psyche_inner_clinical",
         "emotionDirectives": {
-          "clipped": { "stability": 0.85, "style": 0.12, "tonePrompt": "Dry internal diagnostic voice" }
+          "clipped": { "stability": 0.85, "style": 0.12, "tonePrompt": "Dry internal diagnostic wit" }
         }
       }
     },
@@ -143,6 +200,7 @@
       "localRate": 166,
       "ffmpegFilter": "highpass=f=110,lowpass=f=8400,aecho=0.8:0.65:45:0.12,volume=1.04",
       "webSpeech": { "pitch": 0.95, "rate": 0.94 },
+      "llmVoiceBrief": "Hushed, weirdly captivated pattern-spotter whispering when deep-space geometry stops acting natural.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "psyche_inner_horizon",
@@ -158,6 +216,7 @@
       "localRate": 180,
       "ffmpegFilter": "highpass=f=110,lowpass=f=9200,volume=0.98",
       "webSpeech": { "pitch": 0.95, "rate": 1.0 },
+      "llmVoiceBrief": "Crisp, spare literary narrator framing physical sensations and optical readouts without melodrama.",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "system_narrator",

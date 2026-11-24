@@ -718,6 +718,74 @@ export class AudioEngine {
     }
   }
 
+  /**
+   * Subtle procedural voice-timbre cue for unvoiced standard dialogue lines
+   * (zero 404 network requests in selective --scope=key VO mode).
+   */
+  playSpeakerCadence(speaker: string): void {
+    this.unlock();
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    if (speaker === 'sibling_primary' || speaker === 'sibling_secondary') {
+      this.shortClick(620, 0.025, 0.04, now, 'sine');
+      this.shortClick(780, 0.025, 0.03, now + 0.035, 'sine');
+    } else if (speaker === 'overseer') {
+      this.shortClick(440, 0.03, 0.045, now, 'triangle');
+    } else if (speaker.startsWith('psyche_')) {
+      this.playGlassNote(speaker === 'psyche_horizon' ? 523.25 : 349.23, 0.024, 0.02, 0.28, now, 'sine', this.sfxGain);
+    } else {
+      this.playGlassNote(293.66, 0.022, 0.03, 0.3, now, 'triangle', this.sfxGain);
+    }
+  }
+
+  /**
+   * Orchestrated macro audio transitions for Prologue hard-cut, 3D<->2D dissolves,
+   * Overseer ambush silence, and visceral Hold-to-Prune amputation.
+   */
+  playTransitionSweep(
+    kind: 'prologue_snap' | 'to_dream' | 'to_sky' | 'to_inspect' | 'audit_ambush' | 'prune_amputation'
+  ): void {
+    this.unlock();
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+
+    if (kind === 'prologue_snap') {
+      if (this.bedGain) {
+        this.bedGain.gain.cancelScheduledValues(now);
+        this.bedGain.gain.setTargetAtTime(0.0001, now, 0.03);
+      }
+      this.shortClick(190, 0.04, 0.18, now, 'square');
+      this.shortClick(72, 0.16, 0.16, now + 0.02, 'sine');
+    } else if (kind === 'to_dream') {
+      this.sweepTone(360, 185, 0.75, 0.055, now);
+      this.playGlassNote(174.61, 0.075, 0.25, 1.9, now + 0.12, 'triangle', this.sfxGain);
+      this.playGlassNote(261.63, 0.055, 0.35, 2.0, now + 0.22, 'sine', this.sfxGain);
+    } else if (kind === 'to_sky') {
+      this.shortClick(220, 0.04, 0.12, now, 'square');
+      this.sweepTone(220, 480, 0.42, 0.045, now + 0.03);
+    } else if (kind === 'to_inspect') {
+      this.sweepTone(260, 520, 0.38, 0.05, now);
+      this.shortClick(92, 0.14, 0.11, now + 0.22, 'sine');
+    } else if (kind === 'audit_ambush') {
+      if (this.bedGain) {
+        this.bedGain.gain.cancelScheduledValues(now);
+        this.bedGain.gain.setTargetAtTime(0.0001, now, 0.02);
+      }
+      this.shortClick(880, 0.14, 0.14, now + 0.08, 'sine');
+      this.shortClick(659.25, 0.32, 0.14, now + 0.23, 'sine');
+    } else if (kind === 'prune_amputation') {
+      if (this.bedGain) {
+        this.bedGain.gain.cancelScheduledValues(now);
+        this.bedGain.gain.setTargetAtTime(0.0001, now, 0.03);
+      }
+      this.sweepTone(180, 520, 0.22, 0.07, now);
+      this.shortClick(64, 0.55, 0.22, now + 0.2, 'sawtooth');
+      this.shortClick(1560, 0.24, 0.08, now + 0.24, 'sine');
+      this.shortClick(1120, 0.32, 0.06, now + 0.32, 'sine');
+      this.playGlassNote(220.0, 0.04, 0.12, 1.5, now + 0.72, 'sine', this.sfxGain);
+    }
+  }
+
   private shortClick(
     freq: number,
     duration: number,

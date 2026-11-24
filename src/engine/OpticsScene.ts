@@ -101,6 +101,7 @@ export class OpticsScene {
   private wavelengthNm = 560;
   private opticalFidelity = 0.55;
   private anomalyProgress = 0;
+  private shiftSeamFloor = 0;
   private lockProgress = 0;
   private lastLockedId = '';
 
@@ -386,10 +387,32 @@ export class OpticsScene {
     this.renderer.setSize(w, h);
   }
 
-  setParameters(wavelengthNm: number, opticalFidelity: number, anomalyProgress: number): void {
+  setParameters(
+    wavelengthNm: number,
+    opticalFidelity: number,
+    anomalyProgress: number,
+    shift = 1
+  ): void {
     this.wavelengthNm = THREE.MathUtils.clamp(wavelengthNm, 200, 1800);
     this.opticalFidelity = opticalFidelity;
     this.anomalyProgress = anomalyProgress / 100;
+    // Shift 2 ("They Live" reveal) visibly ignites the Near-IR sky seam
+    this.shiftSeamFloor = shift >= 2 ? Math.min(0.85, 0.34 + (shift - 2) * 0.15) : 0;
+  }
+
+  prepareApertureOpen(): void {
+    this.fovDeg = 18;
+    this.targetFovDeg = 54;
+  }
+
+  diveToTarget(raDeg: number, decDeg: number): void {
+    this.targetYawDeg = raDeg;
+    this.targetPitchDeg = decDeg;
+    this.targetFovDeg = 12;
+  }
+
+  defocusForDream(): void {
+    this.targetFovDeg = THREE.MathUtils.clamp(this.fovDeg + 12, 24, 72);
   }
 
   zoomBy(factor: number): void {
@@ -482,7 +505,7 @@ export class OpticsScene {
     this.skyMat.uniforms.uTime.value = elapsed;
     this.skyMat.uniforms.uWavelengthNorm.value = waveNorm;
     this.skyMat.uniforms.uOpticalFidelity.value = this.opticalFidelity;
-    this.skyMat.uniforms.uAnomalyProgress.value = this.anomalyProgress;
+    this.skyMat.uniforms.uAnomalyProgress.value = Math.max(this.anomalyProgress, this.shiftSeamFloor);
 
     this.starMat.uniforms.uTime.value = elapsed;
     this.starMat.uniforms.uFovScale.value = zoomFactor;

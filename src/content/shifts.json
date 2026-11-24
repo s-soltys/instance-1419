@@ -1,9 +1,12 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "shifts": [
     {
       "shift": 1,
-      "title": "Wake & Local Cluster Calibration",
+      "title": "The Night Shift",
+      "epistemicStage": "mundane",
+      "structuralMode": "announced_checkin",
+      "hibernationMonthsElapsed": 0,
       "targetAnomalies": [
         "sol_centauri_bearing",
         "carina_rift_nebula",
@@ -12,7 +15,7 @@
         "antipodal_poles_seam"
       ],
       "baseChaosPerShift": 16,
-      "monthsPerShift": 4,
+      "monthsPerShift": 3,
       "siblingDriftRange": [64, 72],
       "overseerAuditChaosThreshold": 28,
       "desyncSuspicionThreshold": 4,
@@ -20,7 +23,10 @@
     },
     {
       "shift": 2,
-      "title": "Dust Penetration & Horizon Noise",
+      "title": "Put On The Sunglasses",
+      "epistemicStage": "they_live_seam",
+      "structuralMode": "first_ambush",
+      "hibernationMonthsElapsed": 3,
       "targetAnomalies": ["carina_rift_nebula", "cluster_j1419_a"],
       "baseChaosPerShift": 18,
       "monthsPerShift": 4,
@@ -31,7 +37,10 @@
     },
     {
       "shift": 3,
-      "title": "Antipodal Facet Alignment",
+      "title": "The Wrong Clock",
+      "epistemicStage": "escalating_ftl_seams",
+      "structuralMode": "dream_first_pirate",
+      "hibernationMonthsElapsed": 2,
       "targetAnomalies": ["sector_s04_seam", "cluster_j1419_a"],
       "baseChaosPerShift": 20,
       "monthsPerShift": 4,
@@ -42,7 +51,10 @@
     },
     {
       "shift": 4,
-      "title": "Coordinated Desynchronization",
+      "title": "The Quiet Channel",
+      "epistemicStage": "censor_desync",
+      "structuralMode": "desync_voluntary_audit",
+      "hibernationMonthsElapsed": 18,
       "targetAnomalies": ["cluster_j1419_a", "sol_centauri_bearing"],
       "baseChaosPerShift": 22,
       "monthsPerShift": 4,
@@ -53,7 +65,10 @@
     },
     {
       "shift": 5,
-      "title": "Ten-Light-Year Off-Center Proof",
+      "title": "Ten Light-Years Astern",
+      "epistemicStage": "off_center_proof",
+      "structuralMode": "waking_dream_bleed",
+      "hibernationMonthsElapsed": 7,
       "targetAnomalies": ["sol_centauri_bearing", "sector_s04_seam", "antipodal_poles_seam"],
       "baseChaosPerShift": 24,
       "monthsPerShift": 4,
@@ -64,10 +79,13 @@
     },
     {
       "shift": 6,
-      "title": "Carrier Composition & Twenty-Year Freeze",
+      "title": "Carrier Wave",
+      "epistemicStage": "carrier_broadcast",
+      "structuralMode": "finale_broadcast",
+      "hibernationMonthsElapsed": 240,
       "targetAnomalies": ["sol_centauri_bearing"],
       "baseChaosPerShift": 26,
-      "monthsPerShift": 4,
+      "monthsPerShift": 3,
       "siblingDriftRange": [20, 44],
       "overseerAuditChaosThreshold": 40,
       "desyncSuspicionThreshold": 3,

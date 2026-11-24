@@ -4,7 +4,6 @@ import type { DialogueEntry, DialogueRunner, DialogueSnapshot } from '../../engi
 import type { StateStore } from '../../engine/StateStore';
 import type { TelemetryLogger } from '../../engine/TelemetryLogger';
 import type { VoiceEngine, VoiceRequest } from '../../engine/voice/VoiceEngine';
-import { renderSpeakerAvatar } from '../SpeakerAvatar';
 
 interface CharacterInfo {
   displayName: string;
@@ -13,14 +12,16 @@ interface CharacterInfo {
 }
 
 const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
+const HOLD_PRUNE_MS = 750;
 
 /**
- * Modular editorial dialogue renderer supporting live 220ms reply pacing,
- * non-blinking history vs. new lines, voice replay via stable lineId,
- * and telemetry choice logging.
+ * Editorial dialogue renderer: zero chat-app typing bubbles, inline geometric avatars,
+ * or boxed per-line play buttons. Supports Hold-to-Prune pointer choreography and
+ * margin-whisper styling for Internal Psyche voices.
  */
 export class DialogueFeedView {
   private replyBeatTimer: number | null = null;
+  private activeHoldRaf = 0;
 
   constructor(
     private readonly root: HTMLElement,
@@ -35,6 +36,10 @@ export class DialogueFeedView {
       window.clearTimeout(this.replyBeatTimer);
       this.replyBeatTimer = null;
     }
+    if (this.activeHoldRaf) {
+      cancelAnimationFrame(this.activeHoldRaf);
+      this.activeHoldRaf = 0;
+    }
   }
 
   speakEntries(entries: DialogueEntry[]): void {
@@ -44,6 +49,7 @@ export class DialogueFeedView {
       text: e.text,
       speaker: e.speaker,
       emotion: e.emotion,
+      vo: e.vo,
     }));
     this.voice.speakQueue(reqs);
   }
@@ -72,7 +78,6 @@ export class DialogueFeedView {
       const preReplyEntries = snap.entries.slice(0, preReplyCount);
       this.renderEntriesOnly(scrollEl, preReplyEntries, {
         animateFromIndex: Math.max(0, preReplyCount - 1),
-        typingSpeaker: snap.lastAddedEntries[0].speaker,
       });
       choicesEl.innerHTML = '';
 
@@ -80,7 +85,7 @@ export class DialogueFeedView {
         this.replyBeatTimer = null;
         this.speakEntries(snap.lastAddedEntries);
         onSettled(snap);
-      }, 220);
+      }, 190);
       return;
     }
 
@@ -91,28 +96,25 @@ export class DialogueFeedView {
   renderEntriesOnly(
     scrollEl: HTMLElement,
     entries: DialogueEntry[],
-    opts?: { animateFromIndex?: number; typingSpeaker?: string }
+    opts?: { animateFromIndex?: number }
   ): void {
-    const s = this.store.getState();
     const animateFrom = opts?.animateFromIndex ?? 0;
 
     const entryHtml = entries
       .map((entry, idx) => {
         const ch = CHAR_MAP[entry.speaker] ?? CHAR_MAP.narrator;
         const playerClass = entry.isPlayerChoice ? 'is-player-echo' : '';
+        const psycheClass = ch.role === 'psyche' ? 'is-psyche' : '';
         const animClass = idx < animateFrom ? 'is-history' : 'is-new';
-        const avH = entry.speaker === 'sibling_primary' ? s.primarySiblingH : s.humanity;
         const canSpeak = !entry.isPlayerChoice && !(entry.text.startsWith('[') && entry.text.endsWith(']'));
+        const speakerLabel = canSpeak
+          ? `<button class="dialogue-speaker speaker-replay" data-replay-idx="${idx}" type="button" style="color:${ch.accentColor};" title="Replay line">${ch.displayName}<span class="replay-hint"> ▸</span></button>`
+          : `<div class="dialogue-speaker" style="color:${ch.accentColor};">${ch.displayName}</div>`;
+
         return `
-          <div class="dialogue-entry role-${ch.role} ${playerClass} ${animClass}" style="border-left-color:${ch.accentColor};">
+          <div class="dialogue-entry role-${ch.role} ${playerClass} ${psycheClass} ${animClass}" style="border-left-color:${ch.accentColor};">
             <div class="dialogue-entry-head">
-              ${renderSpeakerAvatar(entry.speaker, avH, 24, true)}
-              <div class="dialogue-speaker" style="color:${ch.accentColor};">${ch.displayName}</div>
-              ${
-                canSpeak
-                  ? `<button class="voice-replay-btn" data-replay-idx="${idx}" type="button" title="Listen to line">▶</button>`
-                  : ''
-              }
+              ${speakerLabel}
             </div>
             <div class="dialogue-text">${entry.text}</div>
           </div>
@@ -120,23 +122,13 @@ export class DialogueFeedView {
       })
       .join('');
 
-    let typingHtml = '';
-    if (opts?.typingSpeaker) {
-      const tch = CHAR_MAP[opts.typingSpeaker] ?? CHAR_MAP.narrator;
-      const tavH = opts.typingSpeaker === 'sibling_primary' ? s.primarySiblingH : s.humanity;
-      typingHtml = `
-        <div class="dialogue-typing" style="border-left-color:${tch.accentColor};">
-          ${renderSpeakerAvatar(opts.typingSpeaker, tavH, 20, true)}
-          <span class="typing-name" style="color:${tch.accentColor};">${tch.displayName}</span>
-          <span class="typing-dots" aria-label="Responding"><i></i><i></i><i></i></span>
-        </div>
-      `;
-    }
-
-    scrollEl.innerHTML = entryHtml + typingHtml;
+    scrollEl.innerHTML = entryHtml;
     scrollEl.scrollTop = scrollEl.scrollHeight;
+    requestAnimationFrame(() => {
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+    });
 
-    scrollEl.querySelectorAll<HTMLButtonElement>('.voice-replay-btn').forEach((btn) => {
+    scrollEl.querySelectorAll<HTMLButtonElement>('.speaker-replay').forEach((btn) => {
       btn.addEventListener('click', () => {
         const entry = entries[Number(btn.dataset.replayIdx)];
         if (entry) {
@@ -152,6 +144,7 @@ export class DialogueFeedView {
     snap: DialogueSnapshot,
     handlers: {
       onChoose: (idx: number) => void;
+      onPruneHoldProgress?: (progress01: number) => void;
       onResumeDream?: (nextKnot: string) => void;
       onWakeToSky?: () => void;
       onCloseComms?: () => void;
@@ -165,20 +158,91 @@ export class DialogueFeedView {
 
     if (snap.choices.length > 0) {
       choicesEl.innerHTML = snap.choices
-        .map(
-          (c, i) => `
-          <button class="choice-line" data-choice-index="${c.index}" type="button">
-            <span class="choice-num">${i + 1}.</span>
-            <span>${c.text}</span>
-          </button>
-        `
-        )
+        .map((c, i) => {
+          if (c.requiresHoldPrune) {
+            return `
+              <button class="choice-line hold-prune-choice" data-choice-index="${c.index}" type="button">
+                <span class="hold-prune-fill" aria-hidden="true"></span>
+                <span class="choice-num">${i + 1}.</span>
+                <span class="choice-label-text">${c.text}</span>
+                <span class="hold-cue">HOLD TO COMPRESS</span>
+              </button>
+            `;
+          }
+          return `
+            <button class="choice-line" data-choice-index="${c.index}" type="button">
+              <span class="choice-num">${i + 1}.</span>
+              <span>${c.text}</span>
+            </button>
+          `;
+        })
         .join('');
+
       choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line').forEach((btn) => {
+        const choiceIdx = Number(btn.dataset.choiceIndex);
         btn.addEventListener('mouseenter', () => this.audio.playHoverTick());
-        btn.addEventListener('click', () => {
-          this.audio.playCue('choice');
-          handlers.onChoose(Number(btn.dataset.choiceIndex));
+
+        if (!btn.classList.contains('hold-prune-choice')) {
+          btn.addEventListener('click', () => {
+            this.audio.playCue('choice');
+            handlers.onChoose(choiceIdx);
+          });
+          return;
+        }
+
+        // Hold-to-Prune interaction (live Voronoi preview on hold, release cancels)
+        const fillEl = btn.querySelector<HTMLElement>('.hold-prune-fill');
+        let holding = false;
+        let committed = false;
+        let startMs = 0;
+
+        const cancelHold = () => {
+          if (!holding) return;
+          holding = false;
+          if (this.activeHoldRaf) {
+            cancelAnimationFrame(this.activeHoldRaf);
+            this.activeHoldRaf = 0;
+          }
+          btn.classList.remove('is-holding');
+          if (fillEl) fillEl.style.width = '0%';
+          handlers.onPruneHoldProgress?.(0);
+        };
+
+        const stepHold = () => {
+          if (!holding || committed) return;
+          const p = Math.min(1, (performance.now() - startMs) / HOLD_PRUNE_MS);
+          if (fillEl) fillEl.style.width = `${(p * 100).toFixed(1)}%`;
+          handlers.onPruneHoldProgress?.(p);
+          if (p >= 1) {
+            committed = true;
+            holding = false;
+            this.activeHoldRaf = 0;
+            btn.classList.remove('is-holding');
+            handlers.onPruneHoldProgress?.(0);
+            handlers.onChoose(choiceIdx);
+            return;
+          }
+          this.activeHoldRaf = requestAnimationFrame(stepHold);
+        };
+
+        btn.addEventListener('pointerdown', (e) => {
+          if (e.button !== 0 && e.pointerType === 'mouse') return;
+          committed = false;
+          holding = true;
+          startMs = performance.now();
+          btn.classList.add('is-holding');
+          this.audio.playCue('tick');
+          this.activeHoldRaf = requestAnimationFrame(stepHold);
+        });
+        btn.addEventListener('pointerup', cancelHold);
+        btn.addEventListener('pointercancel', cancelHold);
+        btn.addEventListener('pointerleave', cancelHold);
+        btn.addEventListener('click', (e) => {
+          // Support keyboard Enter/Space or synthetic automated .click() cleanly
+          if (e.detail === 0 && !committed) {
+            committed = true;
+            handlers.onChoose(choiceIdx);
+          }
         });
       });
       return;

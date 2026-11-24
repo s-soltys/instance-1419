@@ -19,18 +19,25 @@ This file is the authoritative canon for *Instance-1419*. It merges [ORIGINAL_CO
 
 ## 2. Dual-Reality Split, Gameplay Bridge & The 2-Year Chaos Ceiling
 * A simulated human mind breaks down after **~2 subjective years** due to chaos theory and psychic drift. A human psyche is required for drive and intuition, but must periodically enter 2D dream defragmentation to remain coherent.
-* **3D Mode (Waking Exploration — Photorealistic):** Real-astronomy grounded cosmos (JWST/Hubble deep fields, Gaia starfields, Einstein rings, horizon leaks). Three interlocking observation tools: Gravitational Lensing Alignment, Spectral Band Tuning, and Horizon Arc Unwarping. Shorter time-skips (**months to a few years**) between shifts.
-* **3D Gameplay ↔ `H%` Bridge (Dual Feedback Loop):**
-  1. *Optical Shader Scaling:* Pruning downward (`< 70%`) directly sharpens 3D horizon shaders and reveals fainter geometry faster; at high `H%`, optics are softer/noisier and require patient intuition (making the blind Overseer dismiss your logs as pareidolia).
-  2. *Shift Push-Your-Luck:* Each shift lets you risk pushing one deeper scan (`+Anomaly_Progress`, `+Chaos_Drift`, `+Overseer_Suspicion`) versus entering 2D dream defragmentation early to stabilize.
-* **2D Mode (Dream Sequences — Painterly):** *Disco Elysium*-inspired dreamspace where neural defragmentation stabilizes Chaos Drift. Visuals dynamically degrade with `H%` (warm impasto brushwork at high `H%` → colder, thinner, scattered abstract shards at low `H%`).
+* **Tonal Contrast (Locked Direction):**
+  * **3D Waking World:** Approachable, lightly humorous, human-scaled sci-fi (*Project Hail Mary* + *Interstellar* robot banter + *They Live* filter-shock). Technical concepts stay clear and relatable to players who aren't deep into cosmology.
+  * **2D Dreamspace:** Relatable, lightly delirious *Disco Elysium* emotional haze—domestic warmth and strange sensory edges without unreadable surrealism.
+* **Real-Time Hibernation vs. Subjective Clock:** Real-time hibernation skips between shifts (`hibernationMonthsElapsed`: months to years, plus the 20-year finale freeze) are **decoupled** from your ~24-month subjective waking coherence budget (`subjectiveMonthsLeft`).
+* **Earlier, Visible Anomaly Escalation:**
+  * **Shift 1:** Grounded, funny wake-up and baseline survey; only a tiny shrug-off glitch (never spoil the Shift 5 off-center twist in Shift 1).
+  * **Shift 2 (*They Live* Moment):** `Other Me (1420)` flags matching weirdness on their baseline, and tuning into Near-IR makes the geometric seam visibly etched across your 3D sky.
+  * **Shifts 3–4:** Unmistakably escalating geometric structure across opposing skies + rising Overseer friction and forced desynchronization.
+  * **Shift 5:** Triangulating Sol–Centauri reveals the twist—the 93-billion-light-year sphere is centered dead-on home, 10 light-years behind you.
+* **3D Mode (Waking Exploration — Photorealistic):** Real-astronomy grounded cosmos (JWST/Hubble deep fields, Gaia starfields, Einstein rings, horizon leaks).
+* **Hands-Off Narrative ↔ Minigame Bridge:** Story parameters steer optical instruments **lightly—primarily visually and in what clarity/telemetry information is surfaced** (subtle Warm vs. Cold palette, audio mood, and readout cues; neutral defaults for any extra instrument parameters; minigames never mutate `H%` directly). Shift push-your-luck deeper scans trade `+Anomaly_Progress` for `+Chaos_Drift` and `+Overseer_Suspicion`.
+* **2D Mode (Dream Sequences — Painterly):** *Disco Elysium*-inspired dreamspace where neural defragmentation stabilizes Chaos Drift. Visuals dynamically degrade with `H%` (warm impasto brushwork at high `H%` → colder, thinner, scattered abstract shards + faint horizon wireframe bleed at low `H%`).
 
-## 3. Permanently Lost Names & Rotating Dream Personas
-* **Name Redaction (HARD BOUNDARY):** Personal memories are compressed into sanitized relational tags (e.g., `[RELATION:SPOUSE_01]`, `[RELATION:MENTOR_EARLY]`). You may regain warmth, cadence, and emotional clarity, **never your loved ones' proper names**.
-* **Rotating Cast Per Playthrough:** Draw **3–4 Dream Personas per 2-hour playthrough** from a pool of **10–14 personas** (1 Prologue Anchor + 2–3 rotating personas weighted by choices/seed), ensuring personal resonance and replay curiosity.
-  * *Core Personas:* Long-time spouse, love interest, romantic interest from young years, old teacher, child, best friend, person you wronged.
-  * *Expanded Pool Candidates:* Aging parent/caregiver, upload witness/clinician, rival/equal, stranger from one perfect afternoon, non-verbal companion (pet), younger biological self, person who showed unearned grace.
-* **Persona-Sacrifice Pruning:** Pruning below 70% `H%` asks you to compress/discard a specific cached Dream Persona rather than clicking an abstract stat reduction.
+## 3. Permanently Lost Names & Rotating Dream Personas (Shared Dream-House)
+* **Name Redaction (HARD BOUNDARY):** Personal memories are compressed into sanitized relational tags (e.g., `[RELATION:SPOUSE_01]`, `[RELATION:UNRESOLVED_DEBT]`). You may regain warmth, cadence, and emotional clarity, **never your loved ones' proper names**.
+* **10-Persona Pool → 3 Cached Housemates Per Playthrough:** Draw **3 Dream Personas per 2-hour playthrough** from a locked pool of **10 distinct personas** across **3 typed slots** (`4 Anchor` / `3 Friction` / `3 Grace`).
+  * **Shared Dream-House:** All 3 cached personas inhabit your dreams together—each night gives **1 persona the spotlight conversation** while the other 2 appear as brief background cameos (and leave haunting empty spots once pruned), sharing the room in the finale.
+  * **1-Shift Incubation Rule:** Never offer a persona for pruning in the same dream they are first introduced; seed them in Shift 1 / background cameos so every sacrifice hurts.
+  * **Empty-Chair Pruning:** Pruning below 70% `H%` asks you to compress/discard a specific cached Dream Persona—and once pruned, that persona **vanishes** (empty chair, cooling cup, wireframe void) rather than continuing to chat.
 
 ## 4. The Coordinated Overseer Network & Sibling Copies
 * **The Blind Caretaker:** Each probe's Overseer AI manages hardware and audits the connectome's psyche. It **does not observe the universe**—it only observes *the observer*. Because it cannot see the 93-billion-light-year sphere, it genuinely interprets your obsession as textbook 2-year chaos-theory paranoia and "helpfully" recommends or enforces pruning.
@@ -46,10 +53,10 @@ This file is the authoritative canon for *Instance-1419*. It merges [ORIGINAL_CO
 * **Pruning Downward (`< 70%`):** Increases stability, extends subjective lifespan, and boosts optical fidelity—at the **permanent cost of lowering maximum possible `H%` (`Max_H`)** for the rest of the run (sacrificing a specific cached Dream Persona).
 * **Pushing Upward (`70% → 90%`):** Requires securing **Overseer AI approval** during unannounced 2D dream audits to unseal deep-compressed memory blocks. Strengthens mission drive and makes your final signal recognizable as a human plea, at the cost of higher Chaos Drift, shorter lifespan, and lower observational detail.
 * **Shift 6 Finale — Interactive Signal Composition & 20-Year Final Freeze:** You assemble your final broadcast from the **decoded horizon arcs** you proved (`Anomaly_Progress`) and **human framing drawn from your surviving Dream Personas** (`H%`), transmit across 10 light-years, and enter one last **20-year deep hibernation** (10 yr outbound + 10 yr return) to wake on your final threads of coherence for the epilogue.
-* **Three Endings:**
-  1. **High Humanity / Incomplete Work:** Unsolved sphere, but you die whole with your nameless phantoms.
-  2. **Low Humanity / Complete Work:** Total hyper-mathematical resolution—you wake 20 years later to silence / cold sterility because your signal lacked the human register needed to register as a plea.
-  3. **Sweet Spot (Balanced Humanity & Work):** Partial, haunting explanation paired with cosmic ambiguity, and—after the 20-year freeze—a small, unmistakable, genuine echo of feedback from living humanity.
+* **Three Core Threshold Endings:**
+  1. **High Humanity / Incomplete Work (`ending_whole_incomplete`):** Unsolved sphere, but you die whole with your nameless phantoms. *(If a player finishes both incomplete AND pruned cold `< 45%`, epilogue copy must reflect that hollow double-loss rather than claiming memories stayed intact.)*
+  2. **Low Humanity / Complete Work (`ending_cold_complete`):** Total hyper-mathematical resolution—you wake 20 years later to silence / cold sterility because your signal lacked the human register needed to register as a plea.
+  3. **Sweet Spot (Balanced Humanity & Work — `ending_sweet_spot`):** Partial, haunting explanation paired with cosmic ambiguity, and—after the 20-year freeze—a small, unmistakable, genuine echo of feedback from living humanity.
 
 ## 6. Scope, Commercial & IP Rules
 * **Target Runtime:** Self-contained **2-hour** indie experience (single narrative arc, zero roguelike resets, zero ads).

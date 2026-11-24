@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "characters": {
     "narrator": {
       "displayName": "SYSTEM · LOG",
@@ -50,6 +50,13 @@
       "avatarKind": "sibling_echo",
       "portrait": null
     },
+    "sibling_secondary": {
+      "displayName": "OUT-OF-PHASE · 1421",
+      "role": "sibling",
+      "accentColor": "#b8e08d",
+      "avatarKind": "sibling_echo",
+      "portrait": null
+    },
     "future_humanity": {
       "displayName": "SOL–CENTAURI · FUTURE RELAY",
       "role": "future_humanity",
@@ -60,6 +67,7 @@
     "phantom_spouse": {
       "displayName": "[RELATION:SPOUSE_01]",
       "role": "dream_persona",
+      "slot": "anchor",
       "accentColor": "#f2be7a",
       "avatarKind": "dream_silhouette",
       "portrait": "assets/characters/dream_spouse_impasto.webp",
@@ -67,6 +75,30 @@
       "faceAnchor": [0.40, 0.73],
       "roomTitle": "AFTERNOON KITCHEN MEMORY",
       "blurredSubtitle": "FEATURES BLURRED · DISTORTED"
+    },
+    "phantom_wronged": {
+      "displayName": "[RELATION:UNRESOLVED_DEBT]",
+      "role": "dream_persona",
+      "slot": "friction",
+      "accentColor": "#d99272",
+      "avatarKind": "dream_silhouette",
+      "portrait": "assets/characters/dream_spouse_impasto.webp",
+      "tableau": "assets/characters/dream_spouse_impasto.webp",
+      "faceAnchor": [0.29, 0.68],
+      "roomTitle": "HALLWAY THRESHOLD MEMORY",
+      "blurredSubtitle": "UNPAID APOLOGY · COMPRESSED"
+    },
+    "phantom_pet": {
+      "displayName": "[RELATION:COMPANION_NONHUMAN]",
+      "role": "dream_persona",
+      "slot": "grace",
+      "accentColor": "#e5c88e",
+      "avatarKind": "dream_silhouette",
+      "portrait": "assets/characters/dream_spouse_impasto.webp",
+      "tableau": "assets/characters/dream_spouse_impasto.webp",
+      "faceAnchor": [0.24, 0.34],
+      "roomTitle": "RADIATOR CORNER MEMORY",
+      "blurredSubtitle": "SENSORY WARMTH · SILENCED"
     },
     "archive_echo": {
       "displayName": "PRIOR COPY · 1406",

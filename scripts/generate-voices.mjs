@@ -14,6 +14,7 @@ fs.mkdirSync(VOICES_OUT_DIR, { recursive: true });
 
 const args = process.argv.slice(2);
 const providerArg = args.find((a) => a.startsWith('--provider='))?.split('=')[1] ?? 'kokoro';
+const scopeArg = args.find((a) => a.startsWith('--scope='))?.split('=')[1] ?? 'key';
 const forceRegen = args.includes('--force');
 
 const profilesJson = JSON.parse(fs.readFileSync(PROFILES_PATH, 'utf8'));
@@ -39,6 +40,10 @@ function prepareSpokenText(rawText) {
   return rawText
     .replace(/\[RELATION:SPOUSE_01\]'s/g, 'their')
     .replace(/\[RELATION:SPOUSE_01\]/g, 'your partner')
+    .replace(/\[RELATION:UNRESOLVED_DEBT\]'s/g, 'their')
+    .replace(/\[RELATION:UNRESOLVED_DEBT\]/g, 'the person in the hall')
+    .replace(/\[RELATION:COMPANION_NONHUMAN\]'s/g, 'its')
+    .replace(/\[RELATION:COMPANION_NONHUMAN\]/g, 'the old hound')
     .replace(/\{humanity\}/g, 'seventy')
     .replace(/\{max_humanity\}/g, 'seventy eight')
     .replace(/\{chaos_drift\}/g, 'fourteen')
@@ -50,15 +55,32 @@ function prepareSpokenText(rawText) {
     .trim();
 }
 
+function parseTagChunk(tagPart, state) {
+  const speakerMatch = tagPart.match(/# *speaker:([a-zA-Z0-9_-]+)/);
+  if (speakerMatch) state.speaker = speakerMatch[1];
+  const emotionMatch = tagPart.match(/# *emotion:([a-zA-Z0-9_-]+)/);
+  if (emotionMatch) state.emotion = emotionMatch[1];
+  const idMatch = tagPart.match(/# *id:([a-zA-Z0-9_-]+)/);
+  if (idMatch) state.explicitId = idMatch[1];
+  const voMatch = tagPart.match(/# *vo:(true|false)/i);
+  if (voMatch) state.voKey = voMatch[1].toLowerCase() === 'true';
+  const dirMatch = tagPart.match(/# *direction:([^#]+)/i);
+  if (dirMatch) state.direction = dirMatch[1].trim();
+}
+
 function extractLinesFromInk(filePath) {
   const raw = fs.readFileSync(filePath, 'utf8');
   const lines = raw.split(/\r?\n/);
 
   let currentKnot = 'root';
-  let currentSpeaker = 'narrator';
-  let currentEmotion = 'neutral';
-  let currentExplicitId = null;
   let inFunction = false;
+  const state = {
+    speaker: 'narrator',
+    emotion: 'neutral',
+    explicitId: null,
+    voKey: false,
+    direction: '',
+  };
   const scopeStack = [];
   const collected = [];
 
@@ -71,9 +93,11 @@ function extractLinesFromInk(filePath) {
       if (nameMatch) {
         inFunction = Boolean(nameMatch[1]);
         currentKnot = nameMatch[2];
-        currentSpeaker = 'narrator';
-        currentEmotion = 'neutral';
-        currentExplicitId = null;
+        state.speaker = 'narrator';
+        state.emotion = 'neutral';
+        state.explicitId = null;
+        state.voKey = false;
+        state.direction = '';
         scopeStack.length = 0;
       }
       continue;
@@ -82,28 +106,34 @@ function extractLinesFromInk(filePath) {
     if (inFunction) continue;
 
     if (trimmed === '{') {
-      scopeStack.push({ speaker: currentSpeaker, emotion: currentEmotion });
-      currentExplicitId = null;
+      scopeStack.push({ speaker: state.speaker, emotion: state.emotion });
+      state.explicitId = null;
+      state.voKey = false;
+      state.direction = '';
       continue;
     }
 
     if (trimmed === '}') {
       if (scopeStack.length > 0) {
         const prev = scopeStack.pop();
-        currentSpeaker = prev.speaker;
-        currentEmotion = prev.emotion;
+        state.speaker = prev.speaker;
+        state.emotion = prev.emotion;
       }
-      currentExplicitId = null;
+      state.explicitId = null;
+      state.voKey = false;
+      state.direction = '';
       continue;
     }
 
     if (trimmed.startsWith('- ')) {
       if (scopeStack.length > 0) {
         const top = scopeStack[scopeStack.length - 1];
-        currentSpeaker = top.speaker;
-        currentEmotion = top.emotion;
+        state.speaker = top.speaker;
+        state.emotion = top.emotion;
       }
-      currentExplicitId = null;
+      state.explicitId = null;
+      state.voKey = false;
+      state.direction = '';
       continue;
     }
 
@@ -115,17 +145,14 @@ function extractLinesFromInk(filePath) {
       trimmed.startsWith('*') ||
       trimmed.startsWith('+')
     ) {
-      currentExplicitId = null;
+      state.explicitId = null;
+      state.voKey = false;
+      state.direction = '';
       continue;
     }
 
     if (trimmed.startsWith('#')) {
-      const speakerMatch = trimmed.match(/# *speaker:([a-zA-Z0-9_-]+)/);
-      if (speakerMatch) currentSpeaker = speakerMatch[1];
-      const emotionMatch = trimmed.match(/# *emotion:([a-zA-Z0-9_-]+)/);
-      if (emotionMatch) currentEmotion = emotionMatch[1];
-      const idMatch = trimmed.match(/# *id:([a-zA-Z0-9_-]+)/);
-      if (idMatch) currentExplicitId = idMatch[1];
+      parseTagChunk(trimmed, state);
       continue;
     }
 
@@ -133,35 +160,44 @@ function extractLinesFromInk(filePath) {
     const tagIdx = trimmed.indexOf(' #');
     if (tagIdx !== -1) {
       const tagPart = trimmed.slice(tagIdx);
-      const speakerMatch = tagPart.match(/# *speaker:([a-zA-Z0-9_-]+)/);
-      if (speakerMatch) currentSpeaker = speakerMatch[1];
-      const emotionMatch = tagPart.match(/# *emotion:([a-zA-Z0-9_-]+)/);
-      if (emotionMatch) currentEmotion = emotionMatch[1];
-      const idMatch = tagPart.match(/# *id:([a-zA-Z0-9_-]+)/);
-      if (idMatch) currentExplicitId = idMatch[1];
+      parseTagChunk(tagPart, state);
       text = trimmed.slice(0, tagIdx).trim();
     }
 
     if (!text) continue;
     if (text.startsWith('[') && text.endsWith(']')) {
-      currentExplicitId = null;
+      state.explicitId = null;
+      state.voKey = false;
+      state.direction = '';
       continue;
     }
 
-    const lineId = currentExplicitId ?? makeLineId(currentSpeaker, text);
-    currentExplicitId = null;
-    const matchKey = normalizeMatchKey(currentSpeaker, text);
-    const profile = profiles[currentSpeaker] ?? profiles.narrator;
+    const lineId = state.explicitId ?? makeLineId(state.speaker, text);
+    const voKey = state.voKey;
+    const direction = state.direction;
+    state.explicitId = null;
+    state.voKey = false;
+    state.direction = '';
+
+    const matchKey = normalizeMatchKey(state.speaker, text);
+    const profile = profiles[state.speaker] ?? profiles.narrator;
+    const emotionNote = profile?.remoteConfig?.emotionDirectives?.[state.emotion]?.tonePrompt ?? '';
+    const resolvedDirection =
+      direction || emotionNote || profile?.llmVoiceBrief || 'Natural, restrained delivery.';
 
     collected.push({
       lineId,
       matchKey,
       knot: currentKnot,
-      speaker: currentSpeaker,
-      emotion: currentEmotion,
+      speaker: state.speaker,
+      emotion: state.emotion,
+      voKey,
+      direction: resolvedDirection,
+      llmVoiceBrief: profile?.llmVoiceBrief ?? '',
       text,
       spokenText: prepareSpokenText(text),
       audioFile: `voices/${lineId}.mp3`,
+      hasAudio: false,
       remoteConfig: profile?.remoteConfig ?? null,
     });
   }
@@ -179,43 +215,72 @@ function dedupeEntries(entries) {
   return [...byId.values()];
 }
 
+function selectTargetEntries(entries) {
+  const hasAnyKeyTag = entries.some((e) => e.voKey);
+  if (scopeArg === 'all' || !hasAnyKeyTag) {
+    return entries;
+  }
+  return entries.filter((e) => e.voKey);
+}
+
+function refreshHasAudioFlags(entries) {
+  for (const e of entries) {
+    const outPath = path.join(ROOT, 'public', e.audioFile);
+    e.hasAudio = fs.existsSync(outPath) && fs.statSync(outPath).size > 512;
+  }
+}
+
 function writeScriptArtifacts(entries) {
+  refreshHasAudioFlags(entries);
   const engineName = providerArg === 'kokoro' ? 'kokoro-82m-q8' : providerArg;
   const jsonOut = {
-    schema_version: 2,
+    schema_version: 3,
     generated_at: new Date().toISOString(),
     provider: providerArg,
+    scope: scopeArg,
     engine: engineName,
+    characterBriefs: Object.fromEntries(
+      Object.entries(profiles).map(([id, prof]) => [id, prof.llmVoiceBrief ?? ''])
+    ),
     lines: entries,
   };
   fs.writeFileSync(path.join(COMPILED_DIR, 'voice_script.json'), JSON.stringify(jsonOut, null, 2));
 
   const txtLines = [
-    '# INSTANCE-1419 — GENERATED VOICE SCRIPT',
-    `# Engine: ${engineName}`,
+    '# INSTANCE-1419 — FULL VOICE RECORDING & LLM DIRECTION SCRIPT',
+    `# Engine: ${engineName} | Synthesis Scope: ${scopeArg}`,
     `# Generated: ${jsonOut.generated_at}`,
-    `# Total spoken lines: ${entries.length}`,
+    `# Total spoken lines: ${entries.length} (Key VO lines: ${entries.filter((e) => e.voKey).length})`,
     '',
+    '=== CHARACTER CASTING & VOICE BRIEFS ===',
   ];
+  for (const [id, prof] of Object.entries(profiles)) {
+    if (prof.llmVoiceBrief) {
+      txtLines.push(`- ${id.toUpperCase()}: ${prof.llmVoiceBrief}`);
+    }
+  }
   let lastKnot = '';
   for (const e of entries) {
     if (e.knot !== lastKnot) {
       txtLines.push(`\n=== ${e.knot} ===`);
       lastKnot = e.knot;
     }
-    txtLines.push(`[${e.lineId}] ${e.speaker.toUpperCase()} (${e.emotion}): ${e.text}`);
+    const keyTag = e.voKey ? ' [KEY-VO]' : '';
+    txtLines.push(
+      `[${e.lineId}]${keyTag} ${e.speaker.toUpperCase()} (${e.emotion}) — DIR: ${e.direction}\n  "${e.spokenText}"`
+    );
   }
   fs.writeFileSync(path.join(COMPILED_DIR, 'voice_script.txt'), txtLines.join('\n') + '\n');
 }
 
-async function synthesizeKokoro(entries) {
-  const pending = entries.filter((entry) => {
+async function synthesizeKokoro(targets) {
+  const pending = targets.filter((entry) => {
     const outPath = path.join(ROOT, 'public', entry.audioFile);
     return forceRegen || !fs.existsSync(outPath) || fs.statSync(outPath).size <= 512;
   });
 
   if (pending.length === 0) {
-    console.log(`[generate-voices] Kokoro-82M: 0 generated, ${entries.length} cached.`);
+    console.log(`[generate-voices] Kokoro-82M: 0 generated, ${targets.length} cached (scope=${scopeArg}).`);
     return;
   }
 
@@ -255,15 +320,15 @@ async function synthesizeKokoro(entries) {
     }
   }
 
-  const cached = entries.length - pending.length;
+  const cached = targets.length - pending.length;
   console.log(`[generate-voices] Kokoro-82M complete: ${generated} generated, ${cached} cached.`);
 }
 
-function synthesizeSay(entries) {
+function synthesizeSay(targets) {
   let generated = 0;
   let skipped = 0;
 
-  for (const entry of entries) {
+  for (const entry of targets) {
     const outPath = path.join(ROOT, 'public', entry.audioFile);
     if (!forceRegen && fs.existsSync(outPath) && fs.statSync(outPath).size > 512) {
       skipped++;
@@ -293,7 +358,7 @@ function synthesizeSay(entries) {
     }
   }
 
-  console.log(`[generate-voices] say TTS complete: ${generated} generated, ${skipped} cached.`);
+  console.log(`[generate-voices] say TTS complete: ${generated} generated, ${skipped} cached (scope=${scopeArg}).`);
 }
 
 async function main() {
@@ -304,27 +369,27 @@ async function main() {
 
   const rawEntries = inkFiles.flatMap(extractLinesFromInk);
   const entries = dedupeEntries(rawEntries);
-  writeScriptArtifacts(entries);
+  const targets = selectTargetEntries(entries);
 
   if (providerArg === 'kokoro') {
-    await synthesizeKokoro(entries);
+    await synthesizeKokoro(targets);
   } else if (providerArg === 'say') {
-    synthesizeSay(entries);
+    synthesizeSay(targets);
   } else if (providerArg === 'remote') {
     const apiKey = process.env.VOICE_API_KEY;
     if (!apiKey) {
       console.log(
-        '[generate-voices] Remote mode selected. Set VOICE_API_PROVIDER and VOICE_API_KEY to synthesize via remote API; script manifest exported.'
+        '[generate-voices] Remote mode selected. Set VOICE_API_PROVIDER and VOICE_API_KEY to synthesize via remote API; full direction script exported.'
       );
     } else {
       console.log('[generate-voices] Remote adapter hook ready with VOICE_API_KEY; batch synthesis stub invoked.');
     }
   } else {
-    console.log(`[generate-voices] Manifest-only mode: exported ${entries.length} lines.`);
+    console.log(`[generate-voices] Manifest-only mode: exported ${entries.length} lines (${targets.length} in scope=${scopeArg}).`);
   }
 
   if (providerArg === 'kokoro' || providerArg === 'say') {
-    const activeFiles = new Set(entries.map((e) => path.basename(e.audioFile)));
+    const activeFiles = new Set(targets.map((e) => path.basename(e.audioFile)));
     let pruned = 0;
     for (const file of fs.readdirSync(VOICES_OUT_DIR)) {
       if (file.endsWith('.mp3') && !activeFiles.has(file)) {
@@ -333,11 +398,14 @@ async function main() {
       }
     }
     if (pruned > 0) {
-      console.log(`[generate-voices] Pruned ${pruned} stale voice clip(s) from public/voices/.`);
+      console.log(`[generate-voices] Pruned ${pruned} stale/out-of-scope voice clip(s) from public/voices/.`);
     }
   }
 
-  console.log(`[generate-voices] Exported ${entries.length} lines -> voice_script.json & voice_script.txt`);
+  writeScriptArtifacts(entries);
+  console.log(
+    `[generate-voices] Exported ${entries.length} lines (${targets.length} synthesized for scope=${scopeArg}) -> voice_script.json & voice_script.txt`
+  );
 }
 
 main().catch((err) => {

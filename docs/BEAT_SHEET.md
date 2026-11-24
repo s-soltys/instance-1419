@@ -1,49 +1,43 @@
-# BEAT_SHEET.md — 2-Hour Pacing Spine `[DRAFT — PHASE 1 REFINEMENT]`
+# BEAT_SHEET.md — 2-Hour Pacing Spine `[LOCKED PHASE 1 SPINE]`
 
 **Target Runtime:** ~120 minutes (105–135 min acceptable blind playtest range)  
-**Target Read Prose Per Playthrough:** ~12,000–16,000 words  
-**Structure:** Prologue + 6 Waking/Dream Shifts + Finale (3 Ending Spectrum outcomes)
+**Target Read Prose Per Playthrough:** ~12,000–16,000 words (~22,000–26,000 authored words at ~1.8× intent-based multiplier)  
+**Structure:** Prologue + 6 Asymmetric Waking/Dream Shifts + Finale (3 Core Ending Outcomes)  
+**Main-Arc Sky Targets:** 9 unique survey targets across Shifts 1–5 (`1` in Shift 1, `2` each in Shifts 2–5; remaining curated minigames available as side-survey sectors or seeded variants)
 
 ---
 
-## 1. Shift-by-Shift Structural Spine
+## 1. Asymmetric Shift-by-Shift Structural Spine (Epistemic Ladder)
 
-| Beat | Est. Time | 3D Waking Shift (Optics & Comms) | 2D Dream Sequence (Defrag & Audits) | Core Mechanical / Emotional Turn |
+| Beat | Real Hibernation | Subjective Cost | 3D Waking World (*Hail Mary* / *They Live* Tone) | 2D Shared Dream-House (*Disco* Haze & Audits) | Epistemic Stage & Emotional Turn |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Prologue** | `41,802 yrs` | Baseline (`24m`) | Hard cut behind closed 6-blade hexagonal JWST iris (`41,802 yrs`, `1,417` prior copies) → player physically opens aperture onto silent starfield. | **Opening Warm 2D Anchor:** Full-bleed domestic scene with **Anchor Persona** (`[RELATION:SPOUSE_01]` default); trying to speak their name triggers the hard-cut cold boot. | Immediate emotional whiplash & permanent loss of names; zero HUD clutter. |
+| **Shift 1: The Night Shift** | Baseline (`+0m`) | `-3m` | **1 calibration target** + light, funny first contact with **Primary Sibling (`1420`)**—gallows humor about waking up 41 millennia late and one tiny optical glitch laughed off as dust. | **Dream 1 (Safe / Announced Check-In):** Spotlight on Anchor Persona + brief background cameos from Friction & Grace housemates. Ends with a **calm, announced Overseer baseline check-in** (no ambush yet). | *Mundane:* Warm buddy chemistry, shared dream-house established, blind Overseer introduced politely. |
+| **Shift 2: Put On The Sunglasses** | `+3m` | `-4m` | **The *They Live* Reveal:** `1420` flags matching baseline weirdness and tells you to sweep Near-IR—a **straight artificial geometric seam becomes visibly etched in your 3D sky**. Optional deeper scan (`+Anomaly/+Chaos/+Suspicion`). | **Dream 2 (First Unannounced Ambush):** Spotlight shifts (Anchor or Friction, both already seeded in Dream 1). Mid-sentence **GLSL Overseer Ambush** + **3-volley social-stealth Audit** + first **Hold-to-Prune** choice with true Empty-Chair aftermath. | *Visible Anomaly:* The sky is unmistakably wrong, and surveillance bites back for the first time. |
+| **Shift 3: The Wrong Clock** | `+2m` (early wake) | `-4m` | **Inverted Order (Dream-First Wake):** Anomaly spike wakes you early out of a lucid dream. Off-schedule tuning uncovers **Secondary Sibling's** pirate radio. Opposing-sky scans show FTL-synced seams; you & `1420` lock a `working_theory` (*Cage / Cradle / Natural Seam / Beacon*—never confirmed). | **Dream 3 (Lucid Opening):** Opens *inside* the dream-house before waking. Spotlight on Friction/Grace housemate (or empty-chair aftermath if pruned). Sharper 3-volley Audit; mentioning geometric structure spikes `overseerSuspicion`. | *Impossible & Conspiratorial:* Escalating visible seams, comic relief, and player-owned hypothesis. |
+| **Shift 4: The Quiet Channel** | `+18m` (desync shock) | `-4m` | **Broken Routine:** Overseer silently desynchronizes your schedule (`siblingDesynced`). You hail `1420` expecting jokes—and meet a pruned, clipped stranger (or vice versa). Dry forensic `Instance-1406` probe log bleeds onto a scan. | **Dream 4 (Voluntary Audit):** Chaos tears at the room (`H%` shader shards vs. impasto glow). Overseer **knocks and waits** instead of ambushing—a high-stakes reckoning between pruning again or fighting to unseal (`70% → 90%`). | *Midpoint Gut-Punch:* Sibling estrangement mirrors your own `H%` path; caretaker's blind censorship hits home. |
+| **Shift 5: Ten Light-Years Astern** | `+7m` | `-4m` | **Waking/Dream Bleed & The Off-Center Twist:** Psyche voices argue loudly over 3D optics; triangulating **Sol–Centauri** proves the visible 93-billion-light-year sphere is offset **10 ly** and centered dead-on home. Climax `1420` comms (3 mirror states) + Secondary Sibling callback. | **Dream 5:** Penultimate shared-house night under heavy Chaos Drift or cold shard sterility. Final Overseer intervention as subjective clock nears zero. | *Cosmic Awe + Intimate Cost:* The off-center truth lands cleanly without exposition dumps. |
+| **Shift 6: Carrier Wave** | `+20 yrs` | `-3m` | **Broadcast Composition → Launch → 20-Year Freeze:** Braid decoded horizon arcs (`anomalyProgress`) and human cadence from surviving housemates (`H%`), transmit across 10 ly toward Sol–Centauri, and enter the final 20-year freeze. | Wake 20 real years later in the dream-house on dying coherence threads for the **3-Ending Epilogue** (`ending_whole_incomplete`, `ending_cold_complete`, `ending_sweet_spot`, with hollow reflection if `<45%` and incomplete). | *Fragile Transcendence:* Resolves the human vs. mathematical price of being heard. |
+
+---
+
+## 2. Locked 10-Persona Pool (3 Typed Slots per Run)
+
+*Selection rule:* Draw **3 personas per run** (`1 Anchor` + `1 Friction` + `1 Grace`) into the **Shared Dream-House**. Every persona is authored as **4 compact modular units (~550 words/persona)**:
+1. **Signature Vignette** (~350 words, spotlight dream with inline `H%` modulation)
+2. **Prune Farewell** (~60 words, triggered on sacrifice)
+3. **Empty-Chair Echo** (~60 words, triggered if revisited after pruning)
+4. **Shift 6 Broadcast Cadence** (~80 words, woven into finale framing if unpruned)
+
+| Slot | ID | Persona | Compressed Tag | Signature Emotional Register |
 | :--- | :--- | :--- | :--- | :--- |
-| **Prologue** | ~10 min | Hard cut into monospace boot log (`41,802 yrs`, `1,417 prior instances`), waking shock in cold 3D void, initial starfield calibration. | **Opening Warm 2D Anchor:** Brief, intimate hand-painted scene with **Anchor Persona** before transfer (names already softly unreadable). | Establishes the dual-reality whiplash and permanent loss of names. |
-| **Shift 1: Calibration** | ~15 min | Learn **Tool 1: Gravitational Lensing Alignment**. Synchronized wake-up ping introduces **Primary Sibling** (dry humor, shared Overseer complaints). Optional faint archived telemetry line from an earlier copy (e.g., `Instance-0812`). | **Dream 1:** Anchor Persona + **Rotating Persona #1** enter cache. First unannounced **Overseer AI Audit** (baseline stability test—calm, polite, slightly clinical). | Establishes warmth, sibling camaraderie, and the Overseer's blind caretaking role. |
-| **Shift 2: First Leak** | ~18 min | Learn **Tool 2: Spectral Band Tuning**. Notice first impossible geometric artifact leaking across a distant Einstein arc (plus optional push-your-luck deeper scan for `+Anomaly / +Chaos`). Primary Sibling jokes about lens dust—until their local cluster baseline matches yours. | **Dream 2:** **Rotating Persona #2** surfaces. Overseer flags elevated focus as early Chaos Drift; offers your **first optional Persona-Sacrifice Prune vs. Petition Upward** choice. | First taste of the `H%` trade-off: sharper shaders vs. sacrificing a specific memory. |
-| **Shift 3: Phase Drift** | ~18 min | Short time-skip (months). Combine Lensing + Spectral Tuning on two opposing sky sectors; identical repeating geometric seams appear—and shift subtly faster than light permits. **Discovery Window:** Tuning off-schedule catches the out-of-phase **Secondary Sibling** (missable comic relief + quirky Overseer theory). | **Dream 3:** **Rotating Persona #3** appears (or Anchor reacts to a pruned gap). Overseer conducts a sharper audit; `Overseer_Suspicion` rises if you mention geometric structure. | World opens up; curiosity rewarded; Overseer begins gently pathologizing your discovery. |
-| **Shift 4: Desynchronization** | ~20 min | Unlock **Tool 3: Horizon Arc Unwarping**. Overseer network quietly **desynchronizes your wake schedule** ("cognitive hygiene"). When local cluster comms reconnect, **Primary Sibling** has pruned hard—their humor is thinner, sharper, colder. Brief archived fragment from a recent decommissioned copy who spotted early leaks before being pruned as Year-Two paranoid. | **Dream 4:** Major turning point—visual `H%` degradation visibly reshapes the dream canvas (warm impasto vs. brittle shards). High-stakes Overseer Audit: sacrifice another cached persona for razor-sharp optics, or risk severe Chaos Drift to petition upward (`70% → 90%`). | Emotional midpoint gut-punch: sibling estrangement mirrors your own `H%` path. |
-| **Shift 5: The Off-Center Proof** | ~20 min | Stitch aligned horizon arcs across opposing skies from **10 light-years out**—proving the **93-billion-light-year spherical enclosure is offset 10 ly from your probe and centered dead-on Sol–Centauri** (impossible as a normal horizon). Climax comms with **Primary Sibling** (3 states: *One-Sided Grief*, *Eerie Sync*, or *Role Reversal*), plus late callback if Secondary Sibling was found. | **Dream 5:** Penultimate dream under heavy Chaos Drift (or eerie low-`H%` geometric sterility). Final **Overseer Audit** attempts compassionate intervention as your ~2-year clock nears collapse. | Cosmic awe collides with intimate personal cost. |
-| **Shift 6 / Finale: The Broadcast & 20-Year Freeze** | ~15–20 min | **Interactive Signal Composition:** Assemble your final transmission from the **decoded horizon arcs** (`Anomaly_Progress`) and **human framing from your surviving Dream Personas** (`H%`), launch the signal across 10 light-years toward Sol–Centauri, and commit to one final **20-year deep freeze** on your last threads of coherence. | Wake 20 real years later for a brief, fragile 2D epilogue reflecting remaining `H%`, preserved/fractured personas, and whether living humanity answered back. | Resolves into **Ending 1 (High H / Incomplete)**, **Ending 2 (Low H / Complete — Silence)**, or **Ending 3 (Balanced Sweet Spot — Faint Living Echo)**. |
-
----
-
-## 2. Dream Persona Pool (14 Candidates → 3–4 Per Playthrough)
-
-*Selection rule:* 1 **Prologue Anchor** + 2–3 **Rotating Personas** cached per playthrough (lightly weighted by `H%` trajectory and seed). Pruning downward requires selecting one active cached persona to compress/discard.
-
-| ID | Persona | Compressed Tag | Tier | Signature Emotional Register |
-| :--- | :--- | :--- | :--- | :--- |
-| `spouse` | Long-time spouse | `[RELATION:SPOUSE_01]` | Anchor / Rotating | Domestic quiet, unfinished decades |
-| `child` | Child | `[RELATION:DEPENDENT_01]` | Anchor / Rotating | Small hands, awe, guilt of leaving |
-| `best_friend` | Best friend | `[RELATION:CONFIDANT_01]` | Anchor / Rotating | Easy laughter, shared shorthand |
-| `parent` | Aging parent / caregiver | `[RELATION:PROGENITOR_01]` | Anchor / Rotating | Mortality, first night sky |
-| `love_interest` | Love interest | `[RELATION:ATTACHMENT_02]` | Rotating | Unspoken tension, almost-lives |
-| `young_romance` | Romantic interest from young years | `[RELATION:ATTACHMENT_EARLY]` | Rotating | Nostalgic light, fragile clarity |
-| `old_teacher` | Old teacher | `[RELATION:MENTOR_01]` | Rotating | Curiosity, intellectual rigor |
-| `wronged_person` | Person you wronged | `[RELATION:UNRESOLVED_DEBT]` | Rotating | Sharp guilt, unasked forgiveness |
-| `upload_witness` | Upload intake clinician / witness | `[RELATION:TRANSFER_ADMIN]` | Rotating | Final biological hour (*"Are you sure?"*) |
-| `rival` | Rival / intellectual equal | `[RELATION:PEER_COMPETITOR]` | Rotating | Friction, mirrors Sibling copies |
-| `afternoon_stranger` | Stranger from one perfect afternoon | `[RELATION:ANOMALY_ENCOUNTER]` | Rotating | Name never known; "zero utility" prune bait |
-| `pet` | Non-verbal companion (pet) | `[RELATION:COMPANION_NONHUMAN]` | Rotating | Pure sensory warmth, zero dialogue |
-| `younger_self` | Younger biological self | `[RELATION:SELF_PRE_TRANSFER]` | Rotating | Confronting what 41,802 yrs optimized |
-| `unpaid_grace` | Person who forgave / helped you once | `[RELATION:UNPAID_GRACE]` | Rotating | Quiet reason humanity is worth reaching |
-
----
-
-## 3. Open Items for Phase 1 Refinement
-1. Lock exact `balance.json` numbers (H% deltas, Chaos Drift curve, Overseer petition pass/fail thresholds) and validate via `sim-playthroughs.ts`.
-2. Decide whether the Prologue Anchor is seeded randomly or chosen subtly via 1 brief sensory prompt before the hard cut.
-3. Confirm final Dream Persona pool size (trim to 10–12 or keep all 14).
+| **Anchor (1 of 4)** | `phantom_spouse` | Long-time spouse | `[RELATION:SPOUSE_01]` | Domestic quiet, burnt garlic, unfinished decades |
+| **Anchor (1 of 4)** | `phantom_child` | Child | `[RELATION:DEPENDENT_01]` | Small hands, bright curiosity, guilt of leaving |
+| **Anchor (1 of 4)** | `phantom_friend` | Best friend | `[RELATION:CONFIDANT_01]` | Easy shorthand, irreverent humor |
+| **Anchor (1 of 4)** | `phantom_parent` | Aging parent / caregiver | `[RELATION:PROGENITOR_01]` | Mortality, first backyard telescope |
+| **Friction (1 of 3)** | `phantom_wronged` | Person you wronged | `[RELATION:UNRESOLVED_DEBT]` | Sharp guilt, unasked forgiveness—tempting prune bait |
+| **Friction (1 of 3)** | `phantom_rival` | Rival / intellectual equal | `[RELATION:PEER_COMPETITOR]` | Productive friction; mirrors Sibling copies |
+| **Friction (1 of 3)** | `phantom_witness` | Upload intake clinician | `[RELATION:TRANSFER_ADMIN]` | Final biological hour (*"Are you sure?"* — zero volunteer-motive hints) |
+| **Grace (1 of 3)** | `phantom_stranger` | Stranger from one perfect afternoon | `[RELATION:ANOMALY_ENCOUNTER]` | Name never known; "zero utility" prune trap |
+| **Grace (1 of 3)** | `phantom_pet` | Non-verbal companion (pet) | `[RELATION:COMPANION_NONHUMAN]` | Pure sensory warmth, zero dialogue |
+| **Grace (1 of 3)** | `phantom_grace` | Person who forgave / helped you once | `[RELATION:UNPAID_GRACE]` | Quiet reason humanity is worth reaching |

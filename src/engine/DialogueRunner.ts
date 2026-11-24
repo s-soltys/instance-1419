@@ -1,6 +1,11 @@
 import { Story } from 'inkjs';
 import compiledSpikeStory from '../content/dialogue/compiled/spike_shift1.ink.json';
-import type { AuditOutcome, StateStore } from './StateStore';
+import {
+  deriveSiblingRelation,
+  getHumanityBand,
+  type AuditOutcome,
+  type StateStore,
+} from './StateStore';
 
 export interface DialogueEntry {
   text: string;
@@ -10,6 +15,10 @@ export interface DialogueEntry {
   mood?: string;
   emotion?: string;
   audioCue?: string;
+  direction?: string;
+  camera?: string;
+  beat?: string;
+  vo?: boolean;
   auditState?: 'active' | 'inactive';
   isPlayerChoice?: boolean;
 }
@@ -17,6 +26,7 @@ export interface DialogueEntry {
 export interface DialogueChoice {
   index: number;
   text: string;
+  requiresHoldPrune?: boolean;
 }
 
 export interface DialogueSnapshot {
@@ -49,6 +59,10 @@ function parseTags(rawTags: string[] | null): ParsedTags {
     else if (key === 'mood') meta.mood = val;
     else if (key === 'emotion') meta.emotion = val;
     else if (key === 'audio') meta.audioCue = val;
+    else if (key === 'direction') meta.direction = val;
+    else if (key === 'camera') meta.camera = val;
+    else if (key === 'beat') meta.beat = val;
+    else if (key === 'vo') meta.vo = val.toLowerCase() === 'true';
     else if (key === 'audit' && (val === 'active' || val === 'inactive')) {
       meta.auditState = val;
     } else if (key === 'auto_interrupt' && val) {
@@ -62,6 +76,7 @@ function parseTags(rawTags: string[] | null): ParsedTags {
 
 function formatPlayerEcho(rawChoiceText: string): string {
   return rawChoiceText
+    .replace(/\s*(?:\[|\()HOLD TO COMPRESS(?:\]|\))\s*/gi, '')
     .replace(/\s*\([^)]*(?:%\s*H|Max\s*H|Drift|Optics|Clock|Suspicion)[^)]*\)\s*$/i, '')
     .trim();
 }
@@ -77,6 +92,10 @@ export class DialogueRunner {
     this.store = store;
     this.onAudioCue = onAudioCue;
     this.story = this.createStory();
+    const savedInk = this.store.getState().inkStateJson;
+    if (savedInk) {
+      this.importStateJson(savedInk);
+    }
   }
 
   private createStory(): Story {
@@ -85,6 +104,7 @@ export class DialogueRunner {
       'prune_humanity',
       (delta: number, personaId: string) => {
         this.store.pruneHumanity(Number(delta), String(personaId));
+        this.syncVarsToInk();
       },
       false
     );
@@ -92,6 +112,7 @@ export class DialogueRunner {
       'petition_overseer',
       (delta: number) => {
         this.store.petitionOverseer(Number(delta));
+        this.syncVarsToInk();
       },
       false
     );
@@ -100,6 +121,7 @@ export class DialogueRunner {
       (delta: number) => {
         const curr = this.store.getState();
         this.store.patch({ chaosDrift: curr.chaosDrift + Number(delta) });
+        this.syncVarsToInk();
       },
       false
     );
@@ -108,6 +130,7 @@ export class DialogueRunner {
       (delta: number) => {
         const curr = this.store.getState();
         this.store.patch({ overseerSuspicion: curr.overseerSuspicion + Number(delta) });
+        this.syncVarsToInk();
       },
       false
     );
@@ -117,6 +140,7 @@ export class DialogueRunner {
         const valid = outcome === 'pruned' || outcome === 'unsealed' || outcome === 'held' || outcome === 'none';
         if (valid) {
           this.store.setAuditOutcome(outcome as AuditOutcome);
+          this.syncVarsToInk();
         }
       },
       false
@@ -124,17 +148,44 @@ export class DialogueRunner {
     return story;
   }
 
+  private setVarIfDeclared(name: string, value: string | number | boolean): void {
+    try {
+      const globalVars = this.story.variablesState as unknown as {
+        GlobalVariableExistsWithName?: (n: string) => boolean;
+        $: (n: string, v?: unknown) => unknown;
+      };
+      if (
+        typeof globalVars.GlobalVariableExistsWithName === 'function' &&
+        !globalVars.GlobalVariableExistsWithName(name)
+      ) {
+        return;
+      }
+      globalVars.$(name, value);
+    } catch {
+      // Ignore undeclared variables across story revisions
+    }
+  }
+
   private syncVarsToInk(): void {
     const s = this.store.getState();
-    this.story.variablesState.$('humanity', s.humanity);
-    this.story.variablesState.$('max_humanity', s.maxHumanity);
-    this.story.variablesState.$('chaos_drift', s.chaosDrift);
-    this.story.variablesState.$('anomaly_progress', s.anomalyProgress);
-    this.story.variablesState.$('primary_sibling_h', s.primarySiblingH);
-    this.story.variablesState.$('overseer_suspicion', s.overseerSuspicion);
-    this.story.variablesState.$('subjective_months', s.subjectiveMonthsLeft);
-    this.story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
-    this.story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
+    this.setVarIfDeclared('humanity', s.humanity);
+    this.setVarIfDeclared('max_humanity', s.maxHumanity);
+    this.setVarIfDeclared('chaos_drift', s.chaosDrift);
+    this.setVarIfDeclared('anomaly_progress', s.anomalyProgress);
+    this.setVarIfDeclared('primary_sibling_h', s.primarySiblingH);
+    this.setVarIfDeclared('overseer_suspicion', s.overseerSuspicion);
+    this.setVarIfDeclared('subjective_months', s.subjectiveMonthsLeft);
+    this.setVarIfDeclared('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
+    this.setVarIfDeclared('wronged_pruned', s.prunedPersonas.includes('phantom_wronged'));
+    this.setVarIfDeclared('pet_pruned', s.prunedPersonas.includes('phantom_pet'));
+    this.setVarIfDeclared('last_audit_outcome', s.lastAuditOutcome);
+    this.setVarIfDeclared('shift', s.shift);
+    this.setVarIfDeclared('humanity_band', getHumanityBand(s.humanity));
+    this.setVarIfDeclared('sibling_relation', deriveSiblingRelation(s.humanity, s.primarySiblingH));
+    this.setVarIfDeclared('secondary_sibling_found', s.secondarySiblingFound);
+    this.setVarIfDeclared('sibling_desynced', s.siblingDesynced);
+    this.setVarIfDeclared('working_theory', s.workingTheory ?? 'none');
+    this.setVarIfDeclared('prologue_anchor', s.prologueAnchor ?? 'coffee');
   }
 
   exportStateJson(): string {
@@ -175,8 +226,11 @@ export class DialogueRunner {
     return this.advance();
   }
 
+  /**
+   * Continues onto another knot on the SAME persistent Story instance so visit counts
+   * and once-only choices survive Overseer interrupts and multi-turn conversations.
+   */
   appendKnot(knotName: string): DialogueSnapshot {
-    this.story = this.createStory();
     this.syncVarsToInk();
     this.currentKnot = knotName;
     this.story.ChoosePathString(knotName);
@@ -205,6 +259,8 @@ export class DialogueRunner {
   private advance(): DialogueSnapshot {
     let lastSpeaker = 'narrator';
     let lastEmotion: string | undefined;
+    let lastMood: string | undefined;
+    let lastCamera: string | undefined;
     let autoInterruptKnot: string | undefined;
     let resumeDreamKnot: string | undefined;
     const newlyAdded: DialogueEntry[] = [];
@@ -231,6 +287,18 @@ export class DialogueRunner {
         meta.emotion = lastEmotion;
       }
 
+      if (meta.mood) {
+        lastMood = meta.mood;
+      } else {
+        meta.mood = lastMood;
+      }
+
+      if (meta.camera) {
+        lastCamera = meta.camera;
+      } else {
+        meta.camera = lastCamera;
+      }
+
       if (meta.auditState === 'active') {
         this.store.patch({ overseerAuditActive: true });
       } else if (meta.auditState === 'inactive') {
@@ -250,6 +318,10 @@ export class DialogueRunner {
           mood: meta.mood,
           emotion: meta.emotion,
           audioCue: meta.audioCue,
+          direction: meta.direction,
+          camera: meta.camera,
+          beat: meta.beat,
+          vo: meta.vo,
           auditState: meta.auditState,
         };
         this.entries.push(entry);
@@ -257,10 +329,16 @@ export class DialogueRunner {
       }
     }
 
-    const choices: DialogueChoice[] = this.story.currentChoices.map((c) => ({
-      index: c.index,
-      text: c.text,
-    }));
+    this.store.saveInkStateJson(this.exportStateJson());
+
+    const choices: DialogueChoice[] = this.story.currentChoices.map((c) => {
+      const requiresHoldPrune = /(?:\[|\()HOLD TO COMPRESS(?:\]|\))/i.test(c.text);
+      return {
+        index: c.index,
+        text: c.text.replace(/\s*(?:\[|\()HOLD TO COMPRESS(?:\]|\))\s*/gi, '').trim(),
+        requiresHoldPrune,
+      };
+    });
 
     return {
       knot: this.currentKnot,

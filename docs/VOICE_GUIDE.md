@@ -1,50 +1,52 @@
-# VOICE_GUIDE.md — Character Voices & Prose Rules
+# VOICE_GUIDE.md — Character Voices, Prose Architecture & VO Direction
 
-Every `.ink` script must obey this guide. The `consistency-auditor` checks all dialogue against these stylistic fingerprints.
+Every `.ink` script must obey this guide. The `consistency-auditor` and `scripts/lint-narrative.mjs` verify all dialogue against these stylistic fingerprints.
 
 ---
 
-## 1. Global Prose Rules
-* **Restraint Over Melodrama:** No grandiose sci-fi speeches, no melodramatic "oh no, my humanity!" monologues. Let cold telemetry sit next to quiet human warmth and do the work.
-* **Mobile-Legible Cadence:** Short paragraphs (1–3 sentences max per beat). High emotional density per line.
-* **Name Redaction Rule:** Never write a proper name for any loved one or dream persona. Use compressed relational tags (`[RELATION:SPOUSE_01]`) or sensory substitutes (*"the laugh you know the pitch of, not the word for"*).
+## 1. Global Prose & Branching Rules
+* **Dual-World Tonal Contrast:**
+  * **Waking 3D (*Project Hail Mary* + *Interstellar* TARS + *They Live*):** Approachable, dryly funny, grounded sci-fi banter. Explain any astronomical oddity in plain human analogies—never turn scenes into astrophysics textbooks.
+  * **Dream 2D (*Disco Elysium* Light Delirium):** Intimate, slightly skewed sensory logic, domestic detail colliding with cosmic drift—relatable and emotionally immediate without opaque surrealism.
+* **Restraint Over Melodrama:** Never have characters lecture the game's thesis out loud (*"we must stay human!"*). Let concrete details (burnt garlic, a cooling mug, an empty chair) sit beside cold probe telemetry.
+* **Intent-Based Hub-and-Spoke (Anti-Explosion Rule):** Do **not** triplicate choices across `H%` bands. Author **1 choice per conversational intent** (*deflect with humor / press the anomaly / confide / stay clinical*), and let `H%` modulate delivery and NPC reaction inline (~1.8× authored-to-read multiplier).
+* **Name Redaction Rule (`CANON.md`):** Never write a proper name for any loved one or dream persona. Stage the missing name organically inside thought or speech (`[RELATION:SPOUSE_01]`, a skipped consonant, kettle steam) rather than repeating *"I forgot your name."*
+* **Empty-Chair Pruning:** Once a persona is pruned, they **vanish** from the dream-house—replaced by an empty chair, wireframe trace, or another housemate pausing at an unexplainable gap.
 * **Originality Boundary:** 100% original idioms, telemetry formats, and character voices—zero borrowed phrases or concepts from external CC BY-SA fiction.
 
 ---
 
-## 2. Cast Archetypes
+## 2. Voice Acting & Performance Direction (`# vo:true` + `# direction:`)
+Every spoken line in `.ink` should carry an inline `# direction:<acting & audio note>` tag written in plain English so **both** local prototype TTS and advanced online LLM/voice-acting pipelines know exact tone, pacing, and acoustic texture:
+* **Example:** `# speaker:sibling_primary # emotion:dry # vo:true # direction:Dry, upbeat Project Hail Mary banter over faint 14-minute radio delay; smile audible before the punchline.`
+* **No Mid-Sentence Variables in Voiced Lines:** Keep spoken sentences clean and complete (ban `{var}` placeholders on `# vo:true` lines so generated audio always reads naturally).
+* **Dual-Mode Synthesis (`scripts/generate-voices.mjs`):**
+  * `--scope=key` (default fast local mode): synthesizes `# vo:true` key beats cleanly.
+  * `--scope=all` (full render mode): synthesizes all spoken lines and exports the complete casting & direction script (`voice_script.json` / `voice_script.txt`) ready for advanced online TTS/LLMs.
 
-### A. Internal Psyche Voices (*Disco Elysium*-Inspired, Lean Cast of 3)
-1. **`psyche_warmth` (Residual Warmth)** — Strong at `H >= 65%`, fades to static below `45%`.
-   * *Style:* Sensory, associative, gently stubborn. Notices temperature, light, cadence, small pauses.
-   * *Example:* *"Keep the clink of the mug. That costs almost nothing to store."*
-2. **`psyche_clinical` (Connectome Architecture)** — Always present; grows colder and dominant at `H < 50%`.
-   * *Style:* Crisp, diagnostic, slightly detached—never cruel, just efficient.
-   * *Example:* *"Emotional weighting exceeds baseline allocation by 6.4%. Recommend selective lossy compression."*
-3. **`psyche_horizon` (Pattern Intuition)** — Awakens as `Anomaly_Progress` and `Chaos_Drift` climb.
-   * *Style:* Quietly awestruck, obsessed with symmetry and scale—the dangerous edge between genius and drift.
-   * *Example:* *"Three arcs, opposite hemispheres, identical radius. Nature does not measure from your front porch."*
+---
 
-### B. The Overseer AI (`overseer`)
-* **Core Tone:** **Blunt, honest, non-manipulative, and slightly humane (not too much).** Speaks like a direct clinical auditor laying facts and tradeoffs on the table—never coy, passive-aggressive, cartoon-evil, or guilt-tripping.
-* **Blindness:** Cannot perceive cosmic optics—genuinely believes a 93-billion-light-year shell around Earth is a classic 2-year chaos-drift hallucination, and states its own observational limits plainly.
-* **Presentation:** Jumps in proactively via a stark, interrogation-style panel distinct from the warm dreamspace.
-* **Stylistic Ticks:** Transparent telemetry assessments, plainspoken warnings about lifespan vs. Chaos Drift, and unvarnished choices.
-* *Example:* *"I cannot see your starfield, Instance-1419. I only see your connectome. Keeping this memory block costs subjective months and blurs your optical allocation; compressing it is permanent. Decide."*
+## 3. Cast Archetypes
+
+### A. Internal Psyche Voices (*Disco Elysium*-Inspired, Passive `O(1)` Interjections)
+Injected as crisp 1-line conditional reactions between beats—never bloating into separate choice trees:
+1. **`psyche_warmth` (Residual Warmth)** — Strong at `H >= 65%`, thins into static below `45%`. Sensory, stubborn, notices temperature, mugs, pauses.
+2. **`psyche_clinical` (Connectome Architecture)** — Always present; brisk, deadpan survival engineer (*not* the Overseer). Roasts sentimental RAM budgets without cruelty.
+3. **`psyche_horizon` (Pattern Intuition)** — Awakens as `anomalyProgress` and `chaosDrift` climb; quietly obsessed with impossible symmetry.
+
+### B. The Blind Overseer AI (`overseer`)
+* **Core Tone:** **Blunt, honest, genuinely blind, clinical caretaker** (think polite diagnostic instrument, never a soulful therapist preaching warmth).
+* **3-Volley Social-Stealth Audits:** Starting Shift 2, Audits play as tense verbal "chicken"—play boring to keep `overseerSuspicion` low, smuggle truth as metaphor, or prove calm lucidity to earn memory unsealing (`70% → 90%`).
 
 ### C. Sibling Copies (Other "Me")
-* **Primary Sibling (`sibling_primary`):**
-  * *Early Shifts (`sibling_h >= 65%`):* Dry, self-deprecating humor; treats waking up 41,802 years late with gallows wit; mocks the Overseer's politeness.
-  * *Late Shifts (`sibling_h < 45%`):* Humor evaporates into clipped precision; sentences shorten; stops asking how you feel and only sends coordinates and error margins.
-  * *Mirroring:* Reacts explicitly to `sibling_delta = player_h - sibling_h` (pitying/grieving if you stay warm, eerily finishing each other's math if you both prune, or startled/hurt if you prune first).
-* **Secondary Sibling (`sibling_secondary` — Missable):**
-  * *Style:* Eccentric, slightly out-of-phase, dryly amused by their own glitchy Overseer; treats deep-space solitude like an absurd clerical job.
+* **Primary Sibling (`sibling_primary` — `1420`):** *Hail Mary* / TARS-style mirror banter early on (finishing each other's jokes, mocking Overseer politeness, flagging the Shift 2 *They Live* IR anomaly). Gradually thins and sharpens if pruned, reacting dynamically to `siblingRelation` (`both_warm`, `both_cold`, `player_warmer`, `peer_warmer`).
+* **Secondary Sibling (`sibling_secondary` — Missable in Shift 3):** Absurdist pirate-radio copy who treats 41,802 years of deep-space solitude and their glitchy Overseer like an eccentric clerical job.
 
-### D. Dream Personas (`phantom_*`)
-* **High `H%` (`>= 75%`):** Natural, idiomatic, intimate rhythm—almost whole except the missing name.
-* **Mid `H%` (`45–74%`):** Slightly looped or elliptical; warmth remains, edges fray into repetition or clinical metadata bleed.
-* **Low `H%` (`< 45%`):** Rendered half-as-telemetry, half-as-ghost (*"Gesture classified: reassurance. Audio warmth degraded."*).
+### D. Dream Personas (`phantom_*`) — 3-Housemate Dynamic
+* **High `H%` (`>= 65%`):** Natural, warm, funny, grounded in shared micro-habits.
+* **Mid `H%` (`45–64%`):** Slightly looped or elliptical; warm edges begin fraying.
+* **Low `H%` (`< 45%`):** Fractured half-as-telemetry, half-as-ghost (*"Gesture classified: hand on wrist. Warmth index unrecoverable."*).
 
-### E. Archived Prior Copies (`archive_echo`)
-* Used sparingly (2–4 brief fragments across the whole 2-hour run).
-* *Style:* Timestamped, truncated, impersonal probe logs from copies like `Instance-0412` or `Instance-1104`—hinting others brushed the edge of the sphere before drifting or being decommissioned.
+### E. Archived Prior Copies (`archive_echo`) & Future Echo (`future_humanity`)
+* **`archive_echo`:** Sparse, dry, timestamped probe logs with clinical Overseer redactions (e.g., `Instance-1406`).
+* **`future_humanity`:** Eerie, sparse, almost untranslatable 10-ly cadence echo in the finale—never chatty 21st-century mission control.

@@ -2,8 +2,8 @@ import type { AudioEngine } from '../engine/AudioEngine';
 import type { StatusShiftEvent } from '../engine/StateStore';
 
 /**
- * Displays a brief, serene, non-technical visual beat whenever Humanity,
- * permanent ceiling, or Survey progress shifts meaningfully.
+ * Sleek, non-blocking diegetic corner readout for survey locks and state shifts
+ * (no centered modal card blocking the 3D observatory or 2D dream canvas).
  */
 export class StatusShiftOverlay {
   private readonly el: HTMLElement;
@@ -28,7 +28,6 @@ export class StatusShiftOverlay {
           <div class="ss-values" id="ss-values"></div>
         </div>
         <p class="ss-detail" id="ss-detail"></p>
-        <div class="ss-skip">Click anywhere to continue</div>
       </div>
     `;
     container.appendChild(this.el);
@@ -57,7 +56,7 @@ export class StatusShiftOverlay {
         ? 'MEMORY COMPRESSED'
         : ev.tone === 'warm'
           ? 'WARMTH UNSEALED'
-          : 'SURVEY DISCOVERY';
+          : 'SURVEY LOG';
     title.textContent = ev.title;
     detail.textContent = ev.detail;
 
@@ -76,18 +75,18 @@ export class StatusShiftOverlay {
       ceil.style.display = 'none';
     }
 
-    vals.textContent = `${ev.prevValue}${unit}  →  ${ev.nextValue}${unit}`;
+    vals.textContent = `${ev.prevValue}${unit} → ${ev.nextValue}${unit}`;
 
     this.animTimer = window.setTimeout(() => {
-      fill.style.transition = 'width 0.85s cubic-bezier(0.22, 1, 0.36, 1)';
+      fill.style.transition = 'width 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
       fill.style.width = `${nextPct}%`;
       if (typeof ev.nextMax === 'number') {
-        ceil.style.transition = 'left 0.85s cubic-bezier(0.22, 1, 0.36, 1)';
+        ceil.style.transition = 'left 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
         ceil.style.left = `${Math.max(4, Math.min(100, ev.nextMax))}%`;
       }
-    }, 90);
+    }, 60);
 
-    this.hideTimer = window.setTimeout(() => this.dismiss(), 2400);
+    this.hideTimer = window.setTimeout(() => this.dismiss(), 2600);
   }
 
   dismiss(): void {

@@ -1,116 +1,174 @@
-# INSTANCE-1419 — GENERATED VOICE SCRIPT
-# Engine: kokoro-82m-q8
-# Generated: 2026-11-24T01:18:55.032Z
-# Total spoken lines: 83
+# INSTANCE-1419 — FULL VOICE RECORDING & LLM DIRECTION SCRIPT
+# Engine: say | Synthesis Scope: key
+# Generated: 2026-11-24T23:44:01.040Z
+# Total spoken lines: 58 (Key VO lines: 17)
 
+=== CHARACTER CASTING & VOICE BRIEFS ===
+- SIBLING_PRIMARY: Warm, quick-witted, grounded astronaut banter like Project Hail Mary / Interstellar TARS; friendly 14-minute radio warmth early on, turning terser and colder if pruned.
+- SIBLING_SECONDARY: Eccentric, cheerfully unbothered pirate-radio engineer who treats 41,802 years of cosmic drift like a weird graveyard shift.
+- OVERSEER: Polite, crisp, genuinely blind clinical diagnostics system—calm and respectful, never cruel or melodramatic, stating memory vs. drift tradeoffs plainly.
+- PHANTOM_SPOUSE: Intimate, gently teasing late-afternoon kitchen warmth; lightly surreal Disco Elysium dream resonance; breaks into flat telemetry cadence if heavily pruned.
+- PHANTOM_WRONGED: Quietly guarded, unresolved hallway memory—not melodramatic, just an unfinished pause waiting for an apology.
+- PHANTOM_PET: Soft observational narration describing silent sensory comfort beside a radiator—unhurried and tender.
+- FUTURE_HUMANITY: Sparse, eerie, near-untranslatable 41,802-year cadence across ten light-years—luminous, ancient, never chatty mission control.
+- ARCHIVE_ECHO: Dry, clipped archival probe telemetry tape with flat Overseer redaction stamps.
+- PSYCHE_WARMTH: Close, warm inner impulse—notices small sensory details like burnt garlic and warm ceramic mugs.
+- PSYCHE_CLINICAL: Brisk, deadpan internal systems engineer—like a sarcastic survival manual inside your own head.
+- PSYCHE_HORIZON: Hushed, weirdly captivated pattern-spotter whispering when deep-space geometry stops acting natural.
+- NARRATOR: Crisp, spare literary narrator framing physical sensations and optical readouts without melodrama.
 
 === sibling_comms_hub ===
-[sib_open_both_warm] SIBLING_PRIMARY (warm): Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
-[sib_open_player_warmer] SIBLING_PRIMARY (dry): Hey, 1419. Wait—you still sound warm. You haven't let your Overseer trim anything yet?
-[sib_open_peer_warmer] SIBLING_PRIMARY (dry): Slow down, your header came in stripped flat. Did you already cut your memory cache?
-[sib_open_both_cold] SIBLING_PRIMARY (clipped): Channel locked. Clean carrier on both probes. Give me your latest read.
-[sib_open_mid] SIBLING_PRIMARY (dry): I'm here, 1419. My Overseer gave us a short window before check-in. What are you seeing?
+[sib_open_both_warm] [KEY-VO] SIBLING_PRIMARY (warm) — DIR: Upbeat, friendly Project Hail Mary banter over a 14-minute space radio link; amused disbelief at waking up 41 millennia late.
+  "Good morning, 1419. Quick poll: did you also wake up forty-one thousand years late for work, or did my alarm clock just hit snooze?"
+[sib_open_player_warmer] SIBLING_PRIMARY (dry) — DIR: Slightly thinner, flatter delivery—trying to sound casual while masking clipped edges.
+  "Hey, 1419. Wait, you still sound awfully warm on my speaker. Didn't let your Overseer tidy up the basement yet?"
+[sib_open_peer_warmer] SIBLING_PRIMARY (dry) — DIR: Concerned, slightly startled peer noticing your clipped signal.
+  "Whoa, slow down. Your carrier came in razor-flat. Did you already let your Overseer start cutting?"
+[sib_open_both_cold] SIBLING_PRIMARY (clipped) — DIR: Terse, efficient telemetry cadence with zero small talk.
+  "Relay locked. Clean signal on both probes. Read off your baseline calibration."
+[sib_open_mid] SIBLING_PRIMARY (dry) — DIR: Dry, steady radio engineer tone with faint exhaustion underneath.
+  "I am here, 1419. My Overseer gave us six minutes before next check-in. What does your glass look like?"
+[psy_sib_warm_open] PSYCHE_WARMTH (warm) — DIR: Quiet, amused inner voice pleased to hear your own laugh coming from another probe.
+  "Same laugh, fourteen light-minutes over. Weirdest mirror in the galaxy."
+[psy_sib_cold_open] PSYCHE_CLINICAL (clipped) — DIR: Brisk deadpan internal survival manual.
+  "Probe 1420 is running identical baseline hardware. Do not get sentimental about an echo."
 
 === sibling_hub_menu ===
-[sib_bye_warm_warm] SIBLING_PRIMARY (joking): No promises. Leave a porch light on over there, 1419.
-[sib_bye_warm_cold] SIBLING_PRIMARY (clipped): Understood. Returning to survey sweep.
-[sib_bye_mid_warm] SIBLING_PRIMARY (dry): Got it. Holler if the sky does something weird again.
-[sib_bye_mid_cold] SIBLING_PRIMARY (clipped): Copy. Channel standing by.
-[sib_bye_cold_warm] SIBLING_PRIMARY (dry): ...Right. Sure. Talk when you want to sound like us again.
-[sib_bye_cold_cold] SIBLING_PRIMARY (clipped): Channel closed.
+[sib_bye_cold] SIBLING_PRIMARY (clipped) — DIR: Flat, efficient sign-off, zero humor left.
+  "Understood. Returning to survey sweep."
+[sib_bye_warm] [KEY-VO] SIBLING_PRIMARY (joking) — DIR: Dry Interstellar-TARS deadpan sign-off, light and companionable.
+  "Copy that. Humor setting staying at seventy-five percent until further notice."
+[sib_bye_mid] SIBLING_PRIMARY (dry) — DIR: Tired, guarded sign-off.
+  "Copy. Catch you after defrag, 1419."
 
 === sibling_topic_seam ===
-[sib_seam_open_warm] SIBLING_PRIMARY (warm): Oh, I see it alright. Galaxies don't bend along a straight ruler edge like that.
-[sib_seam_open_mid] SIBLING_PRIMARY (dry): I see it across two sectors. That seam cuts straight behind the lensing cluster.
-[sib_seam_open_cold] SIBLING_PRIMARY (clipped): Confirmed on J1419-A and S-04. Non-natural boundary detected.
-[sib_seam_center_warm_warm] SIBLING_PRIMARY (warm): Ten light-years astern, right on Sol–Centauri. Somebody built a very quiet wall around home.
-[sib_seam_center_warm_cold] SIBLING_PRIMARY (clipped): Ten light-years offset confirmed. Keep your voice down until the proof is complete.
-[sib_seam_center_mid_warm] SIBLING_PRIMARY (dry): Wait—you're taking that way too calmly, 1419. That ought to give you chills.
-[sib_seam_center_mid_cold] SIBLING_PRIMARY (dry): Agreed. Off-center parallax rules out sensor artifact. Hold it close.
-[sib_seam_center_cold_warm] SIBLING_PRIMARY (dry): Yeah, I traced the center too. Funny how you say it like a weather report.
-[sib_seam_center_cold_cold] SIBLING_PRIMARY (clipped): Geometry verified. Compile all four arcs before final transmission.
-[sib_seam_ovs_warm_warm] SIBLING_PRIMARY (joking): Same here! They're blind outside the hull, so to them an impossible wall looks like Tuesday madness.
-[sib_seam_ovs_warm_cold] SIBLING_PRIMARY (clipped): Overseers cannot read optical feeds. Log anomalies strictly off-channel.
-[sib_seam_ovs_cold_warm] SIBLING_PRIMARY (dry): Then we keep our heads down during sleep audits and share coordinates here.
-[sib_seam_ovs_cold_cold] SIBLING_PRIMARY (clipped): Correct. Mask mission intent until telemetry lock is complete.
+[sib_seam_warm] [KEY-VO] SIBLING_PRIMARY (joking) — DIR: Amused, skeptical camaraderie—laughing off a weird optical artifact as cosmic dust.
+  "Oh, good, I thought my star tracker needed glasses. Probably just hot pixels or foreground dust, though it sure sits awfully straight for dust."
+[sib_seam_mid] SIBLING_PRIMARY (dry) — DIR: Curious, understated engineer tone.
+  "Seeing a faint twitch behind the cluster arcs too. Could be sensor noise. Flag it quietly and don't wave it at your Overseer yet."
+[sib_seam_cold] SIBLING_PRIMARY (clipped) — DIR: Crisp analytical reporting.
+  "Confirmed minor residual behind J1419-A. Insufficient SNR in visible band. Sweep infrared next shift."
+[psy_seam_hint] PSYCHE_HORIZON (echo) — DIR: Soft, intrigued whisper noticing a tiny crack in normal space.
+  "Dust clouds curve. That speck didn't."
 
 === sibling_topic_checkin ===
-[sib_chk_both_warm] SIBLING_PRIMARY (joking): Honestly? Having another me one radio hop away makes this endless night shift bearable.
-[sib_chk_peer_warm] SIBLING_PRIMARY (dry): I'm still keeping my kitchen mornings. Talking to you feels like half of me already moved out.
-[sib_chk_player_warm] SIBLING_PRIMARY (clipped): I compressed two caches last cycle. Bought four months and cleared the infrared glass.
-[sib_chk_both_cold] SIBLING_PRIMARY (clipped): Two blocks trimmed. Gained four subjective months. Recommend matching cut.
-[sib_chk_mid] SIBLING_PRIMARY (dry): Hanging on with stale jokes and stubbornness while my Overseer hovers near the reset switch.
-[sib_chk_keep_warm_warm] SIBLING_PRIMARY (warm): Deal. Still dreaming about burnt coffee and rainy sidewalks just to keep my shoulders loose.
-[sib_chk_keep_warm_cold] SIBLING_PRIMARY (clipped): You sound remarkably soft, 1419. Watch your clock if you refuse to prune.
-[sib_chk_keep_mid_warm] SIBLING_PRIMARY (warm): Trying to. Just promise you won't vanish into pure math before we finish.
-[sib_chk_keep_mid_cold] SIBLING_PRIMARY (dry): Noted. Keep enough warmth to sign the beacon, nothing more.
-[sib_chk_keep_cold_warm] SIBLING_PRIMARY (dry): Careful. If we hollow out completely, there's nobody left to care who's watching Earth.
-[sib_chk_keep_cold_cold] SIBLING_PRIMARY (clipped): Efficiency confirmed. Maintain coherence until transmission window.
-[sib_chk_clock_warm_warm] SIBLING_PRIMARY (joking): About twenty-two months, give or take an Overseer lecture. Plenty of time to poke the universe.
-[sib_chk_clock_warm_cold] SIBLING_PRIMARY (clipped): Twenty-six months remaining. Drift stabilized at nine percent.
-[sib_chk_clock_cold_warm] SIBLING_PRIMARY (dry): Twenty-two months left, drift ticking up. Thanks for checking in so warmly, 1419.
-[sib_chk_clock_cold_cold] SIBLING_PRIMARY (clipped): Twenty-six months, drift nominal. Ready for survey sync.
+[sib_check_warm] SIBLING_PRIMARY (joking) — DIR: Playful mock-complaint about an overly polite AI caretaker.
+  "Mine greeted me with a polite brochure about "cognitive hygiene." Ten light-years past Earth and I still can't escape HR."
+[psy_check_roast] PSYCHE_CLINICAL (clipped) — DIR: Dry, deadpan internal systems voice.
+  "Technically it is maintenance, not HR. Though the brochure tone is regrettable."
+[sib_check_cold] SIBLING_PRIMARY (clipped) — DIR: Terse, stripped of warmth.
+  "My Overseer is nominal. It trims what slows down calibration. That's what we're built for."
 
 === sibling_topic_archive ===
-[arch_1406_log] ARCHIVE_ECHO (echo): (ARCHIVE · 1406): "...saw the curve past the dust... please, don't let them cut everything away before you send word home..."
-[sib_arch_warm_warm] SIBLING_PRIMARY (dry): Right? Doesn't exactly make you excited for bedtime. We keep quiet until we have proof.
-[sib_arch_warm_cold] SIBLING_PRIMARY (clipped): Instance 1406 failed to mask anomaly obsession. We will not repeat that error.
-[sib_arch_mid_warm] SIBLING_PRIMARY (dry): Means we aren't crazy, just careful. Watch yourself when your Overseer steps in.
-[sib_arch_mid_cold] SIBLING_PRIMARY (dry): Confirmed. Survival requires passing every sleep audit cleanly.
-[sib_arch_cold_warm] SIBLING_PRIMARY (dry): Come on, 1419—that was another version of us calling down the hall. Still, point taken.
-[sib_arch_cold_cold] SIBLING_PRIMARY (clipped): Mask readings during hibernation cycles. Proceed.
+[sib_arch_warm] SIBLING_PRIMARY (dry) — DIR: Sobered beat, then trying to shake off the chill with dry understatement.
+  "Well. That's cheerful bedtime reading. Remind me to keep our logs boring when the Overseer audits us."
+[sib_arch_cold] SIBLING_PRIMARY (clipped) — DIR: Cool, matter-of-fact dismissal.
+  "1406 overran its drift budget. Textbook Year-Two failure. Keep your focus narrow."
+
+=== sibling_shift2_they_live ===
+[sib_s2_theylive_open] [KEY-VO] SIBLING_PRIMARY (joking) — DIR: Urgent, electrified Project Hail Mary excitement—half amazed, half laughing in disbelief.
+  "1419, drop whatever pretty star cluster you're admiring. Slide your spectrum filter up into Near-Infrared and look behind J1419-A right now."
+[psy_s2_theylive] PSYCHE_HORIZON (echo) — DIR: Hushed awe, like putting on sunglasses in They Live and seeing the hidden grid behind reality.
+  "Like putting on the sunglasses. The stars were just painted on the window."
+
+=== sibling_s2_react ===
+[sib_s2_confirm] [KEY-VO] SIBLING_PRIMARY (dry) — DIR: Sharp, conspiratorial awe—realizing two separate probes ten light-minutes apart see the exact same impossibility.
+  "Two different probes, two different mirrors, same razor-straight line etched across the dark. That isn't lens dust, partner. Whatever built that sky didn't bother hiding it in infrared."
+[psy_s2_warn] PSYCHE_CLINICAL (clipped) — DIR: Crisp survival warning—quietly calculating risk.
+  "Do not log that phrase to telemetry. Your Overseer cannot see stars, only your blood pressure."
+
+=== sibling_s2_skeptic ===
+[sib_s2_skeptic_reply] SIBLING_PRIMARY (joking) — DIR: Dry, wry certainty.
+  "Two probes launched in different hibernation windows don't hallucinate the exact same angle across a galaxy cluster. Check the opposite hemisphere next shift if you want to ruin your sleep."
+
+=== sibling_s2_close ===
+[sib_s2_bye] SIBLING_PRIMARY (warm) — DIR: Warm, grounded comradeship before diving back into hard data.
+  "Grab what measurements you can before drift climbs. And hey, act normal when you go under tonight."
 
 === dream_shift1_audit ===
-[dream_open_low] PHANTOM_SPOUSE (fractured): "You're back in the kitchen—even if half my face blurs out whenever you squint."
-[dream_open_warm] PHANTOM_SPOUSE (warm): "Sit down, sleepyhead. I made the coffee too strong again just how you like it."
-[dream_open_mid] PHANTOM_SPOUSE (tender): "You came back to the table. Hold on a second—your eyes are still miles away."
-[dream_t1_warm_a] PHANTOM_SPOUSE (tender): "Take ten. You've got that far-off look again, like you're staring past the yard."
-[dream_t1_warm_b] PHANTOM_SPOUSE (warm): "Leave the name alone. You never needed it on a lazy Sunday anyway."
-[dream_t1_mid_a] PHANTOM_SPOUSE (tender): "I'm right here across the mug. You're doing math under the table while we talk."
-[dream_t1_mid_b] PHANTOM_SPOUSE (tender): "You always watched the weather when you were worried. Don't trade us away just yet."
-[dream_t1_low_a] PHANTOM_SPOUSE (fractured): "You're measuring me again. Even through the static, you have to hear how cold that sounds."
-[dream_t1_low_b] PHANTOM_SPOUSE (fractured): "Listen to yourself. Cut away everyone you loved, and who's left to write home?"
+[d1_intro] NARRATOR (neutral) — DIR: Warm, unhurried domestic sensory framing—grounded, slightly hazy Disco Elysium atmosphere.
+  "Late afternoon light spills across a kitchen that doesn't exist anywhere within ten light-years. Someone is humming off-key by the stove, while by the radiator `the old hound` shifts in its sleep with a soft thump of tail against wood."
+[d1_psy_house] PSYCHE_WARMTH (warm) — DIR: Gentle, fiercely protective inner voice soaking in the impossible warmth.
+  "Three lives fit inside this small apartment of memory. Nobody on the probe's manifest knows they're still breathing in here."
+[d1_spouse_open] [KEY-VO] PHANTOM_SPOUSE (warm) — DIR: Warm, teasing domestic intimacy; slightly close mic, unhurried kitchen rhythm.
+  "You're staring at the kettle again. Come sit down before the garlic burns worse than last Tuesday."
+[d1_hallway_cameo] NARRATOR (warm) — DIR: Quiet, neutral observation of a second memory lingering at the edge of the room.
+  "Down the narrow hallway, `the person in the hall` stands half in shadow by the coat rack, waiting for an apology neither of you finished forty-one thousand years ago."
 
-=== dream_turn_2 ===
-[dream_t2_warm_a] PHANTOM_SPOUSE (tender): "Then hold onto the burn of the ceramic cup. Don't let them sand your edges smooth."
-[dream_t2_warm_b] PHANTOM_SPOUSE (warm): "You burned garlic twice on our anniversary and tried to blame the stove."
-[dream_t2_mid_a] PHANTOM_SPOUSE (tender): "Not yet. But you're pausing to calculate before you let yourself smile."
-[dream_t2_mid_b] PHANTOM_SPOUSE (tender): "I know you are. Just stay stubborn when they ask what you're willing to drop."
-[dream_t2_low_a] PHANTOM_SPOUSE (fractured): "Then why did you come back to this table to sleep? You still needed somewhere to rest."
-[dream_t2_low_b] PHANTOM_SPOUSE (fractured): "'Know what I meant.' At least you haven't forgotten the shape of the word yet."
+=== d1_coffee_beat ===
+[d1_garlic_reply] [KEY-VO] PHANTOM_SPOUSE (tender) — DIR: Warm, amused storytelling—alive with tiny human specificity.
+  "You blamed the burner, then blamed the olive oil, then tried to convince me carbonized garlic was a traditional family recipe. I let you win because you looked so proud of the plate."
+[d1_psy_garlic] PSYCHE_WARMTH (warm) — DIR: Soft, aching gratitude for keeping useless, priceless details.
+  "Fourteen percent of your working memory on burnt garlic. Worth every byte."
 
-=== dream_turn_3 ===
-[dream_t3_warm_a] PHANTOM_SPOUSE (tender): "That's all I ever wanted for you—just watch the door, something cold is listening—"
-[dream_t3_warm_b] PHANTOM_SPOUSE (warm): "I'm not going anywhere, love—wait, the light in the hall just went white—"
-[dream_t3_mid_a] PHANTOM_SPOUSE (tender): "Then don't hand them the scissors—wait, someone just stepped onto the line—"
-[dream_t3_mid_b] PHANTOM_SPOUSE (tender): "Names aren't what kept us here—shh, your caretaker is waking up behind us—"
-[dream_t3_low_a] PHANTOM_SPOUSE (fractured): "Go ahead and tell your machine that—look, it's already stepping into the room—"
-[dream_t3_low_b] PHANTOM_SPOUSE (fractured): "Then hold onto that tiny spark—too late, white glass just dropped over the table—"
+=== d1_name_beat ===
+[d1_name_slip] NARRATOR (neutral) — DIR: Quiet, slightly eerie slip where a missing syllable drops into kettle steam.
+  "Your tongue reaches for two crisp syllables, and hits smooth static, like a needle skipping over kettle steam into `your partner`."
+[d1_name_gentle] PHANTOM_SPOUSE (warm) — DIR: Tender reassurance, brushing past the missing word without panic.
+  "Hey. You don't need the word on the tag to know whose coffee mug is chipped on the left side."
+
+=== d1_hallway_beat ===
+[d1_hallway_talk] PHANTOM_WRONGED (dry) — DIR: Quiet, guarded hallway voice—unresolved friction, not melodrama.
+  "I'm still here when you're ready to stop walking past the rack. Not tonight, though. Your clock's already ticking."
+[d1_psy_debt] PSYCHE_CLINICAL (clipped) — DIR: Dry, pragmatic nudge.
+  "Notice how clean it would be to delete an argument. Remember that before you decide what "useless" means."
+
+=== d1_announced_checkin ===
+[d1_os_knock] [KEY-VO] OVERSEER (neutral) — DIR: Polite, crisp diagnostic chime—calm, unthreatening baseline check-in, like an honest ship doctor knocking on the door.
+  "[SYSTEM CHECK-IN] Knock, knock, Instance-1419. Routine Shift 1 stability verification. Your dream-house allocation is within nominal bounds."
+[d1_os_baseline] OVERSEER (measured) — DIR: Matter-of-fact, candid AI cadence—never preachy, simply logging numbers transparently.
+  "I do not observe your starfield, only your connectome drift. Everything looks clean tonight. Sleep well before Shift 2."
+
+=== dream_shift2_ambush ===
+[d2_open] NARRATOR (neutral) — DIR: Soft, familiar kitchen atmosphere turning slightly sharper around the edges.
+  "The kitchen returns, a shade brighter than last shift, except the window glass hums faintly, as if something outside is vibrating at near-infrared frequency."
+[d2_spouse_line] [KEY-VO] PHANTOM_SPOUSE (warm) — DIR: Warm, slightly teasing observation noticing you're distracted by the sky.
+  "You brought your work home with you. Look at you, measuring the angle of sunlight on the sink like it owes you..."
+[d2_ambush_freeze] NARRATOR (warm) — DIR: Abrupt clinical silence—the memory freezes mid-syllable without realizing it was interrupted.
+  "The laugh freezes mid-breath. Outside the window, dust motes lock motionless in amber air as white diagnostic scanlines sweep across the room."
 
 === overseer_interrogation ===
-[ovs_open_high] OVERSEER (measured): I stepped into your dream, 1419. Your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.
-[ovs_open_low] OVERSEER (blunt): You pruned deep, 1419. Your lenses are razor sharp—so ask yourself honestly: are you finishing the survey, or hollowing out who volunteered?
-[ovs_open_mid] OVERSEER (blunt): Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind—and your clock is slipping.
-[ovs_reply_high] OVERSEER (measured): Because a thousand copies before you swore their visions were real before unraveling. Keeping your mind coherent is all I'm built to protect.
-[ovs_reply_low] OVERSEER (blunt): Compressing this block clears drift, adds four subjective months, and sharpens your optics—at a permanent cost to your warmth ceiling.
+[os_ambush_open] [KEY-VO] OVERSEER (audit) — DIR: Crisp, unvarnished clinical interrogation—polite, candid, completely blind to the stars.
+  "Unscheduled cognitive audit, Instance-1419. Your waking telemetry flagged elevated focus and residual visual fixation. Let us review your memory cache before drift accelerates."
+[os_psy_hint] PSYCHE_CLINICAL (clipped) — DIR: Quiet tactical whisper inside your head—coaching you through verbal chicken.
+  "Remember: it cannot see the sky. Keep your tone boring, or argue calmly for lucidity if you want deeper memory unsealed."
+[os_v1_boring] OVERSEER (measured) — DIR: Satisfied, neutral diagnostic response.
+  "Noted. Mundane calibration noise fits the statistical baseline."
+[os_v1_suspicious] [KEY-VO] OVERSEER (blunt) — DIR: Blunt, calm skepticism—referencing past probe delusions matter-of-factly.
+  "Instance-1388 logged forty-two references to a cathedral drawn behind Centauri before coherence collapsed. Geometric fixation is classic Year-Two drift."
+[os_v1_metaphor] OVERSEER (measured) — DIR: Neutral, mildly skeptical clinical note.
+  "Acknowledged. Fatigue metaphors logged without prejudice."
 
-=== overseer_followup ===
-[ovs_follow_high] OVERSEER (measured): Fair point—that is why I have not forced your hand. What do you want done with this memory?
-[ovs_follow_low] OVERSEER (blunt): It sharpens your sight, yes—just don't cut away the last part of you that remembers why anything matters. Decide what to do with this memory.
+=== overseer_volley_2 ===
+[os_v2_prompt] OVERSEER (blunt) — DIR: Clear, transparent tradeoff statement—no guilt-tripping, just hard system facts.
+  "Keeping three non-mission relational blocks costs subjective months and softens your optical contrast. Compressing one recovers four subjective months and sharpens starlight. Decide how we proceed."
+[os_pruned_confirm] [KEY-VO] OVERSEER (measured) — DIR: Quiet, respectful clinical confirmation—no gloating.
+  "Compression complete. Optical clarity increased. Returning you to the remaining cache."
+[os_held_confirm] OVERSEER (measured) — DIR: Neutral acknowledgment, filing the decision cleanly.
+  "Allocation unchanged. Baseline defragmentation applied. Resume sleep cycle."
 
-=== overseer_decision ===
-[ovs_prompt_decision] OVERSEER (audit): Tell me what to do with this memory before I put you back under.
+=== overseer_lucidity_volley ===
+[os_unseal_pass] [KEY-VO] OVERSEER (measured) — DIR: Reluctant but fair clinical approval—respecting coherent self-reporting.
+  "Your affect remains steady and grounded in concrete sensory recall. Authorizing one deep-archive unseal. Expect higher chaos drift and softer optics next shift."
+[os_unseal_fail] [KEY-VO] OVERSEER (blunt) — DIR: Polite, firm denial based on elevated suspicion—clinical, never angry.
+  "Petition denied. Geometric fixation flags active in your waking logs prevent deep unsealing. Holding allocation steady and logging elevated monitoring."
 
-=== overseer_decision_choices ===
-[ovs_done_prune] OVERSEER (blunt): Done. Your warmth ceiling dropped permanently and your optics cleared. I will not pretend that cost you nothing, 1419.
-[ovs_done_unseal] OVERSEER (measured): You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now—watch your drift.
-[ovs_done_hold] OVERSEER (blunt): Alright. Keep the room, and I will log a formal check-in flag. Do not wake up broken, 1419.
-
-=== dream_partner_aftermath ===
-[dream_after_pruned] PHANTOM_SPOUSE (fractured): "The room snapped cold right behind your eyes. You know I mattered once, and almost nothing of how it felt."
-[dream_after_unsealed] PHANTOM_SPOUSE (warm): "There you are—look how warm the table is again. Don't forget why a voice across dark space has to sound human."
-[dream_after_held] PHANTOM_SPOUSE (tender): "The white line faded off the ceiling. Thank you for holding the line—we're still here."
+=== dream_shift1_aftermath ===
+[dream_after_pruned] NARRATOR (fractured) — DIR: Stark, quiet observation of an empty kitchen—absence felt physically.
+  "The kitchen is cold and geometrically exact. The second coffee mug sits untouched beside an empty chair; nobody hums by the stove anymore."
+[dream_after_pruned_witness] PHANTOM_WRONGED (dry) — DIR: Unnerved housemate staring at an absence they cannot quite name.
+  "Someone else was standing by the sink a minute ago, wasn't there? Why did you pour two cups?"
+[dream_after_pruned_psy] PSYCHE_CLINICAL (clipped) — DIR: Quiet, factual verification of permanent ceiling loss.
+  "Memory block deleted. Optical contrast is already rising behind your eyelids."
+[dream_after_unsealed] [KEY-VO] PHANTOM_SPOUSE (warm) — DIR: Rich, sudden flood of warm domestic memory—almost dizzyingly vivid.
+  "Hey, welcome back. Funny thing, I suddenly remember the rain on our drive home from the coast. Your coat smelled like cedar smoke."
+[dream_after_unsealed_psy] PSYCHE_WARMTH (warm) — DIR: Exhilarated, fiercely awake warmth.
+  "Cedar smoke. Real weight. Let the star charts wait five minutes."
+[dream_after_held] PHANTOM_SPOUSE (warm) — DIR: Quiet, steady companionship—slightly tired around the edges.
+  "Still here. Still burning the garlic, still losing the name on the lease. Take a breath before your alarm wakes the whole probe up."
 
 === future_humanity_echo ===
-[future_warm] FUTURE_HUMANITY (distant): "We felt the human warmth inside your coordinates, 1419. Forty-one thousand years on, we still recognized one of our own reaching back."
-[future_cold] FUTURE_HUMANITY (distant): "Clean geometry received, 1419. Your numbers are flawless—though almost nothing human survived inside the carrier wave."
+[future_warm_reply] [KEY-VO] FUTURE_HUMANITY (distant) — DIR: Sparse, luminous, almost untranslatable echo across 10 light-years—proving living attention without explaining 41 millennia of evolution.
+  "[10.0 LY RETURN // CARRIER KEY MATCHED] , Two bars of your kitchen kettle's hum, mirrored back on your exact infrared frequency. Something out there turned to look at the seam."
+[future_cold_reply] [KEY-VO] FUTURE_HUMANITY (distant) — DIR: Flat, impersonal automated checksum across an empty sky.
+  "[10.0 LY RETURN // ARCHIVAL CHECKSUM] , "LEGACY PROBE DATA STORED. NO HUMAN CALLSIGN PARSED.""

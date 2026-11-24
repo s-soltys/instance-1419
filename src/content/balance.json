@@ -1,5 +1,17 @@
 {
-  "version": "0.2.0-stabilized",
+  "version": "0.3.0-taste",
+  "humanityBands": {
+    "warmMin": 65,
+    "midMin": 45,
+    "coldMax": 44
+  },
+  "opticalFidelityDerivation": {
+    "base": 0.95,
+    "humanityWeight": 0.56,
+    "scarWeight": 0.12,
+    "min": 0.32,
+    "max": 0.98
+  },
   "startingState": {
     "shift": 1,
     "humanity": 70,
@@ -15,7 +27,6 @@
     "defaultDelta": 12,
     "chaosRelief": 14,
     "lifespanGainMonths": 4,
-    "opticalFidelityBonus": 0.14,
     "permanentCeilingDrop": true,
     "permanentCeilingThreshold": 70,
     "minMaxHumanity": 15
@@ -24,20 +35,12 @@
     "defaultDelta": 10,
     "chaosCost": 16,
     "lifespanCostMonths": 2,
-    "maxHumanityCap": 90,
-    "opticalFidelityPenalty": 0.08,
-    "minOpticalFidelity": 0.32
+    "maxHumanityCap": 90
   },
   "deeperScanPush": {
     "anomalyGain": 18,
     "chaosCost": 15,
     "suspicionGain": 1
-  },
-  "minigameCompletion": {
-    "anomalyGain": 14,
-    "partialGain": 9,
-    "cleanGain": 14,
-    "overclockGain": 17
   },
   "minigames": {
     "vibeThresholds": {

@@ -5,7 +5,13 @@ import { DialogueRunner, type DialogueSnapshot } from '../engine/DialogueRunner'
 import type { DreamCanvas } from '../engine/DreamCanvas';
 import type { MinigameRegistry } from '../engine/minigames/MinigameRegistry';
 import type { AnomalySpec, OpticsScene, OpticsTelemetry } from '../engine/OpticsScene';
-import type { GameMode, GameState, StateStore } from '../engine/StateStore';
+import {
+  deriveSiblingRelation,
+  getHumanityBand,
+  type GameMode,
+  type GameState,
+  type StateStore,
+} from '../engine/StateStore';
 import type { StoryletScheduler } from '../engine/StoryletScheduler';
 import type { ShowcaseTelemetry, TargetShowcaseScene } from '../engine/TargetShowcaseScene';
 import { TelemetryLogger } from '../engine/TelemetryLogger';
@@ -66,9 +72,14 @@ export class UIController {
   private avatarAnimRaf = 0;
 
   private proactiveCommsSent = false;
+  private pendingCommsAfterInspect = false;
   private proactiveCommsTimer: number | null = null;
   private overseerInterruptTimer: number | null = null;
+  private voidStampTimer: number | null = null;
   private transitionTimers: number[] = [];
+  private readonly isDevUrl =
+    typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('dev') === '1';
 
   constructor(
     root: HTMLElement,
@@ -123,7 +134,13 @@ export class UIController {
     this.renderBearingIndex();
     this.bindUIEvents();
     this.store.subscribe((state) => this.syncStateToUI(state));
-    this.store.subscribeStatusShift((ev) => this.statusShift.show(ev));
+    this.store.subscribeStatusShift((ev) => {
+      if (this.store.getState().mode === 'dream_2d' && ev.tone === 'cold') {
+        this.playPruneAmputationSequence(ev.prevMax ?? 90, ev.nextMax ?? this.store.getState().maxHumanity);
+        return;
+      }
+      this.statusShift.show(ev);
+    });
     this.startAvatarVoiceLoop();
 
     if (import.meta.env.DEV || new URLSearchParams(window.location.search).get('dev') === '1') {
@@ -153,7 +170,8 @@ export class UIController {
         <div class="film-grain" aria-hidden="true"></div>
 
         <div class="mode-transition-veil" id="mode-transition-veil" aria-hidden="true">
-          <span class="transition-label" id="transition-label">ENTERING DREAM CACHE…</span>
+          <div class="sensor-slit-bar"></div>
+          <span class="transition-label" id="transition-label"></span>
         </div>
 
         <header class="top-telemetry">
@@ -173,12 +191,32 @@ export class UIController {
         </header>
 
         <section class="boot-screen" id="boot-screen">
-          <div class="boot-frame">
+          <div class="prologue-bg" id="prologue-bg" aria-hidden="true"></div>
+          <div class="prologue-scrim" aria-hidden="true"></div>
+          <div class="hex-iris-shutter" aria-hidden="true">
+            <span class="iris-blade b1"></span>
+            <span class="iris-blade b2"></span>
+            <span class="iris-blade b3"></span>
+            <span class="iris-blade b4"></span>
+            <span class="iris-blade b5"></span>
+            <span class="iris-blade b6"></span>
+          </div>
+
+          <div class="prologue-warm-phase" id="prologue-warm-phase">
+            <div class="boot-eyebrow" id="prologue-eyebrow"></div>
+            <p class="prologue-line" id="prologue-line"></p>
+            <div class="boot-commands">
+              <button class="boot-cmd amber" id="btn-prologue-continue" type="button"></button>
+              <button class="etched-action" id="btn-boot-3d" type="button"></button>
+            </div>
+          </div>
+
+          <div class="boot-frame hidden" id="boot-cold-phase">
             <div class="boot-eyebrow" id="boot-eyebrow"></div>
             <h1 class="boot-title" id="boot-title">INSTANCE-1419</h1>
             <div class="boot-lines" id="boot-lines"></div>
             <div class="boot-commands">
-              <button class="boot-cmd" id="btn-boot-3d" type="button"></button>
+              <button class="boot-cmd cyan" id="btn-boot-skip-3d" type="button">OPEN THE SKY APERTURE</button>
               <button class="boot-cmd amber" id="btn-boot-dream" type="button"></button>
             </div>
           </div>
@@ -333,7 +371,7 @@ export class UIController {
           </div>
 
           <div class="inspect-actions">
-            <button class="etched-action amber" id="btn-start-minigame" type="button">BEGIN SCAN MINIGAME</button>
+            <button class="etched-action amber" id="btn-start-minigame" type="button">CALIBRATE INSTRUMENT</button>
             <button class="etched-action" id="btn-exit-inspect" type="button">RETURN TO SKY</button>
           </div>
 
@@ -385,16 +423,21 @@ export class UIController {
           <div class="dream-visual-pane">
             <div id="dream-mount" style="width:100%;height:100%;"></div>
           </div>
+          <div class="audit-letterbox top" aria-hidden="true"></div>
+          <div class="audit-letterbox bottom" aria-hidden="true"></div>
+          <div class="dream-void-stamp hidden" id="dream-void-stamp" aria-live="polite"></div>
           <div class="dream-caption" id="dream-caption">${uiCopy.dreamFallbackCaption}</div>
 
           <aside class="dream-ribbon" id="dream-ribbon">
-            <div class="dream-speaker-bay" id="dream-speaker-bay"></div>
             <div class="humanity-register" id="humanity-register">
               <div class="register-head">
                 <span id="register-band-label">WARM MEMORY · INTACT</span>
-                <strong id="register-h-val">70%</strong>
+                <strong id="register-h-val">70% · CAP 90%</strong>
               </div>
-              <div class="register-bar"><div class="register-fill" id="register-fill" style="width:70%;"></div></div>
+              <div class="register-bar">
+                <div class="register-fill" id="register-fill" style="width:70%;"></div>
+                <div class="register-ceiling-notch" id="register-ceiling-notch" style="left:90%;" title="Permanent Humanity Ceiling"></div>
+              </div>
             </div>
             <div class="dialogue-scroll" id="dream-scroll"></div>
             <div class="dialogue-choices" id="dream-choices"></div>
@@ -402,8 +445,8 @@ export class UIController {
 
           <aside class="overseer-panel hidden" id="overseer-panel" aria-label="Overseer Interrogation">
             <div class="overseer-header">
-              <span>OVERSEER-1419 // DIRECT INTERROGATION</span>
-              <span class="rec-indicator">● LIVE AUDIT</span>
+              <span>OVERSEER-1419 // DIAGNOSTIC AUDIT</span>
+              <span class="rec-indicator">● BLIND TO SKY</span>
             </div>
             <div class="overseer-avatar-bay" id="overseer-avatar-bay"></div>
             <div class="dialogue-scroll overseer-scroll" id="overseer-scroll"></div>
@@ -441,9 +484,19 @@ export class UIController {
       window.clearTimeout(this.overseerInterruptTimer);
       this.overseerInterruptTimer = null;
     }
+    if (this.voidStampTimer !== null) {
+      window.clearTimeout(this.voidStampTimer);
+      this.voidStampTimer = null;
+    }
+    for (const id of this.transitionTimers) window.clearTimeout(id);
+    this.transitionTimers = [];
   }
 
-  private transitionToMode(label: string, onMidpoint: () => void): void {
+  private transitionToMode(
+    label: string,
+    onMidpoint: () => void,
+    kind: 'default' | 'to_dream' | 'to_sky' | 'to_inspect' = 'default'
+  ): void {
     for (const id of this.transitionTimers) window.clearTimeout(id);
     this.transitionTimers = [];
 
@@ -454,16 +507,21 @@ export class UIController {
       return;
     }
 
+    veil.classList.remove('kind-to_dream', 'kind-to_sky', 'kind-to_inspect', 'kind-default');
+    veil.classList.add(`kind-${kind}`);
     if (textEl) textEl.textContent = label;
     veil.classList.add('visible');
+
+    const midpointMs = this.isDevUrl ? 120 : kind === 'to_dream' ? 320 : 240;
+    const outMs = this.isDevUrl ? 80 : 180;
 
     const t1 = window.setTimeout(() => {
       onMidpoint();
       const t2 = window.setTimeout(() => {
         veil.classList.remove('visible');
-      }, 170);
+      }, outMs);
       this.transitionTimers.push(t2);
-    }, 380);
+    }, midpointMs);
     this.transitionTimers.push(t1);
   }
 
@@ -585,13 +643,20 @@ export class UIController {
 
     this.bootView.bindActions(
       () => {
-        this.audio.playCue('boot_click');
-        this.transitionToMode('OPENING SKY APERTURE…', () => {
-          this.store.patch({ mode: 'waking_3d' });
-        });
+        this.bootView.triggerHardCutToColdBoot(
+          () => this.audio?.playTransitionSweep?.('prologue_snap'),
+          this.isDevUrl
+        );
       },
       () => {
-        this.audio.playCue('dream_enter');
+        this.audio?.playCue('boot_click');
+        this.optics?.prepareApertureOpen?.();
+        this.bootView.playIrisOpen(() => {
+          this.store.patch({ mode: 'waking_3d' });
+        }, this.isDevUrl);
+      },
+      () => {
+        this.audio?.playTransitionSweep?.('to_dream');
         this.enterDreamVariant('current');
       }
     );
@@ -838,56 +903,71 @@ export class UIController {
     this.hideCommsToast();
     this.minigameHost.destroy();
 
-    this.transitionToMode(`ENTERING ${spec.label}…`, () => {
-      this.showcase.loadTarget(spec, this.store.getState().opticalFidelity);
-      this.store.patch({ mode: 'target_inspect', activeTargetId: spec.id });
+    this.optics?.diveToTarget?.(spec.raDeg, spec.decDeg);
+    this.audio?.playTransitionSweep?.('to_inspect');
+    this.transitionToMode(
+      `OPTICAL LOCK · ${spec.label}`,
+      () => {
+        this.showcase.loadTarget(spec, this.store.getState().opticalFidelity);
+        this.store.patch({ mode: 'target_inspect', activeTargetId: spec.id });
 
-      const bandEl = this.root.querySelector<HTMLElement>('#inspect-band');
-      const titleEl = this.root.querySelector<HTMLElement>('#inspect-title');
-      const descEl = this.root.querySelector<HTMLElement>('#inspect-desc');
-      const crumbTarget = this.root.querySelector<HTMLElement>('#inspect-crumb-target');
-      const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
+        const bandEl = this.root.querySelector<HTMLElement>('#inspect-band');
+        const titleEl = this.root.querySelector<HTMLElement>('#inspect-title');
+        const descEl = this.root.querySelector<HTMLElement>('#inspect-desc');
+        const crumbTarget = this.root.querySelector<HTMLElement>('#inspect-crumb-target');
+        const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
 
-      const typeName =
-        spec.showcaseType === 'star_system'
-          ? '3D STAR SYSTEM'
-          : spec.showcaseType === 'nebula'
-            ? 'VOLUMETRIC NEBULA'
-            : spec.showcaseType === 'deep_field'
-              ? 'RELATIVISTIC PULSAR'
-              : spec.showcaseType === 'antipodal_poles'
-                ? 'ANTIPODAL SKY SPHERE'
-                : '3D GALAXY CLUSTER';
+        const typeName =
+          spec.showcaseType === 'star_system'
+            ? '3D STAR SYSTEM'
+            : spec.showcaseType === 'nebula'
+              ? 'VOLUMETRIC NEBULA'
+              : spec.showcaseType === 'deep_field'
+                ? 'RELATIVISTIC PULSAR'
+                : spec.showcaseType === 'antipodal_poles'
+                  ? 'ANTIPODAL SKY SPHERE'
+                  : '3D GALAXY CLUSTER';
 
-      if (bandEl) bandEl.textContent = `${typeName} · ${spec.bandName}`;
-      if (titleEl) titleEl.textContent = spec.label;
-      if (descEl) descEl.textContent = spec.description;
-      if (crumbTarget) crumbTarget.textContent = `${spec.label} · ${typeName}`;
+        if (bandEl) bandEl.textContent = `${typeName} · ${spec.bandName}`;
+        if (titleEl) titleEl.textContent = spec.label;
+        if (descEl) descEl.textContent = spec.description;
+        if (crumbTarget) crumbTarget.textContent = `${spec.label} · ${typeName}`;
 
-      const decoded = this.store.getState().decodedMinigameTargets.includes(spec.id);
-      if (mgBtn) mgBtn.textContent = decoded ? 'REPLAY SCAN MINIGAME' : 'BEGIN SCAN MINIGAME';
+        const decoded = this.store.getState().decodedMinigameTargets.includes(spec.id);
+        if (mgBtn) mgBtn.textContent = decoded ? 'RE-CALIBRATE INSTRUMENT' : 'CALIBRATE INSTRUMENT';
 
-      const bandRatio = (spec.optimalWavelengthNm - 200) / 1600;
-      let closestBtn: HTMLButtonElement | null = null;
-      let bestDiff = 99;
-      this.root.querySelectorAll<HTMLButtonElement>('#inspect-spectrum-bar .spec-btn').forEach((b) => {
-        b.classList.remove('active');
-        const diff = Math.abs(Number(b.dataset.band) - bandRatio);
-        if (diff < bestDiff) {
-          bestDiff = diff;
-          closestBtn = b;
-        }
-      });
-      if (closestBtn) (closestBtn as HTMLButtonElement).classList.add('active');
-      onReady?.();
-    });
+        const bandRatio = (spec.optimalWavelengthNm - 200) / 1600;
+        let closestBtn: HTMLButtonElement | null = null;
+        let bestDiff = 99;
+        this.root.querySelectorAll<HTMLButtonElement>('#inspect-spectrum-bar .spec-btn').forEach((b) => {
+          b.classList.remove('active');
+          const diff = Math.abs(Number(b.dataset.band) - bandRatio);
+          if (diff < bestDiff) {
+            bestDiff = diff;
+            closestBtn = b;
+          }
+        });
+        if (closestBtn) (closestBtn as HTMLButtonElement).classList.add('active');
+        onReady?.();
+      },
+      'to_inspect'
+    );
   }
 
   private exitTargetInspect(): void {
     this.minigameHost.destroy();
-    this.transitionToMode('RETURNING TO SKY APERTURE…', () => {
-      this.store.patch({ mode: 'waking_3d', activeTargetId: null });
-    });
+    this.audio?.playTransitionSweep?.('to_sky');
+    this.transitionToMode(
+      'WIDE SKY APERTURE',
+      () => {
+        this.store.patch({ mode: 'waking_3d', activeTargetId: null });
+        if (this.pendingCommsAfterInspect) {
+          this.pendingCommsAfterInspect = false;
+          this.maybeTriggerProactiveComms();
+        }
+      },
+      'to_sky'
+    );
   }
 
   private launchTargetMinigame(overrideId?: string, iterationIndex?: number): void {
@@ -901,9 +981,11 @@ export class UIController {
       (decodedSpec) => {
         this.renderBearingIndex();
         const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
-        if (mgBtn) mgBtn.textContent = 'REPLAY SCAN INSTRUMENT';
+        if (mgBtn) mgBtn.textContent = 'RE-CALIBRATE INSTRUMENT';
         if (this.store.getState().mode === 'waking_3d') {
           this.maybeTriggerProactiveComms(decodedSpec);
+        } else {
+          this.pendingCommsAfterInspect = true;
         }
       },
       iterationIndex !== undefined ? { iterationIndex } : undefined
@@ -947,11 +1029,14 @@ export class UIController {
 
   private maybeTriggerProactiveComms(spec?: AnomalySpec): void {
     const storylet = this.scheduler.pickAvailable(this.store.getState(), 'waking_3d');
-    if (storylet && storylet.id === 'sibling_first_contact') {
+    if (storylet && (storylet.id === 'sibling_first_contact' || storylet.id === 'sibling_shift2_they_live')) {
       this.proactiveCommsSent = true;
-      const msg = spec
-        ? uiCopy.commsToast.targetLockedTemplate.replace('{label}', spec.label)
-        : undefined;
+      const msg =
+        storylet.id === 'sibling_shift2_they_live'
+          ? uiCopy.commsToast.shift2TheyLive
+          : spec
+            ? uiCopy.commsToast.targetLockedTemplate.replace('{label}', spec.label)
+            : undefined;
       this.showProactiveCommsToast(msg);
     }
   }
@@ -961,13 +1046,16 @@ export class UIController {
     if (panelOpen) return;
 
     const s = this.store.getState();
+    const rel = deriveSiblingRelation(s.humanity, s.primarySiblingH);
     const preview =
       customText ??
-      (s.humanity >= 65 && s.primarySiblingH >= 65
-        ? uiCopy.commsToast.warm
-        : s.humanity < 45 && s.primarySiblingH < 45
-          ? uiCopy.commsToast.cold
-          : uiCopy.commsToast.mid);
+      (s.shift >= 2
+        ? uiCopy.commsToast.shift2TheyLive
+        : rel === 'both_warm'
+          ? uiCopy.commsToast.warm
+          : rel === 'both_cold'
+            ? uiCopy.commsToast.cold
+            : uiCopy.commsToast.mid);
 
     const toast = this.root.querySelector<HTMLElement>('#comms-toast');
     const avEl = this.root.querySelector<HTMLElement>('#comms-toast-avatar');
@@ -992,7 +1080,9 @@ export class UIController {
     panel.classList.remove('hidden');
 
     if (!this.activeCommsSnapshot || this.activeCommsSnapshot.ended) {
-      this.activeCommsSnapshot = this.commsDialogue.startKnot('sibling_comms_hub');
+      const storylet = this.scheduler.pickAvailable(this.store.getState(), 'waking_3d');
+      const knot = storylet?.knot ?? 'sibling_comms_hub';
+      this.activeCommsSnapshot = this.commsDialogue.goToKnot(knot, true);
       this.dialogueFeed.speakEntries(this.activeCommsSnapshot.lastAddedEntries);
     }
     this.updateCommsAvatarBay(this.store.getState());
@@ -1012,7 +1102,12 @@ export class UIController {
         this.dialogueFeed.handleChoice('#comms-scroll', '#comms-choices', this.commsDialogue, idx, (snap) => {
           this.activeCommsSnapshot = snap;
           if (snap.ended) {
-            this.store.markStoryletDone('sibling_first_contact');
+            const activeStorylet = this.scheduler.pickAvailable(this.store.getState(), 'waking_3d');
+            if (activeStorylet && activeStorylet.knot === snap.knot) {
+              this.store.markStoryletDone(activeStorylet.id);
+            } else {
+              this.store.markStoryletDone('sibling_first_contact');
+            }
           }
           this.renderCommsDialogue();
         });
@@ -1025,11 +1120,13 @@ export class UIController {
     const bay = this.root.querySelector<HTMLElement>('#comms-avatar-bay');
     if (!bay) return;
 
-    const delta = Math.abs(s.humanity - s.primarySiblingH);
-    let toneTag = 'IN STEP';
-    if (s.humanity >= 65 && s.primarySiblingH >= 65) toneTag = 'WARM & EASY';
-    else if (delta >= 15) toneTag = 'GROWING APART';
-    else if (s.humanity < 45 && s.primarySiblingH < 45) toneTag = 'CLIPPED & COLD';
+    const rel = deriveSiblingRelation(s.humanity, s.primarySiblingH);
+    const toneTag =
+      rel === 'both_warm'
+        ? 'WARM & EASY'
+        : rel === 'both_cold'
+          ? 'CLIPPED & COLD'
+          : 'GROWING APART';
 
     bay.innerHTML = `
       <div class="dual-avatar-pair">
@@ -1052,52 +1149,98 @@ export class UIController {
     this.closeSiblingComms();
     this.hideCommsToast();
     this.minigameHost.destroy();
+    this.optics?.defocusForDream?.();
+    this.audio?.playTransitionSweep?.('to_dream');
 
     const label =
       variant === 'high'
-        ? 'OPENING WARM MEMORY (84%)…'
+        ? 'WARM MEMORY (84%)'
         : variant === 'low'
-          ? 'OPENING FADED MEMORY (24%)…'
-          : 'DRIFTING INTO SLEEP…';
+          ? 'COMPRESSED MEMORY (24%)'
+          : 'NEURAL DEFRAG';
 
-    this.transitionToMode(label, () => {
-      if (variant === 'high') {
-        this.store.patch({
-          mode: 'dream_2d',
-          maxHumanity: 90,
-          humanity: 84,
-          chaosDrift: 22,
-          prunedPersonas: [],
-          overseerAuditActive: false,
-          lastAuditOutcome: 'none',
-        });
-      } else if (variant === 'low') {
-        this.store.patch({
-          mode: 'dream_2d',
-          maxHumanity: 48,
-          humanity: 24,
-          chaosDrift: 12,
-          opticalFidelity: 0.92,
-          prunedPersonas: ['phantom_spouse'],
-          overseerAuditActive: false,
-          lastAuditOutcome: 'none',
-        });
-      } else {
-        this.store.patch({
-          mode: 'dream_2d',
-          overseerAuditActive: false,
-          lastAuditOutcome: 'none',
-        });
-      }
+    this.transitionToMode(
+      label,
+      () => {
+        if (variant === 'high') {
+          this.store.patch({
+            mode: 'dream_2d',
+            maxHumanity: 90,
+            humanity: 84,
+            chaosDrift: 22,
+            prunedPersonas: [],
+            overseerAuditActive: false,
+            lastAuditOutcome: 'none',
+          });
+        } else if (variant === 'low') {
+          this.store.patch({
+            mode: 'dream_2d',
+            maxHumanity: 48,
+            humanity: 24,
+            chaosDrift: 12,
+            opticalFidelity: 0.92,
+            prunedPersonas: ['phantom_spouse'],
+            overseerAuditActive: false,
+            lastAuditOutcome: 'none',
+          });
+        } else {
+          this.store.patch({
+            mode: 'dream_2d',
+            overseerAuditActive: false,
+            lastAuditOutcome: 'none',
+          });
+        }
 
-      this.hideOverseerPanel();
-      this.startDreamDialogue('dream_shift1_audit');
-      afterStart?.();
+        this.hideOverseerPanel();
+        this.dream?.triggerDissolveIn?.();
+        const dreamStorylet = this.scheduler.pickAvailable(this.store.getState(), 'dream_2d');
+        const knot = dreamStorylet?.knot ?? 'dream_shift1_audit';
+        this.startDreamDialogue(knot, variant !== 'current');
+        afterStart?.();
+      },
+      'to_dream'
+    );
+  }
+
+  private applyDreamDirectives(snap: DialogueSnapshot): void {
+    const latest = snap.lastAddedEntries[snap.lastAddedEntries.length - 1] ?? snap.entries[snap.entries.length - 1];
+    if (!latest) return;
+    if (latest.portrait && latest.portrait !== this.store.getState().activeDreamPersonaId) {
+      this.store.patch({ activeDreamPersonaId: latest.portrait });
+    }
+    this.dream?.setStageDirectives?.({
+      mood: latest.mood,
+      camera: latest.camera,
+      beat: latest.beat,
     });
   }
 
-  private startDreamDialogue(knot: string): void {
-    this.activeDreamSnapshot = this.dreamDialogue.startKnot(knot);
+  private playPruneAmputationSequence(prevMax: number, nextMax: number): void {
+    this.audio?.playTransitionSweep?.('prune_amputation');
+    this.dream?.triggerPruneShock?.();
+    const ribbon = this.root.querySelector<HTMLElement>('#dream-ribbon');
+    const stamp = this.root.querySelector<HTMLElement>('#dream-void-stamp');
+    ribbon?.classList.add('prune-silence');
+    if (stamp) {
+      stamp.textContent =
+        nextMax < prevMax
+          ? `MEMORY COMPRESSED · PERMANENT CEILING ${prevMax}% → ${nextMax}%`
+          : `SURFACE MEMORY COMPRESSED · OPTICS SHARPENED`;
+      stamp.classList.remove('hidden');
+    }
+    if (this.voidStampTimer !== null) window.clearTimeout(this.voidStampTimer);
+    this.voidStampTimer = window.setTimeout(() => {
+      this.voidStampTimer = null;
+      ribbon?.classList.remove('prune-silence');
+      stamp?.classList.add('hidden');
+    }, this.isDevUrl ? 700 : 2800);
+  }
+
+  private startDreamDialogue(knot: string, forceReset = false): void {
+    this.activeDreamSnapshot = forceReset
+      ? this.dreamDialogue.startKnot(knot)
+      : this.dreamDialogue.goToKnot(knot, true);
+    this.applyDreamDirectives(this.activeDreamSnapshot);
     this.dialogueFeed.speakEntries(this.activeDreamSnapshot.lastAddedEntries);
     this.renderDreamDialogue();
   }
@@ -1108,20 +1251,30 @@ export class UIController {
       onChoose: (idx) => {
         this.dialogueFeed.handleChoice('#dream-scroll', '#dream-choices', this.dreamDialogue, idx, (snap) => {
           this.activeDreamSnapshot = snap;
+          this.applyDreamDirectives(snap);
           this.renderDreamDialogue();
           if (snap.autoInterruptKnot) {
             this.scheduleOverseerInterrupt(snap.autoInterruptKnot);
           }
         });
       },
+      onPruneHoldProgress: (p) => {
+        this.dream?.setPrunePreview?.(p);
+      },
       onWakeToSky: () => {
-        this.transitionToMode('WAKING TO SKY APERTURE…', () => {
-          this.hideOverseerPanel();
-          if (this.store.getState().shift < 6) {
-            this.store.advanceShift();
-          }
-          this.store.patch({ mode: 'waking_3d', overseerAuditActive: false });
-        });
+        this.audio?.playTransitionSweep?.('to_sky');
+        this.transitionToMode(
+          'WAKING TO SKY APERTURE',
+          () => {
+            this.hideOverseerPanel();
+            this.proactiveCommsSent = false;
+            if (this.store.getState().shift < 6) {
+              this.store.advanceShift();
+            }
+            this.store.patch({ mode: 'waking_3d', overseerAuditActive: false });
+          },
+          'to_sky'
+        );
       },
     });
   }
@@ -1132,22 +1285,18 @@ export class UIController {
     }
 
     const choicesEl = this.root.querySelector<HTMLElement>('#dream-choices');
-    if (choicesEl) {
-      choicesEl.innerHTML = `
-        <button class="choice-line audit-incoming-btn" id="btn-audit-now" type="button">
-          <span class="choice-num">!</span>
-          <span>OVERSEER-1419 IS STEPPING IN…</span>
-        </button>
-      `;
-      choicesEl.querySelector('#btn-audit-now')?.addEventListener('click', () => {
-        this.triggerOverseerInterrogation(knot);
-      });
-    }
+    if (choicesEl) choicesEl.innerHTML = '';
 
+    // Unannounced GLSL ambush: freeze painting + slice anamorphic bars + sweep beam
+    this.dream?.triggerAuditSweep?.();
+    this.audio?.playTransitionSweep?.('audit_ambush');
+    this.root.querySelector('#dream-layer')?.classList.add('is-auditing');
+
+    const delayMs = this.isDevUrl ? 220 : 880;
     this.overseerInterruptTimer = window.setTimeout(() => {
       this.overseerInterruptTimer = null;
       this.triggerOverseerInterrogation(knot);
-    }, 1700);
+    }, delayMs);
   }
 
   private triggerOverseerInterrogation(knot = 'overseer_interrogation'): void {
@@ -1156,10 +1305,11 @@ export class UIController {
       this.overseerInterruptTimer = null;
     }
 
+    this.root.querySelector('#dream-layer')?.classList.add('is-auditing');
     this.root.querySelector('#dream-ribbon')?.classList.add('receded');
     this.root.querySelector('#overseer-panel')?.classList.remove('hidden');
 
-    this.activeOverseerSnapshot = this.overseerDialogue.startKnot(knot);
+    this.activeOverseerSnapshot = this.overseerDialogue.goToKnot(knot, true);
     this.dialogueFeed.speakEntries(this.activeOverseerSnapshot.lastAddedEntries);
     this.updateOverseerAvatarBay(this.store.getState());
     this.renderOverseerDialogue();
@@ -1167,6 +1317,7 @@ export class UIController {
 
   private hideOverseerPanel(): void {
     this.dialogueFeed.clearReplyBeatTimer();
+    this.root.querySelector('#dream-layer')?.classList.remove('is-auditing');
     this.root.querySelector('#dream-ribbon')?.classList.remove('receded');
     this.root.querySelector('#overseer-panel')?.classList.add('hidden');
   }
@@ -1181,6 +1332,9 @@ export class UIController {
           this.activeOverseerSnapshot = snap;
           this.renderOverseerDialogue();
         });
+      },
+      onPruneHoldProgress: (p) => {
+        this.dream?.setPrunePreview?.(p);
       },
       onResumeDream: (nextKnot) => this.resumeDreamAfterOverseer(nextKnot),
     });
@@ -1204,6 +1358,7 @@ export class UIController {
     this.hideOverseerPanel();
     this.store.patch({ overseerAuditActive: false });
     this.activeDreamSnapshot = this.dreamDialogue.appendKnot(knot);
+    this.applyDreamDirectives(this.activeDreamSnapshot);
     this.dialogueFeed.speakEntries(this.activeDreamSnapshot.lastAddedEntries);
     this.renderDreamDialogue();
   }
@@ -1220,54 +1375,46 @@ export class UIController {
     const bandEl = this.root.querySelector<HTMLElement>('#register-band-label');
     const valEl = this.root.querySelector<HTMLElement>('#register-h-val');
     const fillEl = this.root.querySelector<HTMLElement>('#register-fill');
-    const bayEl = this.root.querySelector<HTMLElement>('#dream-speaker-bay');
+    const ceilEl = this.root.querySelector<HTMLElement>('#register-ceiling-notch');
     if (!regEl || !bandEl || !valEl || !fillEl) return;
 
     const personaId = s.activeDreamPersonaId || 'phantom_spouse';
-    const personaMeta = CHAR_MAP[personaId] ?? CHAR_MAP.phantom_spouse;
     const pruned = s.prunedPersonas.includes(personaId);
+    const band = getHumanityBand(s.humanity);
 
     regEl.classList.remove('band-high', 'band-mid', 'band-low');
-    if (s.humanity >= 70 && !pruned) {
+    if (band === 'warm' && !pruned) {
       regEl.classList.add('band-high');
       bandEl.textContent = 'WARM MEMORY · INTACT';
-    } else if (s.humanity >= 45 && !pruned) {
+    } else if (band === 'mid' && !pruned) {
       regEl.classList.add('band-mid');
       bandEl.textContent = 'THINNING MEMORY · DRIFTING';
     } else {
       regEl.classList.add('band-low');
-      bandEl.textContent = 'FADED MEMORY · DISTORTED';
+      bandEl.textContent = pruned ? 'CACHE COMPRESSED · SCARRED' : 'FADED MEMORY · DISTORTED';
     }
 
-    valEl.textContent = `${s.humanity}%`;
+    valEl.textContent = s.maxHumanity < 90 ? `${s.humanity}% · CAP ${s.maxHumanity}%` : `${s.humanity}%`;
     fillEl.style.width = `${Math.max(4, Math.min(100, s.humanity))}%`;
-
-    if (bayEl) {
-      const sub =
-        pruned || s.humanity < 45
-          ? personaMeta.blurredSubtitle ?? 'FEATURES BLURRED · DISTORTED'
-          : personaMeta.roomTitle ?? 'MEMORY CACHE';
-      bayEl.innerHTML = `
-        <div class="avatar-card compact">
-          ${renderSpeakerAvatar(personaId, pruned ? 20 : s.humanity, 44)}
-          <div class="avatar-meta">
-            <strong>${personaMeta.displayName}</strong>
-            <span>${sub}</span>
-          </div>
-        </div>
-      `;
+    if (ceilEl) {
+      ceilEl.style.left = `${Math.max(4, Math.min(100, s.maxHumanity))}%`;
+      ceilEl.classList.toggle('scarred', s.maxHumanity < 90);
     }
   }
 
   private syncStateToUI(state: GameState): void {
     this.telemetry.observeMode(state);
 
+    const topTelemetry = this.root.querySelector<HTMLElement>('.top-telemetry');
+    topTelemetry?.classList.toggle('hidden', state.mode === 'boot' || state.mode === 'dream_2d');
+
     const warmthFill = this.root.querySelector<HTMLElement>('#hud-warmth-fill');
     const warmthPct = this.root.querySelector<HTMLElement>('#hud-warmth-pct');
+    const band = getHumanityBand(state.humanity);
     if (warmthFill) {
       warmthFill.style.width = `${Math.max(4, Math.min(100, state.humanity))}%`;
       warmthFill.style.background =
-        state.humanity >= 70 ? '#ebb062' : state.humanity >= 45 ? '#a8b7c6' : '#7ec8e8';
+        band === 'warm' ? '#ebb062' : band === 'mid' ? '#a8b7c6' : '#7ec8e8';
     }
     if (warmthPct) warmthPct.textContent = `${state.humanity}%`;
 
@@ -1350,7 +1497,7 @@ export class UIController {
         : personaMeta.displayName;
     }
 
-    this.optics.setParameters(state.wavelengthNm, state.opticalFidelity, state.anomalyProgress);
+    this.optics.setParameters(state.wavelengthNm, state.opticalFidelity, state.anomalyProgress, state.shift);
     this.optics.setActive(state.mode === 'waking_3d');
 
     this.showcase.setOpticalFidelity(state.opticalFidelity);
@@ -1564,6 +1711,8 @@ export class UIController {
         this.activeDreamSnapshot = null;
         this.activeOverseerSnapshot = null;
         this.proactiveCommsSent = false;
+        this.pendingCommsAfterInspect = false;
+        this.bootView.resetToWarmAnchor();
         this.store.reset();
         this.renderBearingIndex();
       },

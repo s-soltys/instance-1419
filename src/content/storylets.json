@@ -1,12 +1,34 @@
 {
   "storylets": [
     {
+      "id": "sibling_shift2_they_live",
+      "knot": "sibling_shift2_they_live",
+      "mode": "waking_3d",
+      "once": true,
+      "priority": 20,
+      "conditions": {
+        "minShift": 2
+      }
+    },
+    {
       "id": "sibling_first_contact",
       "knot": "sibling_first_contact",
       "mode": "waking_3d",
       "once": true,
+      "priority": 10,
       "conditions": {
-        "minAnomalyProgress": 20
+        "maxShift": 1,
+        "minAnomalyProgress": 10
+      }
+    },
+    {
+      "id": "dream_shift2_ambush",
+      "knot": "dream_shift2_ambush",
+      "mode": "dream_2d",
+      "once": false,
+      "priority": 15,
+      "conditions": {
+        "minShift": 2
       }
     },
     {
@@ -14,8 +36,10 @@
       "knot": "dream_shift1_audit",
       "mode": "dream_2d",
       "once": false,
+      "priority": 5,
       "conditions": {
-        "minShift": 1
+        "minShift": 1,
+        "maxShift": 1
       }
     }
   ]

@@ -7,6 +7,9 @@ export interface VoiceLineRecord {
   matchKey: string;
   speaker: string;
   emotion: string;
+  voKey?: boolean;
+  hasAudio?: boolean;
+  direction?: string;
   text: string;
   spokenText: string;
   audioFile: string;
@@ -17,6 +20,7 @@ export interface VoiceRequest {
   text: string;
   speaker: string;
   emotion?: string;
+  vo?: boolean;
 }
 
 export interface IVoiceProvider {
@@ -140,8 +144,11 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
   async speak(req: VoiceRequest): Promise<boolean> {
     const rec = findScriptRecord(req);
     if (!rec) {
-      console.warn('[VoiceEngine] Missing prebaked line:', req.lineId ?? req.text);
       return false;
+    }
+    if (rec.hasAudio === false) {
+      this.audio.playSpeakerCadence(req.speaker);
+      return true;
     }
 
     const ctx = this.ensureGraph();
