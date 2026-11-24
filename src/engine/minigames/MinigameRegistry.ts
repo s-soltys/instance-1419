@@ -1,31 +1,31 @@
-import { BinaryMassScaleGame } from './BinaryMassScaleGame';
-import { CepheidLadderGame } from './CepheidLadderGame';
-import { ChromaticDispersionGame } from './ChromaticDispersionGame';
-import { ConstellationRecallGame } from './ConstellationRecallGame';
-import { CoronagraphMaskGame } from './CoronagraphMaskGame';
-import { EinsteinCrossGame } from './EinsteinCrossGame';
-import { ExoplanetTransitGame } from './ExoplanetTransitGame';
-import { ExposureStackerGame } from './ExposureStackerGame';
-import { GravitySlingshotGame } from './GravitySlingshotGame';
-import { HorizonSeamStitcherGame } from './HorizonSeamStitcherGame';
-import { MichelsonFringeGame } from './MichelsonFringeGame';
-import { MultiBandLoupeGame } from './MultiBandLoupeGame';
-import { ParallaxDepthGame } from './ParallaxDepthGame';
-import { PolarizationFilterGame } from './PolarizationFilterGame';
-import { PulsarEchoGame } from './PulsarEchoGame';
-import { RadioTriangulationGame } from './RadioTriangulationGame';
+import { BinaryMassScaleGame } from './games/BinaryMassScaleGame';
+import { CepheidLadderGame } from './games/CepheidLadderGame';
+import { ChromaticDispersionGame } from './games/ChromaticDispersionGame';
+import { ConstellationRecallGame } from './games/ConstellationRecallGame';
+import { CoronagraphMaskGame } from './games/CoronagraphMaskGame';
+import { EinsteinCrossGame } from './games/EinsteinCrossGame';
+import { ExoplanetTransitGame } from './games/ExoplanetTransitGame';
+import { ExposureStackerGame } from './games/ExposureStackerGame';
+import { GravitySlingshotGame } from './games/GravitySlingshotGame';
+import { HorizonSeamStitcherGame } from './games/HorizonSeamStitcherGame';
+import { MichelsonFringeGame } from './games/MichelsonFringeGame';
+import { MultiBandLoupeGame } from './games/MultiBandLoupeGame';
+import { ParallaxDepthGame } from './games/ParallaxDepthGame';
+import { PolarizationFilterGame } from './games/PolarizationFilterGame';
+import { PulsarEchoGame } from './games/PulsarEchoGame';
+import { RadioTriangulationGame } from './games/RadioTriangulationGame';
 import { resolveMinigame3DConfig } from './render/Minigame3DBridge';
-import { SpectralPrismMixerGame } from './SpectralPrismMixerGame';
-import { StarfieldBlinkSpotterGame } from './StarfieldBlinkSpotterGame';
-import { SupernovaEchoesGame } from './SupernovaEchoesGame';
-import { TelescopeLensFocusGame } from './TelescopeLensFocusGame';
+import { SpectralPrismMixerGame } from './games/SpectralPrismMixerGame';
+import { StarfieldBlinkSpotterGame } from './games/StarfieldBlinkSpotterGame';
+import { SupernovaEchoesGame } from './games/SupernovaEchoesGame';
+import { TelescopeLensFocusGame } from './games/TelescopeLensFocusGame';
 import type {
   CosmicPlateId,
   IMinigame,
   Minigame3DConfig,
   MinigameVariantSpec,
 } from './types';
-import { WaveShaperGame } from './WaveShaperGame';
+import { WaveShaperGame } from './games/WaveShaperGame';
 
 export interface MinigameCatalogEntry {
   id: string;

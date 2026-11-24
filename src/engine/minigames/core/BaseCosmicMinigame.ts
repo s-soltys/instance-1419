@@ -1,13 +1,17 @@
 import { platform } from '../../../platform/PlatformAdapter';
 import { computeOpticalClarity, setupRetinaCanvas } from '../canvasUtils';
-import { CosmicPalette, getCosmicPalette } from '../cosmicBackdrop';
 import {
   drawCachedCosmicBackdrop,
   type BackdropDrawOpts,
   preloadCosmicPlate,
 } from '../render/BackdropCachePipeline';
 import { Minigame3DBridge, resolveMinigame3DConfig } from '../render/Minigame3DBridge';
-import { drawLockResonanceRing, drawStageUnlockPulse } from '../render/OpticalDrawUtils';
+import {
+  type CosmicPalette,
+  drawLockResonanceRing,
+  drawStageUnlockPulse,
+  getCosmicPalette,
+} from '../render/OpticalDrawUtils';
 import { ParticlePool, type ReticleDuckZone } from '../render/ParticlePool';
 import {
   drawAmbientStarfield3Depth,

@@ -3,7 +3,7 @@ import anomaliesData from '../../src/content/anomalies.json';
 import { MinigameRegistry } from '../../src/engine/minigames/MinigameRegistry';
 
 describe('MinigameRegistry catalog integrity', () => {
-  it('registers all 6 simplified Easy-to-Hard cosmic instruments with complete metadata & field guides', () => {
+  it('registers all 21 Easy-to-Hard cosmic instruments with complete metadata, 4 curated variants, & field guides', () => {
     const reg = new MinigameRegistry();
     const catalog = reg.listCatalog();
     const ids = catalog.map((m) => m.id);
@@ -44,6 +44,12 @@ describe('MinigameRegistry catalog integrity', () => {
       const instance = reg.create(meta.id);
       expect(instance.id).toBe(meta.id);
       expect(instance.instrumentCode).toBe(meta.instrumentCode);
+      expect(instance.variants?.length).toBe(4);
+      for (let v = 0; v < 4; v++) {
+        expect(instance.variants?.[v].id).toBe(meta.variants[v].id);
+        expect(instance.variants?.[v].label).toBe(meta.variants[v].label);
+        expect(instance.variants?.[v].plateId).toBe(meta.variants[v].plateId);
+      }
       expect(instance.getFieldGuide?.().physicalPrinciple.length).toBeGreaterThan(20);
       expect(instance.getSolvabilityHarness).toBeDefined();
     }

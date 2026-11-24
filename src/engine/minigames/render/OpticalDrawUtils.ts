@@ -1,4 +1,34 @@
-import { clamp } from '../tactilePhysics';
+import { clamp, getUnifiedVibeTheme } from '../tactilePhysics';
+import type { VibeMode } from '../types';
+
+export interface CosmicPalette {
+  mode: VibeMode;
+  accentHex: string;
+  accentRgb: string;
+  secondaryHex: string;
+  secondaryRgb: string;
+  lockHex: string;
+  lockRgb: string;
+  warnHex: string;
+  voidBg: string;
+  glassBg: string;
+}
+
+export function getCosmicPalette(humanity: number): CosmicPalette {
+  const vibe = getUnifiedVibeTheme(humanity);
+  return {
+    mode: vibe.mode,
+    accentHex: vibe.accentHex,
+    accentRgb: vibe.accentRgb,
+    secondaryHex: vibe.secondaryHex,
+    secondaryRgb: vibe.secondaryRgb,
+    lockHex: '#8be9c0',
+    lockRgb: '139, 233, 192',
+    warnHex: '#ffb366',
+    voidBg: vibe.mode === 'cold' ? '#02060c' : '#05070e',
+    glassBg: vibe.mode === 'cold' ? 'rgba(6, 16, 26, 0.72)' : 'rgba(8, 12, 20, 0.72)',
+  };
+}
 
 export interface GlowStrokeOpts {
   outerWidthMul?: number;
