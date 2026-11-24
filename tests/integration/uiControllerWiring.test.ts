@@ -52,9 +52,9 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     ui.attachRenderers(optics as never, showcase as never, dream as never);
 
     // Clicking DevHarness launch button reproduces the exact production trigger path
-    const causticBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="caustic_unwarper"]');
-    expect(causticBtn).not.toBeNull();
-    causticBtn!.click();
+    const lensBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="lens_focus"]');
+    expect(lensBtn).not.toBeNull();
+    lensBtn!.click();
 
     // Advance transitionToMode timers cleanly
     vi.advanceTimersByTime(1000);
@@ -62,15 +62,15 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(showcase.loadTarget).toHaveBeenCalled();
     expect(showcase.getInstrumentBridge).toHaveBeenCalled();
     expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
-    expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('CAU-03');
+    expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('LNS-04');
 
     // Switching to another instrument whose anomaly targets a different 3D showcase reloads target
-    const fourierBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="fourier_sieve"]');
-    expect(fourierBtn).not.toBeNull();
-    fourierBtn!.click();
+    const waveBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="wave_shaper"]');
+    expect(waveBtn).not.toBeNull();
+    waveBtn!.click();
     vi.advanceTimersByTime(1000);
 
     expect(showcase.loadTarget).toHaveBeenCalledTimes(2);
-    expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('FFT-02');
+    expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
   });
 });

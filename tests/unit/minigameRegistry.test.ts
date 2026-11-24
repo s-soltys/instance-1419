@@ -3,17 +3,22 @@ import anomaliesData from '../../src/content/anomalies.json';
 import { MinigameRegistry } from '../../src/engine/minigames/MinigameRegistry';
 
 describe('MinigameRegistry catalog integrity', () => {
-  it('registers all 5 tactile instruments with complete metadata', () => {
+  it('registers all 6 simplified Easy-to-Hard cosmic instruments with complete metadata & field guides', () => {
     const reg = new MinigameRegistry();
     const catalog = reg.listCatalog();
     const ids = catalog.map((m) => m.id);
 
     expect(ids).toEqual([
-      'parallax_array',
-      'fourier_sieve',
-      'caustic_unwarper',
-      'phase_matrix',
-      'blink_comparator',
+      'wave_shaper',
+      'constellation_recall',
+      'pulsar_echo',
+      'lens_focus',
+      'light_dispersion',
+      'blink_spotter',
+      'gravity_slingshot',
+      'exoplanet_transit',
+      'spectral_prism',
+      'radio_triangulation',
     ]);
 
     for (const meta of catalog) {
@@ -23,11 +28,14 @@ describe('MinigameRegistry catalog integrity', () => {
       const instance = reg.create(meta.id);
       expect(instance.id).toBe(meta.id);
       expect(instance.instrumentCode).toBe(meta.instrumentCode);
+      expect(instance.getFieldGuide?.().physicalPrinciple.length).toBeGreaterThan(20);
+      expect(instance.getSolvabilityHarness).toBeDefined();
     }
   });
 
   it('resolves every anomaly target minigameId without falling back', () => {
     const reg = new MinigameRegistry();
+    expect(anomaliesData.anomalies.length).toBe(5);
     for (const anomaly of anomaliesData.anomalies) {
       const inst = reg.create(anomaly.minigameId);
       expect(inst.id).toBe(anomaly.minigameId);

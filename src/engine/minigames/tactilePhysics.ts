@@ -16,6 +16,14 @@ export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * clamp(t, 0, 1);
 }
 
+export function wrapAngleRad(a: number): number {
+  return Math.atan2(Math.sin(a), Math.cos(a));
+}
+
+export function angleDiffRad(a: number, b: number): number {
+  return Math.atan2(Math.sin(a - b), Math.cos(a - b));
+}
+
 /**
  * Deterministic seeded PRNG (Mulberry32) so every target produces consistent physical layout
  * per shift/state without feeling random or chaotic.
@@ -129,8 +137,28 @@ export function computeInstrumentProfile(state: MinigameStateVector): CognitiveI
   };
 }
 
+export interface SpringStepOpts {
+  stiffness?: number;
+  damping?: number;
+  detentCenter?: number;
+  detentRadius?: number;
+  detentPull?: number;
+  wrapAngle?: boolean;
+  /** Pseudo-haptic drag viscosity well: increases damping subtly near resonance without showing a visual marker. */
+  viscosityCenter?: number;
+  viscosityRadius?: number;
+  viscosityDampingMul?: number;
+}
+
+export interface SpringStepResult {
+  value: number;
+  inWell: boolean;
+  wellProximity: number; // 0..1
+}
+
 /**
- * Critically damped spring actuator with optional magnetic detent well.
+ * Critically damped spring actuator with optional angle-wrapping, magnetic detent well,
+ * and pseudo-haptic drag viscosity.
  */
 export class SpringActuator {
   value: number;
@@ -148,32 +176,59 @@ export class SpringActuator {
     this.velocity = 0;
   }
 
-  step(
-    dt: number,
-    opts?: {
-      stiffness?: number;
-      damping?: number;
-      detentCenter?: number;
-      detentRadius?: number;
-      detentPull?: number;
-    }
-  ): number {
+  step(dt: number, opts?: SpringStepOpts): number {
+    return this.stepWithTelemetry(dt, opts).value;
+  }
+
+  stepWithTelemetry(dt: number, opts?: SpringStepOpts): SpringStepResult {
     const k = opts?.stiffness ?? 190;
-    const d = opts?.damping ?? 24;
+    const baseDamping = opts?.damping ?? 24;
+    const wrap = opts?.wrapAngle === true;
+
     let effectiveTarget = this.target;
-    if (
-      opts?.detentCenter !== undefined &&
-      opts?.detentRadius &&
-      Math.abs(this.target - opts.detentCenter) < opts.detentRadius
-    ) {
-      const pull = opts.detentPull ?? 0.65;
-      effectiveTarget = lerp(this.target, opts.detentCenter, pull);
+    let inWell = false;
+    let wellProximity = 0;
+
+    if (opts?.detentCenter !== undefined && opts?.detentRadius) {
+      const dist = wrap
+        ? Math.abs(angleDiffRad(this.target, opts.detentCenter))
+        : Math.abs(this.target - opts.detentCenter);
+      if (dist < opts.detentRadius) {
+        inWell = true;
+        wellProximity = clamp(1 - dist / opts.detentRadius, 0, 1);
+        const pull = opts.detentPull ?? 0.65;
+        if (wrap) {
+          const delta = angleDiffRad(opts.detentCenter, this.target);
+          effectiveTarget = this.target + delta * clamp(pull, 0, 1);
+        } else {
+          effectiveTarget = lerp(this.target, opts.detentCenter, pull);
+        }
+      }
     }
+
+    let damping = baseDamping;
+    if (opts?.viscosityCenter !== undefined && opts?.viscosityRadius) {
+      const vDist = wrap
+        ? Math.abs(angleDiffRad(this.value, opts.viscosityCenter))
+        : Math.abs(this.value - opts.viscosityCenter);
+      if (vDist < opts.viscosityRadius) {
+        const prox = 1 - vDist / opts.viscosityRadius;
+        wellProximity = Math.max(wellProximity, prox);
+        inWell = true;
+        damping *= lerp(1, opts.viscosityDampingMul ?? 1.55, prox);
+      }
+    }
+
     const clampedDt = Math.min(dt, 0.05);
-    const force = (effectiveTarget - this.value) * k - this.velocity * d;
+    const error = wrap ? angleDiffRad(effectiveTarget, this.value) : effectiveTarget - this.value;
+    const force = error * k - this.velocity * damping;
     this.velocity += force * clampedDt;
     this.value += this.velocity * clampedDt;
-    return this.value;
+    if (wrap) {
+      this.value = wrapAngleRad(this.value);
+    }
+
+    return { value: this.value, inWell, wellProximity };
   }
 }
 
@@ -236,7 +291,7 @@ export class HitstopRecoil {
 export interface LatchTickOutput {
   lockProgress: number;     // 0..1.25 (>0.85 enters Deep Overclock red zone)
   overclockZone: boolean;
-  completedGrade: MinigameGrade | null;
+  completedGrade: Exclude<MinigameGrade, 'aborted'> | null;
 }
 
 /**
@@ -245,7 +300,11 @@ export interface LatchTickOutput {
 export class LatchController {
   holding = false;
   progress = 0;
-  private committed: MinigameGrade | null = null;
+  private committed: Exclude<MinigameGrade, 'aborted'> | null = null;
+
+  get overclockZone(): boolean {
+    return this.progress >= 0.85;
+  }
 
   setHolding(active: boolean): void {
     if (this.committed) return;
@@ -293,7 +352,8 @@ export function resolveInstrumentPayout(
   accuracy: number,
   proofFragmentId: string,
   dossierSnippet: string,
-  telemetrySummary: string
+  telemetrySummary: string,
+  physicalPrinciple?: string
 ): MinigameResult {
   if (grade === 'aborted') {
     return {
@@ -319,6 +379,7 @@ export function resolveInstrumentPayout(
     accuracy,
     elapsedSec,
     proofFragmentId: grade === 'partial' ? undefined : proofFragmentId,
+    physicalPrinciple: physicalPrinciple ?? dossierSnippet,
     dossierSnippet,
     telemetrySummary,
   };

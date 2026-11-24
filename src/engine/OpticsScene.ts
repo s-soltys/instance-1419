@@ -12,7 +12,7 @@ import {
   STAR_VERTEX,
 } from './shaders/opticsShaders';
 
-export type ShowcaseType = 'star_system' | 'nebula' | 'grav_lens' | 'deep_field';
+export type ShowcaseType = 'star_system' | 'nebula' | 'grav_lens' | 'deep_field' | 'antipodal_poles';
 
 export interface AnomalySpec {
   id: string;

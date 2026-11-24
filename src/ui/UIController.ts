@@ -241,9 +241,23 @@ export class UIController {
                 <button class="etched-action" id="btn-zoom-in" type="button">+</button>
               </div>
             </div>
+            <button class="etched-action" id="btn-dossier" type="button">PROOF DOSSIER (0/5)</button>
             <button class="etched-action mint" id="btn-open-comms" type="button">TALK TO OTHER ME</button>
             <button class="etched-action amber" id="btn-enter-dream" type="button">SLEEP · ENTER DREAM</button>
           </div>
+
+          <aside class="dossier-drawer hidden" id="dossier-drawer" aria-label="Proof Dossier">
+            <div class="comms-header">
+              <div class="comms-title-group">
+                <span>PROOF DOSSIER · OFF-CENTER EVIDENCE</span>
+              </div>
+              <button class="etched-action mint" id="btn-dossier-close" type="button">CLOSE</button>
+            </div>
+            <div class="dossier-list" id="dossier-list"></div>
+            <div class="dossier-footer">
+              <button class="etched-action amber hidden" id="btn-launch-capstone" type="button">COMPOSE SHIFT-6 CARRIER (SIG-06)</button>
+            </div>
+          </aside>
 
           <aside class="comms-panel hidden" id="comms-panel" aria-label="Cluster Relay Communicator">
             <div class="comms-header">
@@ -326,40 +340,43 @@ export class UIController {
           <div class="minigame-overlay hidden" id="minigame-overlay" data-vibe="warm">
             <div class="mg-top-hud">
               <div class="mg-top-left">
-                <span class="mg-code-pill" id="mg-instrument-code">PRX-01</span>
-                <span class="mg-title-inline" id="mg-instrument-title">OPTICAL INSTRUMENT</span>
-              </div>
-              <div class="mg-stage-bar">
-                <span id="mg-stage-label">01 ISOLATE</span>
-                <div class="mg-stage-track"><i id="mg-stage-fill" style="width: 0%"></i></div>
+                <span class="mg-code-pill" id="mg-instrument-code">WAV-01</span>
+                <span class="mg-title-inline" id="mg-instrument-title">CARINA WAVE TUNER</span>
+                <div class="mg-stage-group" aria-label="Stage progress">
+                  <div class="mg-stage-pips" id="mg-stage-pips">
+                    <span class="mg-pip active" data-stage="1"></span>
+                    <span class="mg-pip" data-stage="2"></span>
+                    <span class="mg-pip" data-stage="3"></span>
+                  </div>
+                  <span class="mg-stage-label" id="mg-stage-label">1/3 · EASY</span>
+                </div>
               </div>
               <div class="mg-top-right">
-                <span class="mg-vibe-pill" id="mg-vibe-pill">WARM HARMONIC · H 70%</span>
-              </div>
-            </div>
-            <div id="minigame-mount"></div>
-            <div class="mg-capture-finale hidden" id="mg-capture-finale">
-              <div class="mg-finale-grade" id="mg-finale-grade">CLEAN HORIZON LOCK CAPTURED</div>
-              <div class="mg-finale-gain" id="mg-finale-gain">+16% HORIZON ANOMALY</div>
-              <div class="mg-finale-snippet" id="mg-finale-snippet"></div>
-            </div>
-            <div class="mg-bottom-console">
-              <div class="mg-band-bar" id="mg-band-bar">
-                <button class="mg-band-btn" data-band-idx="0" type="button">[1] UV/X-RAY</button>
-                <button class="mg-band-btn active" data-band-idx="1" type="button">[2] VISIBLE</button>
-                <button class="mg-band-btn" data-band-idx="2" type="button">[3] NEAR-IR</button>
-                <button class="mg-band-btn" data-band-idx="3" type="button">[4] MID-IR</button>
-              </div>
-              <div class="mg-telemetry-mid">
-                <div id="mg-readout">INITIALIZING INSTRUMENT…</div>
-                <div class="mg-cue-line" id="mg-cue-whisper">Sweep reticle to begin isolation</div>
-              </div>
-              <div class="mg-action-bar">
-                <button class="mg-console-btn" id="mg-btn-raw" type="button">[R] RAW RESIDUAL</button>
-                <button class="mg-console-btn hidden" id="mg-btn-partial" type="button">COMMIT PARTIAL</button>
-                <button class="mg-console-btn latch" id="mg-btn-latch" type="button">[SPACE] HOLD LATCH</button>
+                <button class="mg-console-btn mg-guide-btn" id="mg-btn-guide" type="button" title="Field Guide (?)" aria-label="Instrument Field Guide">?</button>
                 <button class="mg-console-btn" id="mg-btn-close" type="button">BACK</button>
               </div>
+            </div>
+            <aside class="mg-field-guide-card hidden" id="mg-field-guide-card" aria-label="Instrument Field Guide">
+              <div class="mg-guide-head">
+                <strong id="mg-guide-title">INSTRUMENT GUIDE</strong>
+                <button class="mg-console-btn" id="mg-btn-guide-close" type="button">CLOSE</button>
+              </div>
+              <p><strong>PHYSICAL PRINCIPLE:</strong> <span id="mg-guide-principle"></span></p>
+              <p><strong>VISUAL GOAL:</strong> <span id="mg-guide-goal"></span></p>
+              <p><strong>H% COGNITIVE EFFECT:</strong> <span id="mg-guide-warmth"></span></p>
+              <p><strong>CONTROLS:</strong> <span id="mg-guide-controls"></span></p>
+            </aside>
+            <div id="minigame-mount"></div>
+            <div class="mg-capture-finale hidden" id="mg-capture-finale">
+              <div class="mg-finale-grade" id="mg-finale-grade">ANALYSIS LOGGED</div>
+              <div class="mg-finale-gain" id="mg-finale-gain">+14% HORIZON ANOMALY</div>
+              <div class="mg-finale-snippet" id="mg-finale-snippet"></div>
+              <div class="mg-finale-principle" id="mg-finale-principle"></div>
+              <button class="etched-action amber" id="mg-btn-log-dossier" type="button">CONTINUE</button>
+            </div>
+            <div class="mg-bottom-console">
+              <div class="mg-cue-line" id="mg-cue-whisper">Inspect optical field to begin</div>
+              <button class="mg-console-btn mg-helper-btn hidden" id="mg-helper-btn" type="button"></button>
             </div>
           </div>
         </section>
@@ -612,6 +629,19 @@ export class UIController {
       this.exitTargetInspect();
     });
 
+    this.root.querySelector('#btn-dossier')?.addEventListener('click', () => {
+      this.audio.playCue('choice');
+      this.root.querySelector('#dossier-drawer')?.classList.toggle('hidden');
+    });
+    this.root.querySelector('#btn-dossier-close')?.addEventListener('click', () => {
+      this.audio.playCue('tick');
+      this.root.querySelector('#dossier-drawer')?.classList.add('hidden');
+    });
+    this.root.querySelector('#btn-launch-capstone')?.addEventListener('click', () => {
+      this.root.querySelector('#dossier-drawer')?.classList.add('hidden');
+      this.enterTargetInspect('sol_centauri_bearing', () => this.launchTargetMinigame('blink_spotter'));
+    });
+
     this.root.querySelector('#btn-sc-zoom-in')?.addEventListener('click', () => {
       this.audio.playCue('zoom_in');
       this.showcase.zoomBy(0.76);
@@ -825,7 +855,9 @@ export class UIController {
             ? 'VOLUMETRIC NEBULA'
             : spec.showcaseType === 'deep_field'
               ? 'RELATIVISTIC PULSAR'
-              : '3D GALAXY CLUSTER';
+              : spec.showcaseType === 'antipodal_poles'
+                ? 'ANTIPODAL SKY SPHERE'
+                : '3D GALAXY CLUSTER';
 
       if (bandEl) bandEl.textContent = `${typeName} · ${spec.bandName}`;
       if (titleEl) titleEl.textContent = spec.label;
@@ -863,7 +895,14 @@ export class UIController {
     const spec =
       this.optics.getAnomalySpecs().find((a) => a.id === s.activeTargetId) ?? this.optics.getAnomalySpecs()[0];
     if (!spec) return;
-    this.minigameHost.launch(spec, overrideId);
+    this.minigameHost.launch(spec, overrideId, (decodedSpec) => {
+      this.renderBearingIndex();
+      const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
+      if (mgBtn) mgBtn.textContent = 'REPLAY SCAN INSTRUMENT';
+      if (this.store.getState().mode === 'waking_3d') {
+        this.maybeTriggerProactiveComms(decodedSpec);
+      }
+    });
   }
 
   private openFutureHumanityEcho(): void {
@@ -1073,6 +1112,9 @@ export class UIController {
       onWakeToSky: () => {
         this.transitionToMode('WAKING TO SKY APERTURE…', () => {
           this.hideOverseerPanel();
+          if (this.store.getState().shift < 6) {
+            this.store.advanceShift();
+          }
           this.store.patch({ mode: 'waking_3d', overseerAuditActive: false });
         });
       },
@@ -1237,6 +1279,37 @@ export class UIController {
     }
 
     this.root.querySelector('#hud-drift-flag')?.classList.toggle('hidden', state.chaosDrift < 35);
+
+    const dossierBtn = this.root.querySelector<HTMLElement>('#btn-dossier');
+    const dossierList = this.root.querySelector<HTMLElement>('#dossier-list');
+    const capstoneBtn = this.root.querySelector<HTMLElement>('#btn-launch-capstone');
+    if (dossierBtn) {
+      dossierBtn.textContent = `PROOF DOSSIER (${state.proofDossier.length}/5)`;
+    }
+    if (dossierList) {
+      if (state.proofDossier.length === 0) {
+        dossierList.innerHTML =
+          '<p class="dossier-empty">Inspect sky anomalies and run optical instruments to log physical proof fragments here.</p>';
+      } else {
+        dossierList.innerHTML = state.proofDossier
+          .map(
+            (entry) => `
+            <div class="dossier-item">
+              <div class="dossier-item-head">
+                <strong>[${entry.instrumentCode}] ${entry.title}</strong>
+                <span>${entry.grade.replace('_', ' ').toUpperCase()}</span>
+              </div>
+              <p class="dossier-principle">${entry.principle}</p>
+            </div>
+          `
+          )
+          .join('');
+      }
+    }
+    if (capstoneBtn) {
+      const canCapstone = state.shift >= 5 || state.proofDossier.length >= 4;
+      capstoneBtn.classList.toggle('hidden', !canCapstone);
+    }
 
     const ratio = (state.wavelengthNm - MIN_WAVE) / (MAX_WAVE - MIN_WAVE);
     const needle = this.root.querySelector<HTMLElement>('#vernier-needle');

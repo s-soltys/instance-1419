@@ -87,13 +87,14 @@ async function ensureQaClosed(page) {
   );
   if (isOpen) {
     await page.click('#qa-close-btn');
-    await page.waitForTimeout(180);
+    await page.waitForSelector('#qa-drawer:not(.open)', { timeout: 3000 });
+    await page.waitForTimeout(300);
   }
 }
 
 async function saveCheckedScreenshot(page, filename) {
   const fullPath = path.join(OUT_DIR, filename);
-  await page.screenshot({ path: fullPath });
+  await page.screenshot({ path: fullPath, animations: 'disabled', timeout: 45000 });
   const stat = fs.statSync(fullPath);
   if (stat.size < 8000) {
     throw new Error(`Screenshot ${filename} is suspiciously small (${stat.size} bytes)`);
@@ -127,6 +128,7 @@ async function run() {
       ],
     });
 
+    // === DESKTOP 1280x720 ===
     const context = await browser.newContext({
       viewport: { width: 1280, height: 720 },
       deviceScaleFactor: 1,
@@ -159,13 +161,18 @@ async function run() {
     await page.waitForTimeout(450);
     await saveCheckedScreenshot(page, '02_sky_aperture.png');
 
-    // Flow 3: All 5 Tactile Instruments via DevHarness Tab 3 (Exact crash regression + interaction)
+    // Flow 3: All 10 Cosmic Instruments
     const instruments = [
-      { id: 'parallax_array', code: 'PRX-01', checkCold: false },
-      { id: 'fourier_sieve', code: 'FFT-02', checkCold: true },
-      { id: 'caustic_unwarper', code: 'CAU-03', checkCold: true },
-      { id: 'phase_matrix', code: 'MTX-04', checkCold: false },
-      { id: 'blink_comparator', code: 'BLK-05', checkCold: false },
+      { id: 'wave_shaper', code: 'WAV-01', checkCold: true },
+      { id: 'constellation_recall', code: 'CON-02', checkCold: false },
+      { id: 'pulsar_echo', code: 'PLS-03', checkCold: false },
+      { id: 'lens_focus', code: 'LNS-04', checkCold: true },
+      { id: 'light_dispersion', code: 'DSP-05', checkCold: false },
+      { id: 'blink_spotter', code: 'BLK-06', checkCold: false },
+      { id: 'gravity_slingshot', code: 'ORB-07', checkCold: false },
+      { id: 'exoplanet_transit', code: 'TRN-08', checkCold: false },
+      { id: 'spectral_prism', code: 'PRM-09', checkCold: false },
+      { id: 'radio_triangulation', code: 'TRI-10', checkCold: false },
     ];
 
     for (const inst of instruments) {
@@ -177,6 +184,7 @@ async function run() {
       await page.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 8000 });
       await page.waitForSelector('#minigame-mount canvas.minigame-canvas', { timeout: 4000 });
       await ensureQaClosed(page);
+      await page.waitForTimeout(220);
 
       const codeText = (await page.textContent('#mg-instrument-code'))?.trim();
       if (codeText !== inst.code) {
@@ -188,29 +196,28 @@ async function run() {
         throw new Error(`Instrument ${inst.id} canvas bounding box too small: ${JSON.stringify(canvasBox)}`);
       }
 
+      // Confirm Top-Left HUD does not overlap centered QA TEST HARNESS toggle button
+      const topLeftBox = await page.locator('.mg-top-left').boundingBox();
+      const qaBtnBox = await page.locator('#qa-pull-tab').boundingBox();
+      if (topLeftBox && qaBtnBox && topLeftBox.x + topLeftBox.width > qaBtnBox.x - 4) {
+        throw new Error(`Top-left HUD overlapped QA pull-tab on ${inst.id}: topLeftRight=${topLeftBox.x + topLeftBox.width}, qaLeft=${qaBtnBox.x}`);
+      }
+
       const consoleBox = await page.locator('.mg-bottom-console').boundingBox();
       if (!consoleBox || consoleBox.y + consoleBox.height > 725) {
         throw new Error(`Bottom console clipped/missing for ${inst.id}: ${JSON.stringify(consoleBox)}`);
       }
 
-      // Exercise real pointer & keyboard interactions
+      // Exercise direct canvas drag, Field Guide toggle
       await page.mouse.move(640, 360);
       await page.mouse.down();
       await page.mouse.move(720, 350, { steps: 6 });
       await page.mouse.up();
-      await page.keyboard.press('1');
-      await page.keyboard.press('2');
-      await page.keyboard.press('3');
-      await page.keyboard.press('4');
-      await page.keyboard.press('r');
+      await page.click('#mg-btn-guide');
+      await page.waitForSelector('#mg-field-guide-card:not(.hidden)', { timeout: 2000 });
+      await page.click('#mg-btn-guide-close');
       await page.waitForTimeout(160);
 
-      const rawActive = await page.evaluate(() =>
-        document.querySelector('#mg-btn-raw')?.classList.contains('active')
-      );
-      if (!rawActive) {
-        throw new Error(`Pressing 'r' did not activate #mg-btn-raw on ${inst.id}`);
-      }
       await saveCheckedScreenshot(page, `03_mg_${inst.id}_warm.png`);
 
       if (inst.checkCold) {
@@ -240,8 +247,39 @@ async function run() {
       await page.waitForTimeout(300);
     }
     await saveCheckedScreenshot(page, '05_dream_cache.png');
-
     await context.close();
+
+    // === MOBILE LANDSCAPE 844x390 ===
+    const mobileCtx = await browser.newContext({
+      viewport: { width: 844, height: 390 },
+      hasTouch: true,
+      isMobile: true,
+      deviceScaleFactor: 2,
+    });
+    const mPage = await mobileCtx.newPage();
+    mPage.on('pageerror', (err) => errors.push(`[mobile pageerror] ${err.message || err}`));
+    mPage.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(`[mobile console.error] ${msg.text()}`);
+    });
+
+    await mPage.goto(url, { waitUntil: 'networkidle' });
+    for (const mobileId of ['wave_shaper', 'gravity_slingshot', 'spectral_prism']) {
+      await ensureQaOpen(mPage);
+      await mPage.click('[data-qa-tab="minigames"]');
+      await mPage.click(`[data-launch-mg="${mobileId}"]`);
+      await mPage.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 8000 });
+      await ensureQaClosed(mPage);
+      await mPage.waitForTimeout(250);
+
+      const mConsoleBox = await mPage.locator('.mg-bottom-console').boundingBox();
+      if (!mConsoleBox || mConsoleBox.y + mConsoleBox.height > 394) {
+        throw new Error(`Mobile 844x390 bottom console clipped on ${mobileId}: ${JSON.stringify(mConsoleBox)}`);
+      }
+      await saveCheckedScreenshot(mPage, `06_mobile_844x390_${mobileId}.png`);
+      await mPage.click('#mg-btn-close');
+      await mPage.waitForSelector('#minigame-overlay', { state: 'hidden', timeout: 3000 });
+    }
+    await mobileCtx.close();
   } finally {
     if (browser) await browser.close();
     server.close();
@@ -252,7 +290,7 @@ async function run() {
     throw new Error(`E2E verification failed with ${errors.length} runtime/network error(s).`);
   }
 
-  console.log('[e2e-visual] PASS: Boot, Sky Aperture, all 5 Tactile Instruments (Warm/Cold + RAW/Band/Drag), and 2D Dream verified with 0 errors.');
+  console.log('[e2e-visual] PASS: Boot, Sky Aperture, all 6 Cosmic Instruments (Desktop + 844x390 Mobile), Field Guide, Cold/Warm themes, and 2D Dream verified with 0 errors.');
 }
 
 run().catch((err) => {

@@ -11,6 +11,7 @@ import type { AnomalySpec } from '../../engine/OpticsScene';
 import type { StateStore } from '../../engine/StateStore';
 import type { TargetShowcaseScene } from '../../engine/TargetShowcaseScene';
 import type { TelemetryLogger } from '../../engine/TelemetryLogger';
+import { platform } from '../../platform/PlatformAdapter';
 
 const BAND_RATIOS = [0.04, 0.23, 0.61, 0.86];
 
@@ -29,8 +30,8 @@ function bandIndexFromNm(wavelengthNm: number): number {
 }
 
 /**
- * Full-viewport Optical Reticle Host bridging live GameState, 3D Showcase uniforms,
- * Stereo Beat Synth audio, peripheral console controls, and Proof Capture Finale.
+ * Calm, Zeiss-glass Optical Reticle Host bridging live GameState, direct-touch/canvas
+ * minigame optics, subtle haptics, Field Guide, and Proof Capture Stamp.
  */
 export class MinigameHostView {
   private showcase: TargetShowcaseScene | null = null;
@@ -42,6 +43,7 @@ export class MinigameHostView {
   private onSwitchBandCb: ((bandIdx: number) => void) | null = null;
   private lastProfileSig = '';
   private isFinishing = false;
+  private currentHelperActionId: string | null = null;
 
   constructor(
     private readonly root: HTMLElement,
@@ -67,6 +69,10 @@ export class MinigameHostView {
     this.onSwitchBandCb = cb;
   }
 
+  setWaveBand(bandIdx: number): void {
+    this.activeBandIdx = bandIdx;
+  }
+
   launch(spec: AnomalySpec, overrideId?: string, onDecoded?: (spec: AnomalySpec) => void): void {
     const s = this.store.getState();
     const chosenId = overrideId ?? spec.minigameId;
@@ -76,12 +82,11 @@ export class MinigameHostView {
     this.activeBandIdx = bandIndexFromNm(s.wavelengthNm);
     this.lastProfileSig = this.computeProfileSig();
     this.isFinishing = false;
+    this.currentHelperActionId = null;
 
     const overlay = this.root.querySelector<HTMLElement>('#minigame-overlay');
     const mount = this.root.querySelector<HTMLElement>('#minigame-mount');
-    const stageLabel = this.root.querySelector<HTMLElement>('#mg-stage-label');
-    const stageFill = this.root.querySelector<HTMLElement>('#mg-stage-fill');
-    if (!overlay || !mount || !stageLabel || !stageFill) return;
+    if (!overlay || !mount) return;
 
     overlay.classList.remove('hidden');
     this.applyVibeChrome(s.humanity);
@@ -92,22 +97,36 @@ export class MinigameHostView {
     const codeEl = this.root.querySelector<HTMLElement>('#mg-instrument-code');
     const titleEl = this.root.querySelector<HTMLElement>('#mg-instrument-title');
     if (codeEl) codeEl.textContent = mg.instrumentCode;
-    if (titleEl) titleEl.textContent = `${spec.label} · ${mg.title}`;
+    if (titleEl) titleEl.textContent = mg.title;
 
-    this.syncBandButtons(this.activeBandIdx);
+    this.renderStagePips(1, '1/3 · EASY');
+    const helperBtn = this.root.querySelector<HTMLButtonElement>('#mg-helper-btn');
+    if (helperBtn) {
+      helperBtn.classList.add('hidden');
+      helperBtn.classList.remove('active');
+      helperBtn.textContent = '';
+    }
+
+    this.populateFieldGuide(mg);
     this.bindConsoleEvents();
+
+    const bridge = this.showcase ? this.showcase.getInstrumentBridge() : null;
+    bridge?.setVibeState?.(s.humanity, false);
 
     const vector: MinigameStateVector = {
       humanity: s.humanity,
       maxHumanity: s.maxHumanity,
       opticalFidelity: s.opticalFidelity,
       chaosDrift: s.chaosDrift,
-      wavelengthNm: this.activeBandIdx,
+      wavelengthNm: s.wavelengthNm,
       primarySiblingH: s.primarySiblingH,
       overseerSuspicion: s.overseerSuspicion,
       shift: s.shift,
       prunedPersonas: s.prunedPersonas.length,
+      proofFragments: [...s.proofFragments],
     };
+
+    const isFirstRun = !s.calibratedInstruments.includes(mg.id);
 
     mg.mount({
       container: mount,
@@ -116,28 +135,48 @@ export class MinigameHostView {
       minigameId: mg.id,
       state: vector,
       bandIdx: this.activeBandIdx,
-      showcase: this.showcase ? this.showcase.getInstrumentBridge() : null,
+      isFirstRun,
+      showcase: bridge,
       audio: this.audio.getInstrumentHandle(),
       onTelemetry: (hud) => this.renderHudHeartbeat(hud),
-      onSwitchBand: (bandIdx) => this.selectBand(bandIdx),
-      onComplete: (result) => this.handleComplete(spec, mg.id, result, onDecoded),
+      onCalibrationComplete: () => this.store.markInstrumentCalibrated(mg.id),
+      onComplete: (result) => this.handleComplete(spec, mg, result, onDecoded),
     });
   }
 
-  setWaveBand(bandIdx: number): void {
-    this.activeBandIdx = bandIdx;
-    this.syncBandButtons(bandIdx);
-    this.activeMinigame?.setWaveBand?.(bandIdx);
+  private populateFieldGuide(mg: IMinigame): void {
+    const guide = mg.getFieldGuide?.();
+    const card = this.root.querySelector<HTMLElement>('#mg-field-guide-card');
+    card?.classList.add('hidden');
+    if (!guide) return;
+
+    const titleEl = this.root.querySelector<HTMLElement>('#mg-guide-title');
+    const prinEl = this.root.querySelector<HTMLElement>('#mg-guide-principle');
+    const goalEl = this.root.querySelector<HTMLElement>('#mg-guide-goal');
+    const warmEl = this.root.querySelector<HTMLElement>('#mg-guide-warmth');
+    const ctrlEl = this.root.querySelector<HTMLElement>('#mg-guide-controls');
+    const isCoarse = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
+
+    if (titleEl) titleEl.textContent = `${mg.instrumentCode} · ${guide.title}`;
+    if (prinEl) prinEl.textContent = guide.physicalPrinciple;
+    if (goalEl) goalEl.textContent = guide.goalSummary;
+    if (warmEl) warmEl.textContent = guide.warmthEffect;
+    if (ctrlEl) ctrlEl.textContent = isCoarse ? guide.controlsTouch : guide.controlsDesktop;
   }
 
-  private selectBand(bandIdx: number): void {
-    this.setWaveBand(bandIdx);
-    this.onSwitchBandCb?.(bandIdx);
+  private renderStagePips(stageIndex: 1 | 2 | 3, label: string): void {
+    const labelEl = this.root.querySelector<HTMLElement>('#mg-stage-label');
+    if (labelEl) labelEl.textContent = label;
+    this.root.querySelectorAll<HTMLElement>('#mg-stage-pips .mg-pip').forEach((pip) => {
+      const idx = Number(pip.dataset.stage ?? '1');
+      pip.classList.toggle('done', idx < stageIndex);
+      pip.classList.toggle('active', idx === stageIndex);
+    });
   }
 
   private handleComplete(
     spec: AnomalySpec,
-    minigameId: string,
+    mg: IMinigame,
     result: MinigameResult,
     onDecoded?: (spec: AnomalySpec) => void
   ): void {
@@ -156,10 +195,24 @@ export class MinigameHostView {
       humanityDelta: result.humanityDelta,
       proofFragmentId: result.proofFragmentId,
       dossierSnippet: result.dossierSnippet,
+      instrumentCode: mg.instrumentCode,
+      physicalPrinciple: result.physicalPrinciple,
+    });
+    this.store.markInstrumentCalibrated(mg.id);
+
+    this.showcase?.getInstrumentBridge().commitDecodedState?.(spec.id, {
+      progress: 1,
+      dustPeel: 1,
+      slicePlaneZ: 12,
+      unwarpProgress: 1,
+      seamReveal: 1,
+      jetResonance: 0.85,
+      fringeContrast: 1,
+      fringePhase: 0,
     });
 
     this.telemetry.record('minigame_complete', this.store.getState(), {
-      minigameId,
+      minigameId: mg.id,
       targetId: spec.id,
       grade: result.grade,
       durationSec: result.elapsedSec,
@@ -169,139 +222,130 @@ export class MinigameHostView {
     const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
     if (mgBtn) mgBtn.textContent = 'REPLAY SCAN INSTRUMENT';
 
-    // Show 1.4s Proof Capture Finale stamp cleanly before closing reticle
     const finale = this.root.querySelector<HTMLElement>('#mg-capture-finale');
     const gradeEl = this.root.querySelector<HTMLElement>('#mg-finale-grade');
     const gainEl = this.root.querySelector<HTMLElement>('#mg-finale-gain');
     const snipEl = this.root.querySelector<HTMLElement>('#mg-finale-snippet');
+    const prinEl = this.root.querySelector<HTMLElement>('#mg-finale-principle');
+    const logBtn = this.root.querySelector<HTMLButtonElement>('#mg-btn-log-dossier');
+
     if (finale && gradeEl && gainEl && snipEl) {
-      gradeEl.textContent =
-        result.grade === 'deep_overclock'
-          ? 'DEEP OVERCLOCK PROOF CAPTURED'
-          : result.grade === 'clean'
-          ? 'CLEAN HORIZON LOCK CAPTURED'
-          : 'PARTIAL CORRELATION LOGGED';
-      gainEl.textContent = `+${result.anomalyGain}% HORIZON ANOMALY${result.chaosDelta ? ` · +${result.chaosDelta}% CHAOS` : ''}`;
+      gradeEl.textContent = `ANALYSIS LOGGED · ${spec.label.toUpperCase()}`;
+      gainEl.textContent = `+${result.anomalyGain}% HORIZON ANOMALY`;
       snipEl.textContent = result.dossierSnippet ?? result.telemetrySummary;
+      if (prinEl) {
+        prinEl.textContent = result.physicalPrinciple ? `PRINCIPLE: ${result.physicalPrinciple}` : '';
+      }
       finale.classList.remove('hidden');
-      this.finaleTimerId = window.setTimeout(() => {
+
+      const finishClose = () => {
+        if (this.finaleTimerId !== null) {
+          clearTimeout(this.finaleTimerId);
+          this.finaleTimerId = null;
+        }
         finale.classList.add('hidden');
-        this.destroy();
+        this.destroy(true);
         onDecoded?.(spec);
-      }, 1400);
+      };
+
+      if (logBtn) {
+        logBtn.disabled = false;
+        logBtn.onclick = () => {
+          this.audio.playCue('choice');
+          finishClose();
+        };
+      }
+      this.finaleTimerId = window.setTimeout(finishClose, 9000);
     } else {
-      this.destroy();
+      this.destroy(true);
       onDecoded?.(spec);
     }
   }
 
   private renderHudHeartbeat(hud: HudHeartbeatSnapshot): void {
-    const stageLabel = this.root.querySelector<HTMLElement>('#mg-stage-label');
-    const stageFill = this.root.querySelector<HTMLElement>('#mg-stage-fill');
-    const readoutEl = this.root.querySelector<HTMLElement>('#mg-readout');
-    const cueEl = this.root.querySelector<HTMLElement>('#mg-cue-whisper');
-    const rawBtn = this.root.querySelector<HTMLElement>('#mg-btn-raw');
-    const partialBtn = this.root.querySelector<HTMLElement>('#mg-btn-partial');
-    const latchBtn = this.root.querySelector<HTMLElement>('#mg-btn-latch');
+    this.renderStagePips(hud.stageIndex, hud.stageLabel);
 
-    if (stageLabel) stageLabel.textContent = hud.beatLabel;
-    if (stageFill) {
-      const pct = Math.min(100, Math.round(hud.lockMeter * 100));
-      stageFill.style.width = `${pct}%`;
-      stageFill.classList.toggle('overclock', hud.overclockZone);
+    const cueEl = this.root.querySelector<HTMLElement>('#mg-cue-whisper');
+    if (cueEl) cueEl.textContent = hud.promptText;
+
+    const helperBtn = this.root.querySelector<HTMLButtonElement>('#mg-helper-btn');
+    if (helperBtn) {
+      if (hud.actionButton) {
+        this.currentHelperActionId = hud.actionButton.id;
+        helperBtn.textContent = hud.actionButton.label;
+        helperBtn.classList.toggle('active', Boolean(hud.actionButton.active));
+        helperBtn.classList.remove('hidden');
+      } else {
+        this.currentHelperActionId = null;
+        helperBtn.classList.add('hidden');
+        helperBtn.classList.remove('active');
+      }
     }
-    if (readoutEl) readoutEl.textContent = hud.telemetryReadout;
-    if (cueEl) cueEl.textContent = hud.cueWhisper;
-    if (rawBtn) rawBtn.classList.toggle('active', hud.rawResidualActive);
-    if (partialBtn) partialBtn.classList.toggle('hidden', !hud.canCommitPartial);
-    if (latchBtn) latchBtn.classList.toggle('overclock', hud.overclockZone);
+
+    this.showcase?.getInstrumentBridge().setVibeState?.(this.store.getState().humanity, false);
   }
 
   private applyVibeChrome(humanity: number): void {
     const theme = getUnifiedVibeTheme(humanity);
     const overlay = this.root.querySelector<HTMLElement>('#minigame-overlay');
-    const vibeEl = this.root.querySelector<HTMLElement>('#mg-vibe-pill');
     if (overlay) {
       overlay.dataset.vibe = theme.mode;
     }
-    if (vibeEl) {
-      vibeEl.textContent = `${theme.label} · H ${Math.round(humanity)}%`;
-    }
-  }
-
-  private syncBandButtons(bandIdx: number): void {
-    this.root.querySelectorAll<HTMLButtonElement>('#mg-band-bar .mg-band-btn').forEach((btn) => {
-      btn.classList.toggle('active', Number(btn.dataset.bandIdx) === bandIdx);
-    });
   }
 
   private bindConsoleEvents(): void {
     this.unbindControls?.();
 
-    const rawBtn = this.root.querySelector<HTMLElement>('#mg-btn-raw');
-    const partialBtn = this.root.querySelector<HTMLElement>('#mg-btn-partial');
     const closeBtn = this.root.querySelector<HTMLElement>('#mg-btn-close');
-    const latchBtn = this.root.querySelector<HTMLElement>('#mg-btn-latch');
-    const bandBtns = this.root.querySelectorAll<HTMLButtonElement>('#mg-band-bar .mg-band-btn');
+    const guideBtn = this.root.querySelector<HTMLElement>('#mg-btn-guide');
+    const guideCloseBtn = this.root.querySelector<HTMLElement>('#mg-btn-guide-close');
+    const guideCard = this.root.querySelector<HTMLElement>('#mg-field-guide-card');
+    const helperBtn = this.root.querySelector<HTMLButtonElement>('#mg-helper-btn');
 
-    const onRaw = () => this.activeMinigame?.toggleRawResidual?.();
-    const onPartial = () => this.activeMinigame?.requestPartialCommit?.();
-    const onClose = () => this.destroy();
-    const onLatchDown = () => this.activeMinigame?.triggerCaptureLatch?.(true);
-    const onLatchUp = () => this.activeMinigame?.triggerCaptureLatch?.(false);
-
-    const onBandClick = (e: Event) => {
-      const btn = e.currentTarget as HTMLButtonElement;
-      const idx = Number(btn.dataset.bandIdx ?? 1);
-      this.selectBand(idx);
+    const onClose = () => this.destroy(false);
+    const onToggleGuide = () => {
+      this.audio.playCue('choice');
+      guideCard?.classList.toggle('hidden');
+    };
+    const onCloseGuide = () => {
+      guideCard?.classList.add('hidden');
+    };
+    const onHelperClick = () => {
+      if (!this.currentHelperActionId) return;
+      platform.triggerHaptic('vernierTick', 0.6);
+      this.activeMinigame?.onHelperAction?.(this.currentHelperActionId);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (!this.activeMinigame) return;
-      if (e.code === 'Space') {
-        e.preventDefault();
-        if (!e.repeat) this.activeMinigame.triggerCaptureLatch?.(true);
-      } else if (e.key.toLowerCase() === 'r') {
-        this.activeMinigame.toggleRawResidual?.();
-      } else if (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '4') {
-        this.selectBand(Number(e.key) - 1);
+      if (e.key === '?' || e.key === '/') {
+        onToggleGuide();
       } else if (e.key === 'Escape') {
-        this.destroy();
-      }
-    };
-    const onKeyUp = (e: KeyboardEvent) => {
-      if (!this.activeMinigame) return;
-      if (e.code === 'Space') {
-        e.preventDefault();
-        this.activeMinigame.triggerCaptureLatch?.(false);
+        if (guideCard && !guideCard.classList.contains('hidden')) {
+          guideCard.classList.add('hidden');
+        } else {
+          this.destroy(false);
+        }
       }
     };
 
-    rawBtn?.addEventListener('click', onRaw);
-    partialBtn?.addEventListener('click', onPartial);
     closeBtn?.addEventListener('click', onClose);
-    latchBtn?.addEventListener('pointerdown', onLatchDown);
-    window.addEventListener('pointerup', onLatchUp);
-    bandBtns.forEach((b) => b.addEventListener('click', onBandClick));
+    guideBtn?.addEventListener('click', onToggleGuide);
+    guideCloseBtn?.addEventListener('click', onCloseGuide);
+    helperBtn?.addEventListener('click', onHelperClick);
     window.addEventListener('keydown', onKeyDown);
-    window.addEventListener('keyup', onKeyUp);
 
     this.unbindControls = () => {
-      rawBtn?.removeEventListener('click', onRaw);
-      partialBtn?.removeEventListener('click', onPartial);
       closeBtn?.removeEventListener('click', onClose);
-      latchBtn?.removeEventListener('pointerdown', onLatchDown);
-      window.removeEventListener('pointerup', onLatchUp);
-      bandBtns.forEach((b) => b.removeEventListener('click', onBandClick));
+      guideBtn?.removeEventListener('click', onToggleGuide);
+      guideCloseBtn?.removeEventListener('click', onCloseGuide);
+      helperBtn?.removeEventListener('click', onHelperClick);
       window.removeEventListener('keydown', onKeyDown);
-      window.removeEventListener('keyup', onKeyUp);
     };
   }
 
   updateSignalProfile(humanity: number, _opticalFidelity: number): void {
     this.applyVibeChrome(humanity);
-    // Live re-mount active instrument only when Humanity/Clarity/Chaos/Suspicion weights actually changed
-    // (ignores wavelength/anomaly completion patches and capture finale transitions).
     const nextSig = this.computeProfileSig();
     if (!this.isFinishing && this.activeMinigame && this.activeSpec && nextSig !== this.lastProfileSig) {
       const id = this.activeMinigame.id;
@@ -310,9 +354,10 @@ export class MinigameHostView {
     }
   }
 
-  destroy(): void {
+  destroy(preserveDecoded = false): void {
     this.isFinishing = false;
     this.lastProfileSig = '';
+    this.currentHelperActionId = null;
     if (this.finaleTimerId !== null) {
       clearTimeout(this.finaleTimerId);
       this.finaleTimerId = null;
@@ -320,10 +365,16 @@ export class MinigameHostView {
     this.unbindControls?.();
     this.unbindControls = null;
     this.root.querySelector('#mg-capture-finale')?.classList.add('hidden');
+    this.root.querySelector('#mg-field-guide-card')?.classList.add('hidden');
+    this.root.querySelector('#mg-helper-btn')?.classList.add('hidden');
     if (this.activeMinigame) {
       this.activeMinigame.destroy();
       this.activeMinigame = null;
     }
+    if (!preserveDecoded) {
+      this.showcase?.getInstrumentBridge().resetInstrumentState();
+    }
     this.root.querySelector('#minigame-overlay')?.classList.add('hidden');
+    void this.onSwitchBandCb;
   }
 }

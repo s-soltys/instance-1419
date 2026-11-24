@@ -97,6 +97,77 @@ Each agent session reads the latest entries here before starting work and append
   * **E2E & Visual (`scripts/e2e-visual.mjs`):** Real headless Chromium (`playwright-core` + SwiftShader WebGL) exercising Boot, 3D Sky Aperture, all 5 tactile instruments (Warm + Cold presets, mouse drags, spectral keys `1–4`, `[R]` RAW Residual toggle, clean close), and 2D Dream Cache with zero console/page/network errors.
 * **Verified:** All 8 `verify.mjs` gates pass (`compile:ink`, `tsc --noEmit`, `vitest run` 5 files / 17 tests, `sim-playthroughs`, `lint-narrative`, `MANIFEST.json`, `vite build`, `e2e-visual.mjs` with 0 errors).
 
+---
+
+## Session 5 — 2026-11-24 — 5+1 Interactive 3D Educational Minigame Suite, Tri-Channel Haptics & Solvability Matrix
+* **Council Review & Design Rulings (`minigame_design_review.md`):**
+  * Audited `HEAD` (`98c4ab4`/`20cb3be`) vs `bcebc5c`: replaced 15–30s 2D widgets (`FourierSkySieve`, `CorrelatorPhaseMatrix`, lockpicking, vacuum sonar) with 6 full-3D, 3-phase educational instruments (~2.5–4.5 min depth each) grounded in real astrophysics, zero destination stickers/target ticks, and zero RMB/key-hold chording.
+* **Implemented:**
+  * **Interactive 3D Raycast Host & Post-Processing (`TargetShowcaseScene.ts`, `showcaseShaders.ts`, `styles.css`):** Unblocked `#showcase-canvas` (`pointer-events: none` overlay), added 2-tier `THREE.Raycaster` arbiter with `>=44px` dynamic screen-space pick spheres, `CameraKeyframe` choreography, 4-pass `EffectComposer` (`UnrealBloomPass` + `OPTICAL_POLISH_SHADER` with mobile frame-time guard), Warm vs. Cold 3D lookdev + `[R] RAW`-clearable Over-Regularization film, `antipodal_poles` showcase, and persistent `decodedTargets` visual state.
+  * **Tri-Channel Haptics (`PlatformAdapter.ts`, `AudioEngine.ts`, `tactilePhysics.ts`):** Added semantic `HapticPattern` (`vernierTick`, `proximityPulse`, `detentResistance`, `phaseSnapLock`, `overclockHeartbeat`, `rejectThud`, `shutterCommit`) for mobile + Gamepad `dual-rumble`, sub-bass `playHapticThump` / `playProximityTick` / `playPhaseLock` audio cues, and `SpringActuator` angle-wrapping + pseudo-haptic drag viscosity.
+  * **6 Interactive 3D Educational Instruments (`src/engine/minigames/`):**
+    1. `ParallaxTriangulationArray` (`PRX-01`): 3D cluster orbital baselines ($p = B_\perp / d$) & sight-cone vertex pinch (no vacuum sonar).
+    2. `SpectrographSieve` (`SPC-02`): 3D Carina IR dust slicer (`uSlicePlaneZ`) + uncolored dark-notch absorption ribbon & redshift ($1+z$) comb exposing the $z=0$ signal.
+    3. `CausticTumblerUnwarper` (`CAU-03`): 3-pass coupled dark-matter halo nodes + single-finger 3D shear ring inverting thin-lens arcs ($\vec{\beta}=\vec{\theta}-\vec{\alpha}$).
+    4. `InterferometerOpticalBench` (`INT-04`): 3D orbital mirror bench around plasma occluders, 50/50 beam-splitter, and optical delay-line trolley locking live GLSL Michelson fringes ($\Delta L \to 0$).
+    5. `AntipodalBlinkComparator` (`BLK-05`): Mapped into `anomalies.json` (`antipodal_poles_seam`) & `shifts.json` with 4-month epoch `[ALIGN | TAG]` & `[A | B | AUTO]` controls + 3D relativistic light-cone wavefronts ($\Delta s \le c\Delta t$).
+    6. `CarrierBroadcastComposer` (`SIG-06`): Shift 6 capstone combining pulsar dispersion ($\Delta t \propto \text{DM}\cdot\nu^{-2}$), Proof Fragment payload slotting, and Dream Persona cadence (`H%`).
+  * **Economy, Calibration, Field Guide & Dossier (`StateStore.ts` v4, `MinigameHostView.ts`, `UIController.ts`, `balance.json`, `shifts.json`):** Marginal grade-upgrade replay (`decodedGrades`), Shift 5 threshold fix (`68`), `advanceShift()` Dream Wake wiring, non-spoilery first-run Guided Calibration, `[?] FIELD GUIDE`, separate Progress vs. Latch gauges, and Proof Dossier drawer.
+* **Verified:** `npx vitest run` (6 files / 48 tests including 30-case `minigameSolvability.test.ts` across all 6 instruments × 4 parameter regimes + partial/clean/deep_overclock), `tsc --noEmit`, `sim-playthroughs.mjs` (500 runs / 0 soft-locks), `lint-narrative.mjs`, `MANIFEST.json`, `vite build`, and `e2e-visual.mjs` (Desktop 1280×720 + Mobile 844×390, all 6 instruments, Field Guide, RAW, 0 errors).
+
+---
+
+## Session 6 — 2026-11-24 — Minigame Reset: Simplicity, UX & Cosmic Visual Craft
+* **User & Swarm Redesign (`minigame_simplification_plan.md`):**
+  * Removed floating Saturn-orb 3D handles (`instrument3DUtils.ts`), milky sphere shells, ~20 boxed cockpit HUD buttons, and mandatory `[R] RAW` / `[1–4]` / `[SPACE]` gates.
+* **Implemented:**
+  * **Minimalist 3-Element Zeiss-Glass Chrome (`UIController.ts`, `MinigameHostView.ts`, `styles.css`, `types.ts`):** Top-left instrument pill + `1/3 · EASY → 2/3 · MEDIUM → 3/3 · HARD` stage pips (capped at `34%` width to clear the centered QA pill), top-right `?` Field Guide & `BACK`, full-viewport direct-touch canvas, and bottom wrap-safe cue + optional single helper button. Kept `H%` Warm vs. Cold as ambient visual/audio mood.
+  * **Real NASA/JWST Cosmic Renderer (`src/engine/minigames/cosmicBackdrop.ts`):** Crisp `jwst_carina_nebula.webp`, `jwst_smacs0723.webp`, and `hubble_udf.webp` plates with blur/clarity progression, 6-point diffraction stars, Warm vs. Cold palettes, and `0.65–0.68s` diegetic circular auto-lock resonance rings.
+  * **6 Intuitive Easy → Medium → Hard Cosmic Games (`src/engine/minigames/MinigameRegistry.ts`):**
+    1. `WaveShaperGame` (`WAV-01`): Sine Period/Phase → +Amplitude → +2x Harmonic over `jwst_carina_nebula.webp` (sharpens & blooms nebula on convergence).
+    2. `ConstellationRecallGame` (`CON-02`): 3 → 5 (subtle parallax) → 6 stars spatial memory + `REPLAY PATTERN` (soft amber warning without wiping chain).
+    3. `PulsarEchoGame` (`PLS-03`): 3 → 5 → 6 pulses across 4 → 5 → 6 sleek optical arc petals + `REPLAY PULSE` + Stage 3 twin relativistic jets.
+    4. `TelescopeLensFocusGame` (`LNS-04`): 1 → 2 → 3 independent outer concentric lens rings de-warping sliced `jwst_smacs0723.webp` to expose the horizon grid.
+    5. `StarlightMirrorBounceGame` (`MIR-05`): 1 mirror → 2 mirrors around nebula dust → 2 mirrors + 50/50 beam splitter hitting 2 sensors simultaneously.
+    6. `StarfieldBlinkSpotterGame` (`BLK-06`): Dual-epoch blink sky comparator (`STEP EPOCH A/B` helper) spotting 1 → 2 → 3 jumping outlier stars.
+* **Verified:** `npx tsc --noEmit`, `npx vitest run` (6 files / 42 tests including all 6 games × Stage 1→2→3 × 4 regimes), `node scripts/sim-playthroughs.mjs` (500 runs / 0 soft-locks), `node scripts/lint-narrative.mjs`, `npm run build`, and `node scripts/e2e-visual.mjs` (Desktop `1280×720` + Mobile Landscape `844×390`, 0 errors), with visual inspection of all generated screenshots.
+
+---
+
+## Session 7 — 2026-11-24 — 10-Game Cosmic UX Overhaul & Expansion
+* **UX Upgrades on Games 1–6 (keeping lightweight 2D canvas visuals; 3D environment pass deferred):**
+  1. `WaveShaperGame` (`WAV-01`): Traveling wave propagation, live misalignment interference wobble + chromatic split + ribbon haze, harmonic crest energy particles, and reactive Carina nebula pulse/brightness breathing on alignment.
+  2. `ConstellationRecallGame` (`CON-02`): Pointer parallax depth across stars/plate, animated streaking comet links during playback, expanding tap ripples, and soft asterism polygon glow on stage clear.
+  3. `PulsarEchoGame` (`PLS-03`, *Pulsar Beacon Timing*): Replaced memory sequence with real-time rotational sweep timing (`Space` or tap when the spinning lighthouse beam enters the lit sector; Stage 2 opposite twin beams; Stage 3 spin reversals + jets).
+  4. `TelescopeLensFocusGame` (`LNS-04`): Rendered all 3 concentric rings visible from Stage 1 (Outer → Middle → Inner unlock sequentially), removed white cheat-ticks in favor of continuous radial starlight streamers across shells, and added a Stage 2–3 `FOCAL DEPTH` lever.
+  5. `StarlightMirrorBounceGame` (`MIR-05`): Added streaming photon packets along beams, drifting dust motes, and sensor proximity halo/audio cues.
+  6. `StarfieldBlinkSpotterGame` (`BLK-06`, *Star Trajectory Predictor*): Replaced blink spotting with forecasting `Epoch 4` from `Epochs 1 → 2 → 3` (`SHOW ALL 3 EPOCHS` helper) across linear (Easy), accelerating (Medium), and gravity-deflected curved paths (Hard).
+* **4 New Easy → Medium → Hard Cosmic Games (`MinigameRegistry.ts`, `lint-narrative.mjs`):**
+  7. `GravitySlingshotGame` (`ORB-07`): Slingshot pullback physics bending probe trajectories around gravity wells (1 well + dust → 2 wells S-curve → 2 wells + moving collector gate).
+  8. `ExoplanetTransitGame` (`TRN-08`): Live orbiting planet silhouettes dimming the central star and matching observed photometric brightness dips across 1–2 planet systems + flare noise.
+  9. `SpectralPrismMixerGame` (`PRM-09`): Elemental emission filter mixing (`H`, `He`, `C`, `O`, `Fe`) + Stage 3 `DOPPLER REDSHIFT (Δλ)` slider.
+  10. `RadioTriangulationGame` (`TRI-10`): Orbital rim radio dishes (`2 → 3` dishes, stationary → drifting source) with directional beam convergence and sonar proximity ticks.
+* **Verified:** `npx tsc --noEmit`, `npx vitest run` (6 files / 58 tests including 40 solvability cases across all 10 games × 4 regimes), `node scripts/sim-playthroughs.mjs` (500 runs / 0 soft-locks), `node scripts/lint-narrative.mjs`, `npm run build`, and `node scripts/e2e-visual.mjs` (all 10 games on Desktop `1280×720` Warm/Cold + Mobile Landscape `844×390`, 0 errors) with visual inspection of desktop & mobile screenshots.
+
+---
+
+## Session 8 — 2026-11-24 — Iteration 2: Game 5 Replacement (`DSP-05`) & UX Polish Across All 10 Games
+* **Replaced Game 5 (`MIR-05` → `DSP-05` Chromatic Light Disperser):**
+  * Removed `StarlightMirrorBounceGame.ts`; implemented `ChromaticDispersionGame.ts` (`light_dispersion`) where a central crystal prism disperses polychromatic starlight into UV (`280 nm`), Visible (`550 nm`), and Dust-Penetrating Infrared (`1400 nm`), including Stage 3 dark-dust scattering that only IR pierces cleanly. Updated `anomalies.json`, `MinigameRegistry.ts`, `lint-narrative.mjs`, `minigameRegistry.test.ts`, and `e2e-visual.mjs`.
+* **Polished UX & Difficulty Balance Across All Games (still keeping 2D canvas until gameplay sign-off):**
+  1. `WaveShaperGame` (`WAV-01`): Widened alignment tolerance, added magnetic snap pull, faster `0.5s` lock hold, and per-parameter mint-green knob indicators when locked.
+  3. `PulsarEchoGame` (`PLS-03`): Replaced pie-slice wedges with orbiting star-knots suspended along a luminous accretion ring + contracting timing halos + slower Stage 1 sweep (`0.88 rad/s`) + Stage 3 `1.0s` amber spin-reversal telegraphs.
+  4. `TelescopeLensFocusGame` (`LNS-04`): Widened `FOCAL DEPTH` sweet spot + gentle magnetic pull + mint lock feedback.
+  6. `StarfieldBlinkSpotterGame` (`BLK-06`): Removed dotted ruler & numbers in Stage 1; upgraded Stage 2 to **Crossing Paths Conjunction** (two approaching stars meeting at Epoch 4); upgraded Stage 3 to gravity-bent star vs. straight linear decoy.
+  7. `GravitySlingshotGame` (`ORB-07`): Removed rectangular border frame, suppressed pre-solved initial aim until player drags from launcher, and varied launch directions per stage (Bottom-Left → Top-Right, Top-Right → Bottom-Left, Bottom → Top moving gate).
+  8. `ExoplanetTransitGame` (`TRN-08`): Differentiated interaction with direct orbital radius dragging (Kepler's 3rd Law speed coupling) + Stage 3 `SMALL / MEDIUM / GIANT` planet pills + wider photometric lock tolerance + mint orbit lock indicators.
+  9. `SpectralPrismMixerGame` (`PRM-09`): Added 6th element (`Na` Sodium doublet), mini colored spectral barcodes inside each element card, mismatch markers between strips, and bidirectional `BLUESHIFT ← 0 → REDSHIFT` on Stage 3.
+  10. `RadioTriangulationGame` (`TRI-10`): Varied perimeter dish slots per stage/seed, added Stage 1 ghost decoy rejection, balanced slow drift (`0.20–0.24 rad/s`) across Stages 2–3, and Stage 3 rhythmic beacon pings.
+* **Verified:** `npx tsc --noEmit`, `npx vitest run` (6 files / 58 tests including 40 solvability tests across all 10 games × 4 regimes), `node scripts/sim-playthroughs.mjs`, `node scripts/lint-narrative.mjs`, `npm run build`, and `node scripts/e2e-visual.mjs` (0 runtime/console/HTTP errors) with screenshot inspection across desktop and mobile `844×390`.
+
+
+
+
 
 
 

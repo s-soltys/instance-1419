@@ -8,7 +8,8 @@
         "sol_centauri_bearing",
         "carina_rift_nebula",
         "cluster_j1419_a",
-        "sector_s04_seam"
+        "sector_s04_seam",
+        "antipodal_poles_seam"
       ],
       "baseChaosPerShift": 16,
       "monthsPerShift": 4,
@@ -53,13 +54,13 @@
     {
       "shift": 5,
       "title": "Ten-Light-Year Off-Center Proof",
-      "targetAnomalies": ["sol_centauri_bearing", "sector_s04_seam"],
+      "targetAnomalies": ["sol_centauri_bearing", "sector_s04_seam", "antipodal_poles_seam"],
       "baseChaosPerShift": 24,
       "monthsPerShift": 4,
       "siblingDriftRange": [26, 48],
       "overseerAuditChaosThreshold": 38,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 78
+      "minAnomalyForNextShift": 68
     },
     {
       "shift": 6,

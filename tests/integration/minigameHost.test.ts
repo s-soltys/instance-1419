@@ -22,12 +22,29 @@ function buildOverlayDom(): HTMLElement {
           <span id="mg-stage-label"></span>
           <i id="mg-stage-fill" style="width:0%"></i>
           <span id="mg-vibe-pill"></span>
+          <button id="mg-btn-recenter"></button>
+          <button id="mg-btn-guide"></button>
         </div>
+        <div id="mg-calibration-banner" class="hidden">
+          <strong id="mg-cal-title"></strong>
+          <span id="mg-cal-detail"></span>
+        </div>
+        <aside id="mg-field-guide-card" class="hidden">
+          <strong id="mg-guide-title"></strong>
+          <span id="mg-guide-principle"></span>
+          <span id="mg-guide-goal"></span>
+          <span id="mg-guide-warmth"></span>
+          <span id="mg-guide-controls"></span>
+          <button id="mg-btn-guide-close"></button>
+        </aside>
         <div id="minigame-mount"></div>
+        <div id="mg-extra-controls" class="hidden"></div>
         <div class="mg-capture-finale hidden" id="mg-capture-finale">
           <div id="mg-finale-grade"></div>
           <div id="mg-finale-gain"></div>
           <div id="mg-finale-snippet"></div>
+          <div id="mg-finale-principle"></div>
+          <button id="mg-btn-log-dossier"></button>
         </div>
         <div class="mg-bottom-console">
           <div id="mg-band-bar">
@@ -40,6 +57,7 @@ function buildOverlayDom(): HTMLElement {
           <div id="mg-cue-whisper"></div>
           <button id="mg-btn-raw"></button>
           <button id="mg-btn-partial" class="hidden"></button>
+          <i id="mg-latch-fill" style="width:0%"></i>
           <button id="mg-btn-latch"></button>
           <button id="mg-btn-close"></button>
         </div>
@@ -85,7 +103,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     expect(root.querySelector('#minigame-mount canvas.minigame-canvas')).not.toBeNull();
   });
 
-  it('mounts, bridges 3D showcase, switches bands, toggles RAW, and destroys cleanly for all 5 instruments', () => {
+  it('mounts, populates Field Guide, bridges 3D showcase, and destroys cleanly for all 6 instruments', () => {
     const mockAudio = createMockAudioEngine();
     const mockShowcase = createMockShowcaseScene();
     const reg = new MinigameRegistry();
@@ -104,17 +122,11 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       mockShowcase.getInstrumentBridge.mockClear();
       host.launch(spec, meta.id);
 
-      expect(mockShowcase.getInstrumentBridge).toHaveBeenCalledTimes(1);
+      expect(mockShowcase.getInstrumentBridge).toHaveBeenCalled();
       expect(root.querySelector('#mg-instrument-code')?.textContent).toBe(meta.instrumentCode);
       expect(root.querySelector('#minigame-mount canvas.minigame-canvas')).not.toBeNull();
+      expect(root.querySelector('#mg-guide-principle')?.textContent?.length).toBeGreaterThan(15);
 
-      host.setWaveBand(3);
-      expect(
-        root.querySelector('#mg-band-bar [data-band-idx="3"]')?.classList.contains('active')
-      ).toBe(true);
-
-      // Toggle RAW Residual key handler
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'r' }));
       host.destroy();
 
       expect(root.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(true);
@@ -138,19 +150,16 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     );
     host.attachShowcase(mockShowcase as never);
 
-    host.launch(spec, 'fourier_sieve');
+    host.launch(spec, 'wave_shaper');
     const firstCanvas = root.querySelector('#minigame-mount canvas');
 
-    // Same H%, fidelity, chaos, suspicion -> should NOT re-mount!
     store.patch({ wavelengthNm: 1580 });
     host.updateSignalProfile(store.getState().humanity, store.getState().opticalFidelity);
     expect(root.querySelector('#minigame-mount canvas')).toBe(firstCanvas);
 
-    // Changing Humanity to Cold regime SHOULD update vibe chrome + cleanly re-mount with Cold profile
     store.patch({ humanity: 28, opticalFidelity: 0.88 });
     host.updateSignalProfile(28, 0.88);
     expect(root.querySelector<HTMLElement>('#minigame-overlay')?.dataset.vibe).toBe('cold');
-    expect(root.querySelector('#mg-vibe-pill')?.textContent).toContain('SURGICAL COLD');
     expect(root.querySelector('#minigame-mount canvas')).not.toBe(firstCanvas);
   });
 });

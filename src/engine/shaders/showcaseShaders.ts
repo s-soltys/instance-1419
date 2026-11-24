@@ -47,6 +47,7 @@ varying vec3 vViewDir;
 
 uniform float uTime;
 uniform float uWaveBand;
+uniform float uVibeCold;
 uniform vec3 uBaseColor;
 
 float hash3(vec3 p) {
@@ -100,6 +101,8 @@ void main() {
   float limb = pow(1.0 - ndotv, 2.4);
   vec3 rimTint = mix(vec3(0.62, 0.84, 1.0), vec3(1.0, 0.46, 0.16), uWaveBand);
   col += rimTint * limb * (0.75 + 0.45 * flare);
+  float luma = dot(col, vec3(0.299, 0.587, 0.114));
+  col = mix(col, mix(vec3(luma), vec3(0.74, 0.94, 1.08) * luma, 0.45), uVibeCold * 0.65);
 
   gl_FragColor = vec4(col, 1.0);
 }
@@ -251,6 +254,7 @@ varying float vPhase;
 uniform float uTime;
 uniform float uWaveBand;
 uniform float uJetResonance;
+uniform float uVibeCold;
 
 void main() {
   vec2 uv = gl_PointCoord * 2.0 - 1.0;
@@ -258,7 +262,7 @@ void main() {
   if (r > 1.0) discard;
 
   float core = exp(-r * r * 20.0);
-  float halo = exp(-r * 4.5) * 0.42;
+  float halo = exp(-r * 4.5) * mix(0.46, 0.18, uVibeCold);
 
   float spikeMask = smoothstep(6.5, 18.0, vSize);
   float s1 = exp(-abs(uv.y) * 30.0) * exp(-abs(uv.x) * 2.6);
@@ -272,8 +276,9 @@ void main() {
   vec3 tint = uWaveBand < 0.33
     ? mix(uvTint, vColor, uWaveBand / 0.33)
     : mix(vColor, irTint, (uWaveBand - 0.33) / 0.67);
+  tint = mix(tint, vec3(0.76, 0.94, 1.08), uVibeCold * 0.55);
 
-  float intensity = (core * 1.35 + halo + spikes) * twinkle;
+  float intensity = (core * 1.35 + halo + spikes) * twinkle * (1.0 + uJetResonance * 0.35);
   gl_FragColor = vec4(tint * intensity, clamp(intensity, 0.0, 1.0));
 }
 `;
@@ -305,27 +310,60 @@ uniform float uOpticalFidelity;
 uniform float uUnwarpProgress;
 uniform float uRingTwist;
 uniform float uSeamReveal;
+uniform float uVibeCold;
+uniform float uRawResidual;
+uniform vec2 uHalo0;
+uniform vec2 uHalo1;
+uniform vec2 uHalo2;
+uniform float uShearAngle;
+uniform float uShearMag;
 
 void main() {
   vec3 N = normalize(vWorldNormal);
   vec3 V = normalize(vViewDir);
   float ndotv = abs(dot(N, V));
 
-  // Luminous Einstein ring concentrated at the tangential lensing limb around the 3D cluster
-  float unwarpTight = mix(8.5, 22.0, clamp(uUnwarpProgress, 0.0, 1.0));
-  float ringZone = exp(-pow((ndotv - 0.46) * unwarpTight, 2.0));
-  float outerHalo = pow(clamp(1.0 - ndotv, 0.0, 1.0), 3.0) * mix(0.45, 0.16, uUnwarpProgress);
-
-  // Tangential azimuth around view vector so arcs break organically into realistic gravitational arcs
   vec3 upRef = abs(V.y) > 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
   vec3 right = normalize(cross(upRef, V));
   vec3 up = cross(V, right);
-  float ang = atan(dot(N, up), dot(N, right)) + uRingTwist;
+  vec2 theta = vec2(dot(N, right), dot(N, up));
 
+  // Analytical multi-halo deflection + external quadrupole shear (inverting lens distortion)
+  float residual = 1.0 - clamp(uUnwarpProgress, 0.0, 1.0);
+  vec2 d0 = theta - uHalo0;
+  vec2 d1 = theta - uHalo1;
+  vec2 d2 = theta - uHalo2;
+  vec2 alpha =
+    0.16 * d0 / (dot(d0, d0) + 0.03) +
+    0.09 * d1 / (dot(d1, d1) + 0.025) +
+    0.09 * d2 / (dot(d2, d2) + 0.025);
+
+  float ca = cos(uShearAngle);
+  float sa = sin(uShearAngle);
+  vec2 rotTheta = vec2(theta.x * ca - theta.y * sa, theta.x * sa + theta.y * ca);
+  vec2 shearVec = vec2(rotTheta.x, -rotTheta.y) * uShearMag * residual;
+  vec2 beta = theta - alpha * residual * 0.72 + shearVec;
+
+  // Source-plane background galaxies: smeared into Einstein arcs when residual>0, round galaxies when residual->0!
+  float g1 = exp(-dot(beta - vec2(0.24, 0.14), beta - vec2(0.24, 0.14)) * mix(16.0, 95.0, 1.0 - residual));
+  float g2 = exp(-dot(beta - vec2(-0.22, -0.18), beta - vec2(-0.22, -0.18)) * mix(18.0, 110.0, 1.0 - residual));
+  float g3 = exp(-dot(beta - vec2(-0.08, 0.28), beta - vec2(-0.08, 0.28)) * mix(14.0, 88.0, 1.0 - residual));
+
+  float unwarpTight = mix(7.5, 22.0, clamp(uUnwarpProgress, 0.0, 1.0));
+  float ringZone = exp(-pow((ndotv - 0.46) * unwarpTight, 2.0));
+  float outerHalo = pow(clamp(1.0 - ndotv, 0.0, 1.0), 3.0) * mix(0.45, 0.16, uUnwarpProgress);
+
+  float ang = atan(theta.y, theta.x) + uRingTwist;
   float arc1 = smoothstep(0.15, 0.85, sin(ang * 3.0 + uTime * 0.12) * 0.5 + 0.5);
   float arc2 = smoothstep(0.35, 0.95, cos(ang * 5.0 - 0.7) * 0.5 + 0.5);
-  float arcPattern = mix(0.32 + 0.68 * max(arc1, arc2 * 0.8), 1.0, clamp(uUnwarpProgress, 0.0, 1.0));
-  float seamFacet = smoothstep(0.92, 0.99, sin(ang * 12.0)) * clamp(uSeamReveal, 0.0, 1.0);
+  float arcPattern = mix(0.32 + 0.68 * max(arc1, arc2 * 0.8), 0.35, clamp(uUnwarpProgress, 0.0, 1.0));
+
+  // Un-lensed rectilinear geodesic 93-BLY horizon seam behind the cluster
+  float gridX = 1.0 - smoothstep(0.0, 0.016, abs(fract(theta.x * 5.0) - 0.5));
+  float gridY = 1.0 - smoothstep(0.0, 0.016, abs(fract(theta.y * 5.0) - 0.5));
+  float rectSeam = max(gridX, gridY) * smoothstep(0.18, 0.95, uSeamReveal);
+  float regVeil = uVibeCold * (1.0 - uRawResidual) * 0.72;
+  rectSeam *= (1.0 - regVeil);
 
   vec3 uvCol = vec3(0.54, 0.82, 1.0);
   vec3 visCol = vec3(0.76, 0.88, 1.0);
@@ -333,9 +371,12 @@ void main() {
   vec3 arcCol = uWaveBand < 0.33
     ? mix(uvCol, visCol, uWaveBand / 0.33)
     : mix(visCol, irCol, (uWaveBand - 0.33) / 0.67);
+  arcCol = mix(arcCol, vec3(0.62, 0.92, 1.0), uVibeCold * 0.65);
 
-  float intensity = (ringZone * arcPattern * (0.92 + 0.45 * uUnwarpProgress) + outerHalo + seamFacet * 0.55) * (0.65 + 0.45 * uWaveBand);
-  gl_FragColor = vec4(arcCol * intensity, clamp(intensity, 0.0, 0.95));
+  float galaxyGlow = (g1 + g2 + g3) * (0.65 + 0.85 * uUnwarpProgress);
+  float intensity = ringZone * arcPattern * (0.78 - 0.35 * uUnwarpProgress) + outerHalo + galaxyGlow + rectSeam * 0.82;
+  vec3 finalCol = arcCol * intensity + vec3(0.66, 0.94, 1.0) * rectSeam * 0.5;
+  gl_FragColor = vec4(finalCol, clamp(intensity, 0.0, 0.96));
 }
 `;
 
@@ -357,6 +398,8 @@ uniform float uJetResonance;
 uniform float uOpticalFidelity;
 uniform float uIsPulsar;
 uniform float uSeamReveal;
+uniform float uVibeCold;
+uniform float uRawResidual;
 
 void main() {
   vec3 d = normalize(vDir);
@@ -373,12 +416,14 @@ void main() {
     ? max(1.0 - smoothstep(0.0, 0.35, uWaveBand), smoothstep(0.45, 0.95, uWaveBand))
     : smoothstep(0.42, 0.92, uWaveBand);
   waveReveal = max(waveReveal, clamp(uSeamReveal, 0.0, 1.0));
+  float regDamp = mix(1.0, 0.25 + 0.75 * uRawResidual, uVibeCold);
 
   float pulse = 0.8 + 0.2 * sin(uTime * 0.8 + theta * 4.0);
-  float strength = seam * waveReveal * (0.24 + 0.76 * uOpticalFidelity) * (0.48 + 0.42 * uSeamReveal) * pulse;
+  float strength = seam * waveReveal * regDamp * (0.24 + 0.76 * uOpticalFidelity) * (0.48 + 0.55 * uSeamReveal) * pulse;
   if (strength < 0.01) discard;
 
   vec3 col = mix(vec3(0.48, 0.84, 1.0), vec3(0.98, 0.76, 0.46), uWaveBand * 0.45);
+  col = mix(col, vec3(0.62, 0.92, 1.0), uVibeCold * 0.7);
   gl_FragColor = vec4(col * strength, clamp(strength, 0.0, 0.85));
 }
 `;
@@ -392,13 +437,16 @@ attribute float aKind; // 0 = dark-to-glow dust pillar, 1 = additive ionized gas
 varying float vSeed;
 varying float vKind;
 varying float vNearFade;
+varying float vWorldZ;
 
 uniform float uPixelRatio;
 
 void main() {
   vSeed = aSeed;
   vKind = aKind;
-  vec4 mv = modelViewMatrix * vec4(position, 1.0);
+  vec4 wp = modelMatrix * vec4(position, 1.0);
+  vWorldZ = wp.z;
+  vec4 mv = viewMatrix * wp;
   float dist = max(1.0, -mv.z);
   // Smoothly part nearby clouds as camera flies deep inside the nebula pillars
   vNearFade = smoothstep(3.2, 10.5, dist);
@@ -412,11 +460,14 @@ precision highp float;
 varying float vSeed;
 varying float vKind;
 varying float vNearFade;
+varying float vWorldZ;
 
 uniform float uTime;
 uniform float uWaveBand;
 uniform float uJetResonance; // 0=UV, 0.33=Visible, 0.67=Near-IR, 1.0=Mid-IR
 uniform float uDustPeel;
+uniform float uSlicePlaneZ;
+uniform float uVibeCold;
 
 float hash21(vec2 p) {
   p = fract(p * vec2(127.1, 311.7));
@@ -473,7 +524,10 @@ void main() {
       ? mix(uvCol, visCol, uWaveBand / 0.33)
       : mix(visCol, irCol, (uWaveBand - 0.33) / 0.67);
 
-    float alpha = density * mix(0.68, 0.42, smoothstep(0.35, 1.0, uWaveBand)) * (1.0 - clamp(uDustPeel, 0.0, 0.92)) * vNearFade;
+    float sliceFade = smoothstep(uSlicePlaneZ - 2.6, uSlicePlaneZ + 1.4, vWorldZ);
+    float sliceMul = mix(1.0, sliceFade, step(-11.5, uSlicePlaneZ));
+    float alpha = density * mix(0.68, 0.42, smoothstep(0.35, 1.0, uWaveBand)) * (1.0 - clamp(uDustPeel, 0.0, 0.92)) * vNearFade * sliceMul;
+    col = mix(col, vec3(dot(col, vec3(0.3, 0.59, 0.11))) * vec3(0.78, 0.95, 1.08), uVibeCold * 0.6);
     gl_FragColor = vec4(col, alpha);
   } else {
     vec3 uvGas = vec3(0.26, 0.58, 1.0);
@@ -612,5 +666,157 @@ void main() {
 
   float strength = (rim * 0.75 + web * 0.45) * mix(0.85, 0.42, uWaveBand * 0.7) * (1.0 + uJetResonance * 0.5);
   gl_FragColor = vec4(col * strength, clamp(strength * 0.85, 0.0, 0.82));
+}
+`;
+
+/* ==================== SINGLE-PASS OPTICAL POLISH & WARM/COLD POST SHADER ==================== */
+export const OPTICAL_POLISH_SHADER = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uTime: { value: 0 },
+    uVibeCold: { value: 0 },
+    uRawResidual: { value: 0 },
+    uRegFilm: { value: 0 },
+    uChromatic: { value: 0.0018 },
+  },
+  vertexShader: /* glsl */ `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: /* glsl */ `
+    precision highp float;
+    uniform sampler2D tDiffuse;
+    uniform float uTime;
+    uniform float uVibeCold;
+    uniform float uRawResidual;
+    uniform float uRegFilm;
+    uniform float uChromatic;
+    varying vec2 vUv;
+
+    float hash12(vec2 p) {
+      vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+      p3 += dot(p3, p3.yzx + 33.33);
+      return fract((p3.x + p3.y) * p3.z);
+    }
+
+    void main() {
+      vec2 centered = vUv - 0.5;
+      float r = length(centered);
+      vec2 dir = r > 0.0001 ? centered / r : vec2(0.0);
+      float disp = uChromatic * r * r * (1.0 + uVibeCold * 0.8);
+
+      float cr = texture2D(tDiffuse, vUv + dir * disp).r;
+      float cg = texture2D(tDiffuse, vUv).g;
+      float cb = texture2D(tDiffuse, vUv - dir * disp).b;
+      vec3 col = vec3(cr, cg, cb);
+
+      // Subtle optical falloff & 3.2% cinema grain (per ART_DIRECTION.md)
+      float vig = smoothstep(0.92, 0.34, r);
+      col *= mix(0.84, 1.0, vig);
+      float grain = (hash12(vUv * 900.0 + fract(uTime * 17.0)) - 0.5) * 0.032;
+      col += grain;
+
+      // Cold H% Overseer Over-Regularization Film (clears when [R] RAW RESIDUAL is toggled)
+      if (uRegFilm > 0.01) {
+        float lattice = max(
+          1.0 - smoothstep(0.0, 0.035, abs(fract(vUv.x * 24.0) - 0.5)),
+          1.0 - smoothstep(0.0, 0.035, abs(fract(vUv.y * 14.0) - 0.5))
+        );
+        float scan = 0.5 + 0.5 * sin(vUv.y * 180.0 + uTime * 4.5);
+        vec3 regTint = vec3(0.45, 0.82, 0.98) * (lattice * 0.14 + scan * 0.04) * uRegFilm;
+        col = mix(col, vec3(dot(col, vec3(0.3, 0.59, 0.11))) * vec3(0.75, 0.92, 1.05), uRegFilm * 0.35) + regTint;
+      }
+
+      gl_FragColor = vec4(max(col, 0.0), 1.0);
+    }
+  `,
+};
+
+/* ==================== VOLUMETRIC LASER / SIGHT-CONE BEAM SHADER ==================== */
+export const VOLUMETRIC_BEAM_VERTEX = /* glsl */ `
+varying vec2 vUv;
+varying vec3 vNormal;
+varying vec3 vViewDir;
+void main() {
+  vUv = uv;
+  vec4 wp = modelMatrix * vec4(position, 1.0);
+  vNormal = normalize(mat3(modelMatrix) * normal);
+  vViewDir = normalize(cameraPosition - wp.xyz);
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}
+`;
+
+export const VOLUMETRIC_BEAM_FRAGMENT = /* glsl */ `
+precision highp float;
+varying vec2 vUv;
+varying vec3 vNormal;
+varying vec3 vViewDir;
+uniform float uTime;
+uniform vec3 uColor;
+uniform float uIntensity;
+uniform float uPulseSpeed;
+
+void main() {
+  float core = pow(abs(dot(normalize(vNormal), normalize(vViewDir))), 0.85);
+  float pulse = 0.72 + 0.28 * sin(vUv.y * 26.0 - uTime * uPulseSpeed);
+  float fadeEnds = smoothstep(0.0, 0.06, vUv.y) * (1.0 - smoothstep(0.92, 1.0, vUv.y));
+  float alpha = core * pulse * fadeEnds * clamp(uIntensity, 0.0, 1.5);
+  gl_FragColor = vec4(uColor * (1.1 + 0.5 * pulse) * uIntensity, clamp(alpha, 0.0, 0.95));
+}
+`;
+
+/* ==================== MICHELSON INTERFEROMETRY FRINGE DOME SHADER ==================== */
+export const MICHELSON_FRINGE_VERTEX = /* glsl */ `
+varying vec2 vUv;
+void main() {
+  vUv = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+export const MICHELSON_FRINGE_FRAGMENT = /* glsl */ `
+precision highp float;
+varying vec2 vUv;
+uniform float uTime;
+uniform float uFringeContrast; // 0..1 (1 = beams routed cleanly)
+uniform float uFringePhase;    // 0 = zero-path-delay white-light central lock
+uniform vec3 uColor;
+
+void main() {
+  vec2 p = vUv * 2.0 - 1.0;
+  float r = length(p);
+  if (r > 1.0) discard;
+
+  float env = exp(-r * r * 3.4);
+  float k = mix(22.0, 9.0, clamp(uFringeContrast, 0.0, 1.0));
+  float fringe = 0.5 + 0.5 * cos(p.x * k + uFringePhase * 8.0);
+  float centralLock = exp(-abs(p.x - clamp(uFringePhase * 0.22, -0.8, 0.8)) * 7.5);
+  float shimmer = mix(0.45 + 0.55 * sin(uTime * 11.0 + r * 8.0), 1.0, smoothstep(0.55, 0.95, uFringeContrast));
+
+  float bright = env * mix(0.18, 0.3 + 0.7 * max(fringe * 0.75, centralLock), uFringeContrast) * shimmer;
+  gl_FragColor = vec4(uColor * bright * 1.45, clamp(bright, 0.0, 0.95));
+}
+`;
+
+/* ==================== RELATIVISTIC LIGHT-CONE & DUAL-EPOCH BLINK SHADER ==================== */
+export const LIGHT_CONE_SHELL_FRAGMENT = /* glsl */ `
+precision highp float;
+varying vec3 vWorldNormal;
+varying vec3 vViewDir;
+uniform float uTime;
+uniform float uBlinkMix;
+uniform float uConeRadius;
+uniform vec3 uColor;
+
+void main() {
+  vec3 N = normalize(vWorldNormal);
+  vec3 V = normalize(vViewDir);
+  float rim = pow(1.0 - abs(dot(N, V)), 2.8);
+  float wave = 0.5 + 0.5 * sin(N.y * 18.0 - uTime * 3.2);
+  float alpha = rim * (0.28 + 0.55 * wave) * clamp(uConeRadius, 0.0, 1.0);
+  gl_FragColor = vec4(mix(uColor, vec3(1.0, 0.48, 0.52), uBlinkMix * 0.35) * 1.35, clamp(alpha, 0.0, 0.88));
 }
 `;

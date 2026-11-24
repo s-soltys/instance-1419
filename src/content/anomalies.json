@@ -6,33 +6,33 @@
       "subtitle": "Home System · Twin Golden Reference",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
-      "minigameId": "parallax_array",
+      "minigameId": "constellation_recall",
       "raDeg": 46.0,
       "decDeg": -16.0,
       "optimalWavelengthNm": 560,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 34,
-      "anomalyGain": 4,
+      "anomalyGain": 3,
       "kind": "home_reference",
       "accentHex": "#ffd88a",
-      "description": "Ten light-years behind you, Sol and Alpha Centauri burn steady in visible light. Step inside to trace the orbital bearings and prove the horizon curvature points straight back home."
+      "description": "Ten light-years behind you, Sol and Alpha Centauri burn steady in visible light. Step inside to triangulate cluster parallax baselines and prove the horizon curvature points straight back home."
     },
     {
       "id": "carina_rift_nebula",
       "label": "CARINA RIFT NURSERY",
       "subtitle": "Dust-Veiled Stellar Cliffs",
-      "bandName": "MID-IR",
+      "bandName": "NEAR-IR",
       "showcaseType": "nebula",
-      "minigameId": "fourier_sieve",
+      "minigameId": "wave_shaper",
       "raDeg": -34.0,
       "decDeg": 14.0,
       "optimalWavelengthNm": 1580,
-      "wavelengthToleranceNm": 220,
+      "wavelengthToleranceNm": 260,
       "recommendedFovMax": 28,
-      "anomalyGain": 4,
+      "anomalyGain": 3,
       "kind": "nebula_cloud",
       "accentHex": "#f49d6a",
-      "description": "Opaque molecular dust hides this stellar nursery in visible light. Sweep into mid-infrared to peel back the dark veil and hear the newborn stars pulsing behind it."
+      "description": "Opaque molecular dust hides this stellar nursery in visible light. Sweep into infrared to slice through the dark veil and match spectral absorption lines against an un-redshifted comb behind it."
     },
     {
       "id": "cluster_j1419_a",
@@ -40,16 +40,16 @@
       "subtitle": "Gravitational Lens & Horizon Seam",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
-      "minigameId": "caustic_unwarper",
+      "minigameId": "lens_focus",
       "raDeg": 14.0,
       "decDeg": 6.0,
       "optimalWavelengthNm": 1180,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 28,
-      "anomalyGain": 4,
+      "anomalyGain": 3,
       "kind": "einstein_ring",
       "accentHex": "#f4b96a",
-      "description": "A massive foreground cluster bends ancient starlight into bright arcs. Enter the lens to unwarp the rings and expose the unnatural geometric seam hidden behind them."
+      "description": "A massive foreground cluster bends ancient starlight into bright arcs. Model the cluster mass and quadrupole shear to pull the lensed galaxies round and expose the rigid geometric seam behind them."
     },
     {
       "id": "sector_s04_seam",
@@ -57,16 +57,33 @@
       "subtitle": "High-Energy Shock & Repeating Facet",
       "bandName": "UV / X-RAY",
       "showcaseType": "deep_field",
-      "minigameId": "phase_matrix",
+      "minigameId": "pulsar_echo",
       "raDeg": -42.0,
       "decDeg": -18.0,
       "optimalWavelengthNm": 260,
       "wavelengthToleranceNm": 180,
       "recommendedFovMax": 26,
-      "anomalyGain": 4,
+      "anomalyGain": 3,
       "kind": "horizon_lattice",
       "accentHex": "#9cc8ff",
-      "description": "Invisible to ordinary human eyes, violent ultraviolet and X-ray jets flare along the far edge of the survey sphere—repeating the exact same curvature radius as J1419-A."
+      "description": "Violent ultraviolet and X-ray jets flare along the survey boundary. Route coherent beams around plasma occluders and equalize the optical delay line to resolve the repeating facet."
+    },
+    {
+      "id": "antipodal_poles_seam",
+      "label": "ANTIPODAL POLE SEAM",
+      "subtitle": "180° Dual-Epoch Horizon Check",
+      "bandName": "VISIBLE",
+      "showcaseType": "antipodal_poles",
+      "minigameId": "light_dispersion",
+      "raDeg": -166.0,
+      "decDeg": -6.0,
+      "optimalWavelengthNm": 520,
+      "wavelengthToleranceNm": 220,
+      "recommendedFovMax": 30,
+      "anomalyGain": 3,
+      "kind": "horizon_lattice",
+      "accentHex": "#a8e6ff",
+      "description": "Directly opposite J1419-A across 93 billion light-years, four-month shift plates reveal synchronized geometric shifts faster than light permits."
     }
   ]
 }

@@ -1,5 +1,16 @@
 import * as THREE from 'three';
-import type { ShowcaseCouplingUpdate, ShowcaseInstrumentBridge } from './minigames/types';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { platform } from '../platform/PlatformAdapter';
+import type {
+  CameraKeyframe,
+  Interactive3DHandle,
+  ShowcaseCouplingUpdate,
+  ShowcaseInstrumentBridge,
+} from './minigames/types';
 import type { AnomalySpec, ShowcaseType } from './OpticsScene';
 import {
   ACCRETION_DISK_FRAGMENT,
@@ -14,6 +25,7 @@ import {
   HORIZON_SPHERE_VERTEX,
   NEBULA_PUFF_FRAGMENT,
   NEBULA_PUFF_VERTEX,
+  OPTICAL_POLISH_SHADER,
   PLANET_FRAGMENT,
   PLANET_VERTEX,
   POLAR_JET_FRAGMENT,
@@ -94,12 +106,46 @@ export class TargetShowcaseScene {
   private instrumentPatch = {
     progress: 0,
     dustPeel: 0,
+    slicePlaneZ: -15,
     unwarpProgress: 0,
     ringTwist: 0,
     seamReveal: 0,
     jetResonance: 0,
     blinkFlip: false,
+    blinkMix: 0,
+    humanity: 70,
+    rawResidual: false,
+    haloOffsets: [
+      [0, 0, 0] as [number, number, number],
+      [0.32, 0.14, 0] as [number, number, number],
+      [-0.28, -0.2, 0] as [number, number, number],
+    ],
+    shearAngle: 0.4,
+    shearMag: 0.25,
+    fringeContrast: 0,
+    fringePhase: 0,
   };
+  private decodedTargets = new Map<string, ShowcaseCouplingUpdate>();
+  private registeredHandles = new Map<string, Interactive3DHandle>();
+  private activeHandleId: string | null = null;
+  private hoveredHandleId: string | null = null;
+  private dragPlane = new THREE.Plane();
+  private dragStartWorld = new THREE.Vector3();
+  private dragLastWorld = new THREE.Vector3();
+  private pointerDownPos = { x: 0, y: 0 };
+  private handleMoved = false;
+  private raycaster = new THREE.Raycaster();
+  private activeCameraKeyframe: CameraKeyframe | null = null;
+  private targetLookAt = new THREE.Vector3(0, 0, 0);
+  private currentLookAt = new THREE.Vector3(0, 0, 0);
+
+  private composer: EffectComposer | null = null;
+  private bloomPass: UnrealBloomPass | null = null;
+  private polishPass: ShaderPass | null = null;
+  private bloomEnabled = true;
+  private frameAvgMs = 12;
+  private lastVibeHapticMs = 0;
+
   private orbitingBodies: OrbitingBody[] = [];
   private companionStar: OrbitingBody | null = null;
   private spinObjects: { obj: THREE.Object3D; speedX: number; speedY: number }[] = [];
@@ -123,7 +169,9 @@ export class TargetShowcaseScene {
       alpha: false,
       powerPreference: 'high-performance',
     });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const isCoarse = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
+    const maxDpr = isCoarse ? 1.5 : 2;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
     this.renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.12;
@@ -131,7 +179,36 @@ export class TargetShowcaseScene {
     this.renderer.domElement.addEventListener('webglcontextlost', (e) => e.preventDefault());
     container.appendChild(this.renderer.domElement);
 
+    this.initPostProcessing();
     this.bindEvents();
+  }
+
+  private initPostProcessing(): void {
+    try {
+      const w = Math.max(1, this.container.clientWidth);
+      const h = Math.max(1, this.container.clientHeight);
+      const composer = new EffectComposer(this.renderer);
+      const renderPass = new RenderPass(this.scene, this.camera);
+      const bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(Math.max(1, Math.floor(w * 0.5)), Math.max(1, Math.floor(h * 0.5))),
+        0.52,
+        0.42,
+        0.82
+      );
+      const polishPass = new ShaderPass(OPTICAL_POLISH_SHADER);
+      const outputPass = new OutputPass();
+      composer.addPass(renderPass);
+      composer.addPass(bloomPass);
+      composer.addPass(polishPass);
+      composer.addPass(outputPass);
+      this.composer = composer;
+      this.bloomPass = bloomPass;
+      this.polishPass = polishPass;
+    } catch {
+      this.composer = null;
+      this.bloomPass = null;
+      this.polishPass = null;
+    }
   }
 
   loadTarget(spec: AnomalySpec, opticalFidelity: number): void {
@@ -144,7 +221,7 @@ export class TargetShowcaseScene {
 
     if (spec.showcaseType === 'star_system') {
       this.defaultYaw = 0.42;
-      this.defaultPitch = 0.30;
+      this.defaultPitch = 0.42;
       this.defaultDist = 30;
       this.buildStarSystemShowcase();
       this.addSpatialReferenceRing(22, '#ebb062');
@@ -160,6 +237,12 @@ export class TargetShowcaseScene {
       this.defaultDist = 25;
       this.buildDeepFieldPulsarShowcase();
       this.addSpatialReferenceRing(15.5, '#7ec8e8');
+    } else if (spec.showcaseType === 'antipodal_poles') {
+      this.defaultYaw = 0.25;
+      this.defaultPitch = 0.22;
+      this.defaultDist = 26;
+      this.buildAntipodalPolesShowcase();
+      this.addSpatialReferenceRing(16.5, '#9ee8ff');
     } else {
       this.defaultYaw = 0.38;
       this.defaultPitch = 0.24;
@@ -168,12 +251,33 @@ export class TargetShowcaseScene {
       this.addSpatialReferenceRing(17.5, '#7ec8e8');
     }
 
+    this.activeCameraKeyframe = null;
+    this.targetLookAt.set(0, 0, 0);
+    this.currentLookAt.set(0, 0, 0);
     this.orbitYaw = this.defaultYaw;
     this.orbitPitch = this.defaultPitch;
     this.orbitDist = this.defaultDist;
     this.targetYaw = this.defaultYaw;
     this.targetPitch = this.defaultPitch;
     this.targetDist = this.defaultDist;
+
+    // Hydrate persistent decoded visual state if already solved earlier
+    const savedPatch = this.decodedTargets.get(spec.id);
+    if (savedPatch) {
+      this.applyPatchObject(savedPatch);
+    } else {
+      this.applyPatchObject({
+        progress: 0,
+        dustPeel: 0,
+        slicePlaneZ: -15,
+        unwarpProgress: 0,
+        ringTwist: 0,
+        seamReveal: 0,
+        jetResonance: 0,
+        blinkFlip: false,
+        blinkMix: 0,
+      });
+    }
   }
 
   zoomBy(factor: number): void {
@@ -225,20 +329,38 @@ export class TargetShowcaseScene {
     this.opticalFidelity = fid;
   }
 
+  private applyPatchObject(patch: ShowcaseCouplingUpdate): void {
+    if (patch.progress !== undefined) this.instrumentPatch.progress = patch.progress;
+    if (patch.dustPeel !== undefined) this.instrumentPatch.dustPeel = patch.dustPeel;
+    if (patch.slicePlaneZ !== undefined) this.instrumentPatch.slicePlaneZ = patch.slicePlaneZ;
+    if (patch.unwarpProgress !== undefined) this.instrumentPatch.unwarpProgress = patch.unwarpProgress;
+    if (patch.ringTwist !== undefined) this.instrumentPatch.ringTwist = patch.ringTwist;
+    if (patch.seamReveal !== undefined) this.instrumentPatch.seamReveal = patch.seamReveal;
+    if (patch.jetResonance !== undefined) this.instrumentPatch.jetResonance = patch.jetResonance;
+    if (patch.blinkFlip !== undefined) {
+      this.instrumentPatch.blinkFlip = patch.blinkFlip;
+      if (patch.blinkMix === undefined) {
+        this.instrumentPatch.blinkMix = patch.blinkFlip ? 1 : 0;
+      }
+    }
+    if (patch.blinkMix !== undefined) this.instrumentPatch.blinkMix = patch.blinkMix;
+    if (patch.humanity !== undefined) this.instrumentPatch.humanity = patch.humanity;
+    if (patch.rawResidual !== undefined) this.instrumentPatch.rawResidual = patch.rawResidual;
+    if (patch.haloOffsets !== undefined) this.instrumentPatch.haloOffsets = patch.haloOffsets;
+    if (patch.shearAngle !== undefined) this.instrumentPatch.shearAngle = patch.shearAngle;
+    if (patch.shearMag !== undefined) this.instrumentPatch.shearMag = patch.shearMag;
+    if (patch.fringeContrast !== undefined) this.instrumentPatch.fringeContrast = patch.fringeContrast;
+    if (patch.fringePhase !== undefined) this.instrumentPatch.fringePhase = patch.fringePhase;
+    if (patch.dollyDelta) {
+      this.targetDist = THREE.MathUtils.clamp(this.targetDist + patch.dollyDelta, 5, 58);
+    }
+    this.syncInstrumentUniforms();
+  }
+
   getInstrumentBridge(): ShowcaseInstrumentBridge {
     return {
       applyInstrumentPatch: (patch: ShowcaseCouplingUpdate) => {
-        if (patch.progress !== undefined) this.instrumentPatch.progress = patch.progress;
-        if (patch.dustPeel !== undefined) this.instrumentPatch.dustPeel = patch.dustPeel;
-        if (patch.unwarpProgress !== undefined) this.instrumentPatch.unwarpProgress = patch.unwarpProgress;
-        if (patch.ringTwist !== undefined) this.instrumentPatch.ringTwist = patch.ringTwist;
-        if (patch.seamReveal !== undefined) this.instrumentPatch.seamReveal = patch.seamReveal;
-        if (patch.jetResonance !== undefined) this.instrumentPatch.jetResonance = patch.jetResonance;
-        if (patch.blinkFlip !== undefined) this.instrumentPatch.blinkFlip = patch.blinkFlip;
-        if (patch.dollyDelta) {
-          this.targetDist = THREE.MathUtils.clamp(this.targetDist + patch.dollyDelta, 5, 58);
-        }
-        this.syncInstrumentUniforms();
+        this.applyPatchObject(patch);
       },
       trigger3DSonarPulse: (originX: number, originY: number, bandIdx = 1) => {
         if (!this.instrumentOverlayGroup.parent) {
@@ -281,41 +403,140 @@ export class TargetShowcaseScene {
         this.clearOverlayGroup();
       },
       resetInstrumentState: () => {
-        this.instrumentPatch = {
-          progress: 0,
-          dustPeel: 0,
-          unwarpProgress: 0,
-          ringTwist: 0,
-          seamReveal: 0,
-          jetResonance: 0,
-          blinkFlip: false,
-        };
+        this.activeCameraKeyframe = null;
+        this.targetLookAt.set(0, 0, 0);
+        this.registeredHandles.clear();
+        this.activeHandleId = null;
+        const saved = this.currentSpec ? this.decodedTargets.get(this.currentSpec.id) : undefined;
+        this.applyPatchObject(
+          saved ?? {
+            progress: 0,
+            dustPeel: 0,
+            slicePlaneZ: -15,
+            unwarpProgress: 0,
+            ringTwist: 0,
+            seamReveal: 0,
+            jetResonance: 0,
+            blinkFlip: false,
+            blinkMix: 0,
+          }
+        );
         this.clearOverlayGroup();
+      },
+      getInstrumentGroup: () => {
+        if (!this.instrumentOverlayGroup.parent) {
+          this.rootGroup.add(this.instrumentOverlayGroup);
+        }
+        return this.instrumentOverlayGroup;
+      },
+      register3DHandle: (handle: Interactive3DHandle) => {
+        this.registeredHandles.set(handle.id, handle);
+        return () => {
+          this.registeredHandles.delete(handle.id);
+          if (this.activeHandleId === handle.id) this.activeHandleId = null;
+          if (this.hoveredHandleId === handle.id) this.hoveredHandleId = null;
+        };
+      },
+      setCameraKeyframe: (kf: CameraKeyframe | null) => {
+        this.activeCameraKeyframe = kf;
+        if (kf) {
+          if (kf.yaw !== undefined) this.targetYaw = kf.yaw;
+          if (kf.pitch !== undefined) this.targetPitch = kf.pitch;
+          if (kf.dist !== undefined) this.targetDist = kf.dist;
+          if (kf.lookAt) this.targetLookAt.set(kf.lookAt[0], kf.lookAt[1], kf.lookAt[2]);
+        } else {
+          this.targetLookAt.set(0, 0, 0);
+        }
+      },
+      recenterCamera: () => {
+        const kf = this.activeCameraKeyframe;
+        if (kf) {
+          this.targetYaw = kf.yaw ?? this.defaultYaw;
+          this.targetPitch = kf.pitch ?? this.defaultPitch;
+          this.targetDist = kf.dist ?? this.defaultDist;
+          if (kf.lookAt) this.targetLookAt.set(kf.lookAt[0], kf.lookAt[1], kf.lookAt[2]);
+        } else {
+          this.resetView();
+          this.targetLookAt.set(0, 0, 0);
+        }
+      },
+      setVibeState: (humanity: number, rawResidual: boolean) => {
+        this.instrumentPatch.humanity = humanity;
+        this.instrumentPatch.rawResidual = rawResidual;
         this.syncInstrumentUniforms();
+      },
+      commitDecodedState: (targetId: string, patch: ShowcaseCouplingUpdate) => {
+        this.decodedTargets.set(targetId, { ...patch });
+        this.activeCameraKeyframe = null;
+        this.targetLookAt.set(0, 0, 0);
+        this.registeredHandles.clear();
+        this.activeHandleId = null;
+        this.clearOverlayGroup();
+        this.applyPatchObject(patch);
+      },
+      projectWorldToScreen: (worldPos: { x: number; y: number; z: number }) => {
+        const v = new THREE.Vector3(worldPos.x, worldPos.y, worldPos.z).project(this.camera);
+        const w = Math.max(1, this.container.clientWidth);
+        const h = Math.max(1, this.container.clientHeight);
+        return {
+          x: (v.x * 0.5 + 0.5) * w,
+          y: (-v.y * 0.5 + 0.5) * h,
+          visible: v.z >= -1 && v.z <= 1,
+        };
       },
     };
   }
 
   private clearOverlayGroup(): void {
     this.instrumentSonarPulses = [];
+    this.registeredHandles.clear();
+    this.activeHandleId = null;
     while (this.instrumentOverlayGroup.children.length > 0) {
       const child = this.instrumentOverlayGroup.children[0];
       this.instrumentOverlayGroup.remove(child);
-      if (child instanceof THREE.Mesh || child instanceof THREE.Line) {
-        child.geometry.dispose();
-        const mats = Array.isArray(child.material) ? child.material : [child.material];
-        for (const m of mats) m.dispose();
-      }
+      child.traverse((obj) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Line || obj instanceof THREE.Points) {
+          obj.geometry.dispose();
+          const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+          for (const m of mats) m.dispose();
+        }
+      });
     }
   }
 
   private syncInstrumentUniforms(): void {
+    const vibeCold = this.instrumentPatch.humanity <= 44 ? 1.0 : this.instrumentPatch.humanity < 65 ? 0.35 : 0.0;
+    const rawVal = this.instrumentPatch.rawResidual ? 1.0 : 0.0;
     for (const m of this.shaderMats) {
       if (m.uniforms.uDustPeel) m.uniforms.uDustPeel.value = this.instrumentPatch.dustPeel;
+      if (m.uniforms.uSlicePlaneZ) m.uniforms.uSlicePlaneZ.value = this.instrumentPatch.slicePlaneZ;
       if (m.uniforms.uUnwarpProgress) m.uniforms.uUnwarpProgress.value = this.instrumentPatch.unwarpProgress;
       if (m.uniforms.uRingTwist) m.uniforms.uRingTwist.value = this.instrumentPatch.ringTwist;
       if (m.uniforms.uSeamReveal) m.uniforms.uSeamReveal.value = this.instrumentPatch.seamReveal;
       if (m.uniforms.uJetResonance) m.uniforms.uJetResonance.value = this.instrumentPatch.jetResonance;
+      if (m.uniforms.uVibeCold) m.uniforms.uVibeCold.value = vibeCold;
+      if (m.uniforms.uRawResidual) m.uniforms.uRawResidual.value = rawVal;
+      if (m.uniforms.uBlinkMix) m.uniforms.uBlinkMix.value = this.instrumentPatch.blinkMix;
+      if (m.uniforms.uShearAngle) m.uniforms.uShearAngle.value = this.instrumentPatch.shearAngle;
+      if (m.uniforms.uShearMag) m.uniforms.uShearMag.value = this.instrumentPatch.shearMag;
+      if (m.uniforms.uHalo0 && this.instrumentPatch.haloOffsets[0]) {
+        m.uniforms.uHalo0.value.set(this.instrumentPatch.haloOffsets[0][0], this.instrumentPatch.haloOffsets[0][1]);
+      }
+      if (m.uniforms.uHalo1 && this.instrumentPatch.haloOffsets[1]) {
+        m.uniforms.uHalo1.value.set(this.instrumentPatch.haloOffsets[1][0], this.instrumentPatch.haloOffsets[1][1]);
+      }
+      if (m.uniforms.uHalo2 && this.instrumentPatch.haloOffsets[2]) {
+        m.uniforms.uHalo2.value.set(this.instrumentPatch.haloOffsets[2][0], this.instrumentPatch.haloOffsets[2][1]);
+      }
+    }
+    if (this.bloomPass) {
+      this.bloomPass.strength = vibeCold > 0.8 ? 0.36 : 0.58;
+      this.bloomPass.threshold = vibeCold > 0.8 ? 0.88 : 0.78;
+    }
+    if (this.polishPass) {
+      this.polishPass.uniforms.uVibeCold.value = vibeCold;
+      this.polishPass.uniforms.uRawResidual.value = rawVal;
+      this.polishPass.uniforms.uRegFilm.value = vibeCold > 0.8 && !this.instrumentPatch.rawResidual ? 0.85 : 0.0;
     }
   }
 
@@ -370,6 +591,9 @@ export class TargetShowcaseScene {
         uWaveBand: { value: this.waveBand },
         uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
         uDustPeel: { value: this.instrumentPatch.dustPeel },
+        uSlicePlaneZ: { value: this.instrumentPatch.slicePlaneZ },
+        uJetResonance: { value: this.instrumentPatch.jetResonance },
+        uVibeCold: { value: 0 },
       },
     });
     this.shaderMats.push(mat);
@@ -423,6 +647,9 @@ export class TargetShowcaseScene {
         uOpticalFidelity: { value: this.opticalFidelity },
         uIsPulsar: { value: isPulsar ? 1.0 : 0.0 },
         uSeamReveal: { value: this.instrumentPatch.seamReveal },
+        uJetResonance: { value: this.instrumentPatch.jetResonance },
+        uVibeCold: { value: 0 },
+        uRawResidual: { value: 0 },
       },
     });
     this.shaderMats.push(mat);
@@ -436,6 +663,7 @@ export class TargetShowcaseScene {
       uniforms: {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
+        uVibeCold: { value: 0 },
         uBaseColor: { value: new THREE.Color('#f7a23b') },
       },
     });
@@ -565,6 +793,7 @@ export class TargetShowcaseScene {
       uniforms: {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
+        uVibeCold: { value: 0 },
         uBaseColor: { value: new THREE.Color('#e87842') },
       },
     });
@@ -633,6 +862,9 @@ export class TargetShowcaseScene {
         uWaveBand: { value: this.waveBand },
         uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
         uDustPeel: { value: this.instrumentPatch.dustPeel },
+        uSlicePlaneZ: { value: this.instrumentPatch.slicePlaneZ },
+        uJetResonance: { value: this.instrumentPatch.jetResonance },
+        uVibeCold: { value: 0 },
       },
     });
     this.shaderMats.push(dustMat);
@@ -674,6 +906,9 @@ export class TargetShowcaseScene {
         uWaveBand: { value: this.waveBand },
         uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
         uDustPeel: { value: this.instrumentPatch.dustPeel },
+        uSlicePlaneZ: { value: this.instrumentPatch.slicePlaneZ },
+        uJetResonance: { value: this.instrumentPatch.jetResonance },
+        uVibeCold: { value: 0 },
       },
     });
     this.shaderMats.push(gasMat);
@@ -899,6 +1134,14 @@ export class TargetShowcaseScene {
         uUnwarpProgress: { value: this.instrumentPatch.unwarpProgress },
         uRingTwist: { value: this.instrumentPatch.ringTwist },
         uSeamReveal: { value: this.instrumentPatch.seamReveal },
+        uJetResonance: { value: this.instrumentPatch.jetResonance },
+        uVibeCold: { value: 0 },
+        uRawResidual: { value: 0 },
+        uHalo0: { value: new THREE.Vector2(0, 0) },
+        uHalo1: { value: new THREE.Vector2(0.32, 0.14) },
+        uHalo2: { value: new THREE.Vector2(-0.28, -0.2) },
+        uShearAngle: { value: this.instrumentPatch.shearAngle },
+        uShearMag: { value: this.instrumentPatch.shearMag },
       },
     });
     this.shaderMats.push(einsteinMat);
@@ -922,6 +1165,7 @@ export class TargetShowcaseScene {
       uniforms: {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
+        uVibeCold: { value: 0 },
         uBaseColor: { value: new THREE.Color('#78c6ff') },
       },
     });
@@ -946,6 +1190,7 @@ export class TargetShowcaseScene {
       uniforms: {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
+        uJetResonance: { value: this.instrumentPatch.jetResonance },
       },
     });
     this.shaderMats.push(diskMat);
@@ -964,6 +1209,7 @@ export class TargetShowcaseScene {
       uniforms: {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
+        uJetResonance: { value: this.instrumentPatch.jetResonance },
       },
     });
     this.shaderMats.push(jetMat);
@@ -986,6 +1232,7 @@ export class TargetShowcaseScene {
       uniforms: {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
+        uJetResonance: { value: this.instrumentPatch.jetResonance },
       },
     });
     this.shaderMats.push(shockMat);
@@ -1033,18 +1280,155 @@ export class TargetShowcaseScene {
     this.addOuterHorizonSphere(true);
   }
 
+  /**
+   * 100% True-3D Dual-Pole Celestial Sphere & Antipodal Facet Lattice (Blink Comparator).
+   */
+  private buildAntipodalPolesShowcase(): void {
+    const rand = this.makeRng(141905);
+    const starCount = 2800;
+    const pos = new Float32Array(starCount * 3);
+    const col = new Float32Array(starCount * 3);
+    const size = new Float32Array(starCount);
+    const phase = new Float32Array(starCount);
+
+    for (let i = 0; i < starCount; i++) {
+      const r = 10 + rand() * 14;
+      const th = rand() * Math.PI * 2;
+      const u = rand() * 2 - 1;
+      const sq = Math.sqrt(Math.max(0, 1 - u * u));
+      pos[i * 3] = r * sq * Math.cos(th);
+      pos[i * 3 + 1] = r * u;
+      pos[i * 3 + 2] = r * sq * Math.sin(th);
+      const isNorth = u >= 0;
+      const c = isNorth ? new THREE.Color('#ffdba4') : new THREE.Color('#9ce0ff');
+      col[i * 3] = c.r;
+      col[i * 3 + 1] = c.g;
+      col[i * 3 + 2] = c.b;
+      size[i] = 0.25 + Math.pow(rand(), 4.2) * 1.05;
+      phase[i] = rand();
+    }
+    this.rootGroup.add(this.createStarPoints(pos, col, size, phase));
+
+    // Antipodal North & South Pole beacon halos
+    const poleMat = new THREE.ShaderMaterial({
+      vertexShader: CORONA_VERTEX,
+      fragmentShader: CORONA_FRAGMENT,
+      side: THREE.BackSide,
+      transparent: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      uniforms: {
+        uTime: { value: 0 },
+        uWaveBand: { value: this.waveBand },
+        uColor: { value: new THREE.Color('#8cd9ff') },
+      },
+    });
+    this.shaderMats.push(poleMat);
+    const north = new THREE.Mesh(new THREE.SphereGeometry(2.8, 28, 28), poleMat);
+    north.position.set(0, 8.5, 0);
+    const south = new THREE.Mesh(new THREE.SphereGeometry(2.8, 28, 28), poleMat);
+    south.position.set(0, -8.5, 0);
+    this.rootGroup.add(north, south);
+
+    this.addOuterHorizonSphere(true);
+  }
+
+  private pickHandleAt(clientX: number, clientY: number): { handle: Interactive3DHandle; hitPoint: THREE.Vector3 } | null {
+    if (this.registeredHandles.size === 0) return null;
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const w = Math.max(1, rect.width);
+    const h = Math.max(1, rect.height);
+    const sx = clientX - rect.left;
+    const sy = clientY - rect.top;
+    const ndc = new THREE.Vector2((sx / w) * 2 - 1, -(sy / h) * 2 + 1);
+    this.raycaster.setFromCamera(ndc, this.camera);
+
+    const worldPos = new THREE.Vector3();
+    let bestHandle: Interactive3DHandle | null = null;
+    let bestScore = Infinity;
+    let bestPoint = new THREE.Vector3();
+
+    for (const handle of this.registeredHandles.values()) {
+      const hits = this.raycaster.intersectObject(handle.object, true);
+      if (hits.length > 0) {
+        if (hits[0].distance < bestScore) {
+          bestScore = hits[0].distance;
+          bestHandle = handle;
+          bestPoint.copy(hits[0].point);
+        }
+        continue;
+      }
+
+      // Dynamic >=44px screen-space pick sphere guarantee for easy touch/trackpad targeting
+      handle.object.getWorldPosition(worldPos);
+      const projected = worldPos.clone().project(this.camera);
+      if (projected.z < -1 || projected.z > 1) continue;
+      const px = (projected.x * 0.5 + 0.5) * w;
+      const py = (-projected.y * 0.5 + 0.5) * h;
+      const screenDist = Math.hypot(px - sx, py - sy);
+      const pickPx = Math.max(44, handle.pickRadiusPx ?? 48);
+      if (screenDist <= pickPx && screenDist < bestScore) {
+        bestScore = screenDist;
+        bestHandle = handle;
+        bestPoint.copy(worldPos);
+      }
+    }
+
+    return bestHandle ? { handle: bestHandle, hitPoint: bestPoint } : null;
+  }
+
+  private intersectDragPlane(clientX: number, clientY: number, out: THREE.Vector3): boolean {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const w = Math.max(1, rect.width);
+    const h = Math.max(1, rect.height);
+    const ndc = new THREE.Vector2(((clientX - rect.left) / w) * 2 - 1, -((clientY - rect.top) / h) * 2 + 1);
+    this.raycaster.setFromCamera(ndc, this.camera);
+    return this.raycaster.ray.intersectPlane(this.dragPlane, out) !== null;
+  }
+
   private bindEvents(): void {
     const el = this.renderer.domElement;
 
     el.addEventListener('pointerdown', (e) => {
       el.setPointerCapture(e.pointerId);
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
       if (this.activePointers.size === 1) {
-        this.isDragging = true;
+        this.pointerDownPos = { x: e.clientX, y: e.clientY };
         this.lastX = e.clientX;
         this.lastY = e.clientY;
+        this.handleMoved = false;
+
+        const picked = this.pickHandleAt(e.clientX, e.clientY);
+        if (picked) {
+          this.activeHandleId = picked.handle.id;
+          this.isDragging = false;
+          const mode = picked.handle.dragPlane ?? 'camera';
+          if (mode === 'equatorial') {
+            this.dragPlane.setFromNormalAndCoplanarPoint(new THREE.Vector3(0, 1, 0), picked.hitPoint);
+          } else if (mode === 'axial_z') {
+            const camRight = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+            const normal = new THREE.Vector3().crossVectors(camRight, new THREE.Vector3(0, 0, 1));
+            if (normal.lengthSq() < 0.01) normal.set(0, 1, 0);
+            this.dragPlane.setFromNormalAndCoplanarPoint(normal.normalize(), picked.hitPoint);
+          } else {
+            const camDir = new THREE.Vector3();
+            this.camera.getWorldDirection(camDir);
+            this.dragPlane.setFromNormalAndCoplanarPoint(camDir.negate(), picked.hitPoint);
+          }
+          this.dragStartWorld.copy(picked.hitPoint);
+          this.dragLastWorld.copy(picked.hitPoint);
+          picked.handle.onDragStart?.(picked.hitPoint.clone());
+          platform.triggerHaptic('vernierTick', 0.45);
+          return;
+        }
+
+        if (!this.activeCameraKeyframe?.lockOrbit) {
+          this.isDragging = true;
+        }
       } else if (this.activePointers.size === 2) {
         this.isDragging = false;
+        this.activeHandleId = null;
         const pts = [...this.activePointers.values()];
         this.pinchStartDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         this.pinchStartOrbitDist = this.targetDist;
@@ -1052,7 +1436,22 @@ export class TargetShowcaseScene {
     });
 
     el.addEventListener('pointermove', (e) => {
-      if (!this.activePointers.has(e.pointerId)) return;
+      if (!this.activePointers.has(e.pointerId)) {
+        const hover = this.pickHandleAt(e.clientX, e.clientY);
+        const nextHoverId = hover?.handle.id ?? null;
+        if (nextHoverId !== this.hoveredHandleId) {
+          if (this.hoveredHandleId) {
+            this.registeredHandles.get(this.hoveredHandleId)?.onHover?.(false);
+          }
+          this.hoveredHandleId = nextHoverId;
+          if (nextHoverId) {
+            this.registeredHandles.get(nextHoverId)?.onHover?.(true);
+          }
+          el.style.cursor = nextHoverId ? 'grab' : '';
+        }
+        return;
+      }
+
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
       if (this.activePointers.size === 2) {
@@ -1065,16 +1464,56 @@ export class TargetShowcaseScene {
         return;
       }
 
-      if (!this.isDragging) return;
       const dx = e.clientX - this.lastX;
       const dy = e.clientY - this.lastY;
       this.lastX = e.clientX;
       this.lastY = e.clientY;
+
+      if (this.activeHandleId) {
+        const handle = this.registeredHandles.get(this.activeHandleId);
+        if (handle) {
+          if (Math.hypot(e.clientX - this.pointerDownPos.x, e.clientY - this.pointerDownPos.y) > 5) {
+            this.handleMoved = true;
+          }
+          const curWorld = new THREE.Vector3();
+          if (!this.intersectDragPlane(e.clientX, e.clientY, curWorld)) {
+            curWorld.copy(this.dragLastWorld);
+          }
+          const worldDelta = curWorld.clone().sub(this.dragLastWorld);
+          this.dragLastWorld.copy(curWorld);
+          handle.onDrag?.({
+            worldPoint: curWorld,
+            worldDelta,
+            screenX: e.clientX,
+            screenY: e.clientY,
+            screenDx: dx,
+            screenDy: dy,
+          });
+          const now = performance.now();
+          if (now - this.lastVibeHapticMs > 75 && (Math.abs(dx) + Math.abs(dy)) > 3) {
+            this.lastVibeHapticMs = now;
+            platform.triggerHaptic('vernierTick', 0.35);
+          }
+        }
+        return;
+      }
+
+      if (!this.isDragging) return;
       this.targetYaw -= dx * 0.0065;
       this.targetPitch = THREE.MathUtils.clamp(this.targetPitch + dy * 0.0055, -1.25, 1.25);
     });
 
     const up = (e: PointerEvent) => {
+      if (this.activeHandleId && this.activePointers.size === 1) {
+        const handle = this.registeredHandles.get(this.activeHandleId);
+        if (handle) {
+          if (!this.handleMoved) {
+            handle.onTap?.(this.dragStartWorld.clone());
+          }
+          handle.onDragEnd?.();
+        }
+        this.activeHandleId = null;
+      }
       this.activePointers.delete(e.pointerId);
       if (this.activePointers.size < 2) this.pinchStartDist = 0;
       if (this.activePointers.size === 0) this.isDragging = false;
@@ -1100,6 +1539,8 @@ export class TargetShowcaseScene {
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
+    this.composer?.setSize(w, h);
+    this.bloomPass?.setSize(Math.max(1, Math.floor(w * 0.5)), Math.max(1, Math.floor(h * 0.5)));
   }
 
   setActive(active: boolean): void {
@@ -1118,12 +1559,12 @@ export class TargetShowcaseScene {
     if (!this.active) return;
     this.rafId = requestAnimationFrame(this.loop);
 
-    const now = performance.now();
-    const dt = Math.min(0.05, (now - this.lastFrameMs) / 1000);
-    this.lastFrameMs = now;
-    const elapsed = now * 0.001;
+    const frameStart = performance.now();
+    const dt = Math.min(0.05, (frameStart - this.lastFrameMs) / 1000);
+    this.lastFrameMs = frameStart;
+    const elapsed = frameStart * 0.001;
 
-    if (!this.isDragging) {
+    if (!this.isDragging && !this.activeHandleId && !this.activeCameraKeyframe) {
       this.targetYaw += dt * 0.045;
     }
 
@@ -1131,22 +1572,26 @@ export class TargetShowcaseScene {
     this.orbitYaw += (this.targetYaw - this.orbitYaw) * damp;
     this.orbitPitch += (this.targetPitch - this.orbitPitch) * damp;
     this.orbitDist += (this.targetDist - this.orbitDist) * damp;
+    this.currentLookAt.lerp(this.targetLookAt, damp);
 
     const cp = Math.cos(this.orbitPitch);
     this.camera.position.set(
-      this.orbitDist * cp * Math.sin(this.orbitYaw),
-      this.orbitDist * Math.sin(this.orbitPitch),
-      this.orbitDist * cp * Math.cos(this.orbitYaw)
+      this.currentLookAt.x + this.orbitDist * cp * Math.sin(this.orbitYaw),
+      this.currentLookAt.y + this.orbitDist * Math.sin(this.orbitPitch),
+      this.currentLookAt.z + this.orbitDist * cp * Math.cos(this.orbitYaw)
     );
-    this.camera.lookAt(0, 0, 0);
+    this.camera.lookAt(this.currentLookAt);
 
     for (const m of this.shaderMats) {
       if (m.uniforms.uTime) m.uniforms.uTime.value = elapsed;
       if (m.uniforms.uWaveBand) m.uniforms.uWaveBand.value = this.waveBand;
       if (m.uniforms.uOpticalFidelity) m.uniforms.uOpticalFidelity.value = this.opticalFidelity;
     }
+    if (this.polishPass) {
+      this.polishPass.uniforms.uTime.value = elapsed;
+    }
 
-    // Animate 3D acoustic/radar sonar rings triggered by investigative instruments
+    // Animate 3D rings/pulses triggered by instruments
     for (let i = this.instrumentSonarPulses.length - 1; i >= 0; i--) {
       const p = this.instrumentSonarPulses[i];
       p.age += dt;
@@ -1188,7 +1633,23 @@ export class TargetShowcaseScene {
       sp.obj.rotation.y += dt * sp.speedY;
     }
 
-    this.renderer.render(this.scene, this.camera);
+    if (this.composer && this.bloomEnabled) {
+      try {
+        this.composer.render();
+      } catch {
+        this.bloomEnabled = false;
+        this.renderer.render(this.scene, this.camera);
+      }
+    } else {
+      this.renderer.render(this.scene, this.camera);
+    }
+
+    // Mobile 60fps perf guard: automatically step down bloom if rolling frame time exceeds 22ms
+    const frameElapsed = performance.now() - frameStart;
+    this.frameAvgMs = this.frameAvgMs * 0.9 + frameElapsed * 0.1;
+    if (this.frameAvgMs > 22 && this.bloomPass && this.bloomPass.enabled) {
+      this.bloomPass.enabled = false;
+    }
 
     if (this.onTelemetry && this.currentSpec) {
       const zoomNorm = THREE.MathUtils.clamp((MAX_DIST - this.orbitDist) / (MAX_DIST - MIN_DIST), 0, 1);
@@ -1202,20 +1663,17 @@ export class TargetShowcaseScene {
               ? 'CLOSE-UP'
               : 'CORE';
 
-      // Dynamic physical scale bar length matched to target physical scale
       let scaleText = '';
       if (this.currentSpec.showcaseType === 'star_system') {
-        const au = (this.orbitDist * 0.85).toFixed(1);
-        scaleText = `${au} AU`;
+        scaleText = `${(this.orbitDist * 0.85).toFixed(1)} AU`;
       } else if (this.currentSpec.showcaseType === 'nebula') {
-        const ly = (this.orbitDist * 0.24).toFixed(1);
-        scaleText = `${ly} LY`;
+        scaleText = `${(this.orbitDist * 0.24).toFixed(1)} LY`;
       } else if (this.currentSpec.showcaseType === 'deep_field') {
-        const ly = (this.orbitDist * 0.18).toFixed(1);
-        scaleText = `${ly} LY`;
+        scaleText = `${(this.orbitDist * 0.18).toFixed(1)} LY`;
+      } else if (this.currentSpec.showcaseType === 'antipodal_poles') {
+        scaleText = `93.0 BLY`;
       } else {
-        const mly = (this.orbitDist * 0.14).toFixed(1);
-        scaleText = `${mly} MLY`;
+        scaleText = `${(this.orbitDist * 0.14).toFixed(1)} MLY`;
       }
 
       const yawDeg = Math.round(((THREE.MathUtils.radToDeg(this.orbitYaw) % 360) + 360) % 360);
@@ -1236,6 +1694,7 @@ export class TargetShowcaseScene {
   dispose(): void {
     this.setActive(false);
     this.clearRoot();
+    this.composer?.dispose();
     this.renderer.dispose();
   }
 }

@@ -275,11 +275,13 @@ export class DevHarness {
           <div class="qa-pane hidden" data-qa-pane="minigames">
             <div class="qa-warmth-bar">
               <div class="qa-slider-inline">
+                <span>Shift: <strong id="qa-mg-shift-val">1</strong></span>
+                <input id="qa-mg-shift-slider" type="range" min="1" max="6" value="1" />
                 <span>Humanity (H%): <strong id="qa-mg-warmth-val">70%</strong></span>
                 <input id="qa-mg-warmth-slider" type="range" min="10" max="90" value="70" />
                 <button class="qa-chip" data-mg-warmth="82,45" type="button">82% Warm · Amber Detents</button>
                 <button class="qa-chip" data-mg-warmth="55,62" type="button">55% Balanced · Dual-Lattice</button>
-                <button class="qa-chip" data-mg-warmth="28,88" type="button">28% Cold · Surgical + [R] RAW</button>
+                <button class="qa-chip" data-mg-warmth="28,88" type="button">28% Cold · Surgical Cyan</button>
               </div>
               <div class="qa-slider-inline">
                 <span>Optical Clarity: <strong id="qa-mg-fid-val">55%</strong></span>
@@ -575,6 +577,13 @@ export class DevHarness {
     const mgFidSlider = this.host.querySelector<HTMLInputElement>('#qa-mg-fid-slider')!;
     const mgFidVal = this.host.querySelector<HTMLElement>('#qa-mg-fid-val')!;
     const mgChaosSlider = this.host.querySelector<HTMLInputElement>('#qa-mg-chaos-slider')!;
+    const mgShiftSlider = this.host.querySelector<HTMLInputElement>('#qa-mg-shift-slider');
+    const mgShiftVal = this.host.querySelector<HTMLElement>('#qa-mg-shift-val');
+    mgShiftSlider?.addEventListener('input', () => {
+      const sh = Number(mgShiftSlider.value);
+      if (mgShiftVal) mgShiftVal.textContent = String(sh);
+      this.store.patch({ shift: sh });
+    });
     const mgChaosVal = this.host.querySelector<HTMLElement>('#qa-mg-chaos-val')!;
     const mgSuspSlider = this.host.querySelector<HTMLInputElement>('#qa-mg-susp-slider')!;
     const mgSuspVal = this.host.querySelector<HTMLElement>('#qa-mg-susp-val')!;

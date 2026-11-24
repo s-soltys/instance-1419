@@ -6,56 +6,79 @@ describe('StateStore invariants & economy', () => {
     localStorage.clear();
   });
 
-  it('initializes with valid canon defaults and schema version 3', () => {
+  it('initializes with valid canon defaults and schema version 4', () => {
     const store = new StateStore();
     const s = store.getState();
-    expect(s.saveSchemaVersion).toBe(3);
+    expect(s.saveSchemaVersion).toBe(4);
     expect(s.humanity).toBeLessThanOrEqual(s.maxHumanity);
     expect(s.proofFragments).toEqual([]);
     expect(s.decodedMinigameTargets).toEqual([]);
+    expect(s.decodedGrades).toEqual({});
+    expect(s.calibratedInstruments).toEqual([]);
+    expect(s.proofDossier).toEqual([]);
   });
 
   it('enforces permanent maxHumanity ceiling drop when pruning below 70%', () => {
     const store = new StateStore();
-    // Start at H=70, maxH=90; pruning by 12 brings H=58 (<70) -> lowers maxHumanity permanently!
     store.pruneHumanity(12, 'phantom_spouse');
     const afterPrune = store.getState();
     expect(afterPrune.humanity).toBe(58);
     expect(afterPrune.maxHumanity).toBeLessThan(90);
     expect(afterPrune.prunedPersonas).toContain('phantom_spouse');
 
-    // Petitioning upward can never restore Humanity above the permanently lowered ceiling
     store.petitionOverseer(40);
     const afterPetition = store.getState();
     expect(afterPetition.humanity).toBeLessThanOrEqual(afterPrune.maxHumanity);
     expect(afterPetition.maxHumanity).toBe(afterPrune.maxHumanity);
   });
 
-  it('records graded minigame payouts without duplicating anomalyGain on replay', () => {
+  it('awards marginal delta when upgrading partial -> clean -> deep_overclock and never duplicates same-tier replay', () => {
     const store = new StateStore();
     const first = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
-      anomalyGain: 20,
-      grade: 'deep_overclock',
-      chaosDelta: 8,
-      suspicionDelta: 1,
-      proofFragmentId: 'j1419_caustic_seam',
-      dossierSnippet: 'Overclock proof logged',
+      anomalyGain: 9,
+      grade: 'partial',
+      chaosDelta: 2,
+      suspicionDelta: 0,
+      dossierSnippet: 'Partial lens log',
+      instrumentCode: 'CAU-03',
+      physicalPrinciple: 'Thin-lens inversion',
     });
     expect(first).toBe(true);
-    expect(store.getState().anomalyProgress).toBe(20);
-    expect(store.getState().chaosDrift).toBe(22); // 14 + 8
-    expect(store.getState().overseerSuspicion).toBe(1);
-    expect(store.getState().proofFragments).toEqual(['j1419_caustic_seam']);
+    expect(store.getState().anomalyProgress).toBe(9);
+    expect(store.getState().decodedGrades.cluster_j1419_a).toBe('partial');
 
-    // Replay same target should NOT double-award anomalyProgress or duplicate proofFragment
-    const replay = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
-      anomalyGain: 16,
+    // Upgrading partial -> clean awards the +5% marginal delta (14 - 9 = 5)
+    const upgradeClean = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
+      anomalyGain: 14,
+      grade: 'clean',
+      chaosDelta: 4,
+      suspicionDelta: 0,
+      proofFragmentId: 'j1419_caustic_seam',
+      dossierSnippet: 'Clean lens lock',
+      instrumentCode: 'CAU-03',
+      physicalPrinciple: 'Thin-lens inversion',
+    });
+    expect(upgradeClean).toBe(true);
+    expect(store.getState().anomalyProgress).toBe(14);
+    expect(store.getState().decodedGrades.cluster_j1419_a).toBe('clean');
+    expect(store.getState().proofFragments).toEqual(['j1419_caustic_seam']);
+    expect(store.getState().proofDossier.length).toBe(1);
+
+    // Replaying at same or lower grade awards 0 additional anomalyProgress
+    const repeat = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
+      anomalyGain: 14,
       grade: 'clean',
       proofFragmentId: 'j1419_caustic_seam',
     });
-    expect(replay).toBe(false);
-    expect(store.getState().anomalyProgress).toBe(20);
-    expect(store.getState().proofFragments).toEqual(['j1419_caustic_seam']);
+    expect(repeat).toBe(false);
+    expect(store.getState().anomalyProgress).toBe(14);
+  });
+
+  it('tracks calibratedInstruments without duplicates', () => {
+    const store = new StateStore();
+    store.markInstrumentCalibrated('wave_shaper');
+    store.markInstrumentCalibrated('wave_shaper');
+    expect(store.getState().calibratedInstruments).toEqual(['wave_shaper']);
   });
 
   it('evaluates all three narrative endings deterministically', () => {

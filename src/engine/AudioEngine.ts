@@ -775,7 +775,48 @@ export class AudioEngine {
       playSolenoidClack: (heavy) => this.playSolenoidClack(heavy),
       setWatchdogBed: (level) => this.setWatchdogBed(level),
       playCaptureShutter: (grade) => this.playCaptureShutter(grade),
+      playProximityTick: (closeness01, pan) => this.playProximityTick(closeness01, pan),
+      playPhaseLock: (stageIndex) => this.playPhaseLock(stageIndex),
+      playHapticThump: (intensity01) => this.playHapticThump(intensity01),
     };
+  }
+
+  playProximityTick(closeness01: number, pan = 0): void {
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    const c = Math.max(0, Math.min(1, closeness01));
+    const panner = this.ctx.createStereoPanner();
+    panner.pan.value = Math.max(-1, Math.min(1, pan));
+    panner.connect(this.sfxGain);
+    this.playGlassNote(360 + c * 540, 0.025 + c * 0.03, 0.004, 0.09, now, 'sine', panner);
+  }
+
+  playPhaseLock(stageIndex: number): void {
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    const notes = [330, 440, 587.33];
+    const root = notes[Math.max(0, Math.min(2, stageIndex - 1))];
+    this.playHapticThump(0.75);
+    this.playGlassNote(root, 0.065, 0.008, 0.42, now, 'triangle', this.sfxGain);
+    this.playGlassNote(root * 1.498, 0.055, 0.014, 0.55, now + 0.045, 'sine', this.sfxGain);
+  }
+
+  playHapticThump(intensity01: number): void {
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    const amp = Math.max(0.02, Math.min(0.18, 0.04 + intensity01 * 0.12));
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(84, now);
+    osc.frequency.exponentialRampToValueAtTime(42, now + 0.055);
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(amp, now + 0.006);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start(now);
+    osc.stop(now + 0.08);
   }
 
   updateBeatSynth(params: BeatSynthParams): void {

@@ -6,6 +6,17 @@ import { platform } from '../platform/PlatformAdapter';
 export type GameMode = 'boot' | 'waking_3d' | 'target_inspect' | 'dream_2d' | 'ending';
 export type AuditOutcome = 'none' | 'pruned' | 'unsealed' | 'held';
 export type EndingId = 'ending_whole_incomplete' | 'ending_cold_complete' | 'ending_sweet_spot';
+export type MinigameGradeTier = 'partial' | 'clean' | 'deep_overclock';
+
+export interface ProofDossierEntry {
+  id: string;
+  targetId: string;
+  instrumentCode: string;
+  title: string;
+  principle: string;
+  snippet: string;
+  grade: MinigameGradeTier;
+}
 
 export interface StatusShiftEvent {
   tone: 'warm' | 'cold' | 'discovery';
@@ -36,7 +47,10 @@ export interface GameState {
   overseerSuspicion: number;
   scannedAnomalyIds: string[];
   decodedMinigameTargets: string[];
+  decodedGrades: Record<string, MinigameGradeTier>;
+  calibratedInstruments: string[];
   proofFragments: string[];
+  proofDossier: ProofDossierEntry[];
   prunedPersonas: string[];
   completedStorylets: string[];
   inkStateJson: string | null;
@@ -45,9 +59,9 @@ export interface GameState {
   lastAuditOutcome: AuditOutcome;
 }
 
-const SAVE_SCHEMA_VERSION = 3;
-const STORAGE_KEY = 'instance_1419_state_v3';
-const LEGACY_STORAGE_KEYS = ['instance_1419_spike_state_v2'];
+const SAVE_SCHEMA_VERSION = 4;
+const STORAGE_KEY = 'instance_1419_state_v4';
+const LEGACY_STORAGE_KEYS = ['instance_1419_state_v3', 'instance_1419_spike_state_v2'];
 
 export type StateListener = (state: GameState) => void;
 export type StatusShiftListener = (event: StatusShiftEvent) => void;
@@ -72,7 +86,10 @@ export function createInitialState(): GameState {
     overseerSuspicion: s.overseerSuspicion,
     scannedAnomalyIds: [],
     decodedMinigameTargets: [],
+    decodedGrades: {},
+    calibratedInstruments: [],
     proofFragments: [],
+    proofDossier: [],
     prunedPersonas: [],
     completedStorylets: [],
     inkStateJson: null,
@@ -101,6 +118,18 @@ function migrateSavedState(raw: Partial<GameState> | null): GameState {
   }
   if (!Array.isArray(merged.proofFragments)) {
     merged.proofFragments = [];
+  }
+  if (!merged.decodedGrades || typeof merged.decodedGrades !== 'object') {
+    merged.decodedGrades = {};
+    for (const tid of merged.decodedMinigameTargets ?? []) {
+      merged.decodedGrades[tid] = 'clean';
+    }
+  }
+  if (!Array.isArray(merged.calibratedInstruments)) {
+    merged.calibratedInstruments = [];
+  }
+  if (!Array.isArray(merged.proofDossier)) {
+    merged.proofDossier = [];
   }
   return merged;
 }
@@ -292,60 +321,130 @@ export class StateStore {
       | number
       | {
           anomalyGain?: number;
-          grade?: 'partial' | 'clean' | 'deep_overclock';
+          grade?: MinigameGradeTier;
           chaosDelta?: number;
           suspicionDelta?: number;
           humanityDelta?: number;
           proofFragmentId?: string;
           dossierSnippet?: string;
+          instrumentCode?: string;
+          physicalPrinciple?: string;
         }
   ): boolean {
     const opts = typeof options === 'number' ? { anomalyGain: options } : options ?? {};
+    const gradeRank: Record<MinigameGradeTier, number> = {
+      partial: 1,
+      clean: 2,
+      deep_overclock: 3,
+    };
+    const gradePayoutMap: Record<MinigameGradeTier, number> = {
+      partial: balance.minigames.payouts.partial.anomalyGain,
+      clean: balance.minigames.payouts.clean.anomalyGain,
+      deep_overclock: balance.minigames.payouts.deep_overclock.anomalyGain,
+    };
+
+    const prevGrade = this.state.decodedGrades[targetId];
+    const nextGrade: MinigameGradeTier = opts.grade ?? 'clean';
     const already = this.state.decodedMinigameTargets.includes(targetId);
-    const gain = opts.anomalyGain ?? balance.minigameCompletion.anomalyGain;
+    const fullGain = opts.anomalyGain ?? gradePayoutMap[nextGrade] ?? balance.minigameCompletion.anomalyGain;
+
+    let awardedGain = 0;
+    let upgraded = false;
+    if (!already) {
+      awardedGain = fullGain;
+    } else if (prevGrade && gradeRank[nextGrade] > gradeRank[prevGrade]) {
+      awardedGain = Math.max(0, fullGain - gradePayoutMap[prevGrade]);
+      upgraded = true;
+    }
+
     const prevAnom = this.state.anomalyProgress;
-    const nextAnom = already ? prevAnom : Math.min(100, prevAnom + gain);
-    const nextChaos = Math.max(0, Math.min(100, this.state.chaosDrift + (opts.chaosDelta ?? 0)));
-    const nextSusp = Math.max(0, this.state.overseerSuspicion + (opts.suspicionDelta ?? 0));
-    const nextH = Math.max(
-      5,
-      Math.min(this.state.maxHumanity, this.state.humanity + (opts.humanityDelta ?? 0))
-    );
+    const nextAnom = Math.min(100, prevAnom + awardedGain);
+    const applyRiskDeltas = !already || upgraded;
+    const nextChaos = applyRiskDeltas
+      ? Math.max(0, Math.min(100, this.state.chaosDrift + (opts.chaosDelta ?? 0)))
+      : this.state.chaosDrift;
+    const nextSusp = applyRiskDeltas
+      ? Math.max(0, this.state.overseerSuspicion + (opts.suspicionDelta ?? 0))
+      : this.state.overseerSuspicion;
+    const nextH = applyRiskDeltas
+      ? Math.max(5, Math.min(this.state.maxHumanity, this.state.humanity + (opts.humanityDelta ?? 0)))
+      : this.state.humanity;
+
     const nextProofs =
       opts.proofFragmentId && !this.state.proofFragments.includes(opts.proofFragmentId)
         ? [...this.state.proofFragments, opts.proofFragmentId]
         : this.state.proofFragments;
 
-    if (!already || opts.chaosDelta || opts.suspicionDelta || opts.humanityDelta || opts.proofFragmentId) {
+    const nextGrades = { ...this.state.decodedGrades };
+    if (!prevGrade || gradeRank[nextGrade] > gradeRank[prevGrade]) {
+      nextGrades[targetId] = nextGrade;
+    }
+
+    let nextDossier = this.state.proofDossier;
+    if (opts.proofFragmentId || opts.physicalPrinciple || opts.dossierSnippet) {
+      const entryId = opts.proofFragmentId ?? `proof_${targetId}`;
+      const existingIdx = nextDossier.findIndex((e) => e.targetId === targetId || e.id === entryId);
+      const entry: ProofDossierEntry = {
+        id: entryId,
+        targetId,
+        instrumentCode: opts.instrumentCode ?? 'OPT',
+        title: label,
+        principle: opts.physicalPrinciple ?? opts.dossierSnippet ?? 'Horizon correlation verified.',
+        snippet: opts.dossierSnippet ?? '',
+        grade: nextGrades[targetId] ?? nextGrade,
+      };
+      if (existingIdx >= 0) {
+        nextDossier = nextDossier.map((e, i) => (i === existingIdx ? entry : e));
+      } else {
+        nextDossier = [...nextDossier, entry];
+      }
+    }
+
+    if (
+      !already ||
+      upgraded ||
+      opts.proofFragmentId ||
+      opts.physicalPrinciple ||
+      opts.dossierSnippet
+    ) {
       this.patch({
         decodedMinigameTargets: already
           ? this.state.decodedMinigameTargets
           : [...this.state.decodedMinigameTargets, targetId],
+        decodedGrades: nextGrades,
         anomalyProgress: nextAnom,
         chaosDrift: nextChaos,
         overseerSuspicion: nextSusp,
         humanity: nextH,
         proofFragments: nextProofs,
+        proofDossier: nextDossier,
       });
     }
 
     const copy = uiCopy.statusAlerts.targetDecoded;
     const gradeLabel =
-      opts.grade === 'deep_overclock'
+      nextGrade === 'deep_overclock'
         ? ' [OVERCLOCK PROOF]'
-        : opts.grade === 'partial'
+        : nextGrade === 'partial'
         ? ' [PARTIAL LOG]'
         : '';
     this.emitStatusShift({
       tone: 'discovery',
       title: `${label} ${copy.titleSuffix}${gradeLabel}`,
-      detail: opts.dossierSnippet || (already ? copy.detailRepeat : copy.detailFirst),
+      detail: opts.dossierSnippet || (already && !upgraded ? copy.detailRepeat : copy.detailFirst),
       prevValue: prevAnom,
       nextValue: nextAnom,
       unit: '%',
     });
-    platform.hapticPulse('medium');
-    return !already;
+    platform.triggerHaptic('shutterCommit', 1.0);
+    return !already || upgraded;
+  }
+
+  markInstrumentCalibrated(instrumentId: string): void {
+    if (this.state.calibratedInstruments.includes(instrumentId)) return;
+    this.patch({
+      calibratedInstruments: [...this.state.calibratedInstruments, instrumentId],
+    });
   }
 
   advanceShift(): void {

@@ -71,6 +71,9 @@ export function createMockAudioEngine() {
     playSolenoidClack: vi.fn(),
     setWatchdogBed: vi.fn(),
     playCaptureShutter: vi.fn(),
+    playProximityTick: vi.fn(),
+    playPhaseLock: vi.fn(),
+    playHapticThump: vi.fn(),
   };
 
   return {
@@ -95,6 +98,13 @@ export function createMockShowcaseScene() {
     add3DBearingVector: vi.fn(),
     clearInstrumentOverlays: vi.fn(),
     resetInstrumentState: vi.fn(),
+    getInstrumentGroup: vi.fn(() => null),
+    register3DHandle: vi.fn(() => () => {}),
+    setCameraKeyframe: vi.fn(),
+    recenterCamera: vi.fn(),
+    setVibeState: vi.fn(),
+    commitDecodedState: vi.fn(),
+    projectWorldToScreen: vi.fn(() => ({ x: 640, y: 360, visible: true })),
   };
 
   return {
