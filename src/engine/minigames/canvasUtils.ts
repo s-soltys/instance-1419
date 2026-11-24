@@ -21,6 +21,14 @@ export function setupRetinaCanvas(
   return { w: logicalW, h: logicalH, dpr };
 }
 
+export function setupFullRetinaCanvas(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
+  const c2d = canvas.getContext('2d')!;
+  const w = Math.max(1, canvas.clientWidth || canvas.parentElement?.clientWidth || window.innerWidth);
+  const h = Math.max(1, canvas.clientHeight || canvas.parentElement?.clientHeight || window.innerHeight);
+  setupRetinaCanvas(canvas, c2d, w, h);
+  return c2d;
+}
+
 /**
  * Canon H% -> Optical Clarity contract:
  * Lower Humanity (pruned) + higher opticalFidelity yield sharper, noiseless,

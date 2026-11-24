@@ -34,7 +34,26 @@
     "suspicionGain": 1
   },
   "minigameCompletion": {
-    "anomalyGain": 12
+    "anomalyGain": 16,
+    "partialGain": 9,
+    "cleanGain": 16,
+    "overclockGain": 20
+  },
+  "minigames": {
+    "vibeThresholds": {
+      "warmMinH": 65,
+      "coldMaxH": 44
+    },
+    "payouts": {
+      "partial": { "anomalyGain": 9, "chaosDelta": 4, "suspicionDelta": 0 },
+      "clean": { "anomalyGain": 16, "chaosDelta": 0, "suspicionDelta": 0 },
+      "deep_overclock": { "anomalyGain": 20, "chaosDelta": 8, "suspicionDelta": 1 }
+    },
+    "assistScheduleSec": {
+      "subtlePulse": 30,
+      "ghostGuide": 45,
+      "softPartialReady": 75
+    }
   },
   "dreamDefrag": {
     "chaosRelief": 18

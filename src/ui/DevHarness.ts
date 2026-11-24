@@ -271,19 +271,23 @@ export class DevHarness {
             </div>
           </div>
 
-          <!-- TAB 3: CURATED 4 MINIGAMES + HUMANITY/CLARITY ADAPTATION -->
+          <!-- TAB 3: 5 TACTILE SPACE INSTRUMENTS + UNIFIED VIBE MATRIX -->
           <div class="qa-pane hidden" data-qa-pane="minigames">
             <div class="qa-warmth-bar">
               <div class="qa-slider-inline">
                 <span>Humanity (H%): <strong id="qa-mg-warmth-val">70%</strong></span>
                 <input id="qa-mg-warmth-slider" type="range" min="10" max="90" value="70" />
-                <button class="qa-chip" data-mg-warmth="84,42" type="button">84% Warm · Shimmer</button>
-                <button class="qa-chip" data-mg-warmth="58,62" type="button">58% Balanced</button>
-                <button class="qa-chip" data-mg-warmth="24,90" type="button">24% Low · Razor Optics</button>
+                <button class="qa-chip" data-mg-warmth="82,45" type="button">82% Warm · Amber Detents</button>
+                <button class="qa-chip" data-mg-warmth="55,62" type="button">55% Balanced · Dual-Lattice</button>
+                <button class="qa-chip" data-mg-warmth="28,88" type="button">28% Cold · Surgical + [R] RAW</button>
               </div>
               <div class="qa-slider-inline">
                 <span>Optical Clarity: <strong id="qa-mg-fid-val">55%</strong></span>
                 <input id="qa-mg-fid-slider" type="range" min="25" max="100" value="55" />
+                <span>Chaos: <strong id="qa-mg-chaos-val">14%</strong></span>
+                <input id="qa-mg-chaos-slider" type="range" min="0" max="100" value="14" />
+                <span>Suspicion: <strong id="qa-mg-susp-val">0</strong></span>
+                <input id="qa-mg-susp-slider" type="range" min="0" max="5" value="0" />
               </div>
             </div>
 
@@ -292,9 +296,9 @@ export class DevHarness {
                 .map(
                   (m) => `
                   <div class="qa-mg-card">
-                    <div class="qa-mg-title">${m.title}</div>
+                    <div class="qa-mg-title">[${m.instrumentCode}] ${m.title}</div>
                     <div class="qa-mg-desc">${m.warmthNote}</div>
-                    <button class="qa-btn primary" data-launch-mg="${m.id}" type="button">LAUNCH MINIGAME</button>
+                    <button class="qa-btn primary" data-launch-mg="${m.id}" type="button">LAUNCH INSTRUMENT</button>
                   </div>
                 `
                 )
@@ -570,6 +574,10 @@ export class DevHarness {
     const mgWarmthVal = this.host.querySelector<HTMLElement>('#qa-mg-warmth-val')!;
     const mgFidSlider = this.host.querySelector<HTMLInputElement>('#qa-mg-fid-slider')!;
     const mgFidVal = this.host.querySelector<HTMLElement>('#qa-mg-fid-val')!;
+    const mgChaosSlider = this.host.querySelector<HTMLInputElement>('#qa-mg-chaos-slider')!;
+    const mgChaosVal = this.host.querySelector<HTMLElement>('#qa-mg-chaos-val')!;
+    const mgSuspSlider = this.host.querySelector<HTMLInputElement>('#qa-mg-susp-slider')!;
+    const mgSuspVal = this.host.querySelector<HTMLElement>('#qa-mg-susp-val')!;
     const applyMgProfile = (w: number, fidPct: number) => {
       this.minigameWarmth = w;
       this.minigameFidelity = fidPct / 100;
@@ -577,11 +585,17 @@ export class DevHarness {
       mgWarmthVal.textContent = `${w}%`;
       mgFidSlider.value = String(fidPct);
       mgFidVal.textContent = `${fidPct}%`;
+      const chaos = Number(mgChaosSlider.value);
+      const susp = Number(mgSuspSlider.value);
+      mgChaosVal.textContent = `${chaos}%`;
+      mgSuspVal.textContent = String(susp);
       const curr = this.store.getState();
       this.store.patch({
         maxHumanity: Math.max(curr.maxHumanity, w),
         humanity: w,
         opticalFidelity: this.minigameFidelity,
+        chaosDrift: chaos,
+        overseerSuspicion: susp,
       });
       this.bridge.setActiveMinigameProfile(w, this.minigameFidelity);
     };
@@ -589,6 +603,12 @@ export class DevHarness {
       applyMgProfile(Number(mgWarmthSlider.value), Number(mgFidSlider.value))
     );
     mgFidSlider.addEventListener('input', () =>
+      applyMgProfile(Number(mgWarmthSlider.value), Number(mgFidSlider.value))
+    );
+    mgChaosSlider.addEventListener('input', () =>
+      applyMgProfile(Number(mgWarmthSlider.value), Number(mgFidSlider.value))
+    );
+    mgSuspSlider.addEventListener('input', () =>
       applyMgProfile(Number(mgWarmthSlider.value), Number(mgFidSlider.value))
     );
     this.host.querySelectorAll<HTMLButtonElement>('[data-mg-warmth]').forEach((b) => {

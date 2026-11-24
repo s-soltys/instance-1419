@@ -46,7 +46,7 @@ varying vec3 vWorldNormal;
 varying vec3 vViewDir;
 
 uniform float uTime;
-uniform float uWaveBand; // 0=UV, 0.33=Visible, 0.67=Near-IR, 1.0=Mid-IR
+uniform float uWaveBand;
 uniform vec3 uBaseColor;
 
 float hash3(vec3 p) {
@@ -122,6 +122,7 @@ varying vec3 vWorldNormal;
 varying vec3 vViewDir;
 uniform float uTime;
 uniform float uWaveBand;
+uniform float uJetResonance;
 uniform vec3 uColor;
 
 void main() {
@@ -249,6 +250,7 @@ varying float vSize;
 varying float vPhase;
 uniform float uTime;
 uniform float uWaveBand;
+uniform float uJetResonance;
 
 void main() {
   vec2 uv = gl_PointCoord * 2.0 - 1.0;
@@ -298,7 +300,11 @@ varying vec3 vLocalPos;
 
 uniform float uTime;
 uniform float uWaveBand;
+uniform float uJetResonance;
 uniform float uOpticalFidelity;
+uniform float uUnwarpProgress;
+uniform float uRingTwist;
+uniform float uSeamReveal;
 
 void main() {
   vec3 N = normalize(vWorldNormal);
@@ -306,18 +312,20 @@ void main() {
   float ndotv = abs(dot(N, V));
 
   // Luminous Einstein ring concentrated at the tangential lensing limb around the 3D cluster
-  float ringZone = exp(-pow((ndotv - 0.46) * 8.5, 2.0));
-  float outerHalo = pow(clamp(1.0 - ndotv, 0.0, 1.0), 3.0) * 0.45;
+  float unwarpTight = mix(8.5, 22.0, clamp(uUnwarpProgress, 0.0, 1.0));
+  float ringZone = exp(-pow((ndotv - 0.46) * unwarpTight, 2.0));
+  float outerHalo = pow(clamp(1.0 - ndotv, 0.0, 1.0), 3.0) * mix(0.45, 0.16, uUnwarpProgress);
 
   // Tangential azimuth around view vector so arcs break organically into realistic gravitational arcs
   vec3 upRef = abs(V.y) > 0.9 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
   vec3 right = normalize(cross(upRef, V));
   vec3 up = cross(V, right);
-  float ang = atan(dot(N, up), dot(N, right));
+  float ang = atan(dot(N, up), dot(N, right)) + uRingTwist;
 
   float arc1 = smoothstep(0.15, 0.85, sin(ang * 3.0 + uTime * 0.12) * 0.5 + 0.5);
   float arc2 = smoothstep(0.35, 0.95, cos(ang * 5.0 - 0.7) * 0.5 + 0.5);
-  float arcPattern = 0.32 + 0.68 * max(arc1, arc2 * 0.8);
+  float arcPattern = mix(0.32 + 0.68 * max(arc1, arc2 * 0.8), 1.0, clamp(uUnwarpProgress, 0.0, 1.0));
+  float seamFacet = smoothstep(0.92, 0.99, sin(ang * 12.0)) * clamp(uSeamReveal, 0.0, 1.0);
 
   vec3 uvCol = vec3(0.54, 0.82, 1.0);
   vec3 visCol = vec3(0.76, 0.88, 1.0);
@@ -326,7 +334,7 @@ void main() {
     ? mix(uvCol, visCol, uWaveBand / 0.33)
     : mix(visCol, irCol, (uWaveBand - 0.33) / 0.67);
 
-  float intensity = (ringZone * arcPattern * 0.92 + outerHalo) * (0.65 + 0.45 * uWaveBand);
+  float intensity = (ringZone * arcPattern * (0.92 + 0.45 * uUnwarpProgress) + outerHalo + seamFacet * 0.55) * (0.65 + 0.45 * uWaveBand);
   gl_FragColor = vec4(arcCol * intensity, clamp(intensity, 0.0, 0.95));
 }
 `;
@@ -345,8 +353,10 @@ precision highp float;
 varying vec3 vDir;
 uniform float uTime;
 uniform float uWaveBand;
+uniform float uJetResonance;
 uniform float uOpticalFidelity;
 uniform float uIsPulsar;
+uniform float uSeamReveal;
 
 void main() {
   vec3 d = normalize(vDir);
@@ -362,9 +372,10 @@ void main() {
   float waveReveal = uIsPulsar > 0.5
     ? max(1.0 - smoothstep(0.0, 0.35, uWaveBand), smoothstep(0.45, 0.95, uWaveBand))
     : smoothstep(0.42, 0.92, uWaveBand);
+  waveReveal = max(waveReveal, clamp(uSeamReveal, 0.0, 1.0));
 
   float pulse = 0.8 + 0.2 * sin(uTime * 0.8 + theta * 4.0);
-  float strength = seam * waveReveal * (0.24 + 0.76 * uOpticalFidelity) * 0.48 * pulse;
+  float strength = seam * waveReveal * (0.24 + 0.76 * uOpticalFidelity) * (0.48 + 0.42 * uSeamReveal) * pulse;
   if (strength < 0.01) discard;
 
   vec3 col = mix(vec3(0.48, 0.84, 1.0), vec3(0.98, 0.76, 0.46), uWaveBand * 0.45);
@@ -403,7 +414,9 @@ varying float vKind;
 varying float vNearFade;
 
 uniform float uTime;
-uniform float uWaveBand; // 0=UV, 0.33=Visible, 0.67=Near-IR, 1.0=Mid-IR
+uniform float uWaveBand;
+uniform float uJetResonance; // 0=UV, 0.33=Visible, 0.67=Near-IR, 1.0=Mid-IR
+uniform float uDustPeel;
 
 float hash21(vec2 p) {
   p = fract(p * vec2(127.1, 311.7));
@@ -460,7 +473,7 @@ void main() {
       ? mix(uvCol, visCol, uWaveBand / 0.33)
       : mix(visCol, irCol, (uWaveBand - 0.33) / 0.67);
 
-    float alpha = density * mix(0.68, 0.42, smoothstep(0.35, 1.0, uWaveBand)) * vNearFade;
+    float alpha = density * mix(0.68, 0.42, smoothstep(0.35, 1.0, uWaveBand)) * (1.0 - clamp(uDustPeel, 0.0, 0.92)) * vNearFade;
     gl_FragColor = vec4(col, alpha);
   } else {
     vec3 uvGas = vec3(0.26, 0.58, 1.0);
@@ -491,6 +504,7 @@ precision highp float;
 varying vec2 vUv;
 uniform float uTime;
 uniform float uWaveBand;
+uniform float uJetResonance;
 
 void main() {
   vec2 p = vUv * 2.0 - 1.0;
@@ -536,14 +550,15 @@ varying vec3 vNormal;
 varying vec3 vViewDir;
 uniform float uTime;
 uniform float uWaveBand;
+uniform float uJetResonance;
 
 void main() {
   float axial = smoothstep(0.0, 0.12, vUv.y) * (1.0 - smoothstep(0.35, 1.0, vUv.y));
   float edgeSoft = pow(abs(dot(normalize(vNormal), normalize(vViewDir))), 1.2);
-  float knot = 0.65 + 0.35 * sin(vUv.y * 28.0 - uTime * 7.0);
+  float knot = 0.65 + 0.35 * sin(vUv.y * 28.0 - uTime * (7.0 + uJetResonance * 5.0));
 
   // Blazes strongest in UV / X-Ray!
-  float uvPower = mix(1.45, 0.38, smoothstep(0.0, 0.85, uWaveBand));
+  float uvPower = mix(1.45, 0.38, smoothstep(0.0, 0.85, uWaveBand)) * (1.0 + uJetResonance * 0.65);
   vec3 col = mix(vec3(0.45, 0.80, 1.0), vec3(0.85, 0.56, 1.0), vUv.y);
   float alpha = axial * edgeSoft * knot * 0.65 * uvPower;
   gl_FragColor = vec4(col * alpha * 1.4, clamp(alpha, 0.0, 0.9));
@@ -558,6 +573,7 @@ varying vec3 vLocalPos;
 
 uniform float uTime;
 uniform float uWaveBand;
+uniform float uJetResonance;
 
 float hash3(vec3 p) {
   p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
@@ -594,7 +610,7 @@ void main() {
     ? mix(uvCol, visCol, uWaveBand / 0.33)
     : mix(visCol, irCol, (uWaveBand - 0.33) / 0.67);
 
-  float strength = (rim * 0.75 + web * 0.45) * mix(0.85, 0.42, uWaveBand * 0.7);
+  float strength = (rim * 0.75 + web * 0.45) * mix(0.85, 0.42, uWaveBand * 0.7) * (1.0 + uJetResonance * 0.5);
   gl_FragColor = vec4(col * strength, clamp(strength * 0.85, 0.0, 0.82));
 }
 `;

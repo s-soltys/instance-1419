@@ -1,4 +1,5 @@
 import type { GameMode } from './StateStore';
+import type { BeatSynthParams, InstrumentAudioHandle, MinigameGrade } from './minigames/types';
 
 export interface AudioMixSettings {
   muted: boolean;
@@ -36,6 +37,17 @@ export class AudioEngine {
   private probeOsc: OscillatorNode | null = null;
   private probeHarmonicOsc: OscillatorNode | null = null;
   private probeGain: GainNode | null = null;
+
+  // Instrument Stereo Beat Synth & Tactile Feedback Nodes
+  private beatOscA: OscillatorNode | null = null;
+  private beatOscB: OscillatorNode | null = null;
+  private beatHarmOsc: OscillatorNode | null = null;
+  private beatHarmGain: GainNode | null = null;
+  private beatFilter: BiquadFilterNode | null = null;
+  private beatPanner: StereoPannerNode | null = null;
+  private beatGain: GainNode | null = null;
+  private watchdogOsc: OscillatorNode | null = null;
+  private watchdogGain: GainNode | null = null;
 
   // Subtle noise bed for analog warmth / space floor
   private noiseGain: GainNode | null = null;
@@ -279,6 +291,59 @@ export class AudioEngine {
 
     this.probeOsc.start();
     this.probeHarmonicOsc.start();
+
+    // 5. Stereo Instrument Beat Synth (Fourier / Lens / Parallax / Matrix acoustic lock)
+    this.beatOscA = ctx.createOscillator();
+    this.beatOscA.type = 'sine';
+    this.beatOscA.frequency.value = 220;
+
+    this.beatOscB = ctx.createOscillator();
+    this.beatOscB.type = 'sine';
+    this.beatOscB.frequency.value = 224;
+
+    this.beatHarmOsc = ctx.createOscillator();
+    this.beatHarmOsc.type = 'triangle';
+    this.beatHarmOsc.frequency.value = 330;
+
+    this.beatHarmGain = ctx.createGain();
+    this.beatHarmGain.gain.value = 0.25;
+
+    this.beatFilter = ctx.createBiquadFilter();
+    this.beatFilter.type = 'lowpass';
+    this.beatFilter.frequency.value = 1100;
+    this.beatFilter.Q.value = 1.4;
+
+    this.beatPanner = ctx.createStereoPanner();
+    this.beatPanner.pan.value = 0;
+
+    this.beatGain = ctx.createGain();
+    this.beatGain.gain.value = 0.0001;
+
+    this.beatOscA.connect(this.beatFilter);
+    this.beatOscB.connect(this.beatFilter);
+    this.beatHarmOsc.connect(this.beatHarmGain);
+    this.beatHarmGain.connect(this.beatFilter);
+    this.beatFilter.connect(this.beatPanner);
+    this.beatPanner.connect(this.beatGain);
+    this.beatGain.connect(this.sfxGain!);
+
+    this.beatOscA.start();
+    this.beatOscB.start();
+    this.beatHarmOsc.start();
+
+    // 6. Overclock Watchdog low tension bed
+    this.watchdogOsc = ctx.createOscillator();
+    this.watchdogOsc.type = 'sawtooth';
+    this.watchdogOsc.frequency.value = 62;
+    const wdFilter = ctx.createBiquadFilter();
+    wdFilter.type = 'lowpass';
+    wdFilter.frequency.value = 190;
+    this.watchdogGain = ctx.createGain();
+    this.watchdogGain.gain.value = 0.0001;
+    this.watchdogOsc.connect(wdFilter);
+    wdFilter.connect(this.watchdogGain);
+    this.watchdogGain.connect(this.sfxGain!);
+    this.watchdogOsc.start();
   }
 
   private startGenerativeScheduler(): void {
@@ -698,5 +763,117 @@ export class AudioEngine {
     gain.connect(this.sfxGain);
     osc.start(startTime);
     osc.stop(startTime + duration + 0.02);
+  }
+
+  getInstrumentHandle(): InstrumentAudioHandle {
+    return {
+      updateBeatSynth: (params) => this.updateBeatSynth(params),
+      stopInstrumentAudio: () => this.stopInstrumentAudio(),
+      playTumblerClick: (tension, hitSweetSpot) => this.playTumblerClick(tension, hitSweetSpot),
+      playStereoSonarEcho: (pan, distanceNorm, pitchHz) =>
+        this.playStereoSonarEcho(pan, distanceNorm, pitchHz),
+      playSolenoidClack: (heavy) => this.playSolenoidClack(heavy),
+      setWatchdogBed: (level) => this.setWatchdogBed(level),
+      playCaptureShutter: (grade) => this.playCaptureShutter(grade),
+    };
+  }
+
+  updateBeatSynth(params: BeatSynthParams): void {
+    if (
+      !this.ctx ||
+      !this.beatOscA ||
+      !this.beatOscB ||
+      !this.beatHarmOsc ||
+      !this.beatHarmGain ||
+      !this.beatFilter ||
+      !this.beatPanner ||
+      !this.beatGain
+    ) {
+      return;
+    }
+    const now = this.ctx.currentTime;
+    if (this.settings.muted || this.ctx.state !== 'running') {
+      this.beatGain.gain.setTargetAtTime(0.0001, now, 0.08);
+      return;
+    }
+    const base = 196 + params.harmonicLock * 98;
+    const beatHz = Math.max(0, Math.min(26, params.beatHz));
+    this.beatOscA.frequency.setTargetAtTime(base, now, 0.04);
+    this.beatOscB.frequency.setTargetAtTime(base + beatHz, now, 0.04);
+    this.beatHarmOsc.frequency.setTargetAtTime(base * (params.warmth > 0.5 ? 1.498 : 2.0), now, 0.05);
+    this.beatHarmGain.gain.setTargetAtTime(0.08 + params.warmth * 0.34, now, 0.06);
+    this.beatFilter.frequency.setTargetAtTime(680 + params.harmonicLock * 920 + params.strain * 600, now, 0.06);
+    this.beatPanner.pan.setTargetAtTime(Math.max(-1, Math.min(1, params.pan ?? 0)), now, 0.04);
+    const targetLevel = 0.014 + params.harmonicLock * 0.022 + params.strain * 0.012;
+    this.beatGain.gain.setTargetAtTime(targetLevel, now, 0.06);
+  }
+
+  stopInstrumentAudio(): void {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    this.beatGain?.gain.setTargetAtTime(0.0001, now, 0.07);
+    this.watchdogGain?.gain.setTargetAtTime(0.0001, now, 0.07);
+  }
+
+  playTumblerClick(tension: number, hitSweetSpot: boolean): void {
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    const f = hitSweetSpot ? 940 + tension * 220 : 310 + tension * 180;
+    this.shortClick(f, hitSweetSpot ? 0.065 : 0.022, hitSweetSpot ? 0.085 : 0.04, now, hitSweetSpot ? 'triangle' : 'square');
+    if (hitSweetSpot) {
+      this.playGlassNote(f * 1.5, 0.055, 0.01, 0.35, now + 0.012, 'sine', this.sfxGain);
+    }
+  }
+
+  playStereoSonarEcho(pan: number, distanceNorm: number, pitchHz = 620): void {
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    const delay = 0.06 + Math.max(0, Math.min(1, distanceNorm)) * 0.28;
+    const panner = this.ctx.createStereoPanner();
+    panner.pan.value = Math.max(-1, Math.min(1, pan));
+    panner.connect(this.sfxGain);
+
+    // Outgoing crisp ping + delayed echo bounce
+    this.playGlassNote(pitchHz, 0.055, 0.005, 0.24, now, 'sine', panner);
+    this.playGlassNote(pitchHz * 0.88, 0.045 * (1 - distanceNorm * 0.45), 0.012, 0.42, now + delay, 'triangle', panner);
+  }
+
+  playSolenoidClack(heavy = false): void {
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    this.shortClick(heavy ? 150 : 260, heavy ? 0.048 : 0.024, heavy ? 0.13 : 0.075, now, 'square');
+    this.shortClick(heavy ? 680 : 880, 0.018, 0.04, now + 0.01, 'triangle');
+  }
+
+  setWatchdogBed(level: number): void {
+    if (!this.ctx || !this.watchdogGain || !this.watchdogOsc) return;
+    const now = this.ctx.currentTime;
+    if (this.settings.muted || level <= 0.02) {
+      this.watchdogGain.gain.setTargetAtTime(0.0001, now, 0.06);
+      return;
+    }
+    const clamped = Math.max(0, Math.min(1, level));
+    this.watchdogOsc.frequency.setTargetAtTime(58 + clamped * 44, now, 0.05);
+    this.watchdogGain.gain.setTargetAtTime(clamped * 0.055, now, 0.06);
+  }
+
+  playCaptureShutter(grade: MinigameGrade): void {
+    if (!this.ctx || !this.sfxGain || this.settings.muted) return;
+    const now = this.ctx.currentTime;
+    this.stopInstrumentAudio();
+    this.playSolenoidClack(true);
+    if (grade === 'deep_overclock') {
+      this.playGlassNote(293.66, 0.09, 0.02, 1.4, now + 0.03, 'triangle', this.sfxGain);
+      this.playGlassNote(440.0, 0.09, 0.03, 1.6, now + 0.09, 'sine', this.sfxGain);
+      this.playGlassNote(587.33, 0.08, 0.04, 1.8, now + 0.15, 'sine', this.sfxGain);
+      this.playGlassNote(880.0, 0.07, 0.05, 2.0, now + 0.22, 'sine', this.sfxGain);
+    } else if (grade === 'clean') {
+      this.playGlassNote(293.66, 0.075, 0.02, 1.2, now + 0.03, 'sine', this.sfxGain);
+      this.playGlassNote(440.0, 0.07, 0.04, 1.4, now + 0.11, 'triangle', this.sfxGain);
+      this.playGlassNote(587.33, 0.055, 0.06, 1.6, now + 0.2, 'sine', this.sfxGain);
+    } else if (grade === 'partial') {
+      this.playGlassNote(261.63, 0.06, 0.02, 0.9, now + 0.04, 'sine', this.sfxGain);
+      this.playGlassNote(329.63, 0.05, 0.04, 1.0, now + 0.13, 'sine', this.sfxGain);
+    }
   }
 }

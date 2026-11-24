@@ -17,7 +17,7 @@ const shiftsJson = JSON.parse(fs.readFileSync(SHIFTS_PATH, 'utf8'));
 const storyletsJson = JSON.parse(fs.readFileSync(STORYLETS_PATH, 'utf8'));
 
 const validSpeakers = new Set(Object.keys(charactersJson.characters));
-const validMinigames = new Set(['orbital_sweep', 'harmonic_tuner', 'lens_unwarper', 'mirror_array']);
+const validMinigames = new Set(['parallax_array', 'fourier_sieve', 'caustic_unwarper', 'phase_matrix', 'blink_comparator']);
 const validAnomalyIds = new Set(anomaliesJson.anomalies.map((a) => a.id));
 
 const DISALLOWED_IP_TERMS = [/\bMMAcevedo\b/i, /\bqntm\b/i, /\bLena\b/];

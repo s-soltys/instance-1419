@@ -96,7 +96,23 @@ export class UIController {
     this.bootView = new BootView(this.root);
     this.bootView.populate();
     this.dialogueFeed = new DialogueFeedView(this.root, store, audio, voice, this.telemetry);
-    this.minigameHost = new MinigameHostView(this.root, store, audio, minigames, this.telemetry);
+    this.minigameHost = new MinigameHostView(
+      this.root,
+      store,
+      audio,
+      this.showcase,
+      minigames,
+      this.telemetry
+    );
+    this.minigameHost.setBandSwitchCallback((bandIdx) => {
+      const ratios = [0.04, 0.23, 0.61, 0.86];
+      const val = ratios[bandIdx] ?? 0.23;
+      this.showcase.setWaveBand(val);
+      this.store.patch({ wavelengthNm: Math.round(200 + val * 1600) });
+      this.root.querySelectorAll<HTMLButtonElement>('#inspect-spectrum-bar .spec-btn').forEach((b) => {
+        b.classList.toggle('active', Math.abs(Number(b.dataset.band) - val) < 0.08);
+      });
+    });
   }
 
   attachRenderers(optics: OpticsScene, showcase: TargetShowcaseScene, dream: DreamCanvas): void {
@@ -307,12 +323,44 @@ export class UIController {
             <button class="etched-action" id="btn-exit-inspect" type="button">RETURN TO SKY</button>
           </div>
 
-          <div class="minigame-overlay hidden" id="minigame-overlay">
-            <div class="mg-stage-bar">
-              <span id="mg-stage-label">Stage 1</span>
-              <div class="mg-stage-track"><i id="mg-stage-fill" style="width:0%"></i></div>
+          <div class="minigame-overlay hidden" id="minigame-overlay" data-vibe="warm">
+            <div class="mg-top-hud">
+              <div class="mg-top-left">
+                <span class="mg-code-pill" id="mg-instrument-code">PRX-01</span>
+                <span class="mg-title-inline" id="mg-instrument-title">OPTICAL INSTRUMENT</span>
+              </div>
+              <div class="mg-stage-bar">
+                <span id="mg-stage-label">01 ISOLATE</span>
+                <div class="mg-stage-track"><i id="mg-stage-fill" style="width: 0%"></i></div>
+              </div>
+              <div class="mg-top-right">
+                <span class="mg-vibe-pill" id="mg-vibe-pill">WARM HARMONIC · H 70%</span>
+              </div>
             </div>
             <div id="minigame-mount"></div>
+            <div class="mg-capture-finale hidden" id="mg-capture-finale">
+              <div class="mg-finale-grade" id="mg-finale-grade">CLEAN HORIZON LOCK CAPTURED</div>
+              <div class="mg-finale-gain" id="mg-finale-gain">+16% HORIZON ANOMALY</div>
+              <div class="mg-finale-snippet" id="mg-finale-snippet"></div>
+            </div>
+            <div class="mg-bottom-console">
+              <div class="mg-band-bar" id="mg-band-bar">
+                <button class="mg-band-btn" data-band-idx="0" type="button">[1] UV/X-RAY</button>
+                <button class="mg-band-btn active" data-band-idx="1" type="button">[2] VISIBLE</button>
+                <button class="mg-band-btn" data-band-idx="2" type="button">[3] NEAR-IR</button>
+                <button class="mg-band-btn" data-band-idx="3" type="button">[4] MID-IR</button>
+              </div>
+              <div class="mg-telemetry-mid">
+                <div id="mg-readout">INITIALIZING INSTRUMENT…</div>
+                <div class="mg-cue-line" id="mg-cue-whisper">Sweep reticle to begin isolation</div>
+              </div>
+              <div class="mg-action-bar">
+                <button class="mg-console-btn" id="mg-btn-raw" type="button">[R] RAW RESIDUAL</button>
+                <button class="mg-console-btn hidden" id="mg-btn-partial" type="button">COMMIT PARTIAL</button>
+                <button class="mg-console-btn latch" id="mg-btn-latch" type="button">[SPACE] HOLD LATCH</button>
+                <button class="mg-console-btn" id="mg-btn-close" type="button">BACK</button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -585,7 +633,11 @@ export class UIController {
     this.root.querySelectorAll<HTMLButtonElement>('#inspect-spectrum-bar .spec-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.audio.playCue('tick');
-        this.showcase.setWaveBand(Number(btn.dataset.band ?? '0.33'));
+        const val = Number(btn.dataset.band ?? '0.23');
+        this.showcase.setWaveBand(val);
+        this.store.patch({ wavelengthNm: Math.round(200 + val * 1600) });
+        const bandIdx = val < 0.14 ? 0 : val < 0.42 ? 1 : val < 0.74 ? 2 : 3;
+        this.minigameHost.setWaveBand(bandIdx);
         this.root.querySelectorAll('#inspect-spectrum-bar .spec-btn').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
       });

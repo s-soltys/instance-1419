@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { ShowcaseCouplingUpdate, ShowcaseInstrumentBridge } from './minigames/types';
 import type { AnomalySpec, ShowcaseType } from './OpticsScene';
 import {
   ACCRETION_DISK_FRAGMENT,
@@ -88,6 +89,17 @@ export class TargetShowcaseScene {
   private readonly onTelemetry?: (t: ShowcaseTelemetry) => void;
 
   private shaderMats: THREE.ShaderMaterial[] = [];
+  private instrumentOverlayGroup = new THREE.Group();
+  private instrumentSonarPulses: Array<{ mesh: THREE.Mesh; age: number; maxAge: number }> = [];
+  private instrumentPatch = {
+    progress: 0,
+    dustPeel: 0,
+    unwarpProgress: 0,
+    ringTwist: 0,
+    seamReveal: 0,
+    jetResonance: 0,
+    blinkFlip: false,
+  };
   private orbitingBodies: OrbitingBody[] = [];
   private companionStar: OrbitingBody | null = null;
   private spinObjects: { obj: THREE.Object3D; speedX: number; speedY: number }[] = [];
@@ -213,11 +225,106 @@ export class TargetShowcaseScene {
     this.opticalFidelity = fid;
   }
 
+  getInstrumentBridge(): ShowcaseInstrumentBridge {
+    return {
+      applyInstrumentPatch: (patch: ShowcaseCouplingUpdate) => {
+        if (patch.progress !== undefined) this.instrumentPatch.progress = patch.progress;
+        if (patch.dustPeel !== undefined) this.instrumentPatch.dustPeel = patch.dustPeel;
+        if (patch.unwarpProgress !== undefined) this.instrumentPatch.unwarpProgress = patch.unwarpProgress;
+        if (patch.ringTwist !== undefined) this.instrumentPatch.ringTwist = patch.ringTwist;
+        if (patch.seamReveal !== undefined) this.instrumentPatch.seamReveal = patch.seamReveal;
+        if (patch.jetResonance !== undefined) this.instrumentPatch.jetResonance = patch.jetResonance;
+        if (patch.blinkFlip !== undefined) this.instrumentPatch.blinkFlip = patch.blinkFlip;
+        if (patch.dollyDelta) {
+          this.targetDist = THREE.MathUtils.clamp(this.targetDist + patch.dollyDelta, 5, 58);
+        }
+        this.syncInstrumentUniforms();
+      },
+      trigger3DSonarPulse: (originX: number, originY: number, bandIdx = 1) => {
+        if (!this.instrumentOverlayGroup.parent) {
+          this.rootGroup.add(this.instrumentOverlayGroup);
+        }
+        const geo = new THREE.RingGeometry(0.45, 0.72, 48);
+        const cols = ['#82c8ff', '#ffcf88', '#ff9e64', '#ff6454'];
+        const mat = new THREE.MeshBasicMaterial({
+          color: cols[bandIdx % cols.length],
+          transparent: true,
+          opacity: 0.78,
+          side: THREE.DoubleSide,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+        });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(originX * 14, originY * 8, 0);
+        mesh.lookAt(this.camera.position);
+        this.instrumentOverlayGroup.add(mesh);
+        this.instrumentSonarPulses.push({ mesh, age: 0, maxAge: 1.35 });
+      },
+      add3DBearingVector: (angleRad: number, confidence: number, colorHex = '#ffb86c') => {
+        if (!this.instrumentOverlayGroup.parent) {
+          this.rootGroup.add(this.instrumentOverlayGroup);
+        }
+        const len = 18;
+        const pts = [
+          new THREE.Vector3(-Math.cos(angleRad) * len, -Math.sin(angleRad) * len * 0.65, 0),
+          new THREE.Vector3(Math.cos(angleRad) * len, Math.sin(angleRad) * len * 0.65, 0),
+        ];
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({
+          color: colorHex,
+          transparent: true,
+          opacity: Math.max(0.25, Math.min(0.85, confidence)),
+        });
+        this.instrumentOverlayGroup.add(new THREE.Line(geo, mat));
+      },
+      clearInstrumentOverlays: () => {
+        this.clearOverlayGroup();
+      },
+      resetInstrumentState: () => {
+        this.instrumentPatch = {
+          progress: 0,
+          dustPeel: 0,
+          unwarpProgress: 0,
+          ringTwist: 0,
+          seamReveal: 0,
+          jetResonance: 0,
+          blinkFlip: false,
+        };
+        this.clearOverlayGroup();
+        this.syncInstrumentUniforms();
+      },
+    };
+  }
+
+  private clearOverlayGroup(): void {
+    this.instrumentSonarPulses = [];
+    while (this.instrumentOverlayGroup.children.length > 0) {
+      const child = this.instrumentOverlayGroup.children[0];
+      this.instrumentOverlayGroup.remove(child);
+      if (child instanceof THREE.Mesh || child instanceof THREE.Line) {
+        child.geometry.dispose();
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        for (const m of mats) m.dispose();
+      }
+    }
+  }
+
+  private syncInstrumentUniforms(): void {
+    for (const m of this.shaderMats) {
+      if (m.uniforms.uDustPeel) m.uniforms.uDustPeel.value = this.instrumentPatch.dustPeel;
+      if (m.uniforms.uUnwarpProgress) m.uniforms.uUnwarpProgress.value = this.instrumentPatch.unwarpProgress;
+      if (m.uniforms.uRingTwist) m.uniforms.uRingTwist.value = this.instrumentPatch.ringTwist;
+      if (m.uniforms.uSeamReveal) m.uniforms.uSeamReveal.value = this.instrumentPatch.seamReveal;
+      if (m.uniforms.uJetResonance) m.uniforms.uJetResonance.value = this.instrumentPatch.jetResonance;
+    }
+  }
+
   private clearRoot(): void {
     this.shaderMats = [];
     this.orbitingBodies = [];
     this.companionStar = null;
     this.spinObjects = [];
+    this.clearOverlayGroup();
 
     while (this.rootGroup.children.length > 0) {
       const child = this.rootGroup.children[0];
@@ -262,6 +369,7 @@ export class TargetShowcaseScene {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
         uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+        uDustPeel: { value: this.instrumentPatch.dustPeel },
       },
     });
     this.shaderMats.push(mat);
@@ -314,6 +422,7 @@ export class TargetShowcaseScene {
         uWaveBand: { value: this.waveBand },
         uOpticalFidelity: { value: this.opticalFidelity },
         uIsPulsar: { value: isPulsar ? 1.0 : 0.0 },
+        uSeamReveal: { value: this.instrumentPatch.seamReveal },
       },
     });
     this.shaderMats.push(mat);
@@ -523,6 +632,7 @@ export class TargetShowcaseScene {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
         uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+        uDustPeel: { value: this.instrumentPatch.dustPeel },
       },
     });
     this.shaderMats.push(dustMat);
@@ -563,6 +673,7 @@ export class TargetShowcaseScene {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
         uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+        uDustPeel: { value: this.instrumentPatch.dustPeel },
       },
     });
     this.shaderMats.push(gasMat);
@@ -619,6 +730,7 @@ export class TargetShowcaseScene {
         uniforms: {
           uTime: { value: 0 },
           uWaveBand: { value: this.waveBand },
+          uJetResonance: { value: this.instrumentPatch.jetResonance },
         },
       });
       this.shaderMats.push(jetMat);
@@ -784,6 +896,9 @@ export class TargetShowcaseScene {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
         uOpticalFidelity: { value: this.opticalFidelity },
+        uUnwarpProgress: { value: this.instrumentPatch.unwarpProgress },
+        uRingTwist: { value: this.instrumentPatch.ringTwist },
+        uSeamReveal: { value: this.instrumentPatch.seamReveal },
       },
     });
     this.shaderMats.push(einsteinMat);
@@ -1029,6 +1144,24 @@ export class TargetShowcaseScene {
       if (m.uniforms.uTime) m.uniforms.uTime.value = elapsed;
       if (m.uniforms.uWaveBand) m.uniforms.uWaveBand.value = this.waveBand;
       if (m.uniforms.uOpticalFidelity) m.uniforms.uOpticalFidelity.value = this.opticalFidelity;
+    }
+
+    // Animate 3D acoustic/radar sonar rings triggered by investigative instruments
+    for (let i = this.instrumentSonarPulses.length - 1; i >= 0; i--) {
+      const p = this.instrumentSonarPulses[i];
+      p.age += dt;
+      const t = p.age / p.maxAge;
+      if (t >= 1) {
+        this.instrumentOverlayGroup.remove(p.mesh);
+        p.mesh.geometry.dispose();
+        (p.mesh.material as THREE.Material).dispose();
+        this.instrumentSonarPulses.splice(i, 1);
+      } else {
+        const s = 1 + t * 14.0;
+        p.mesh.scale.set(s, s, 1);
+        p.mesh.lookAt(this.camera.position);
+        (p.mesh.material as THREE.MeshBasicMaterial).opacity = (1 - t) * 0.72;
+      }
     }
 
     for (const body of this.orbitingBodies) {

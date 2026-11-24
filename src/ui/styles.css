@@ -1472,84 +1472,226 @@ body,
   gap: 4px;
 }
 
-/* Translucent Optical Instrument Overlay (3D Cosmos visible behind glass) */
+/* Full-Viewport Transparent Optical Reticle Overlay (0px center blur!) */
 .minigame-overlay {
-  position: absolute;
-  right: max(24px, env(safe-area-inset-right));
-  top: max(56px, calc(env(safe-area-inset-top) + 46px));
-  width: min(580px, 88vw);
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: 26;
-  background: rgba(5, 9, 15, 0.56);
-  border: 1px solid rgba(186, 212, 235, 0.2);
-  border-top: 1.5px solid rgba(235, 176, 98, 0.72);
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.65);
-  padding: 16px 20px;
-  backdrop-filter: blur(14px);
+  background: transparent;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.minigame-overlay[data-vibe="warm"] {
+  --mg-accent: #ffb86c;
+  --mg-secondary: #ffdf9e;
+}
+
+.minigame-overlay[data-vibe="balanced"] {
+  --mg-accent: #d9cc9e;
+  --mg-secondary: #9cc8ff;
+}
+
+.minigame-overlay[data-vibe="cold"] {
+  --mg-accent: #9ee8ff;
+  --mg-secondary: #e6f7ff;
 }
 
 .minigame-overlay.hidden {
   display: none;
 }
 
+.mg-top-hud {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 20px;
+  background: linear-gradient(to bottom, rgba(4, 8, 14, 0.84), rgba(4, 8, 14, 0));
+  pointer-events: none;
+}
+
+.mg-top-left, .mg-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.mg-code-pill, .mg-vibe-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--mg-accent, var(--amber));
+  background: rgba(6, 11, 18, 0.72);
+}
+
+.mg-title-inline {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  color: #f4f7fa;
+  letter-spacing: 0.04em;
+}
+
 .mg-stage-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  flex: 1;
+  max-width: 480px;
   font-family: var(--font-mono);
   font-size: 10px;
-  letter-spacing: 0.16em;
-  color: var(--amber);
+  letter-spacing: 0.15em;
+  color: var(--mg-accent, var(--amber));
 }
 
 .mg-stage-track {
   flex: 1;
-  height: 2px;
+  height: 4px;
   background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
 }
 
 .mg-stage-track i {
   display: block;
   height: 100%;
-  background: var(--mint);
-  transition: width 0.2s ease;
+  background: var(--mg-accent, var(--mint));
+  transition: width 0.12s linear, background-color 0.2s ease;
 }
 
-.mg-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
+.mg-stage-track i.overclock {
+  background: #ff5268;
+  box-shadow: 0 0 12px #ff5268;
 }
 
-.mg-title {
-  font-family: var(--font-serif);
-  font-size: 18px;
-  color: #f4f7fa;
-  margin-bottom: 3px;
+#minigame-mount {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
-.mg-sub {
-  font-family: var(--font-sans);
-  font-size: 12px;
-  color: var(--text-soft);
-}
-
-.mg-canvas-wrap {
+.minigame-canvas {
   width: 100%;
-  background: rgba(4, 8, 15, 0.42);
-  border: 1px solid rgba(186, 212, 235, 0.16);
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.mg-canvas-wrap canvas {
-  width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
   touch-action: none;
   cursor: crosshair;
+}
+
+.mg-bottom-console {
+  position: relative;
+  z-index: 3;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 18px;
+  background: linear-gradient(to top, rgba(4, 8, 14, 0.9), rgba(4, 8, 14, 0.48));
+  border-top: 1px solid rgba(186, 212, 235, 0.18);
+  pointer-events: auto;
+}
+
+.mg-band-bar, .mg-action-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mg-band-btn, .mg-console-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 6px 10px;
+  background: rgba(8, 14, 22, 0.78);
+  border: 1px solid rgba(186, 212, 235, 0.24);
+  color: rgba(230, 240, 250, 0.78);
+  cursor: pointer;
+}
+
+.mg-band-btn.active, .mg-console-btn.active {
+  border-color: var(--mg-accent, var(--amber));
+  color: var(--mg-accent, var(--amber));
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mg-console-btn.latch {
+  border-color: var(--mg-accent, var(--amber));
+  color: #fff;
+  font-weight: 700;
+  padding: 6px 14px;
+}
+
+.mg-console-btn.latch.overclock {
+  border-color: #ff5268;
+  background: rgba(255, 82, 104, 0.25);
+  color: #ffdbe0;
+}
+
+.mg-telemetry-mid {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--mg-secondary, #cde0f5);
+}
+
+.mg-cue-line {
+  font-size: 10px;
+  color: rgba(220, 232, 245, 0.68);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mg-capture-finale {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(4, 8, 14, 0.52);
+  border: 2px solid var(--mg-accent, var(--amber));
+  pointer-events: none;
+  text-align: center;
+  padding: 24px;
+}
+
+.mg-capture-finale.hidden {
+  display: none;
+}
+
+.mg-finale-grade {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.22em;
+  color: var(--mg-accent, var(--amber));
+}
+
+.mg-finale-gain {
+  font-family: var(--font-serif);
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.mg-finale-snippet {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: rgba(235, 244, 252, 0.88);
+  max-width: 520px;
 }
 
 .mg-controls {
@@ -2502,8 +2644,8 @@ body,
   }
 
   .minigame-overlay {
-    top: 42px;
-    padding: 10px 14px;
+    inset: 0;
+    padding: 0;
   }
 
   .zoom-ladder-body {

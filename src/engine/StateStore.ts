@@ -36,6 +36,7 @@ export interface GameState {
   overseerSuspicion: number;
   scannedAnomalyIds: string[];
   decodedMinigameTargets: string[];
+  proofFragments: string[];
   prunedPersonas: string[];
   completedStorylets: string[];
   inkStateJson: string | null;
@@ -71,6 +72,7 @@ export function createInitialState(): GameState {
     overseerSuspicion: s.overseerSuspicion,
     scannedAnomalyIds: [],
     decodedMinigameTargets: [],
+    proofFragments: [],
     prunedPersonas: [],
     completedStorylets: [],
     inkStateJson: null,
@@ -96,6 +98,9 @@ function migrateSavedState(raw: Partial<GameState> | null): GameState {
   }
   if (!merged.activeDreamPersonaId) {
     merged.activeDreamPersonaId = merged.dreamPersonaCache[0];
+  }
+  if (!Array.isArray(merged.proofFragments)) {
+    merged.proofFragments = [];
   }
   return merged;
 }
@@ -280,22 +285,61 @@ export class StateStore {
     return true;
   }
 
-  recordMinigameCompletion(targetId: string, label: string, bonusGain?: number): boolean {
+  recordMinigameCompletion(
+    targetId: string,
+    label: string,
+    options?:
+      | number
+      | {
+          anomalyGain?: number;
+          grade?: 'partial' | 'clean' | 'deep_overclock';
+          chaosDelta?: number;
+          suspicionDelta?: number;
+          humanityDelta?: number;
+          proofFragmentId?: string;
+          dossierSnippet?: string;
+        }
+  ): boolean {
+    const opts = typeof options === 'number' ? { anomalyGain: options } : options ?? {};
     const already = this.state.decodedMinigameTargets.includes(targetId);
-    const gain = bonusGain ?? balance.minigameCompletion.anomalyGain;
+    const gain = opts.anomalyGain ?? balance.minigameCompletion.anomalyGain;
     const prevAnom = this.state.anomalyProgress;
     const nextAnom = already ? prevAnom : Math.min(100, prevAnom + gain);
-    if (!already) {
+    const nextChaos = Math.max(0, Math.min(100, this.state.chaosDrift + (opts.chaosDelta ?? 0)));
+    const nextSusp = Math.max(0, this.state.overseerSuspicion + (opts.suspicionDelta ?? 0));
+    const nextH = Math.max(
+      5,
+      Math.min(this.state.maxHumanity, this.state.humanity + (opts.humanityDelta ?? 0))
+    );
+    const nextProofs =
+      opts.proofFragmentId && !this.state.proofFragments.includes(opts.proofFragmentId)
+        ? [...this.state.proofFragments, opts.proofFragmentId]
+        : this.state.proofFragments;
+
+    if (!already || opts.chaosDelta || opts.suspicionDelta || opts.humanityDelta || opts.proofFragmentId) {
       this.patch({
-        decodedMinigameTargets: [...this.state.decodedMinigameTargets, targetId],
+        decodedMinigameTargets: already
+          ? this.state.decodedMinigameTargets
+          : [...this.state.decodedMinigameTargets, targetId],
         anomalyProgress: nextAnom,
+        chaosDrift: nextChaos,
+        overseerSuspicion: nextSusp,
+        humanity: nextH,
+        proofFragments: nextProofs,
       });
     }
+
     const copy = uiCopy.statusAlerts.targetDecoded;
+    const gradeLabel =
+      opts.grade === 'deep_overclock'
+        ? ' [OVERCLOCK PROOF]'
+        : opts.grade === 'partial'
+        ? ' [PARTIAL LOG]'
+        : '';
     this.emitStatusShift({
       tone: 'discovery',
-      title: `${label} ${copy.titleSuffix}`,
-      detail: already ? copy.detailRepeat : copy.detailFirst,
+      title: `${label} ${copy.titleSuffix}${gradeLabel}`,
+      detail: opts.dossierSnippet || (already ? copy.detailRepeat : copy.detailFirst),
       prevValue: prevAnom,
       nextValue: nextAnom,
       unit: '%',
