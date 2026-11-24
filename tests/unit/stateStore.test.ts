@@ -6,16 +6,45 @@ describe('StateStore invariants & economy', () => {
     localStorage.clear();
   });
 
-  it('initializes with valid canon defaults and schema version 4', () => {
+  it('initializes with valid canon defaults and schema version 5', () => {
     const store = new StateStore();
     const s = store.getState();
-    expect(s.saveSchemaVersion).toBe(4);
+    expect(s.saveSchemaVersion).toBe(5);
     expect(s.humanity).toBeLessThanOrEqual(s.maxHumanity);
     expect(s.proofFragments).toEqual([]);
     expect(s.decodedMinigameTargets).toEqual([]);
     expect(s.decodedGrades).toEqual({});
     expect(s.calibratedInstruments).toEqual([]);
+    expect(s.minigameRunCounts).toEqual({});
     expect(s.proofDossier).toEqual([]);
+  });
+
+  it('migrates legacy v4 saves seamlessly to v5 and tracks replay iteration counts', () => {
+    localStorage.setItem(
+      'instance_1419_state_v4',
+      JSON.stringify({
+        saveSchemaVersion: 4,
+        shift: 3,
+        humanity: 62,
+        maxHumanity: 78,
+        decodedMinigameTargets: ['cluster_j1419_a'],
+      })
+    );
+    const store = new StateStore();
+    const s = store.getState();
+    expect(s.saveSchemaVersion).toBe(5);
+    expect(s.shift).toBe(3);
+    expect(s.humanity).toBe(62);
+    expect(s.minigameRunCounts).toEqual({});
+    expect(localStorage.getItem('instance_1419_state_v4')).toBeNull();
+
+    expect(store.getNextIterationIndex('wave_shaper', 4)).toBe(0);
+    expect(store.recordMinigameRun('wave_shaper')).toBe(1);
+    expect(store.getNextIterationIndex('wave_shaper', 4)).toBe(1);
+    expect(store.recordMinigameRun('wave_shaper')).toBe(2);
+    expect(store.recordMinigameRun('wave_shaper')).toBe(3);
+    expect(store.recordMinigameRun('wave_shaper')).toBe(4);
+    expect(store.getNextIterationIndex('wave_shaper', 4)).toBe(0);
   });
 
   it('enforces permanent maxHumanity ceiling drop when pruning below 70%', () => {

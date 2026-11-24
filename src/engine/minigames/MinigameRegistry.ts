@@ -14,11 +14,17 @@ import { ParallaxDepthGame } from './ParallaxDepthGame';
 import { PolarizationFilterGame } from './PolarizationFilterGame';
 import { PulsarEchoGame } from './PulsarEchoGame';
 import { RadioTriangulationGame } from './RadioTriangulationGame';
+import { resolveMinigame3DConfig } from './render/Minigame3DBridge';
 import { SpectralPrismMixerGame } from './SpectralPrismMixerGame';
 import { StarfieldBlinkSpotterGame } from './StarfieldBlinkSpotterGame';
 import { SupernovaEchoesGame } from './SupernovaEchoesGame';
 import { TelescopeLensFocusGame } from './TelescopeLensFocusGame';
-import type { IMinigame } from './types';
+import type {
+  CosmicPlateId,
+  IMinigame,
+  Minigame3DConfig,
+  MinigameVariantSpec,
+} from './types';
 import { WaveShaperGame } from './WaveShaperGame';
 
 export interface MinigameCatalogEntry {
@@ -28,177 +34,258 @@ export interface MinigameCatalogEntry {
   subtitle: string;
   physicalPrinciple: string;
   warmthNote: string;
+  platePool: readonly [CosmicPlateId, CosmicPlateId, CosmicPlateId];
+  variants: readonly MinigameVariantSpec[];
+  backdrop3D: Minigame3DConfig;
+}
+
+function makeVariants(
+  id: string,
+  plates: readonly [CosmicPlateId, CosmicPlateId, CosmicPlateId],
+  labels: readonly [string, string, string, string]
+): readonly MinigameVariantSpec[] {
+  return [
+    { index: 0, id: `${id}_v1`, label: labels[0], plateId: plates[0] },
+    { index: 1, id: `${id}_v2`, label: labels[1], plateId: plates[1] },
+    { index: 2, id: `${id}_v3`, label: labels[2], plateId: plates[2] },
+    { index: 3, id: `${id}_v4`, label: labels[3], plateId: plates[0] },
+  ];
+}
+
+function entry(
+  id: string,
+  instrumentCode: string,
+  title: string,
+  subtitle: string,
+  physicalPrinciple: string,
+  warmthNote: string,
+  platePool: readonly [CosmicPlateId, CosmicPlateId, CosmicPlateId],
+  variantLabels: readonly [string, string, string, string]
+): MinigameCatalogEntry {
+  return {
+    id,
+    instrumentCode,
+    title,
+    subtitle,
+    physicalPrinciple,
+    warmthNote,
+    platePool,
+    variants: makeVariants(id, platePool, variantLabels),
+    backdrop3D: resolveMinigame3DConfig(id),
+  };
 }
 
 export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
-  wave_shaper: {
-    id: 'wave_shaper',
-    instrumentCode: 'WAV-01',
-    title: 'Carina Wave Tuner',
-    subtitle: 'Harmonic Waveform Shaping',
-    physicalPrinciple: 'Fourier superposition & phase resonance across traveling emission waves.',
-    warmthNote: 'Warm H%: golden lock margin · Cold H%: surgical emission tuning.',
-  },
-  constellation_recall: {
-    id: 'constellation_recall',
-    instrumentCode: 'CON-02',
-    title: 'Stellar Constellation',
-    subtitle: 'Parallax Spatial Memory',
-    physicalPrinciple: 'Astrometric parallax baselines against distant reference stars.',
-    warmthNote: 'Warm H%: luminous gold starlight · Cold H%: crystalline astrometry grid.',
-  },
-  pulsar_echo: {
-    id: 'pulsar_echo',
-    instrumentCode: 'PLS-03',
-    title: 'Pulsar Beacon Timing',
-    subtitle: 'Rotational Sweep & Jet Sync',
-    physicalPrinciple: 'Magnetized neutron star lighthouse rotation, glitches, and relativistic jets.',
-    warmthNote: 'Warm H%: generous catch arc · Cold H%: razor pulsar phase sync.',
-  },
-  lens_focus: {
-    id: 'lens_focus',
-    instrumentCode: 'LNS-04',
-    title: 'Gravitational Lens Focus',
-    subtitle: 'Concentric Caustic De-Warping',
-    physicalPrinciple: 'Gravitational lensing caustic continuity and focal depth on SMACS 0723.',
-    warmthNote: 'Warm H%: forgiving bezel snaps · Cold H%: crisp aperture calibration.',
-  },
-  light_dispersion: {
-    id: 'light_dispersion',
-    instrumentCode: 'DSP-05',
-    title: 'Chromatic Light Disperser',
-    subtitle: 'Wavelength Refraction & Dust Penetration',
-    physicalPrinciple: 'Multi-wavelength prism dispersion & IR dust penetration.',
-    warmthNote: 'Warm H%: broad spectral beam pockets · Cold H%: surgical refraction optics.',
-  },
-  blink_spotter: {
-    id: 'blink_spotter',
-    instrumentCode: 'BLK-06',
-    title: 'Star Trajectory Predictor',
-    subtitle: 'Proper-Motion & Gravity Extrapolation',
-    physicalPrinciple: 'Epochal astrometry predicting linear, accelerating, and gravitationally bent paths.',
-    warmthNote: 'Warm H%: generous Epoch 4 prediction ring · Cold H%: surgical extrapolation.',
-  },
-  gravity_slingshot: {
-    id: 'gravity_slingshot',
-    instrumentCode: 'ORB-07',
-    title: 'Gravity Slingshot',
-    subtitle: 'Orbital Trajectory Bending',
-    physicalPrinciple: 'Gravitational assist orbital mechanics around stellar wells.',
-    warmthNote: 'Warm H%: golden orbital contours · Cold H%: stark ballistic trajectory grid.',
-  },
-  exoplanet_transit: {
-    id: 'exoplanet_transit',
-    instrumentCode: 'TRN-08',
-    title: 'Exoplanet Transit Lab',
-    subtitle: 'Photometric Orbit Matching',
-    physicalPrinciple: 'Exoplanet transit photometry & multi-planet orbital periodicities.',
-    warmthNote: 'Warm H%: luminous solar halo · Cold H%: sharp photometric dip trace.',
-  },
-  spectral_prism: {
-    id: 'spectral_prism',
-    instrumentCode: 'PRM-09',
-    title: 'Spectral Prism Mixer',
-    subtitle: 'Chemical Elements & Redshift',
-    physicalPrinciple: 'Atomic emission barcodes & cosmological Doppler redshift.',
-    warmthNote: 'Warm H%: broad prism tolerance · Cold H%: precision z-shift vernier.',
-  },
-  radio_triangulation: {
-    id: 'radio_triangulation',
-    instrumentCode: 'TRI-10',
-    title: 'Radio Dish Array',
-    subtitle: 'Interferometric Triangulation',
-    physicalPrinciple: 'Very Long Baseline Interferometry (VLBI) directional beam convergence.',
-    warmthNote: 'Warm H%: broader amber beam cones · Cold H%: razor VLBI baselines.',
-  },
-  coronagraph_mask: {
-    id: 'coronagraph_mask',
-    instrumentCode: 'COR-11',
-    title: 'Solar Coronagraph Mask',
-    subtitle: 'Servo-Tracked Exoplanet Spot',
-    physicalPrinciple: 'Coronagraphic starlight suppression via servo-tracked occulting masks & apodizer apertures.',
-    warmthNote: 'Warm H%: wide servo lock capture · Cold H%: razor high-contrast occultation.',
-  },
-  polarization_filter: {
-    id: 'polarization_filter',
-    instrumentCode: 'POL-12',
-    title: 'Cosmic Polarization Filter',
-    subtitle: 'Crossed Polarizer Extinction',
-    physicalPrinciple: 'Malus’s Law polarized glare extinction isolating faint perpendicular dust filaments.',
-    warmthNote: 'Warm H%: forgiving polarizer extinction angle · Cold H%: crisp crossed-filter lock.',
-  },
-  exposure_stacker: {
-    id: 'exposure_stacker',
-    instrumentCode: 'EXP-13',
-    title: 'Long-Exposure Stacker',
-    subtitle: 'Variable-Iris Deep-Field Integration',
-    physicalPrinciple: 'Latched shutter blades & variable-aperture stacking with sub-frame cosmic-ray rejection.',
-    warmthNote: 'Warm H%: warm amber photon integration · Cold H%: strict cryo-cyan frame rejection.',
-  },
-  binary_mass_scale: {
-    id: 'binary_mass_scale',
-    instrumentCode: 'BIN-14',
-    title: 'Binary Star Mass Scale',
-    subtitle: 'Cosmic Barycenter Seesaw',
-    physicalPrinciple: 'Unequal-mass barycentric equilibrium (m₁r₁ = m₂r₂) & Keplerian orbital cadence.',
-    warmthNote: 'Warm H%: steady golden seesaw lock · Cold H%: precise Keplerian mass-ratio tuning.',
-  },
-  cepheid_ladder: {
-    id: 'cepheid_ladder',
-    instrumentCode: 'CEP-15',
-    title: 'Cepheid Distance Ladder',
-    subtitle: 'Heartbeat Photometer & Distance Ruler',
-    physicalPrinciple: 'Leavitt’s period–luminosity sparklines & split-mirror flux matching across megaparsec rungs.',
-    warmthNote: 'Warm H%: gentle golden pulsation envelope · Cold H%: strict megaparsec distance ruler.',
-  },
-  supernova_echoes: {
-    id: 'supernova_echoes',
-    instrumentCode: 'ECH-16',
-    title: 'Supernova Light-Echoes',
-    subtitle: 'Light-Echo Triangulation & Blast Rewind',
-    physicalPrinciple: 'Spherical light-echo curvature matching across cosmic dust patches & t=0 detonation focus.',
-    warmthNote: 'Warm H%: forgiving epicenter snap · Cold H%: forensic light-delay wavefront timing.',
-  },
-  horizon_seam_stitcher: {
-    id: 'horizon_seam_stitcher',
-    instrumentCode: 'SEM-17',
-    title: 'Horizon Seam Stitcher',
-    subtitle: 'Boundary Tile Continuity Repair',
-    physicalPrinciple: 'Spherical sky-survey tile unwarping & orientation matching across the enclosure horizon.',
-    warmthNote: 'Warm H%: forgiving celestial horizon lock · Cold H%: clinical enclosure seam inspection.',
-  },
-  michelson_fringe: {
-    id: 'michelson_fringe',
-    instrumentCode: 'INT-18',
-    title: 'Michelson Fringe Tuner',
-    subtitle: 'Optical Delay Phase Interference',
-    physicalPrinciple: 'Beam-splitter path equalization producing coherent Airy interference fringes.',
-    warmthNote: 'Warm H%: generous coherent delay capture · Cold H%: surgical sub-micron fringe lock.',
-  },
-  multiband_loupe: {
-    id: 'multiband_loupe',
-    instrumentCode: 'BND-19',
-    title: 'Spectral Band Loupe',
-    subtitle: 'X-Ray / IR / Optical Reveal',
-    physicalPrinciple: 'Multi-wavelength photometry penetrating Carina dust columns to uncover hidden stellar cores.',
-    warmthNote: 'Warm H%: soft multi-band dust veil · Cold H%: clinical X-ray & IR reticle clarity.',
-  },
-  einstein_cross: {
-    id: 'einstein_cross',
-    instrumentCode: 'MIR-20',
-    title: 'Einstein Cross Mirage',
-    subtitle: 'Time-Delayed Quasar Cadence',
-    physicalPrinciple: 'Strong gravitational lensing splits quasar bursts into identical cadence copies staggered in arrival time.',
-    warmthNote: 'Warm H%: golden quasar burst highlights · Cold H%: crisp gravitational time-delay markers.',
-  },
-  parallax_depth: {
-    id: 'parallax_depth',
-    instrumentCode: 'PRX-21',
-    title: 'Orbital Parallax Depth',
-    subtitle: 'Baseline Depth-Layer Sorting',
-    physicalPrinciple: 'Orbital baseline swings reveal 3D parallax depth trails vs. rogue proper-motion stars.',
-    warmthNote: 'Warm H%: luminous near/mid parallax trails · Cold H%: stark astrometric proper-motion vectors.',
-  },
+  wave_shaper: entry(
+    'wave_shaper',
+    'WAV-01',
+    'Carina Wave Tuner',
+    'Harmonic Waveform Shaping',
+    'Fourier superposition & phase resonance across traveling emission waves.',
+    'Warm H%: golden lock margin · Cold H%: surgical emission tuning.',
+    ['carina', 'tarantula', 'rho_ophiuchi'],
+    ['Carina H-Alpha Cliff', 'Tarantula O-III Ridge', 'Rho Ophiuchi Dust Echo', 'Deep Harmonic Cavity']
+  ),
+  constellation_recall: entry(
+    'constellation_recall',
+    'CON-02',
+    'Stellar Constellation',
+    'Parallax Spatial Memory',
+    'Astrometric parallax baselines against distant reference stars.',
+    'Warm H%: luminous gold starlight · Cold H%: crystalline astrometry grid.',
+    ['smacs', 'tarantula', 'hudf'],
+    ['SMACS Anchor Asterism', 'Doradus Supercluster', 'Ultra Deep Field Lattice', 'Sol-Centauri Baseline']
+  ),
+  pulsar_echo: entry(
+    'pulsar_echo',
+    'PLS-03',
+    'Pulsar Beacon Timing',
+    'Rotational Sweep & Jet Sync',
+    'Magnetized neutron star lighthouse rotation, glitches, and relativistic jets.',
+    'Warm H%: generous catch arc · Cold H%: razor pulsar phase sync.',
+    ['crab', 'cas_a', 'hudf'],
+    ['Crab Synchrotron Core', 'Cas A Remnant Spin', 'Millisecond Drift', 'Glitch Recovery Sweep']
+  ),
+  lens_focus: entry(
+    'lens_focus',
+    'LNS-04',
+    'Gravitational Lens Focus',
+    'Concentric Caustic De-Warping',
+    'Gravitational lensing caustic continuity and focal depth on SMACS 0723.',
+    'Warm H%: forgiving bezel snaps · Cold H%: crisp aperture calibration.',
+    ['smacs', 'stephans_quintet', 'cartwheel'],
+    ['SMACS 0723 Arcs', 'Quintet Tidal Shear', 'Cartwheel Ring Caustic', 'Deep Enclosure Seam']
+  ),
+  light_dispersion: entry(
+    'light_dispersion',
+    'DSP-05',
+    'Chromatic Light Disperser',
+    'Wavelength Refraction & Dust Penetration',
+    'Multi-wavelength prism dispersion & IR dust penetration.',
+    'Warm H%: broad spectral beam pockets · Cold H%: surgical refraction optics.',
+    ['pillars', 'horsehead', 'carina'],
+    ['Eagle Pillar Veil', 'Horsehead Rim Refraction', 'Carina IR Window', 'Twin Prism Dispersion']
+  ),
+  blink_spotter: entry(
+    'blink_spotter',
+    'BLK-06',
+    'Star Trajectory Predictor',
+    'Proper-Motion & Gravity Extrapolation',
+    'Epochal astrometry predicting linear, accelerating, and gravitationally bent paths.',
+    'Warm H%: generous Epoch 4 prediction ring · Cold H%: surgical extrapolation.',
+    ['hudf', 'stephans_quintet', 'smacs'],
+    ['HUDF High-PM Drift', 'Quintet Tidal Deflection', 'Cluster Lensing Arc', 'Binary Proper-Motion']
+  ),
+  gravity_slingshot: entry(
+    'gravity_slingshot',
+    'ORB-07',
+    'Gravity Slingshot',
+    'Orbital Trajectory Bending',
+    'Gravitational assist orbital mechanics around stellar wells.',
+    'Warm H%: golden orbital contours · Cold H%: stark ballistic trajectory grid.',
+    ['whirlpool', 'stephans_quintet', 'sombrero'],
+    ['M51 Companion Assist', 'Quintet Twin Wells', 'Sombrero Halo Sweep', 'Figure-8 Periapsis']
+  ),
+  exoplanet_transit: entry(
+    'exoplanet_transit',
+    'TRN-08',
+    'Exoplanet Transit Lab',
+    'Photometric Orbit Matching',
+    'Exoplanet transit photometry & multi-planet orbital periodicities.',
+    'Warm H%: luminous solar halo · Cold H%: sharp photometric dip trace.',
+    ['sombrero', 'southern_ring', 'rho_ophiuchi'],
+    ['Hot Jupiter Dip', 'Twin Resonant Worlds', 'Young Protostar Transit', 'Grazing Inclination']
+  ),
+  spectral_prism: entry(
+    'spectral_prism',
+    'PRM-09',
+    'Spectral Prism Mixer',
+    'Chemical Elements & Redshift',
+    'Atomic emission barcodes & cosmological Doppler redshift.',
+    'Warm H%: broad prism tolerance · Cold H%: precision z-shift vernier.',
+    ['ring_m57', 'cas_a', 'southern_ring'],
+    ['M57 Ionized Shell', 'Cas A Oxygen-Sulfur', 'Southern Ring Halo', 'High-z Doppler Comb']
+  ),
+  radio_triangulation: entry(
+    'radio_triangulation',
+    'TRI-10',
+    'Radio Dish Array',
+    'Interferometric Triangulation',
+    'Very Long Baseline Interferometry (VLBI) directional beam convergence.',
+    'Warm H%: broader amber beam cones · Cold H%: razor VLBI baselines.',
+    ['stephans_quintet', 'cartwheel', 'whirlpool'],
+    ['Quintet Shock Front', 'Cartwheel Core Fix', 'M51 Spiral Maser', 'Antipodal Drift Beacon']
+  ),
+  coronagraph_mask: entry(
+    'coronagraph_mask',
+    'COR-11',
+    'Solar Coronagraph Mask',
+    'Servo-Tracked Exoplanet Spot',
+    'Coronagraphic starlight suppression via servo-tracked occulting masks & apodizer apertures.',
+    'Warm H%: wide servo lock capture · Cold H%: razor high-contrast occultation.',
+    ['sombrero', 'rho_ophiuchi', 'horsehead'],
+    ['Fomalhaut Debris Companion', 'Rho Oph Young Giant', 'Horsehead Edge-On Rim', 'Dual-Orbit Apodizer']
+  ),
+  polarization_filter: entry(
+    'polarization_filter',
+    'POL-12',
+    'Cosmic Polarization Filter',
+    'Crossed Polarizer Extinction',
+    'Malus’s Law polarized glare extinction isolating faint perpendicular dust filaments.',
+    'Warm H%: forgiving polarizer extinction angle · Cold H%: crisp crossed-filter lock.',
+    ['horsehead', 'pillars', 'carina'],
+    ['Horsehead B-Field Rim', 'Eagle Pillar Alignment', 'Carina Dust Polarization', 'Tri-Vector Crossed Extinction']
+  ),
+  exposure_stacker: entry(
+    'exposure_stacker',
+    'EXP-13',
+    'Long-Exposure Stacker',
+    'Variable-Iris Deep-Field Integration',
+    'Latched shutter blades & variable-aperture stacking with sub-frame cosmic-ray rejection.',
+    'Warm H%: warm amber photon integration · Cold H%: strict cryo-cyan frame rejection.',
+    ['hudf', 'smacs', 'whirlpool'],
+    ['HUDF Ultra-Deep Stack', 'SMACS Cluster Exposure', 'M51 Faint Tidal Tail', 'Meteor Shower Dodger']
+  ),
+  binary_mass_scale: entry(
+    'binary_mass_scale',
+    'BIN-14',
+    'Binary Star Mass Scale',
+    'Cosmic Barycenter Seesaw',
+    'Unequal-mass barycentric equilibrium (m₁r₁ = m₂r₂) & Keplerian orbital cadence.',
+    'Warm H%: steady golden seesaw lock · Cold H%: precise Keplerian mass-ratio tuning.',
+    ['southern_ring', 'whirlpool', 'sombrero'],
+    ['Southern Ring Binary', 'M51a/b Tidal Pair', 'Compact Dark Companion', 'High-Ratio Red Dwarf']
+  ),
+  cepheid_ladder: entry(
+    'cepheid_ladder',
+    'CEP-15',
+    'Cepheid Distance Ladder',
+    'Heartbeat Photometer & Distance Ruler',
+    'Leavitt’s period–luminosity sparklines & split-mirror flux matching across megaparsec rungs.',
+    'Warm H%: gentle golden pulsation envelope · Cold H%: strict megaparsec distance ruler.',
+    ['whirlpool', 'stephans_quintet', 'cartwheel'],
+    ['Local Group Rung', 'Virgo / M51 Core', 'Dust-Veiled Starburst', 'Overtone Decoy Rung']
+  ),
+  supernova_echoes: entry(
+    'supernova_echoes',
+    'ECH-16',
+    'Supernova Light-Echoes',
+    'Light-Echo Triangulation & Blast Rewind',
+    'Spherical light-echo curvature matching across cosmic dust patches & t=0 detonation focus.',
+    'Warm H%: forgiving epicenter snap · Cold H%: forensic light-delay wavefront timing.',
+    ['cas_a', 'crab', 'tarantula'],
+    ['Cas A Echo Sheets', 'Crab 1054 Remnant', 'SN 1987A Tarantula', 'Asymmetric Dust Echo']
+  ),
+  horizon_seam_stitcher: entry(
+    'horizon_seam_stitcher',
+    'SEM-17',
+    'Horizon Seam Stitcher',
+    'Boundary Tile Continuity Repair',
+    'Spherical sky-survey tile unwarping & orientation matching across the enclosure horizon.',
+    'Warm H%: forgiving celestial horizon lock · Cold H%: clinical enclosure seam inspection.',
+    ['hudf', 'smacs', 'ring_m57'],
+    ['HUDF Mosaic Rift', 'SMACS Facet Join', 'M57 Polar Seam', '93-BLY Horizon Stitch']
+  ),
+  michelson_fringe: entry(
+    'michelson_fringe',
+    'INT-18',
+    'Michelson Fringe Tuner',
+    'Optical Delay Phase Interference',
+    'Beam-splitter path equalization producing coherent Airy interference fringes.',
+    'Warm H%: generous coherent delay capture · Cold H%: surgical sub-micron fringe lock.',
+    ['ring_m57', 'southern_ring', 'cartwheel'],
+    ['M57 Narrowband Fringe', 'Southern Ring Delay', 'Cartwheel Wide Baseline', 'Thermal Drift Nulling']
+  ),
+  multiband_loupe: entry(
+    'multiband_loupe',
+    'BND-19',
+    'Spectral Band Loupe',
+    'X-Ray / IR / Optical Reveal',
+    'Multi-wavelength photometry penetrating Carina dust columns to uncover hidden stellar cores.',
+    'Warm H%: soft multi-band dust veil · Cold H%: clinical X-ray & IR reticle clarity.',
+    ['pillars', 'crab', 'cas_a'],
+    ['Pillars Protostar Hunt', 'Crab X-Ray Wind Nebula', 'Cas A Ejecta Knots', 'Multi-Band Decoy Sweep']
+  ),
+  einstein_cross: entry(
+    'einstein_cross',
+    'MIR-20',
+    'Einstein Cross Mirage',
+    'Time-Delayed Quasar Cadence',
+    'Strong gravitational lensing splits quasar bursts into identical cadence copies staggered in arrival time.',
+    'Warm H%: golden quasar burst highlights · Cold H%: crisp gravitational time-delay markers.',
+    ['smacs', 'cartwheel', 'stephans_quintet'],
+    ['Huchra Quad Quasar', 'Cartwheel Lensed Burst', 'Quintet Foreground Mirage', 'Staggered Delay Echo']
+  ),
+  parallax_depth: entry(
+    'parallax_depth',
+    'PRX-21',
+    'Orbital Parallax Depth',
+    'Baseline Depth-Layer Sorting',
+    'Orbital baseline swings reveal 3D parallax depth trails vs. rogue proper-motion stars.',
+    'Warm H%: luminous near/mid parallax trails · Cold H%: stark astrometric proper-motion vectors.',
+    ['tarantula', 'rho_ophiuchi', 'horsehead'],
+    ['Tarantula Cluster Depth', 'Rho Oph 390ly Foreground', 'Horsehead Silhouette Plane', 'Rogue Proper-Motion Sweep']
+  ),
 };
 
 const REGISTRY: Record<string, () => IMinigame> = {
@@ -229,6 +316,10 @@ export class MinigameRegistry {
   create(id: string): IMinigame {
     const factory = REGISTRY[id] ?? REGISTRY.wave_shaper;
     return factory();
+  }
+
+  getEntry(id: string): MinigameCatalogEntry | undefined {
+    return MINIGAME_CATALOG[id];
   }
 
   listIds(): string[] {

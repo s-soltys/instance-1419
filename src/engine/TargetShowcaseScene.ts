@@ -8,6 +8,8 @@ import { platform } from '../platform/PlatformAdapter';
 import type {
   CameraKeyframe,
   Interactive3DHandle,
+  Minigame3DConfig,
+  Minigame3DPropRig,
   ShowcaseCouplingUpdate,
   ShowcaseInstrumentBridge,
 } from './minigames/types';
@@ -84,8 +86,27 @@ export class TargetShowcaseScene {
   private waveBand = 0.33;
   private opticalFidelity = 0.55;
   private active = false;
+  private desiredActive = false;
   private rafId = 0;
   private lastFrameMs = performance.now();
+
+  // Lightweight Single-Pass Minigame 3D Backdrop Mode state
+  private minigameBackdropCfg: Minigame3DConfig | null = null;
+  private minigameSuspended = false;
+  private readonly isCoarsePointer =
+    typeof window !== 'undefined' && Boolean(window.matchMedia?.('(pointer: coarse)').matches);
+  private currentAppliedDpr = 1;
+  private backdropFrameCounter = 0;
+  private backdropAvgMs = 6;
+  private parallaxTargetX = 0;
+  private parallaxTargetY = 0;
+  private parallaxCurrentX = 0;
+  private parallaxCurrentY = 0;
+  private minigameBackdropGroup = new THREE.Group();
+  private minigameStarDome: THREE.Points | null = null;
+  private minigamePropRigGroup = new THREE.Group();
+  private activePropRigKind: Minigame3DPropRig = 'none';
+  private propRigDustPoints: THREE.Points | null = null;
 
   private isDragging = false;
   private lastX = 0;
@@ -156,6 +177,9 @@ export class TargetShowcaseScene {
     this.scene = new THREE.Scene();
     this.rootGroup = new THREE.Group();
     this.scene.add(this.rootGroup);
+    this.minigameBackdropGroup.visible = false;
+    this.minigameBackdropGroup.add(this.minigamePropRigGroup);
+    this.scene.add(this.minigameBackdropGroup);
 
     this.camera = new THREE.PerspectiveCamera(
       48,
@@ -169,9 +193,9 @@ export class TargetShowcaseScene {
       alpha: false,
       powerPreference: 'high-performance',
     });
-    const isCoarse = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
-    const maxDpr = isCoarse ? 1.5 : 2;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+    const maxDpr = this.isCoarsePointer ? 1.5 : 2;
+    this.currentAppliedDpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+    this.renderer.setPixelRatio(this.currentAppliedDpr);
     this.renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.12;
@@ -483,6 +507,12 @@ export class TargetShowcaseScene {
           y: (-v.y * 0.5 + 0.5) * h,
           visible: v.z >= -1 && v.z <= 1,
         };
+      },
+      setMinigameBackdropMode: (cfg: Minigame3DConfig | null) => {
+        this.setMinigameBackdropMode(cfg);
+      },
+      setMinigameParallax: (nx: number, ny: number, progress01: number) => {
+        this.setMinigameParallax(nx, ny, progress01);
       },
     };
   }
@@ -1533,25 +1563,242 @@ export class TargetShowcaseScene {
     window.addEventListener('resize', () => this.resize());
   }
 
+  private applyTargetDpr(targetDpr: number): void {
+    const clamped = Math.max(0.75, Math.min(window.devicePixelRatio || 1, targetDpr));
+    if (Math.abs(clamped - this.currentAppliedDpr) < 0.02) return;
+    this.currentAppliedDpr = clamped;
+    this.renderer.setPixelRatio(clamped);
+    this.resize();
+  }
+
+  private ensureMinigameStarDome(): void {
+    if (this.minigameStarDome) return;
+    const count = 900;
+    const rand = this.makeRng(1419303);
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const r = 46 + rand() * 72;
+      const theta = rand() * Math.PI * 2;
+      const u = rand() * 2 - 1;
+      const s = Math.sqrt(Math.max(0, 1 - u * u));
+      pos[i * 3] = r * s * Math.cos(theta);
+      pos[i * 3 + 1] = r * u;
+      pos[i * 3 + 2] = r * s * Math.sin(theta);
+
+      const warm = rand();
+      col[i * 3] = 0.72 + warm * 0.28;
+      col[i * 3 + 1] = 0.78 + warm * 0.16;
+      col[i * 3 + 2] = 0.96 - warm * 0.28;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const mat = new THREE.PointsMaterial({
+      size: 0.34,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.65,
+      depthWrite: false,
+    });
+    this.minigameStarDome = new THREE.Points(geo, mat);
+    this.minigameBackdropGroup.add(this.minigameStarDome);
+  }
+
+  private disposeMinigamePropRig(): void {
+    this.propRigDustPoints = null;
+    while (this.minigamePropRigGroup.children.length > 0) {
+      const child = this.minigamePropRigGroup.children[0];
+      this.minigamePropRigGroup.remove(child);
+      child.traverse((obj) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Line || obj instanceof THREE.Points) {
+          obj.geometry.dispose();
+          const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+          for (const m of mats) m.dispose();
+        }
+      });
+    }
+    this.activePropRigKind = 'none';
+  }
+
+  /**
+   * Builds a restrained, ultra-low-cost (<500 verts, 1-3 draw calls) Zeiss-optical 3D prop rig
+   * for subtle spatial depth behind translucent 2D minigame canvases.
+   */
+  private ensureMinigamePropRig(kind: Minigame3DPropRig, accentHex = '#9cc8ff'): void {
+    if (this.activePropRigKind === kind) return;
+    this.disposeMinigamePropRig();
+    this.activePropRigKind = kind;
+    if (kind === 'none') return;
+
+    if (kind === 'orbital_plane') {
+      const radii = [10.5, 16.5];
+      for (let rIdx = 0; rIdx < radii.length; rIdx++) {
+        const rad = radii[rIdx];
+        const pts: THREE.Vector3[] = [];
+        for (let i = 0; i <= 72; i++) {
+          const a = (i / 72) * Math.PI * 2;
+          pts.push(new THREE.Vector3(Math.cos(a) * rad, Math.sin(a) * rad * 0.08, Math.sin(a) * rad));
+        }
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({
+          color: accentHex,
+          transparent: true,
+          opacity: rIdx === 0 ? 0.22 : 0.12,
+        });
+        this.minigamePropRigGroup.add(new THREE.LineLoop(geo, mat));
+      }
+      this.minigamePropRigGroup.rotation.set(0.28, 0, 0.14);
+    } else if (kind === 'lensing_shell') {
+      const ico = new THREE.IcosahedronGeometry(9.5, 1);
+      const wire = new THREE.WireframeGeometry(ico);
+      ico.dispose();
+      const mat = new THREE.LineBasicMaterial({
+        color: accentHex,
+        transparent: true,
+        opacity: 0.14,
+      });
+      this.minigamePropRigGroup.add(new THREE.LineSegments(wire, mat));
+      this.minigamePropRigGroup.rotation.set(0.18, 0.35, 0);
+    } else if (kind === 'dust_wisps') {
+      const count = 110;
+      const rand = this.makeRng(1419777);
+      const pos = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        const r = 4 + rand() * 14;
+        const a = rand() * Math.PI * 2;
+        pos[i * 3] = Math.cos(a) * r;
+        pos[i * 3 + 1] = (rand() - 0.5) * 9;
+        pos[i * 3 + 2] = Math.sin(a) * r;
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      const mat = new THREE.PointsMaterial({
+        color: accentHex,
+        size: 0.42,
+        transparent: true,
+        opacity: 0.24,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+      });
+      const pts = new THREE.Points(geo, mat);
+      this.propRigDustPoints = pts;
+      this.minigamePropRigGroup.add(pts);
+    } else if (kind === 'horizon_arc') {
+      // Subtle 93-BLY spherical horizon geodesic meridians (2 draw calls, ~180 verts)
+      for (let m = 0; m < 2; m++) {
+        const pts: THREE.Vector3[] = [];
+        const rad = 22;
+        for (let i = 0; i <= 64; i++) {
+          const a = (i / 64) * Math.PI * 2;
+          if (m === 0) pts.push(new THREE.Vector3(Math.cos(a) * rad, Math.sin(a) * rad, 0));
+          else pts.push(new THREE.Vector3(Math.cos(a) * rad, 0, Math.sin(a) * rad));
+        }
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({
+          color: accentHex,
+          transparent: true,
+          opacity: 0.14,
+        });
+        this.minigamePropRigGroup.add(new THREE.LineLoop(geo, mat));
+      }
+      this.minigamePropRigGroup.rotation.set(0.32, 0.24, 0.12);
+    }
+  }
+
+  /**
+   * Switches TargetShowcaseScene between full 3D showcase mode (`cfg === null`) and
+   * lightweight single-pass Minigame Backdrop Mode (no EffectComposer/UnrealBloomPass,
+   * DPR cap 1.0 mobile / 1.25 desktop, auto-30fps mobile guard, or full pause on `mode==='off'`).
+   */
+  setMinigameBackdropMode(cfg: Minigame3DConfig | null): void {
+    this.minigameBackdropCfg = cfg;
+    this.backdropFrameCounter = 0;
+    this.backdropAvgMs = 6;
+    this.parallaxTargetX = 0;
+    this.parallaxTargetY = 0;
+    this.parallaxCurrentX = 0;
+    this.parallaxCurrentY = 0;
+
+    if (!cfg) {
+      this.minigameSuspended = false;
+      this.rootGroup.visible = true;
+      this.minigameBackdropGroup.visible = false;
+      this.disposeMinigamePropRig();
+      this.renderer.toneMappingExposure = 1.12;
+      this.applyTargetDpr(this.isCoarsePointer ? 1.5 : 2);
+      this.resize();
+      if (this.desiredActive && !this.active) {
+        this.resumeLoop();
+      }
+      return;
+    }
+
+    if (cfg.mode === 'off') {
+      this.minigameSuspended = true;
+      this.minigameBackdropGroup.visible = false;
+      this.pauseLoop();
+      return;
+    }
+
+    this.minigameSuspended = false;
+    this.renderer.toneMappingExposure = cfg.exposure ?? 0.5;
+    this.applyTargetDpr(this.isCoarsePointer ? 1.0 : 1.25);
+
+    const showFullShowcase = cfg.mode === 'coupled_showcase';
+    this.rootGroup.visible = showFullShowcase;
+    this.ensureMinigameStarDome();
+    if (this.minigameStarDome) {
+      this.minigameStarDome.visible = !showFullShowcase;
+    }
+    this.ensureMinigamePropRig(cfg.propRig ?? 'none', cfg.accentHex ?? '#9cc8ff');
+    this.minigameBackdropGroup.visible = true;
+
+    if (this.desiredActive && !this.active) {
+      this.resumeLoop();
+    }
+  }
+
+  setMinigameParallax(nx: number, ny: number, progress01: number): void {
+    if (!this.minigameBackdropCfg || this.minigameBackdropCfg.mode === 'off') return;
+    this.parallaxTargetX = THREE.MathUtils.clamp(nx, -1, 1);
+    this.parallaxTargetY = THREE.MathUtils.clamp(ny, -1, 1);
+    this.instrumentPatch.progress = THREE.MathUtils.clamp(progress01, 0, 1);
+  }
+
   resize(): void {
     const w = Math.max(1, this.container.clientWidth);
     const h = Math.max(1, this.container.clientHeight);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
-    this.composer?.setSize(w, h);
-    this.bloomPass?.setSize(Math.max(1, Math.floor(w * 0.5)), Math.max(1, Math.floor(h * 0.5)));
+    if (!this.minigameBackdropCfg) {
+      this.composer?.setSize(w, h);
+      this.bloomPass?.setSize(Math.max(1, Math.floor(w * 0.5)), Math.max(1, Math.floor(h * 0.5)));
+    }
+  }
+
+  private resumeLoop(): void {
+    this.active = true;
+    this.resize();
+    this.lastFrameMs = performance.now();
+    if (!this.rafId) this.loop();
+  }
+
+  private pauseLoop(): void {
+    this.active = false;
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = 0;
+    }
   }
 
   setActive(active: boolean): void {
-    this.active = active;
-    if (active) {
-      this.resize();
-      this.lastFrameMs = performance.now();
-      if (!this.rafId) this.loop();
-    } else if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = 0;
+    this.desiredActive = active;
+    if (active && !this.minigameSuspended) {
+      this.resumeLoop();
+    } else {
+      this.pauseLoop();
     }
   }
 
@@ -1563,6 +1810,65 @@ export class TargetShowcaseScene {
     const dt = Math.min(0.05, (frameStart - this.lastFrameMs) / 1000);
     this.lastFrameMs = frameStart;
     const elapsed = frameStart * 0.001;
+
+    // Lightweight Single-Pass Minigame 3D Backdrop Mode
+    if (this.minigameBackdropCfg) {
+      this.backdropFrameCounter++;
+      const throttle30fps = this.isCoarsePointer || this.backdropAvgMs > 14;
+      if (throttle30fps && (this.backdropFrameCounter & 1) === 1) {
+        return;
+      }
+
+      const pScale = this.minigameBackdropCfg.parallaxScale ?? 0.03;
+      const drift = this.minigameBackdropCfg.driftSpeed ?? 0.014;
+      this.targetYaw += dt * drift;
+
+      const damp = 1 - Math.exp(-5.0 * dt);
+      this.parallaxCurrentX += (this.parallaxTargetX - this.parallaxCurrentX) * damp;
+      this.parallaxCurrentY += (this.parallaxTargetY - this.parallaxCurrentY) * damp;
+      this.orbitYaw += (this.targetYaw - this.orbitYaw) * damp;
+      this.orbitPitch += (this.targetPitch - this.orbitPitch) * damp;
+      this.orbitDist += (this.targetDist - this.orbitDist) * damp;
+
+      const effYaw = this.orbitYaw + this.parallaxCurrentX * pScale;
+      const effPitch = THREE.MathUtils.clamp(this.orbitPitch + this.parallaxCurrentY * pScale, -1.2, 1.2);
+      const cp = Math.cos(effPitch);
+      this.camera.position.set(
+        this.currentLookAt.x + this.orbitDist * cp * Math.sin(effYaw),
+        this.currentLookAt.y + this.orbitDist * Math.sin(effPitch),
+        this.currentLookAt.z + this.orbitDist * cp * Math.cos(effYaw)
+      );
+      this.camera.lookAt(this.currentLookAt);
+
+      if (this.minigamePropRigGroup.visible) {
+        this.minigamePropRigGroup.rotation.y += dt * (drift * 1.4);
+      }
+      if (this.propRigDustPoints) {
+        this.propRigDustPoints.rotation.y -= dt * 0.01;
+      }
+
+      if (this.rootGroup.visible) {
+        for (const m of this.shaderMats) {
+          if (m.uniforms.uTime) m.uniforms.uTime.value = elapsed;
+        }
+        for (const sp of this.spinObjects) {
+          sp.obj.rotation.x += dt * sp.speedX * 0.45;
+          sp.obj.rotation.y += dt * sp.speedY * 0.45;
+        }
+      }
+
+      // Direct single-pass render (bypasses EffectComposer / UnrealBloomPass / OpticalPolish)
+      this.renderer.render(this.scene, this.camera);
+
+      const frameElapsed = performance.now() - frameStart;
+      this.backdropAvgMs = this.backdropAvgMs * 0.88 + frameElapsed * 0.12;
+      if (this.backdropAvgMs > 22) {
+        // Hard perf guard: suspend 3D backdrop if device struggles so 2D gameplay stays 60fps
+        this.minigameSuspended = true;
+        this.pauseLoop();
+      }
+      return;
+    }
 
     if (!this.isDragging && !this.activeHandleId && !this.activeCameraKeyframe) {
       this.targetYaw += dt * 0.045;
@@ -1694,6 +2000,12 @@ export class TargetShowcaseScene {
   dispose(): void {
     this.setActive(false);
     this.clearRoot();
+    this.disposeMinigamePropRig();
+    if (this.minigameStarDome) {
+      this.minigameStarDome.geometry.dispose();
+      (this.minigameStarDome.material as THREE.Material).dispose();
+      this.minigameStarDome = null;
+    }
     this.composer?.dispose();
     this.renderer.dispose();
   }

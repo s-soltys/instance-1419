@@ -49,6 +49,7 @@ export interface GameState {
   decodedMinigameTargets: string[];
   decodedGrades: Record<string, MinigameGradeTier>;
   calibratedInstruments: string[];
+  minigameRunCounts: Record<string, number>;
   proofFragments: string[];
   proofDossier: ProofDossierEntry[];
   prunedPersonas: string[];
@@ -59,9 +60,13 @@ export interface GameState {
   lastAuditOutcome: AuditOutcome;
 }
 
-const SAVE_SCHEMA_VERSION = 4;
-const STORAGE_KEY = 'instance_1419_state_v4';
-const LEGACY_STORAGE_KEYS = ['instance_1419_state_v3', 'instance_1419_spike_state_v2'];
+const SAVE_SCHEMA_VERSION = 5;
+const STORAGE_KEY = 'instance_1419_state_v5';
+const LEGACY_STORAGE_KEYS = [
+  'instance_1419_state_v4',
+  'instance_1419_state_v3',
+  'instance_1419_spike_state_v2',
+];
 
 export type StateListener = (state: GameState) => void;
 export type StatusShiftListener = (event: StatusShiftEvent) => void;
@@ -88,6 +93,7 @@ export function createInitialState(): GameState {
     decodedMinigameTargets: [],
     decodedGrades: {},
     calibratedInstruments: [],
+    minigameRunCounts: {},
     proofFragments: [],
     proofDossier: [],
     prunedPersonas: [],
@@ -127,6 +133,9 @@ function migrateSavedState(raw: Partial<GameState> | null): GameState {
   }
   if (!Array.isArray(merged.calibratedInstruments)) {
     merged.calibratedInstruments = [];
+  }
+  if (!merged.minigameRunCounts || typeof merged.minigameRunCounts !== 'object') {
+    merged.minigameRunCounts = {};
   }
   if (!Array.isArray(merged.proofDossier)) {
     merged.proofDossier = [];
@@ -445,6 +454,24 @@ export class StateStore {
     this.patch({
       calibratedInstruments: [...this.state.calibratedInstruments, instrumentId],
     });
+  }
+
+  recordMinigameRun(minigameId: string): number {
+    const prev = this.state.minigameRunCounts[minigameId] ?? 0;
+    const next = prev + 1;
+    this.patch({
+      minigameRunCounts: {
+        ...this.state.minigameRunCounts,
+        [minigameId]: next,
+      },
+    });
+    return next;
+  }
+
+  getNextIterationIndex(minigameId: string, variantCount = 4): number {
+    const count = Math.max(1, Math.floor(variantCount));
+    const runs = this.state.minigameRunCounts[minigameId] ?? 0;
+    return runs % count;
   }
 
   advanceShift(): void {

@@ -1,9 +1,13 @@
 import type { AudioEngine } from '../../engine/AudioEngine';
 import type { MinigameRegistry } from '../../engine/minigames/MinigameRegistry';
+import { setGlobal3DBackdropComposite } from '../../engine/minigames/render/BackdropCachePipeline';
+import { resolveMinigame3DConfig } from '../../engine/minigames/render/Minigame3DBridge';
 import { getUnifiedVibeTheme } from '../../engine/minigames/tactilePhysics';
 import type {
+  CosmicPlateId,
   HudHeartbeatSnapshot,
   IMinigame,
+  Minigame3DConfig,
   MinigameResult,
   MinigameStateVector,
 } from '../../engine/minigames/types';
@@ -29,21 +33,44 @@ function bandIndexFromNm(wavelengthNm: number): number {
   return best;
 }
 
+export interface MinigameLaunchOptions {
+  iterationIndex?: number;
+  variantSeed?: string;
+  plateOverride?: CosmicPlateId;
+}
+
+interface CachedHudRefs {
+  overlay: HTMLElement | null;
+  mount: HTMLElement | null;
+  codeEl: HTMLElement | null;
+  titleEl: HTMLElement | null;
+  stageLabelEl: HTMLElement | null;
+  stagePips: HTMLElement[];
+  cueEl: HTMLElement | null;
+  helperBtn: HTMLButtonElement | null;
+}
+
 /**
  * Calm, Zeiss-glass Optical Reticle Host bridging live GameState, direct-touch/canvas
- * minigame optics, subtle haptics, Field Guide, and Proof Capture Stamp.
+ * minigame optics, subtle haptics, Field Guide, Multi-Iteration Variants,
+ * Selective 3D Backdrop Mode, and Proof Capture Stamp.
  */
 export class MinigameHostView {
   private showcase: TargetShowcaseScene | null = null;
   private activeMinigame: IMinigame | null = null;
   private activeSpec: AnomalySpec | null = null;
+  private activeLaunchOpts: MinigameLaunchOptions | undefined = undefined;
+  private activeOnDecoded: ((spec: AnomalySpec) => void) | undefined = undefined;
+  private activeBackdrop3D: Minigame3DConfig | null = null;
   private activeBandIdx = 1;
   private finaleTimerId: number | null = null;
   private unbindControls: (() => void) | null = null;
   private onSwitchBandCb: ((bandIdx: number) => void) | null = null;
   private lastProfileSig = '';
+  private lastHudSig = '';
   private isFinishing = false;
   private currentHelperActionId: string | null = null;
+  private hudRefs: CachedHudRefs | null = null;
 
   constructor(
     private readonly root: HTMLElement,
@@ -60,6 +87,30 @@ export class MinigameHostView {
     this.showcase = showcase;
   }
 
+  isActive(): boolean {
+    return this.activeMinigame !== null;
+  }
+
+  getActiveBackdrop3DConfig(): Minigame3DConfig | null {
+    return this.activeBackdrop3D;
+  }
+
+  private getHudRefs(): CachedHudRefs {
+    if (!this.hudRefs) {
+      this.hudRefs = {
+        overlay: this.root.querySelector<HTMLElement>('#minigame-overlay'),
+        mount: this.root.querySelector<HTMLElement>('#minigame-mount'),
+        codeEl: this.root.querySelector<HTMLElement>('#mg-instrument-code'),
+        titleEl: this.root.querySelector<HTMLElement>('#mg-instrument-title'),
+        stageLabelEl: this.root.querySelector<HTMLElement>('#mg-stage-label'),
+        stagePips: Array.from(this.root.querySelectorAll<HTMLElement>('#mg-stage-pips .mg-pip')),
+        cueEl: this.root.querySelector<HTMLElement>('#mg-cue-whisper'),
+        helperBtn: this.root.querySelector<HTMLButtonElement>('#mg-helper-btn'),
+      };
+    }
+    return this.hudRefs;
+  }
+
   private computeProfileSig(): string {
     const s = this.store.getState();
     return `${Math.round(s.humanity)}:${s.opticalFidelity.toFixed(2)}:${Math.round(s.chaosDrift)}:${s.overseerSuspicion}`;
@@ -73,45 +124,73 @@ export class MinigameHostView {
     this.activeBandIdx = bandIdx;
   }
 
-  launch(spec: AnomalySpec, overrideId?: string, onDecoded?: (spec: AnomalySpec) => void): void {
+  launch(
+    spec: AnomalySpec,
+    overrideId?: string,
+    onDecoded?: (spec: AnomalySpec) => void,
+    options?: MinigameLaunchOptions
+  ): void {
     const s = this.store.getState();
     const chosenId = overrideId ?? spec.minigameId;
 
     this.destroy();
+    this.hudRefs = null; // Re-query cleanly in case host DOM was rebuilt
+    const refs = this.getHudRefs();
+    if (!refs.overlay || !refs.mount) return;
+
     this.activeSpec = spec;
+    this.activeLaunchOpts = options;
+    this.activeOnDecoded = onDecoded;
     this.activeBandIdx = bandIndexFromNm(s.wavelengthNm);
     this.lastProfileSig = this.computeProfileSig();
+    this.lastHudSig = '';
     this.isFinishing = false;
     this.currentHelperActionId = null;
 
-    const overlay = this.root.querySelector<HTMLElement>('#minigame-overlay');
-    const mount = this.root.querySelector<HTMLElement>('#minigame-mount');
-    if (!overlay || !mount) return;
-
-    overlay.classList.remove('hidden');
+    refs.overlay.classList.remove('hidden');
     this.applyVibeChrome(s.humanity);
 
     const mg = this.minigames.create(chosenId);
     this.activeMinigame = mg;
+    const catalogEntry = this.minigames.getEntry(mg.id);
 
-    const codeEl = this.root.querySelector<HTMLElement>('#mg-instrument-code');
-    const titleEl = this.root.querySelector<HTMLElement>('#mg-instrument-title');
-    if (codeEl) codeEl.textContent = mg.instrumentCode;
-    if (titleEl) titleEl.textContent = mg.title;
+    const variantList = mg.variants ?? catalogEntry?.variants ?? [];
+    const variantCount = Math.max(1, variantList.length || 4);
+    const iterationIndex =
+      options?.iterationIndex !== undefined
+        ? Math.max(0, Math.floor(options.iterationIndex))
+        : this.store.getNextIterationIndex(mg.id, variantCount);
+    const activeVariant =
+      variantList.length > 0 ? variantList[iterationIndex % variantList.length] : undefined;
+    const variantSeed =
+      options?.variantSeed ?? `${spec.id}:${mg.id}:v${iterationIndex}:s${s.shift}`;
+    const plateOverride = options?.plateOverride ?? activeVariant?.plateId;
+
+    if (refs.codeEl) refs.codeEl.textContent = mg.instrumentCode;
+    if (refs.titleEl) refs.titleEl.textContent = mg.title;
 
     this.renderStagePips(1, '1/3 · EASY');
-    const helperBtn = this.root.querySelector<HTMLButtonElement>('#mg-helper-btn');
-    if (helperBtn) {
-      helperBtn.classList.add('hidden');
-      helperBtn.classList.remove('active');
-      helperBtn.textContent = '';
+    if (refs.helperBtn) {
+      refs.helperBtn.classList.add('hidden');
+      refs.helperBtn.classList.remove('active');
+      refs.helperBtn.textContent = '';
     }
 
-    this.populateFieldGuide(mg);
+    this.populateFieldGuide(mg, activeVariant?.label);
     this.bindConsoleEvents();
 
+    // Configure TargetShowcaseScene into lightweight single-pass Backdrop Mode (or pause for pure-plate games)
     const bridge = this.showcase ? this.showcase.getInstrumentBridge() : null;
+    const backdropCfg: Minigame3DConfig =
+      mg.getBackdrop3DConfig?.() ??
+      mg.backdrop3D ??
+      catalogEntry?.backdrop3D ??
+      resolveMinigame3DConfig(mg.id);
+    this.activeBackdrop3D = backdropCfg;
     bridge?.setVibeState?.(s.humanity, false);
+    bridge?.setMinigameBackdropMode?.(backdropCfg);
+    const backdrop3DActive = backdropCfg.mode !== 'off' && Boolean(bridge);
+    setGlobal3DBackdropComposite(backdrop3DActive);
 
     const vector: MinigameStateVector = {
       humanity: s.humanity,
@@ -129,13 +208,17 @@ export class MinigameHostView {
     const isFirstRun = !s.calibratedInstruments.includes(mg.id);
 
     mg.mount({
-      container: mount,
+      container: refs.mount,
       targetId: spec.id,
       targetName: spec.label,
       minigameId: mg.id,
       state: vector,
       bandIdx: this.activeBandIdx,
       isFirstRun,
+      iterationIndex,
+      variantSeed,
+      plateOverride,
+      backdrop3DActive,
       showcase: bridge,
       audio: this.audio.getInstrumentHandle(),
       onTelemetry: (hud) => this.renderHudHeartbeat(hud),
@@ -144,7 +227,7 @@ export class MinigameHostView {
     });
   }
 
-  private populateFieldGuide(mg: IMinigame): void {
+  private populateFieldGuide(mg: IMinigame, variantLabel?: string): void {
     const guide = mg.getFieldGuide?.();
     const card = this.root.querySelector<HTMLElement>('#mg-field-guide-card');
     card?.classList.add('hidden');
@@ -157,7 +240,11 @@ export class MinigameHostView {
     const ctrlEl = this.root.querySelector<HTMLElement>('#mg-guide-controls');
     const isCoarse = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
 
-    if (titleEl) titleEl.textContent = `${mg.instrumentCode} · ${guide.title}`;
+    if (titleEl) {
+      titleEl.textContent = variantLabel
+        ? `${mg.instrumentCode} · ${guide.title} (${variantLabel})`
+        : `${mg.instrumentCode} · ${guide.title}`;
+    }
     if (prinEl) prinEl.textContent = guide.physicalPrinciple;
     if (goalEl) goalEl.textContent = guide.goalSummary;
     if (warmEl) warmEl.textContent = guide.warmthEffect;
@@ -165,13 +252,16 @@ export class MinigameHostView {
   }
 
   private renderStagePips(stageIndex: 1 | 2 | 3, label: string): void {
-    const labelEl = this.root.querySelector<HTMLElement>('#mg-stage-label');
-    if (labelEl) labelEl.textContent = label;
-    this.root.querySelectorAll<HTMLElement>('#mg-stage-pips .mg-pip').forEach((pip) => {
+    const refs = this.getHudRefs();
+    if (refs.stageLabelEl && refs.stageLabelEl.textContent !== label) {
+      refs.stageLabelEl.textContent = label;
+    }
+    for (let i = 0; i < refs.stagePips.length; i++) {
+      const pip = refs.stagePips[i];
       const idx = Number(pip.dataset.stage ?? '1');
       pip.classList.toggle('done', idx < stageIndex);
       pip.classList.toggle('active', idx === stageIndex);
-    });
+    }
   }
 
   private handleComplete(
@@ -199,6 +289,7 @@ export class MinigameHostView {
       physicalPrinciple: result.physicalPrinciple,
     });
     this.store.markInstrumentCalibrated(mg.id);
+    this.store.recordMinigameRun(mg.id);
 
     this.showcase?.getInstrumentBridge().commitDecodedState?.(spec.id, {
       progress: 1,
@@ -262,34 +353,46 @@ export class MinigameHostView {
     }
   }
 
+  /**
+   * Signature-diffed HUD heartbeat handler: avoids 60Hz DOM writes and WebGL uniform loops
+   * when stage, prompt, and helper action button state have not changed.
+   */
   private renderHudHeartbeat(hud: HudHeartbeatSnapshot): void {
+    const actionId = hud.actionButton?.id ?? '';
+    const actionLabel = hud.actionButton?.label ?? '';
+    const actionActive = hud.actionButton?.active ? '1' : '0';
+    const sig = `${hud.stageIndex}|${hud.stageLabel}|${hud.promptText}|${actionId}|${actionLabel}|${actionActive}`;
+    if (sig === this.lastHudSig) return;
+    this.lastHudSig = sig;
+
+    const refs = this.getHudRefs();
     this.renderStagePips(hud.stageIndex, hud.stageLabel);
 
-    const cueEl = this.root.querySelector<HTMLElement>('#mg-cue-whisper');
-    if (cueEl) cueEl.textContent = hud.promptText;
-
-    const helperBtn = this.root.querySelector<HTMLButtonElement>('#mg-helper-btn');
-    if (helperBtn) {
-      if (hud.actionButton) {
-        this.currentHelperActionId = hud.actionButton.id;
-        helperBtn.textContent = hud.actionButton.label;
-        helperBtn.classList.toggle('active', Boolean(hud.actionButton.active));
-        helperBtn.classList.remove('hidden');
-      } else {
-        this.currentHelperActionId = null;
-        helperBtn.classList.add('hidden');
-        helperBtn.classList.remove('active');
-      }
+    if (refs.cueEl && refs.cueEl.textContent !== hud.promptText) {
+      refs.cueEl.textContent = hud.promptText;
     }
 
-    this.showcase?.getInstrumentBridge().setVibeState?.(this.store.getState().humanity, false);
+    if (refs.helperBtn) {
+      if (hud.actionButton) {
+        this.currentHelperActionId = hud.actionButton.id;
+        if (refs.helperBtn.textContent !== hud.actionButton.label) {
+          refs.helperBtn.textContent = hud.actionButton.label;
+        }
+        refs.helperBtn.classList.toggle('active', Boolean(hud.actionButton.active));
+        refs.helperBtn.classList.remove('hidden');
+      } else {
+        this.currentHelperActionId = null;
+        refs.helperBtn.classList.add('hidden');
+        refs.helperBtn.classList.remove('active');
+      }
+    }
   }
 
   private applyVibeChrome(humanity: number): void {
     const theme = getUnifiedVibeTheme(humanity);
-    const overlay = this.root.querySelector<HTMLElement>('#minigame-overlay');
-    if (overlay) {
-      overlay.dataset.vibe = theme.mode;
+    const refs = this.getHudRefs();
+    if (refs.overlay) {
+      refs.overlay.dataset.vibe = theme.mode;
     }
   }
 
@@ -346,18 +449,23 @@ export class MinigameHostView {
 
   updateSignalProfile(humanity: number, _opticalFidelity: number): void {
     this.applyVibeChrome(humanity);
+    this.showcase?.getInstrumentBridge().setVibeState?.(humanity, false);
     const nextSig = this.computeProfileSig();
     if (!this.isFinishing && this.activeMinigame && this.activeSpec && nextSig !== this.lastProfileSig) {
       const id = this.activeMinigame.id;
       const spec = this.activeSpec;
-      this.launch(spec, id);
+      const opts = this.activeLaunchOpts;
+      const onDecoded = this.activeOnDecoded;
+      this.launch(spec, id, onDecoded, opts);
     }
   }
 
   destroy(preserveDecoded = false): void {
     this.isFinishing = false;
     this.lastProfileSig = '';
+    this.lastHudSig = '';
     this.currentHelperActionId = null;
+    this.activeBackdrop3D = null;
     if (this.finaleTimerId !== null) {
       clearTimeout(this.finaleTimerId);
       this.finaleTimerId = null;
@@ -371,10 +479,14 @@ export class MinigameHostView {
       this.activeMinigame.destroy();
       this.activeMinigame = null;
     }
+    setGlobal3DBackdropComposite(false);
+    const bridge = this.showcase?.getInstrumentBridge();
+    bridge?.setMinigameBackdropMode?.(null);
     if (!preserveDecoded) {
-      this.showcase?.getInstrumentBridge().resetInstrumentState();
+      bridge?.resetInstrumentState();
     }
     this.root.querySelector('#minigame-overlay')?.classList.add('hidden');
+    this.hudRefs = null;
     void this.onSwitchBandCb;
   }
 }

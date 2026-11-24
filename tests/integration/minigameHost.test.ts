@@ -162,4 +162,39 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     expect(root.querySelector<HTMLElement>('#minigame-overlay')?.dataset.vibe).toBe('cold');
     expect(root.querySelector('#minigame-mount canvas')).not.toBe(firstCanvas);
   });
+
+  it('configures selective 3D backdrop mode per game and restores cleanly on destroy', () => {
+    const mockAudio = createMockAudioEngine();
+    const mockShowcase = createMockShowcaseScene();
+    const reg = new MinigameRegistry();
+    const spec = anomaliesData.anomalies[1] as AnomalySpec;
+
+    host = new MinigameHostView(
+      root,
+      store,
+      mockAudio as never,
+      reg,
+      new TelemetryLogger(store.getState())
+    );
+    host.attachShowcase(mockShowcase as never);
+
+    // Spatial game (wave_shaper) enables lightweight single-pass 3D backdrop mode
+    host.launch(spec, 'wave_shaper', undefined, { iterationIndex: 2 });
+    expect(mockShowcase._bridge.setMinigameBackdropMode).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: 'coupled_showcase' })
+    );
+    expect(root.querySelector('#mg-guide-title')?.textContent).toContain('Rho Ophiuchi Dust Echo');
+
+    // Pure-plate game (lens_focus) suspends 3D WebGL cleanly (mode: 'off')
+    mockShowcase._bridge.setMinigameBackdropMode!.mockClear();
+    host.launch(spec, 'lens_focus');
+    expect(mockShowcase._bridge.setMinigameBackdropMode).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: 'off' })
+    );
+
+    // Destroy restores full showcase mode (null)
+    mockShowcase._bridge.setMinigameBackdropMode!.mockClear();
+    host.destroy();
+    expect(mockShowcase._bridge.setMinigameBackdropMode).toHaveBeenCalledWith(null);
+  });
 });

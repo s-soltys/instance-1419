@@ -7,7 +7,12 @@ import { renderSpeakerAvatar } from './SpeakerAvatar';
 export interface DevHarnessBridge {
   openMode(mode: GameMode): void;
   openShowcase(targetId: string, waveNm?: number): void;
-  launchMinigame(minigameId: string, warmth?: number, opticalFidelity?: number): void;
+  launchMinigame(
+    minigameId: string,
+    warmth?: number,
+    opticalFidelity?: number,
+    iterationIndex?: number
+  ): void;
   setActiveMinigameProfile(warmth: number, opticalFidelity: number): void;
   openSiblingCommsWithWarmth(playerH: number, peerH: number): void;
   openDreamWithWarmth(playerH: number, pruned: boolean): void;
@@ -96,6 +101,7 @@ export class DevHarness {
   private customPeerH = 68;
   private minigameWarmth = 70;
   private minigameFidelity = 0.55;
+  private minigameVariantOverride: number | undefined = undefined;
 
   constructor(
     store: StateStore,
@@ -290,6 +296,14 @@ export class DevHarness {
                 <input id="qa-mg-chaos-slider" type="range" min="0" max="100" value="14" />
                 <span>Suspicion: <strong id="qa-mg-susp-val">0</strong></span>
                 <input id="qa-mg-susp-slider" type="range" min="0" max="5" value="0" />
+              </div>
+              <div class="qa-slider-inline" id="qa-mg-variant-row">
+                <span>Iteration Variant: <strong id="qa-mg-variant-val">AUTO</strong></span>
+                <button class="qa-chip active" data-mg-variant="auto" type="button">AUTO</button>
+                <button class="qa-chip" data-mg-variant="0" type="button">V1</button>
+                <button class="qa-chip" data-mg-variant="1" type="button">V2</button>
+                <button class="qa-chip" data-mg-variant="2" type="button">V3</button>
+                <button class="qa-chip" data-mg-variant="3" type="button">V4</button>
               </div>
             </div>
 
@@ -626,9 +640,27 @@ export class DevHarness {
         applyMgProfile(w, f);
       });
     });
+    const variantVal = this.host.querySelector<HTMLElement>('#qa-mg-variant-val');
+    const variantBtns = this.host.querySelectorAll<HTMLButtonElement>('[data-mg-variant]');
+    variantBtns.forEach((b) => {
+      b.addEventListener('click', () => {
+        const raw = b.dataset.mgVariant ?? 'auto';
+        this.minigameVariantOverride = raw === 'auto' ? undefined : Number(raw);
+        if (variantVal) {
+          variantVal.textContent = raw === 'auto' ? 'AUTO' : `V${Number(raw) + 1}`;
+        }
+        variantBtns.forEach((item) => item.classList.toggle('active', item === b));
+      });
+    });
+
     this.host.querySelectorAll<HTMLButtonElement>('[data-launch-mg]').forEach((b) => {
       b.addEventListener('click', () => {
-        this.bridge.launchMinigame(b.dataset.launchMg!, this.minigameWarmth, this.minigameFidelity);
+        this.bridge.launchMinigame(
+          b.dataset.launchMg!,
+          this.minigameWarmth,
+          this.minigameFidelity,
+          this.minigameVariantOverride
+        );
         this.maybeAutoHide();
       });
     });

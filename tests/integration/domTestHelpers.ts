@@ -32,6 +32,16 @@ export function installJsdomCanvasAndObservers(): void {
     moveTo: noop,
     lineTo: noop,
     arc: noop,
+    ellipse: noop,
+    rect: noop,
+    clip: noop,
+    drawImage: noop,
+    createImageData: (w: number, h: number) => ({
+      width: w,
+      height: h,
+      data: new Uint8ClampedArray(Math.max(1, w * h * 4)),
+    }),
+    putImageData: noop,
     roundRect: noop,
     fill: noop,
     stroke: noop,
@@ -43,10 +53,13 @@ export function installJsdomCanvasAndObservers(): void {
     fillStyle: '',
     strokeStyle: '',
     lineWidth: 1,
+    lineCap: 'butt',
+    lineJoin: 'miter',
     font: '',
     textAlign: 'left',
     textBaseline: 'alphabetic',
     globalAlpha: 1,
+    globalCompositeOperation: 'source-over',
     shadowColor: '',
     shadowBlur: 0,
   };
@@ -105,6 +118,8 @@ export function createMockShowcaseScene() {
     setVibeState: vi.fn(),
     commitDecodedState: vi.fn(),
     projectWorldToScreen: vi.fn(() => ({ x: 640, y: 360, visible: true })),
+    setMinigameBackdropMode: vi.fn(),
+    setMinigameParallax: vi.fn(),
   };
 
   return {

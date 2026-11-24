@@ -36,6 +36,11 @@ describe('MinigameRegistry catalog integrity', () => {
       expect(meta.instrumentCode.length).toBeGreaterThanOrEqual(5);
       expect(meta.title.length).toBeGreaterThan(3);
       expect(meta.warmthNote.length).toBeGreaterThan(20);
+      expect(meta.platePool.length).toBe(3);
+      expect(new Set(meta.platePool).size).toBe(3);
+      expect(meta.variants.length).toBe(4);
+      expect(meta.backdrop3D).toBeDefined();
+      expect(reg.getEntry(meta.id)).toEqual(meta);
       const instance = reg.create(meta.id);
       expect(instance.id).toBe(meta.id);
       expect(instance.instrumentCode).toBe(meta.instrumentCode);

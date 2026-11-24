@@ -34,6 +34,114 @@
       "notes": "Real JWST NIRCam Cosmic Cliffs star-forming nebula plate; used for Carina Rift Nursery sky target."
     },
     {
+      "path": "assets/astro/jwst_pillars_of_creation.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2216a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)",
+      "attribution": "NASA, ESA, CSA, STScI; J. DePasquale, A. Koekemoer, A. Pagan (STScI) — Pillars of Creation (Eagle Nebula / JWST NIRCam)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam Pillars of Creation dust columns (1280x800 landscape crop); used for multi-band dust penetration, dispersion, and polarization optics."
+    },
+    {
+      "path": "assets/astro/jwst_southern_ring.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2207b.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)",
+      "attribution": "NASA, ESA, CSA, STScI, and the Webb ERO Production Team — Southern Ring Nebula (NGC 3132 / JWST NIRCam)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam single-panel planetary nebula sculpted by a central binary star (1280x800 crop); used for binary mass, transit, prism, and fringe optics."
+    },
+    {
+      "path": "assets/astro/jwst_stephans_quintet.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2208a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)",
+      "attribution": "NASA, ESA, CSA, and STScI — Stephan's Quintet (JWST NIRCam & MIRI)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam+MIRI interacting galaxy group (1280x800 crop); used for VLBI triangulation, lensing, gravity slingshot, and extragalactic rungs."
+    },
+    {
+      "path": "assets/astro/jwst_tarantula_nebula.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2212a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)",
+      "attribution": "NASA, ESA, CSA, and STScI — Tarantula Nebula (30 Doradus / JWST NIRCam)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam Tarantula Nebula star-forming cavern (1280x740 native landscape); used for parallax depth, wave tuning, constellation, and light-echo variants."
+    },
+    {
+      "path": "assets/astro/jwst_crab_nebula.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2326a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)",
+      "attribution": "NASA, ESA, CSA, STScI, and T. Temim (Princeton University) — Crab Nebula (M1 / JWST NIRCam & MIRI)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam+MIRI supernova remnant and pulsar synchrotron core (1280x800 crop); used for pulsar beacon timing, supernova echoes, and multi-band loupe."
+    },
+    {
+      "path": "assets/astro/jwst_ring_nebula.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2320b.jpg",
+      "license": "CC BY 4.0 (ESA/Webb, NASA, CSA)",
+      "attribution": "ESA/Webb, NASA, CSA, M. Barlow, N. Cox, R. Wesson — Ring Nebula (M57 / JWST NIRCam)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam single-panel Ring Nebula planetary shell (1280x800 crop); used for spectral emission prism, Michelson fringes, and horizon seam variants."
+    },
+    {
+      "path": "assets/astro/jwst_cartwheel_galaxy.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2211a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)",
+      "attribution": "NASA, ESA, CSA, and STScI — Cartwheel Galaxy (JWST NIRCam & MIRI)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam+MIRI ring galaxy and companions (1280x800 crop); used for Einstein cross, gravitational lens, VLBI, and Cepheid ladder variants."
+    },
+    {
+      "path": "assets/astro/jwst_rho_ophiuchi.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2316a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)",
+      "attribution": "NASA, ESA, CSA, STScI, K. Pontoppidan (STScI), A. Pagan (STScI) — Rho Ophiuchi Cloud Complex (JWST NIRCam)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam nearest star-forming region at 390 ly (1280x800 crop); used for parallax depth, wave shaper, transit, and coronagraph variants."
+    },
+    {
+      "path": "assets/astro/jwst_cassiopeia_a.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2330a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)",
+      "attribution": "NASA, ESA, CSA, STScI, D. Milisavljevic (Purdue University), T. Temim (Princeton University), I. De Looze (University of Gent) — Cassiopeia A (JWST NIRCam)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam supernova remnant with light-echo filaments (1280x800 crop); used for supernova light-echoes, pulsar, spectral prism, and multi-band loupe."
+    },
+    {
+      "path": "assets/astro/jwst_horsehead_nebula.webp",
+      "source_url": "https://cdn.esawebb.org/archives/images/screen/weic2411a.jpg",
+      "license": "CC BY 4.0 (ESA/Webb, NASA, CSA)",
+      "attribution": "ESA/Webb, NASA, CSA, K. Misselt (University of Arizona), and A. Abergel (IAS/University Paris-Saclay, CNRS) — Horsehead Nebula (JWST NIRCam)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real JWST NIRCam Horsehead photodissociation rim (1280x800 lower-rim crop); used for polarization filter, dispersion, coronagraph, and parallax depth."
+    },
+    {
+      "path": "assets/astro/hubble_sombrero_galaxy.webp",
+      "source_url": "https://cdn.esahubble.org/archives/images/screen/opo0328a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Hubble)",
+      "attribution": "NASA/ESA and The Hubble Heritage Team (STScI/AURA) — Sombrero Galaxy (M104 / Hubble)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real Hubble optical edge-on galaxy with dark dust plane (1280x717 native landscape); used for exoplanet transit, coronagraph mask, binary mass, and slingshot."
+    },
+    {
+      "path": "assets/astro/hubble_whirlpool_m51.webp",
+      "source_url": "https://cdn.esahubble.org/archives/images/screen/heic0506a.jpg",
+      "license": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Hubble)",
+      "attribution": "NASA, ESA, S. Beckwith (STScI), and The Hubble Heritage Team (STScI/AURA) — Whirlpool Galaxy (M51 / Hubble)",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "Real Hubble optical grand-design spiral and tidal companion (1280x800 crop); used for Cepheid distance ladder, gravity slingshot, binary mass, and deep stacking."
+    },
+    {
       "path": "assets/characters/dream_spouse_impasto.webp",
       "source_url": "internal:generated",
       "license": "Project Original (Internal AI Prototype Draft)",

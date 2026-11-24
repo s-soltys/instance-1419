@@ -890,19 +890,24 @@ export class UIController {
     });
   }
 
-  private launchTargetMinigame(overrideId?: string): void {
+  private launchTargetMinigame(overrideId?: string, iterationIndex?: number): void {
     const s = this.store.getState();
     const spec =
       this.optics.getAnomalySpecs().find((a) => a.id === s.activeTargetId) ?? this.optics.getAnomalySpecs()[0];
     if (!spec) return;
-    this.minigameHost.launch(spec, overrideId, (decodedSpec) => {
-      this.renderBearingIndex();
-      const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
-      if (mgBtn) mgBtn.textContent = 'REPLAY SCAN INSTRUMENT';
-      if (this.store.getState().mode === 'waking_3d') {
-        this.maybeTriggerProactiveComms(decodedSpec);
-      }
-    });
+    this.minigameHost.launch(
+      spec,
+      overrideId,
+      (decodedSpec) => {
+        this.renderBearingIndex();
+        const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
+        if (mgBtn) mgBtn.textContent = 'REPLAY SCAN INSTRUMENT';
+        if (this.store.getState().mode === 'waking_3d') {
+          this.maybeTriggerProactiveComms(decodedSpec);
+        }
+      },
+      iterationIndex !== undefined ? { iterationIndex } : undefined
+    );
   }
 
   private openFutureHumanityEcho(): void {
@@ -1392,7 +1397,7 @@ export class UIController {
         }
         this.enterTargetInspect(targetId);
       },
-      launchMinigame: (minigameId, warmth, opticalFidelity) => {
+      launchMinigame: (minigameId, warmth, opticalFidelity, iterationIndex) => {
         const curr = this.store.getState();
         const patchObj: Partial<GameState> = {};
         if (typeof warmth === 'number') {
@@ -1412,9 +1417,11 @@ export class UIController {
           this.store.getState().mode !== 'target_inspect' ||
           this.store.getState().activeTargetId !== preferredTarget
         ) {
-          this.enterTargetInspect(preferredTarget, () => this.launchTargetMinigame(minigameId));
+          this.enterTargetInspect(preferredTarget, () =>
+            this.launchTargetMinigame(minigameId, iterationIndex)
+          );
         } else {
-          this.launchTargetMinigame(minigameId);
+          this.launchTargetMinigame(minigameId, iterationIndex);
         }
       },
       setActiveMinigameProfile: (warmth, opticalFidelity) => {

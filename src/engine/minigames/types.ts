@@ -1,13 +1,57 @@
 import type * as THREE from 'three';
 
 /**
- * Unified types & 8-Input State Vector for the 5+1 3D Tactile Investigation Suite.
+ * Unified types & 8-Input State Vector for the Instance-1419 Cosmic Instrument Suite.
  * Engine <-> Content isolated: prose/balance live in JSON, physics, 3D handles & audio live here.
  */
 
 export type VibeMode = 'warm' | 'balanced' | 'cold';
 
 export type MinigameGrade = 'aborted' | 'partial' | 'clean' | 'deep_overclock';
+
+export type CosmicPlateId =
+  | 'carina'
+  | 'smacs'
+  | 'hudf'
+  | 'pillars'
+  | 'southern_ring'
+  | 'stephans_quintet'
+  | 'tarantula'
+  | 'crab'
+  | 'ring_m57'
+  | 'cartwheel'
+  | 'rho_ophiuchi'
+  | 'cas_a'
+  | 'horsehead'
+  | 'sombrero'
+  | 'whirlpool';
+
+export type SpectralClass = 'O' | 'B' | 'A' | 'F' | 'G' | 'K' | 'M' | 'LOCK' | 'ALERT';
+
+export interface MinigameVariantSpec {
+  index: number;
+  id: string;
+  label: string;
+  plateId: CosmicPlateId;
+  scenarioTag?: string;
+}
+
+export type Minigame3DPropRig =
+  | 'none'
+  | 'orbital_plane'
+  | 'lensing_shell'
+  | 'dust_wisps'
+  | 'horizon_arc';
+
+export interface Minigame3DConfig {
+  mode: 'off' | 'ambient_stars' | 'coupled_showcase' | 'orbital_rig';
+  opacity?: number;
+  parallaxScale?: number;
+  propRig?: Minigame3DPropRig;
+  exposure?: number;
+  driftSpeed?: number;
+  accentHex?: string;
+}
 
 export interface MinigameStateVector {
   humanity: number;           // 0..maxHumanity
@@ -116,6 +160,9 @@ export interface ShowcaseInstrumentBridge {
     y: number;
     visible: boolean;
   };
+  // Lightweight Single-Pass Minigame 3D Backdrop Mode
+  setMinigameBackdropMode?(cfg: Minigame3DConfig | null): void;
+  setMinigameParallax?(nx: number, ny: number, progress01: number): void;
 }
 
 export interface BeatSynthParams {
@@ -160,6 +207,7 @@ export interface HudHeartbeatSnapshot {
   stageProgress: number; // 0..1 within stage or overall completion feel
   promptText: string;
   actionButton?: HudActionButtonSpec | null;
+  variantTag?: string;
 }
 
 export interface MinigameContext {
@@ -170,6 +218,10 @@ export interface MinigameContext {
   state: MinigameStateVector;
   bandIdx: number;
   isFirstRun?: boolean;
+  iterationIndex?: number;
+  variantSeed?: string;
+  plateOverride?: CosmicPlateId;
+  backdrop3DActive?: boolean;
   showcase: ShowcaseInstrumentBridge | null;
   audio: InstrumentAudioHandle | null;
   onTelemetry?: (hud: HudHeartbeatSnapshot) => void;
@@ -192,13 +244,18 @@ export interface MinigameResult {
   telemetrySummary: string;
 }
 
+export interface SolvabilityDiagnostics {
+  stage: number;
+  completed: boolean;
+  stageProgress: number;
+  variantIndex?: number;
+  variantId?: string;
+  stageCount?: number;
+}
+
 export interface SolvabilityHarness {
   solveStage(stage: 1 | 2 | 3): void;
-  getDiagnostics(): {
-    stage: number;
-    completed: boolean;
-    stageProgress: number;
-  };
+  getDiagnostics(): SolvabilityDiagnostics;
 }
 
 export interface IMinigame {
@@ -206,9 +263,13 @@ export interface IMinigame {
   readonly title: string;
   readonly subtitle: string;
   readonly instrumentCode: string;
+  readonly variants?: readonly MinigameVariantSpec[];
+  readonly platePool?: readonly CosmicPlateId[];
+  readonly backdrop3D?: Minigame3DConfig;
   mount(ctx: MinigameContext): void;
   onHelperAction?(actionId: string): void;
   getFieldGuide?(): InstrumentFieldGuide;
   getSolvabilityHarness?(): SolvabilityHarness;
+  getBackdrop3DConfig?(): Minigame3DConfig;
   destroy(): void;
 }

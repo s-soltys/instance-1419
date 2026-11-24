@@ -1533,9 +1533,9 @@ body,
 .mg-top-left {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px 10px;
-  max-width: 34%;
+  max-width: calc(50% - 112px);
   min-width: 0;
   pointer-events: auto;
 }
@@ -1544,6 +1544,7 @@ body,
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
   pointer-events: auto;
 }
 
@@ -1568,7 +1569,8 @@ body,
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100%;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .mg-stage-group {
@@ -1579,6 +1581,7 @@ body,
   border-radius: 999px;
   background: rgba(6, 11, 18, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.14);
+  flex-shrink: 0;
 }
 
 .mg-stage-pips {
@@ -2526,6 +2529,13 @@ body,
   color: #ffffff;
 }
 
+.qa-chip.active {
+  background: rgba(110, 158, 255, 0.22);
+  border-color: #6e9eff;
+  color: #ffffff;
+  font-weight: 600;
+}
+
 .qa-warmth-bar {
   background: #171d27;
   border: 1px solid #2b3545;
@@ -2903,22 +2913,32 @@ body,
   }
 
   .mg-top-hud {
-    padding: 8px 12px;
-    gap: 8px;
+    padding: 6px 10px;
+    gap: 6px;
   }
 
   .mg-top-left {
-    max-width: 44%;
-    gap: 4px 6px;
+    max-width: calc(50% - 92px);
+    flex-wrap: nowrap;
+    gap: 6px;
   }
 
   .mg-title-inline {
     display: none;
   }
 
+  .mg-stage-group {
+    padding: 2px 7px;
+    gap: 6px;
+  }
+
+  .mg-stage-label {
+    font-size: 9px;
+  }
+
   .mg-bottom-console {
-    padding: 8px 12px max(10px, env(safe-area-inset-bottom));
-    gap: 5px;
+    padding: 6px 12px max(8px, env(safe-area-inset-bottom));
+    gap: 4px;
   }
 
   .mg-cue-line {
