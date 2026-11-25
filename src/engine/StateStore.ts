@@ -19,8 +19,10 @@ export type MinigameGradeTier = 'partial' | 'clean' | 'deep_overclock';
 
 export const INTRO_TARGET_1_ID = 'sol_centauri_bearing';
 export const INTRO_TARGET_2_ID = 'cluster_j1419_a';
-export const STARTER_POOL_1 = ['light_dispersion', 'wave_shaper', 'constellation_recall'] as const;
-export const STARTER_POOL_2 = ['lens_focus', 'multiband_loupe', 'polarization_filter'] as const;
+export const INTRO_TARGET_1_MINIGAME = 'multiband_loupe';
+export const INTRO_TARGET_2_MINIGAME = 'lens_focus';
+export const STARTER_POOL_1 = [INTRO_TARGET_1_MINIGAME] as const;
+export const STARTER_POOL_2 = [INTRO_TARGET_2_MINIGAME] as const;
 
 const VALID_GAME_MODES = new Set<GameMode>(['boot', 'waking_3d', 'dream_2d', 'ending']);
 const VALID_INTRO_STAGES = new Set<IntroStage>([
@@ -33,13 +35,10 @@ const VALID_INTRO_STAGES = new Set<IntroStage>([
   'complete',
 ]);
 
-function pickStarterPair(seed: number): { target1: string; target2: string } {
-  const s = (Math.abs(Math.floor(seed)) >>> 0) || 1419;
-  const h1 = (Math.imul(s, 1664525) + 1013904223) >>> 0;
-  const h2 = (Math.imul(h1, 1664525) + 1013904223) >>> 0;
+function pickStarterPair(_seed: number): { target1: string; target2: string } {
   return {
-    target1: STARTER_POOL_1[h1 % STARTER_POOL_1.length],
-    target2: STARTER_POOL_2[h2 % STARTER_POOL_2.length],
+    target1: INTRO_TARGET_1_MINIGAME,
+    target2: INTRO_TARGET_2_MINIGAME,
   };
 }
 
@@ -241,6 +240,14 @@ export class StateStore {
   private state: GameState;
   private listeners = new Set<StateListener>();
   private shiftListeners = new Set<StatusShiftListener>();
+  private saveTimerId: ReturnType<typeof setTimeout> | null = null;
+  private dirtySave = false;
+  private readonly onPageHideBound = () => this.flushSave();
+  private readonly onVisibilityChangeBound = () => {
+    if (typeof document !== 'undefined' && document.hidden) {
+      this.flushSave();
+    }
+  };
 
   constructor() {
     let saved = platform.loadState<Partial<GameState>>(STORAGE_KEY);
@@ -255,6 +262,12 @@ export class StateStore {
       }
     }
     this.state = migrateSavedState(saved);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', this.onPageHideBound);
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this.onVisibilityChangeBound);
+    }
   }
 
   getState(): GameState {
@@ -278,9 +291,44 @@ export class StateStore {
     }
   }
 
+  private scheduleSave(): void {
+    this.dirtySave = true;
+    if (this.saveTimerId !== null) {
+      clearTimeout(this.saveTimerId);
+    }
+    this.saveTimerId = setTimeout(() => {
+      this.saveTimerId = null;
+      if (this.dirtySave) {
+        this.dirtySave = false;
+        platform.saveState(STORAGE_KEY, this.state);
+      }
+    }, 250);
+  }
+
+  flushSave(): void {
+    if (this.saveTimerId !== null) {
+      clearTimeout(this.saveTimerId);
+      this.saveTimerId = null;
+    }
+    if (this.dirtySave) {
+      this.dirtySave = false;
+      platform.saveState(STORAGE_KEY, this.state);
+    }
+  }
+
+  dispose(): void {
+    this.flushSave();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('pagehide', this.onPageHideBound);
+    }
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.onVisibilityChangeBound);
+    }
+  }
+
   private commit(next: GameState): void {
     this.state = next;
-    platform.saveState(STORAGE_KEY, this.state);
+    this.scheduleSave();
     for (const listener of this.listeners) {
       listener(this.state);
     }
@@ -661,10 +709,19 @@ export class StateStore {
   }
 
   reset(): void {
+    if (this.saveTimerId !== null) {
+      clearTimeout(this.saveTimerId);
+      this.saveTimerId = null;
+    }
+    this.dirtySave = false;
     platform.clearState(STORAGE_KEY);
     for (const legacyKey of LEGACY_STORAGE_KEYS) {
       platform.clearState(legacyKey);
     }
-    this.commit(createInitialState());
+    this.state = createInitialState();
+    platform.saveState(STORAGE_KEY, this.state);
+    for (const listener of this.listeners) {
+      listener(this.state);
+    }
   }
 }

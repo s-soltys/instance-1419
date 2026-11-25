@@ -102,7 +102,7 @@ describe('Minigame solvability matrix (all 21 cosmic games x 4 curated iteration
 
   for (const meta of catalog) {
     for (const regime of REGIMES) {
-      it(`completes ${meta.instrumentCode} (${meta.id}) across Stage 1 -> 2 -> 3 in "${regime.name}"`, () => {
+      it(`completes ${meta.instrumentCode} (${meta.id}) across Stage 1 -> 2 -> 3 in "${regime.name}"`, async () => {
         const mountEl = document.createElement('div');
         document.body.appendChild(mountEl);
 
@@ -110,7 +110,7 @@ describe('Minigame solvability matrix (all 21 cosmic games x 4 curated iteration
         const showcase = createMockShowcaseScene();
         let completed: MinigameResult | null = null;
 
-        const inst = reg.create(meta.id);
+        const inst = await reg.createAsync(meta.id);
         inst.mount({
           container: mountEl,
           targetId: `target_${meta.id}`,
@@ -151,7 +151,7 @@ describe('Minigame solvability matrix (all 21 cosmic games x 4 curated iteration
       });
     }
 
-    it(`solves all 4 curated iterations (V1..V4) of ${meta.instrumentCode} (${meta.id}) in Warm (H=82) & Cold (H=30) with 4 distinct variantIds`, () => {
+    it(`solves all 4 curated iterations (V1..V4) of ${meta.instrumentCode} (${meta.id}) in Warm (H=82) & Cold (H=30) with 4 distinct variantIds`, async () => {
       const seenVariantIds = new Set<string>();
 
       for (const regime of VARIANT_REGIMES) {
@@ -163,7 +163,7 @@ describe('Minigame solvability matrix (all 21 cosmic games x 4 curated iteration
           const showcase = createMockShowcaseScene();
           let completed: MinigameResult | null = null;
 
-          const inst = reg.create(meta.id);
+          const inst = await reg.createAsync(meta.id);
           inst.mount({
             container: mountEl,
             targetId: `target_${meta.id}`,
@@ -234,8 +234,8 @@ describe('Minigame solvability matrix (all 21 cosmic games x 4 curated iteration
     expect(violations).toEqual([]);
   });
 
-  it('guarantees DSP-05 V3 Stage 3 unblocked 4-band solution across 36 seeds and enforces verifySolved() failure throwing', () => {
-    const dsp = reg.create('light_dispersion');
+  it('guarantees DSP-05 V3 Stage 3 unblocked 4-band solution across 36 seeds and enforces verifySolved() failure throwing', async () => {
+    const dsp = await reg.createAsync('light_dispersion');
     for (let s = 0; s < 36; s++) {
       const mountEl = document.createElement('div');
       document.body.appendChild(mountEl);

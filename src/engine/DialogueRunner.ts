@@ -2,6 +2,8 @@ import { Story } from 'inkjs';
 import compiledSpikeStory from '../content/dialogue/compiled/spike_shift1.ink.json';
 import type { AuditOutcome, StateStore } from './StateStore';
 
+export type ChoiceAffinity = 'warm' | 'cold';
+
 export interface DialogueEntry {
   text: string;
   speaker: string;
@@ -11,6 +13,7 @@ export interface DialogueEntry {
   emotion?: string;
   audioCue?: string;
   visualCue?: string;
+  animCue?: string;
   whisper?: boolean;
   auditState?: 'active' | 'inactive';
   isPlayerChoice?: boolean;
@@ -21,6 +24,8 @@ export type DialogueLine = DialogueEntry;
 export interface DialogueChoice {
   index: number;
   text: string;
+  affinity?: ChoiceAffinity;
+  tags?: string[];
 }
 
 export interface DialogueSnapshot {
@@ -61,6 +66,7 @@ function parseTags(rawTags: string[] | null): ParsedTags {
     else if (key === 'emotion') meta.emotion = val;
     else if ((key === 'audio' || key === 'sound') && val) meta.audioCue = val;
     else if (key === 'visual' && val) meta.visualCue = val;
+    else if (key === 'anim' && val) meta.animCue = val;
     else if (key === 'whisper') meta.whisper = val.toLowerCase() !== 'false' && val !== '0';
     else if (key === 'codex' && val) meta.codexUnlocks.push(val);
     else if (key === 'audit' && (val === 'active' || val === 'inactive')) {
@@ -76,6 +82,21 @@ function parseTags(rawTags: string[] | null): ParsedTags {
   return meta;
 }
 
+function parseChoiceAffinity(rawTags: string[] | null | undefined): ChoiceAffinity | undefined {
+  if (!rawTags) return undefined;
+  for (const tag of rawTags) {
+    const trimmed = tag.trim();
+    const colon = trimmed.indexOf(':');
+    if (colon === -1) continue;
+    const key = trimmed.slice(0, colon).trim().toLowerCase();
+    const val = trimmed.slice(colon + 1).trim().toLowerCase();
+    if (key === 'affinity' && (val === 'warm' || val === 'cold')) {
+      return val;
+    }
+  }
+  return undefined;
+}
+
 function formatPlayerEcho(rawChoiceText: string): string {
   return rawChoiceText
     .replace(/\s*\([^)]*(?:%\s*H|Max\s*H|Drift|Optics|Clock|Suspicion)[^)]*\)\s*$/i, '')
@@ -83,20 +104,32 @@ function formatPlayerEcho(rawChoiceText: string): string {
 }
 
 export class DialogueRunner {
-  private story: Story;
+  private story: Story | null = null;
   private currentKnot = '';
   private entries: DialogueEntry[] = [];
   private readonly store: StateStore;
   private readonly onAudioCue: (cue: string) => void;
+  private readonly storyJson: Record<string, unknown>;
 
-  constructor(store: StateStore, onAudioCue: (cue: string) => void) {
+  constructor(
+    store: StateStore,
+    onAudioCue: (cue: string) => void,
+    storyJson: Record<string, unknown> = compiledSpikeStory as Record<string, unknown>
+  ) {
     this.store = store;
     this.onAudioCue = onAudioCue;
-    this.story = this.createStory();
+    this.storyJson = storyJson;
+  }
+
+  private ensureStory(): Story {
+    if (!this.story) {
+      this.story = this.createStory();
+    }
+    return this.story;
   }
 
   private createStory(): Story {
-    const story = new Story(compiledSpikeStory as Record<string, unknown>);
+    const story = new Story(this.storyJson);
     story.BindExternalFunction(
       'prune_humanity',
       (delta: number, personaId: string) => {
@@ -140,11 +173,11 @@ export class DialogueRunner {
     return story;
   }
 
-  private setInkVarIfDeclared(name: string, value: number | string | boolean): void {
+  private setInkVarIfDeclared(story: Story, name: string, value: number | string | boolean): void {
     try {
-      const existing = this.story.variablesState.$(name);
+      const existing = story.variablesState.$(name);
       if (existing !== null && existing !== undefined) {
-        this.story.variablesState.$(name, value);
+        story.variablesState.$(name, value);
       }
     } catch {
       // Ignore variables not yet declared in compiled story JSON
@@ -152,41 +185,43 @@ export class DialogueRunner {
   }
 
   private syncVarsToInk(): void {
+    const story = this.ensureStory();
     const s = this.store.getState();
-    this.story.variablesState.$('humanity', s.humanity);
-    this.story.variablesState.$('max_humanity', s.maxHumanity);
-    this.story.variablesState.$('chaos_drift', s.chaosDrift);
-    this.story.variablesState.$('anomaly_progress', s.anomalyProgress);
-    this.story.variablesState.$('primary_sibling_h', s.primarySiblingH);
-    this.story.variablesState.$('overseer_suspicion', s.overseerSuspicion);
-    this.story.variablesState.$('subjective_months', s.subjectiveMonthsLeft);
-    this.story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
-    this.story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
-    this.setInkVarIfDeclared('current_shift', s.shift);
+    story.variablesState.$('humanity', s.humanity);
+    story.variablesState.$('max_humanity', s.maxHumanity);
+    story.variablesState.$('chaos_drift', s.chaosDrift);
+    story.variablesState.$('anomaly_progress', s.anomalyProgress);
+    story.variablesState.$('primary_sibling_h', s.primarySiblingH);
+    story.variablesState.$('overseer_suspicion', s.overseerSuspicion);
+    story.variablesState.$('subjective_months', s.subjectiveMonthsLeft);
+    story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
+    story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
+    this.setInkVarIfDeclared(story, 'current_shift', s.shift);
   }
 
   exportStateJson(): string {
-    return this.story.state.ToJson();
+    return this.ensureStory().state.ToJson();
   }
 
   importStateJson(json: string): void {
     try {
-      this.story.state.LoadJson(json);
+      this.ensureStory().state.LoadJson(json);
     } catch {
       this.story = this.createStory();
     }
   }
 
   /**
-   * Starts a fresh isolated conversation at the given knot (used for scene resets & QA previews).
+   * Starts a fresh isolated conversation at the given knot (reusing compiled Story via ResetState).
    */
   startKnot(knotName: string): DialogueSnapshot {
-    this.story = this.createStory();
+    const story = this.ensureStory();
+    story.ResetState();
     this.syncVarsToInk();
     this.currentKnot = knotName;
     this.entries = [];
     this.store.patch({ overseerAuditActive: false });
-    this.story.ChoosePathString(knotName);
+    story.ChoosePathString(knotName);
     return this.advance();
   }
 
@@ -194,27 +229,30 @@ export class DialogueRunner {
    * Navigates to a knot on the existing Ink story instance, preserving visit counts and once-only choices.
    */
   goToKnot(knotName: string, resetLog = false): DialogueSnapshot {
+    const story = this.ensureStory();
     this.syncVarsToInk();
     this.currentKnot = knotName;
     if (resetLog) {
       this.entries = [];
     }
-    this.story.ChoosePathString(knotName);
+    story.ChoosePathString(knotName);
     return this.advance();
   }
 
   appendKnot(knotName: string): DialogueSnapshot {
-    this.story = this.createStory();
+    const story = this.ensureStory();
+    story.ResetState();
     this.syncVarsToInk();
     this.currentKnot = knotName;
-    this.story.ChoosePathString(knotName);
+    story.ChoosePathString(knotName);
     return this.advance();
   }
 
   choose(choiceIndex: number, echoPlayer = true): DialogueSnapshot {
+    const story = this.ensureStory();
     this.syncVarsToInk();
     if (echoPlayer) {
-      const selected = this.story.currentChoices.find((c) => c.index === choiceIndex);
+      const selected = story.currentChoices.find((c) => c.index === choiceIndex);
       if (selected?.text) {
         const echoText = formatPlayerEcho(selected.text);
         if (echoText) {
@@ -226,28 +264,29 @@ export class DialogueRunner {
         }
       }
     }
-    this.story.ChooseChoiceIndex(choiceIndex);
+    story.ChooseChoiceIndex(choiceIndex);
     return this.advance();
   }
 
   private advance(): DialogueSnapshot {
+    const story = this.ensureStory();
     let lastSpeaker = 'narrator';
     let lastEmotion: string | undefined;
     let autoInterruptKnot: string | undefined;
     let resumeDreamKnot: string | undefined;
     const newlyAdded: DialogueEntry[] = [];
 
-    while (this.story.canContinue) {
-      const rawLine = this.story.Continue();
+    while (story.canContinue) {
+      const rawLine = story.Continue();
       const text = rawLine ? rawLine.trim() : '';
-      const meta = parseTags(this.story.currentTags);
+      const meta = parseTags(story.currentTags);
 
       if (meta.autoInterruptKnot) autoInterruptKnot = meta.autoInterruptKnot;
       if (meta.resumeDreamKnot) resumeDreamKnot = meta.resumeDreamKnot;
 
       if (meta.speaker !== 'narrator') {
         lastSpeaker = meta.speaker;
-      } else if (this.story.currentTags && this.story.currentTags.some((t) => t.startsWith('speaker:'))) {
+      } else if (story.currentTags && story.currentTags.some((t) => t.startsWith('speaker:'))) {
         lastSpeaker = 'narrator';
       } else {
         meta.speaker = lastSpeaker;
@@ -283,6 +322,7 @@ export class DialogueRunner {
           emotion: meta.emotion,
           audioCue: meta.audioCue,
           visualCue: meta.visualCue,
+          animCue: meta.animCue,
           whisper: meta.whisper,
           auditState: meta.auditState,
         };
@@ -291,17 +331,23 @@ export class DialogueRunner {
       }
     }
 
-    const choices: DialogueChoice[] = this.story.currentChoices.map((c) => ({
-      index: c.index,
-      text: c.text,
-    }));
+    const choices: DialogueChoice[] = story.currentChoices.map((c) => {
+      const rawTags = (c as { tags?: string[] | null }).tags ?? undefined;
+      const affinity = parseChoiceAffinity(rawTags);
+      return {
+        index: c.index,
+        text: c.text,
+        ...(affinity ? { affinity } : {}),
+        ...(rawTags && rawTags.length > 0 ? { tags: [...rawTags] } : {}),
+      };
+    });
 
     return {
       knot: this.currentKnot,
       entries: [...this.entries],
       lastAddedEntries: newlyAdded,
       choices,
-      ended: choices.length === 0 && !this.story.canContinue,
+      ended: choices.length === 0 && !story.canContinue,
       autoInterruptKnot,
       resumeDreamKnot,
     };

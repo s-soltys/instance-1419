@@ -2,10 +2,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   createInitialState,
   INTRO_TARGET_1_ID,
+  INTRO_TARGET_1_MINIGAME,
   INTRO_TARGET_2_ID,
+  INTRO_TARGET_2_MINIGAME,
   migrateSavedState,
-  STARTER_POOL_1,
-  STARTER_POOL_2,
   StateStore,
 } from '../../src/engine/StateStore';
 
@@ -14,16 +14,16 @@ describe('StateStore invariants & economy', () => {
     localStorage.clear();
   });
 
-  it('initializes with valid canon defaults, introStage prologue, starter pools, and schema version 7', () => {
+  it('initializes with valid canon defaults, introStage prologue, fixed starter pair, and schema version 7', () => {
     const store = new StateStore();
     const s = store.getState();
     expect(s.saveSchemaVersion).toBe(7);
     expect(s.introStage).toBe('prologue');
     expect(store.hasSavedProgress()).toBe(false);
-    expect(STARTER_POOL_1).toContain(s.introTarget1Minigame);
-    expect(STARTER_POOL_2).toContain(s.introTarget2Minigame);
-    expect(store.getMinigameIdForTarget(INTRO_TARGET_1_ID, 'fallback_mg')).toBe(s.introTarget1Minigame);
-    expect(store.getMinigameIdForTarget(INTRO_TARGET_2_ID, 'fallback_mg')).toBe(s.introTarget2Minigame);
+    expect(s.introTarget1Minigame).toBe('multiband_loupe');
+    expect(s.introTarget2Minigame).toBe('lens_focus');
+    expect(store.getMinigameIdForTarget(INTRO_TARGET_1_ID, 'fallback_mg')).toBe(INTRO_TARGET_1_MINIGAME);
+    expect(store.getMinigameIdForTarget(INTRO_TARGET_2_ID, 'fallback_mg')).toBe(INTRO_TARGET_2_MINIGAME);
     expect(store.getMinigameIdForTarget('carina_rift_nebula', 'wave_shaper')).toBe('wave_shaper');
     expect(s.humanity).toBeLessThanOrEqual(s.maxHumanity);
     expect(s.proofFragments).toEqual([]);
@@ -34,34 +34,29 @@ describe('StateStore invariants & economy', () => {
     expect(s.proofDossier).toEqual([]);
     expect(s.codexUnlocks).toEqual([]);
     expect(s.codexSeenStages).toEqual({});
+    store.dispose();
   });
 
-  it('deterministically seeds starter pools per run and persists introStage transitions', () => {
-    const seededA = createInitialState(141901);
-    const seededB = createInitialState(141901);
-    expect(seededA.introTarget1Minigame).toBe(seededB.introTarget1Minigame);
-    expect(seededA.introTarget2Minigame).toBe(seededB.introTarget2Minigame);
-
-    const seenPool1 = new Set<string>();
-    const seenPool2 = new Set<string>();
-    for (let seed = 1; seed <= 40; seed++) {
+  it('locks fixed optics starter pair across seeds and persists introStage transitions cleanly', () => {
+    for (let seed = 1; seed <= 10; seed++) {
       const st = createInitialState(seed * 97);
-      seenPool1.add(st.introTarget1Minigame);
-      seenPool2.add(st.introTarget2Minigame);
+      expect(st.introTarget1Minigame).toBe('multiband_loupe');
+      expect(st.introTarget2Minigame).toBe('lens_focus');
     }
-    expect(seenPool1.size).toBe(STARTER_POOL_1.length);
-    expect(seenPool2.size).toBe(STARTER_POOL_2.length);
 
     const store = new StateStore();
     expect(store.hasSavedProgress()).toBe(false);
     store.setIntroStage('scan_target_1');
+    store.flushSave();
     expect(store.getState().introStage).toBe('scan_target_1');
     expect(store.hasSavedProgress()).toBe(true);
 
     const reloaded = new StateStore();
     expect(reloaded.getState().introStage).toBe('scan_target_1');
-    expect(reloaded.getState().introTarget1Minigame).toBe(store.getState().introTarget1Minigame);
-    expect(reloaded.getState().introTarget2Minigame).toBe(store.getState().introTarget2Minigame);
+    expect(reloaded.getState().introTarget1Minigame).toBe('multiband_loupe');
+    expect(reloaded.getState().introTarget2Minigame).toBe('lens_focus');
+    store.dispose();
+    reloaded.dispose();
   });
 
   it('migrates legacy v4/v6 saves (including removed target_inspect mode) seamlessly to v7', () => {
@@ -84,8 +79,8 @@ describe('StateStore invariants & economy', () => {
     expect(s.introStage).toBe('complete');
     expect(s.shift).toBe(3);
     expect(s.humanity).toBe(62);
-    expect(STARTER_POOL_1).toContain(s.introTarget1Minigame);
-    expect(STARTER_POOL_2).toContain(s.introTarget2Minigame);
+    expect(s.introTarget1Minigame).toBe('multiband_loupe');
+    expect(s.introTarget2Minigame).toBe('lens_focus');
     expect(s.minigameRunCounts).toEqual({});
     expect(s.codexUnlocks).toEqual([]);
     expect(s.codexSeenStages).toEqual({});

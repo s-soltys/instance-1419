@@ -23,6 +23,7 @@ uniform float uHumanity;    // 0.0..1.0
 uniform float uPruned;      // 0.0..1.0
 uniform float uOverseer;    // 0.0..1.0
 uniform float uReveal;      // 0.0..1.0 entrance reveal
+uniform float uSlicePulse;  // 0.0..1.0 Overseer clinical intercept slice
 uniform float uViewAspect;  // viewport width / height
 uniform float uTexAspect;   // texture width / height
 uniform vec2 uFaceAnchor;   // per-persona normalized face center (0..1)
@@ -98,26 +99,35 @@ void main() {
   uv.x += sin(uv.y * 9.0 + uTime * 0.38) * 0.0014 * warmFactor;
   uv.y += cos(uv.x * 8.0 + uTime * 0.30) * 0.0011 * warmFactor;
 
-  // Voronoi shard dispersion as H% falls
+  // Voronoi shard dispersion as H% falls (skipped completely when shardAmt == 0)
   float shardAmt = smoothstep(0.42, 0.92, decay);
-  vec3 vor = voronoi(uv * mix(7.5, 14.0, shardAmt));
-  vec2 cellOffset = (hash22(vor.yz) - 0.5) * 0.055 * shardAmt;
-  vec2 sampleUv = clamp(uv + cellOffset, 0.002, 0.998);
+  vec3 vor = vec3(0.0);
+  vec2 sampleUv = uv;
+  if (shardAmt > 0.001) {
+    vor = voronoi(uv * mix(7.5, 14.0, shardAmt));
+    vec2 cellOffset = (hash22(vor.yz) - 0.5) * 0.055 * shardAmt;
+    sampleUv = clamp(uv + cellOffset, 0.002, 0.998);
+  }
 
-  // Subtle glitch tear during low H% or Overseer audit
+  // Subtle glitch tear during low H%, Overseer audit, or live Overseer slice pulse
   float glitchBand = step(0.972, sin(uv.y * 46.0 + uTime * 1.9)) * (shardAmt * 0.014 + uOverseer * 0.006);
+  if (uSlicePulse > 0.005) {
+    float sliceRow = sin(uv.y * 92.0 + uSlicePulse * 18.0);
+    glitchBand += step(0.72, sliceRow) * (0.022 * uSlicePulse) * sign(cos(uv.y * 37.0));
+  }
   sampleUv.x = clamp(sampleUv.x + glitchBand, 0.002, 0.998);
 
-  // Localized facial/figure blur + mild full-frame defocus + chromatic split at low H%
+  // Localized facial/figure blur + mild full-frame defocus + single-tap chromatic split at low H%
   float faceMask = smoothstep(0.28, 0.04, length((sampleUv - uFaceAnchor) * vec2(1.05, 0.85)));
   float blurRadius = lowH * (0.0045 + 0.0175 * faceMask) + (1.0 - reveal) * 0.022;
   vec3 baseCol = sampleBlurred(uTexture, sampleUv, blurRadius);
 
-  if (lowH > 0.05) {
-    float chroma = lowH * (0.0022 + 0.0038 * faceMask);
-    float rCh = sampleBlurred(uTexture, clamp(sampleUv + vec2(chroma, 0.0), 0.002, 0.998), blurRadius * 0.65).r;
-    float bCh = sampleBlurred(uTexture, clamp(sampleUv - vec2(chroma, 0.0), 0.002, 0.998), blurRadius * 0.65).b;
-    baseCol = vec3(mix(baseCol.r, rCh, 0.68), baseCol.g, mix(baseCol.b, bCh, 0.68));
+  if (lowH > 0.05 || uSlicePulse > 0.02) {
+    float chroma = lowH * (0.0022 + 0.0038 * faceMask) + uSlicePulse * 0.006;
+    float rCh = texture2D(uTexture, clamp(sampleUv + vec2(chroma, 0.0), 0.002, 0.998)).r;
+    float bCh = texture2D(uTexture, clamp(sampleUv - vec2(chroma, 0.0), 0.002, 0.998)).b;
+    float chMix = clamp(0.68 + uSlicePulse * 0.25, 0.0, 1.0);
+    baseCol = vec3(mix(baseCol.r, rCh, chMix), baseCol.g, mix(baseCol.b, bCh, chMix));
   }
 
   // Warm impasto enhancement at high H% -> cool silver-cyan clinical drain at low H%
@@ -130,8 +140,10 @@ void main() {
   col = mix(col, vec3(lum * 0.72, lum * 0.86, lum * 1.02), faceMask * lowH * 0.28);
 
   // Shard fracture edges & subtle geometric wireframe telemetry at low H%
-  float crack = smoothstep(0.48, 0.64, vor.x) * shardAmt;
-  col = mix(col, vec3(0.04, 0.08, 0.13), crack * 0.62);
+  if (shardAmt > 0.001) {
+    float crack = smoothstep(0.48, 0.64, vor.x) * shardAmt;
+    col = mix(col, vec3(0.04, 0.08, 0.13), crack * 0.62);
+  }
 
   vec2 gridUv = abs(fract(vUv * vec2(22.0, 12.0)) - 0.5);
   float wire = (1.0 - smoothstep(0.0, 0.018, min(gridUv.x, gridUv.y))) * smoothstep(0.48, 0.95, decay);
@@ -149,13 +161,14 @@ void main() {
   }
 
   // Overseer Audit interrogation dimming, clinical desaturation & razor-thin telemetry bars
-  if (uOverseer > 0.01) {
-    float scan = sin(vUv.y * 320.0 + uTime * 2.4) * 0.018 * uOverseer;
+  float overseerFx = max(uOverseer, uSlicePulse * 0.85);
+  if (overseerFx > 0.01) {
+    float scan = sin(vUv.y * 320.0 + uTime * 2.4) * 0.018 * overseerFx;
     float desat = dot(col, vec3(0.3, 0.59, 0.11));
-    col = mix(col, vec3(desat * 0.62, desat * 0.72, desat * 0.82) + scan, uOverseer * 0.68);
+    col = mix(col, vec3(desat * 0.62, desat * 0.72, desat * 0.82) + scan, overseerFx * 0.68);
     float topLine = smoothstep(0.003, 0.0, abs(vUv.y - 0.935));
     float botLine = smoothstep(0.003, 0.0, abs(vUv.y - 0.065));
-    col = mix(col, vec3(0.84, 0.93, 1.0), clamp(topLine + botLine, 0.0, 1.0) * uOverseer * 0.75);
+    col = mix(col, vec3(0.84, 0.93, 1.0), clamp(topLine + botLine, 0.0, 1.0) * overseerFx * 0.75);
   }
 
   gl_FragColor = vec4(col, 1.0);

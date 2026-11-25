@@ -81,4 +81,47 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
     expect(store.getState().maxHumanity).toBeLessThan(maxBeforePrune);
     expect(store.getState().lastAuditOutcome).toBe('pruned');
   });
+
+  it('parses # anim:<phase> on entries and # affinity:warm|cold choice tags through DialogueRunner', async () => {
+    const { Compiler } = await import('inkjs/compiler/Compiler');
+    const inkSource = `
+VAR humanity = 70
+VAR max_humanity = 90
+VAR chaos_drift = 14
+VAR anomaly_progress = 0
+VAR primary_sibling_h = 68
+VAR overseer_suspicion = 0
+VAR subjective_months = 24
+VAR spouse_pruned = false
+VAR last_audit_outcome = "none"
+VAR current_shift = 1
+
+=== test_tags ===
+# speaker:overseer # visual:prologue_fracture # anim:phase_fracture # sound:overseer_slice
+Telemetry check.
+* [Hold onto the cup # affinity:warm]
+  Warm branch.
+  -> DONE
+* [Log the drift # affinity:cold]
+  Cold branch.
+  -> DONE
+`;
+    const compiled = new Compiler(inkSource).Compile();
+    const storyJson = JSON.parse(compiled.ToJson()) as Record<string, unknown>;
+    const store = new StateStore();
+    const cues: string[] = [];
+    const runner = new DialogueRunner(store, (cue) => cues.push(cue), storyJson);
+
+    const snap = runner.startKnot('test_tags');
+    expect(snap.entries).toHaveLength(1);
+    expect(snap.entries[0].text).toBe('Telemetry check.');
+    expect(snap.entries[0].visualCue).toBe('prologue_fracture');
+    expect(snap.entries[0].animCue).toBe('phase_fracture');
+    expect(cues).toContain('overseer_slice');
+
+    expect(snap.choices).toHaveLength(2);
+    expect(snap.choices[0].affinity).toBe('warm');
+    expect(snap.choices[1].affinity).toBe('cold');
+    store.dispose();
+  });
 });

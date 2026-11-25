@@ -5,6 +5,16 @@ import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { renderSpeakerAvatar } from './SpeakerAvatar';
 import type { TransitionKind } from './TransitionDirector';
 
+export interface DevPerfSnapshot {
+  mode: GameMode;
+  active: boolean;
+  calls: number;
+  triangles: number;
+  geometries: number;
+  textures: number;
+  dpr: number;
+}
+
 export interface DevHarnessBridge {
   openMode(mode: GameMode): void;
   jumpToIntroStage(stage: IntroStage): void;
@@ -26,6 +36,7 @@ export interface DevHarnessBridge {
   previewTransition(kind: TransitionKind): void;
   exportTelemetry(): void;
   resetAll(): void;
+  getPerfSnapshot?: () => DevPerfSnapshot;
 }
 
 type TabId = 'scenes' | 'npcs' | 'minigames' | 'alerts' | 'audio';
@@ -103,6 +114,10 @@ export class DevHarness {
   private minigameWarmth = 70;
   private minigameFidelity = 0.55;
   private minigameVariantOverride: number | undefined = undefined;
+  private perfRafId = 0;
+  private perfTimerId: number | null = null;
+  private perfFrames = 0;
+  private perfWindowStart = 0;
 
   constructor(
     store: StateStore,
@@ -127,6 +142,9 @@ export class DevHarness {
     this.render();
     this.bindEvents();
     this.store.subscribe((s) => this.syncState(s));
+    if (this.isOpen) {
+      this.startPerfMonitor();
+    }
   }
 
   private render(): void {
@@ -145,6 +163,7 @@ export class DevHarness {
           <div class="qa-brand">
             <span class="qa-badge">DEV HARNESS · NOT PART OF GAME UI</span>
             <span class="qa-stats" id="qa-live-stats">H 70/90 · DRIFT 14% · ANOM 0% · CLOCK 24 MO · SUSP 0</span>
+            <span class="qa-stats" id="qa-perf-stats">PERF -- FPS</span>
           </div>
           <div class="qa-header-controls">
             <label class="qa-autohide-label">
@@ -444,6 +463,51 @@ export class DevHarness {
     if (tab) {
       const span = tab.querySelector('span:nth-child(2)');
       if (span) span.textContent = open ? '▲ HIDE QA TEST HARNESS' : '▾ QA TEST HARNESS';
+    }
+    if (open) {
+      this.startPerfMonitor();
+    } else {
+      this.stopPerfMonitor();
+    }
+  }
+
+  private startPerfMonitor(): void {
+    if (this.perfRafId || this.perfTimerId !== null) return;
+    this.perfFrames = 0;
+    this.perfWindowStart = performance.now();
+    const tick = () => {
+      if (!this.isOpen) return;
+      this.perfFrames++;
+      this.perfRafId = requestAnimationFrame(tick);
+    };
+    this.perfRafId = requestAnimationFrame(tick);
+    this.perfTimerId = window.setInterval(() => {
+      if (!this.isOpen) return;
+      const now = performance.now();
+      const elapsedSec = Math.max(0.05, (now - this.perfWindowStart) / 1000);
+      const fps = Math.round(this.perfFrames / elapsedSec);
+      this.perfFrames = 0;
+      this.perfWindowStart = now;
+      const el = this.host.querySelector<HTMLElement>('#qa-perf-stats');
+      if (!el) return;
+      const snap = this.bridge.getPerfSnapshot?.();
+      if (!snap) {
+        el.textContent = `${fps} FPS`;
+        return;
+      }
+      const triK = snap.triangles >= 1000 ? `${(snap.triangles / 1000).toFixed(1)}K` : String(snap.triangles);
+      el.textContent = `${fps} FPS · ${snap.calls} DRAW · ${triK} TRI · ${snap.geometries} GEO · ${snap.textures} TEX · DPR ${snap.dpr.toFixed(2)}`;
+    }, 500);
+  }
+
+  private stopPerfMonitor(): void {
+    if (this.perfRafId) {
+      cancelAnimationFrame(this.perfRafId);
+      this.perfRafId = 0;
+    }
+    if (this.perfTimerId !== null) {
+      window.clearInterval(this.perfTimerId);
+      this.perfTimerId = null;
     }
   }
 

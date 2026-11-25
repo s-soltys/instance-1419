@@ -72,7 +72,7 @@ float noise3(vec3 x) {
 float fbm3(vec3 p) {
   float v = 0.0;
   float a = 0.5;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 3; i++) {
     v += a * noise3(p);
     p = p * 2.15 + vec3(1.3, 4.7, 2.9);
     a *= 0.5;
@@ -462,40 +462,13 @@ varying float vKind;
 varying float vNearFade;
 varying float vWorldZ;
 
+uniform sampler2D uPuffAtlas;
 uniform float uTime;
 uniform float uWaveBand;
 uniform float uJetResonance; // 0=UV, 0.33=Visible, 0.67=Near-IR, 1.0=Mid-IR
 uniform float uDustPeel;
 uniform float uSlicePlaneZ;
 uniform float uVibeCold;
-
-float hash21(vec2 p) {
-  p = fract(p * vec2(127.1, 311.7));
-  p += dot(p, p + 19.19);
-  return fract(p.x * p.y);
-}
-
-float noise2(vec2 p) {
-  vec2 i = floor(p);
-  vec2 f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-  return mix(
-    mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
-    mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x),
-    f.y
-  );
-}
-
-float fbm2(vec2 p) {
-  float v = 0.0;
-  float a = 0.5;
-  for (int i = 0; i < 4; i++) {
-    v += a * noise2(p);
-    p = p * 2.06 + vec2(2.3, 1.7);
-    a *= 0.5;
-  }
-  return v;
-}
 
 void main() {
   if (vNearFade < 0.02) discard;
@@ -509,7 +482,12 @@ void main() {
   float sa = sin(rot);
   vec2 ruv = vec2(uv.x * ca - uv.y * sa, uv.x * sa + uv.y * ca);
 
-  float n = fbm2(ruv * 2.4 + vec2(vSeed * 13.7, vSeed * 5.1));
+  float cellIdx = floor(clamp(vSeed, 0.0, 0.9999) * 4.0);
+  float qx = mod(cellIdx, 2.0);
+  float qy = floor(cellIdx * 0.5);
+  vec2 atlasUv = (vec2(qx, qy) + clamp(ruv * 0.5 + 0.5, 0.02, 0.98)) * 0.5;
+  float n = texture2D(uPuffAtlas, atlasUv).r;
+
   float radial = smoothstep(1.0, 0.12, r);
   float density = radial * smoothstep(0.24, 0.78, n + 0.16);
   if (density < 0.02) discard;
@@ -669,7 +647,7 @@ void main() {
 }
 `;
 
-/* ==================== SINGLE-PASS OPTICAL POLISH & WARM/COLD POST SHADER ==================== */
+/* ==================== SINGLE-PASS OPTICAL POLISH & WARM/COLD POST SHADER (ACES + sRGB) ==================== */
 export const OPTICAL_POLISH_SHADER = {
   uniforms: {
     tDiffuse: { value: null },
@@ -678,6 +656,8 @@ export const OPTICAL_POLISH_SHADER = {
     uRawResidual: { value: 0 },
     uRegFilm: { value: 0 },
     uChromatic: { value: 0.0018 },
+    uExposure: { value: 1.12 },
+    uTransitionBurst: { value: 0.0 },
   },
   vertexShader: /* glsl */ `
     varying vec2 vUv;
@@ -694,6 +674,8 @@ export const OPTICAL_POLISH_SHADER = {
     uniform float uRawResidual;
     uniform float uRegFilm;
     uniform float uChromatic;
+    uniform float uExposure;
+    uniform float uTransitionBurst;
     varying vec2 vUv;
 
     float hash12(vec2 p) {
@@ -702,20 +684,54 @@ export const OPTICAL_POLISH_SHADER = {
       return fract((p3.x + p3.y) * p3.z);
     }
 
+    vec3 polishRRTAndODTFit(vec3 v) {
+      vec3 a = v * (v + 0.0245786) - 0.000090537;
+      vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+      return a / b;
+    }
+
+    vec3 polishACESFilmic(vec3 color) {
+      const mat3 polishACESInputMat = mat3(
+        vec3(0.59719, 0.07600, 0.02840),
+        vec3(0.35458, 0.90834, 0.13383),
+        vec3(0.04823, 0.01566, 0.83777)
+      );
+      const mat3 polishACESOutputMat = mat3(
+        vec3(1.60475, -0.10208, -0.00327),
+        vec3(-0.53108, 1.10813, -0.07276),
+        vec3(-0.07367, -0.00605, 1.07602)
+      );
+      color = polishACESInputMat * (color / 0.6);
+      color = polishRRTAndODTFit(color);
+      color = polishACESOutputMat * color;
+      return clamp(color, 0.0, 1.0);
+    }
+
+    vec3 polishLinearToSRGB(vec3 c) {
+      vec3 lo = c * 12.92;
+      vec3 hi = 1.055 * pow(max(c, vec3(0.0)), vec3(1.0 / 2.4)) - 0.055;
+      return mix(lo, hi, step(vec3(0.0031308), c));
+    }
+
     void main() {
       vec2 centered = vUv - 0.5;
       float r = length(centered);
       vec2 dir = r > 0.0001 ? centered / r : vec2(0.0);
-      float disp = uChromatic * r * r * (1.0 + uVibeCold * 0.8);
+      float disp = uChromatic * r * r * (1.0 + uVibeCold * 0.8 + uTransitionBurst * 2.2);
 
       float cr = texture2D(tDiffuse, vUv + dir * disp).r;
       float cg = texture2D(tDiffuse, vUv).g;
       float cb = texture2D(tDiffuse, vUv - dir * disp).b;
-      vec3 col = vec3(cr, cg, cb);
+      vec3 col = max(vec3(cr, cg, cb), 0.0);
 
-      // Subtle optical falloff & 3.2% cinema grain (per ART_DIRECTION.md)
+      // Subtle optical falloff & exposure burst during dive/pullback
       float vig = smoothstep(0.92, 0.34, r);
-      col *= mix(0.84, 1.0, vig);
+      col *= mix(0.84, 1.0, vig) * uExposure * (1.0 + uTransitionBurst * 0.35);
+
+      // ACES Filmic tone mapping + linear-to-sRGB output (eliminates separate OutputPass)
+      col = polishLinearToSRGB(polishACESFilmic(col));
+
+      // 3.2% cinema grain (per ART_DIRECTION.md)
       float grain = (hash12(vUv * 900.0 + fract(uTime * 17.0)) - 0.5) * 0.032;
       col += grain;
 
@@ -730,7 +746,7 @@ export const OPTICAL_POLISH_SHADER = {
         col = mix(col, vec3(dot(col, vec3(0.3, 0.59, 0.11))) * vec3(0.75, 0.92, 1.05), uRegFilm * 0.35) + regTint;
       }
 
-      gl_FragColor = vec4(max(col, 0.0), 1.0);
+      gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
     }
   `,
 };

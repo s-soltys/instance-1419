@@ -100,16 +100,22 @@ export class TransitionDirector {
       this.activeFromEl = fromEl;
       fromEl.dataset.leaveKind = opts.kind;
       fromEl.dataset.leaveTone = tone;
-      fromEl.classList.remove('is-leaving');
-      void fromEl.offsetWidth;
+      const wasLeaving = fromEl.classList.contains('is-leaving');
+      if (wasLeaving) {
+        fromEl.classList.remove('is-leaving');
+        void fromEl.offsetWidth;
+      }
       fromEl.classList.add('is-leaving');
     }
 
+    const wasActive = stageEl.classList.contains('is-active') || stageEl.classList.contains('is-pulse');
     stageEl.classList.remove('is-active', 'is-pulse');
     stageEl.dataset.kind = opts.kind;
     stageEl.dataset.tone = tone;
     stageEl.dataset.phase = 'active';
-    void stageEl.offsetWidth;
+    if (wasActive) {
+      void stageEl.offsetWidth;
+    }
     stageEl.classList.add('is-active');
 
     const tSwitch = window.setTimeout(() => {
@@ -117,10 +123,13 @@ export class TransitionDirector {
 
       if (toEl) {
         this.activeToEl = toEl;
+        const wasArriving = toEl.classList.contains('is-arriving') || toEl.classList.contains('is-entering');
         toEl.classList.remove('is-leaving', 'hidden', 'is-arriving', 'is-entering');
         delete toEl.dataset.leaveKind;
         delete toEl.dataset.leaveTone;
-        void toEl.offsetWidth;
+        if (wasArriving) {
+          void toEl.offsetWidth;
+        }
         toEl.dataset.arriveKind = opts.kind;
         toEl.dataset.arriveTone = tone;
         toEl.classList.add('is-arriving', 'is-entering');
@@ -166,11 +175,14 @@ export class TransitionDirector {
     const labelEl = stageEl.querySelector<HTMLElement>('#transition-label');
     if (labelEl) labelEl.textContent = label;
 
+    const wasActive = stageEl.classList.contains('is-active') || stageEl.classList.contains('is-pulse');
     stageEl.classList.remove('is-active');
     stageEl.dataset.kind = kind;
     stageEl.dataset.tone = 'cold';
     stageEl.dataset.phase = 'active';
-    void stageEl.offsetWidth;
+    if (wasActive) {
+      void stageEl.offsetWidth;
+    }
     stageEl.classList.add('is-pulse', 'is-active');
 
     const tMid = window.setTimeout(() => {
