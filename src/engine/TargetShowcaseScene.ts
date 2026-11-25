@@ -236,14 +236,15 @@ export class TargetShowcaseScene {
     }
   }
 
-  applyDisplaySettings(opts: { quality: 'high' | 'performance'; reducedMotion: boolean }): void {
-    const maxDpr = opts.quality === 'performance' ? 1 : this.isCoarsePointer ? 1.5 : 2;
-    this.currentAppliedDpr = Math.min(window.devicePixelRatio || 1, maxDpr);
-    this.renderer.setPixelRatio(this.currentAppliedDpr);
-    this.bloomEnabled = opts.quality === 'high';
-    if (this.bloomPass) {
-      this.bloomPass.enabled = opts.quality === 'high';
-    }
+  triggerArrivalPullIn(): void {
+    this.orbitDist = Math.min(MAX_DIST, this.defaultDist * 1.62);
+    this.targetDist = this.defaultDist;
+    this.orbitYaw = this.defaultYaw - 0.36;
+    this.targetYaw = this.defaultYaw;
+  }
+
+  triggerDeparturePullOut(): void {
+    this.targetDist = Math.min(MAX_DIST, this.defaultDist * 1.55);
   }
 
   loadTarget(spec: AnomalySpec, opticalFidelity: number): void {

@@ -112,6 +112,8 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     settingsBtn!.click();
     expect(appRoot.querySelector('#settings-overlay')?.classList.contains('hidden')).toBe(false);
+    expect(appRoot.querySelector('#toggle-reduced-motion')).toBeNull();
+    expect(appRoot.querySelector('[data-quality]')).toBeNull();
 
     // Turning off Music and Voice propagates cleanly to AudioEngine and VoiceEngine
     appRoot.querySelector<HTMLButtonElement>('#toggle-music')!.click();
@@ -134,5 +136,86 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     store.patch({ mode: 'dream_2d' });
     expect(appRoot.querySelector('#codex-overlay')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#dream-layer #btn-codex')).toBeNull();
+  });
+
+  it('routes distinct per-seam transitions and voice-matched kinetic dialogue dynamics', () => {
+    const appRoot = document.getElementById('app')!;
+    const store = new StateStore();
+    const audio = createMockAudioEngine();
+    const voice = createMockVoiceEngine();
+    const dialogue = new DialogueRunner(store, audio.playCue);
+    const scheduler = new StoryletScheduler();
+    const minigames = new MinigameRegistry();
+
+    const ui = new UIController(
+      appRoot,
+      store,
+      audio as never,
+      voice as never,
+      dialogue,
+      scheduler,
+      minigames
+    );
+
+    const optics = createMockOpticsScene();
+    const showcase = createMockShowcaseScene();
+    const dream = createMockDreamCanvas();
+    ui.attachRenderers(optics as never, showcase as never, dream as never);
+
+    const stageEl = appRoot.querySelector<HTMLElement>('#transition-stage')!;
+    expect(stageEl).not.toBeNull();
+
+    // 1. Boot -> 3D Sky uses aperture_boot and leaves no stale .is-leaving/.is-arriving state
+    appRoot.querySelector<HTMLButtonElement>('#btn-boot-3d')!.click();
+    expect(stageEl.dataset.kind).toBe('aperture_boot');
+    expect(stageEl.classList.contains('is-active')).toBe(true);
+    expect(appRoot.querySelector('#boot-screen')?.classList.contains('is-leaving')).toBe(true);
+    vi.advanceTimersByTime(1000);
+    expect(store.getState().mode).toBe('waking_3d');
+    expect(stageEl.classList.contains('is-active')).toBe(false);
+    expect(appRoot.querySelector('#boot-screen')?.classList.contains('hidden')).toBe(true);
+    expect(appRoot.querySelector('#boot-screen')?.classList.contains('is-leaving')).toBe(false);
+    expect(appRoot.querySelector('#optics-layer')?.classList.contains('is-arriving')).toBe(false);
+
+    // 2. 3D Sky -> Target Inspect uses optical_dive + 3D camera hooks
+    document.querySelector<HTMLButtonElement>('[data-showcase="cluster_j1419_a"]')!.click();
+    expect(stageEl.dataset.kind).toBe('optical_dive');
+    expect(optics.triggerTransitionDive).toHaveBeenCalledWith('cluster_j1419_a');
+    vi.advanceTimersByTime(1050);
+    expect(showcase.triggerArrivalPullIn).toHaveBeenCalled();
+    expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
+    expect(appRoot.querySelector('#inspect-layer')?.classList.contains('hidden')).toBe(false);
+
+    // 3. Target Inspect -> 3D Sky uses optical_pullback
+    appRoot.querySelector<HTMLButtonElement>('#btn-exit-inspect')!.click();
+    expect(stageEl.dataset.kind).toBe('optical_pullback');
+    expect(showcase.triggerDeparturePullOut).toHaveBeenCalled();
+    vi.advanceTimersByTime(1000);
+    expect(optics.triggerPullbackArrival).toHaveBeenCalled();
+    expect(appRoot.querySelector('#inspect-layer')?.classList.contains('hidden')).toBe(true);
+    expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(false);
+
+    // 4. 3D Sky -> 2D Dream uses dream_submerge + DreamCanvas entrance reveal + dream dialogue channel
+    appRoot.querySelector<HTMLButtonElement>('#btn-enter-dream')!.click();
+    expect(stageEl.dataset.kind).toBe('dream_submerge');
+    vi.advanceTimersByTime(1200);
+    expect(dream.triggerEntranceReveal).toHaveBeenCalled();
+    expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
+    expect(appRoot.querySelector('#dream-scroll .dialogue-entry')?.getAttribute('data-channel')).toBe('dream');
+
+    // Choice click triggers selection pulse during 280ms reply beat and settles cleanly
+    const firstChoice = appRoot.querySelector<HTMLButtonElement>('#dream-choices .choice-line')!;
+    firstChoice.click();
+    expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(true);
+    expect(firstChoice.classList.contains('is-selected')).toBe(true);
+    vi.advanceTimersByTime(320);
+    expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(false);
+
+    // 5. Overseer interrogation triggers overseer_slice pulse + overseer channel
+    document.querySelector<HTMLButtonElement>('[data-overseer-h="84"]')!.click();
+    expect(stageEl.dataset.kind).toBe('overseer_slice');
+    expect(appRoot.querySelector('#overseer-panel')?.classList.contains('hidden')).toBe(false);
+    expect(appRoot.querySelector('#overseer-scroll .dialogue-entry')?.getAttribute('data-channel')).toBe('overseer');
+    vi.advanceTimersByTime(700);
   });
 });

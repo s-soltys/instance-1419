@@ -14,10 +14,19 @@ interface CharacterInfo {
 
 const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
 
+export type DialogueChannel = 'dream' | 'comms' | 'overseer' | 'future';
+
+function inferChannel(scrollSel: string): DialogueChannel {
+  if (scrollSel.includes('comms')) return 'comms';
+  if (scrollSel.includes('overseer')) return 'overseer';
+  if (scrollSel.includes('future')) return 'future';
+  return 'dream';
+}
+
 /**
  * Modular editorial dialogue renderer supporting live 220ms reply pacing,
- * non-blinking history vs. new lines, voice replay via stable lineId,
- * and telemetry choice logging.
+ * non-blinking history vs. voice-matched kinetic entrances, staggered choices
+ * with selection pulse, voice replay via stable lineId, and telemetry logging.
  */
 export class DialogueFeedView {
   private replyBeatTimer: number | null = null;
@@ -71,6 +80,7 @@ export class DialogueFeedView {
 
     const scrollEl = this.root.querySelector<HTMLElement>(scrollSel);
     const choicesEl = this.root.querySelector<HTMLElement>(choicesSel);
+    const channel = inferChannel(scrollSel);
 
     if (!this.instantPacing && scrollEl && choicesEl && snap.lastAddedEntries.length > 0) {
       const preReplyCount = Math.max(0, snap.entries.length - snap.lastAddedEntries.length);
@@ -78,14 +88,21 @@ export class DialogueFeedView {
       this.renderEntriesOnly(scrollEl, preReplyEntries, {
         animateFromIndex: Math.max(0, preReplyCount - 1),
         typingSpeaker: snap.lastAddedEntries[0].speaker,
+        channel,
       });
-      choicesEl.innerHTML = '';
+
+      choicesEl.classList.add('is-locked');
+      choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line').forEach((btn) => {
+        const isPicked = Number(btn.dataset.choiceIndex) === idx;
+        btn.classList.toggle('is-selected', isPicked);
+        btn.classList.toggle('is-dismissed', !isPicked);
+      });
 
       this.replyBeatTimer = window.setTimeout(() => {
         this.replyBeatTimer = null;
         this.speakEntries(snap.lastAddedEntries);
         onSettled(snap);
-      }, 220);
+      }, 280);
       return;
     }
 
@@ -96,20 +113,23 @@ export class DialogueFeedView {
   renderEntriesOnly(
     scrollEl: HTMLElement,
     entries: DialogueEntry[],
-    opts?: { animateFromIndex?: number; typingSpeaker?: string }
+    opts?: { animateFromIndex?: number; typingSpeaker?: string; channel?: DialogueChannel }
   ): void {
     const s = this.store.getState();
     const animateFrom = opts?.animateFromIndex ?? 0;
+    const channel = opts?.channel ?? inferChannel(`#${scrollEl.id}`);
 
     const entryHtml = entries
       .map((entry, idx) => {
         const ch = CHAR_MAP[entry.speaker] ?? CHAR_MAP.narrator;
         const playerClass = entry.isPlayerChoice ? 'is-player-echo' : '';
-        const animClass = idx < animateFrom ? 'is-history' : 'is-new';
+        const isNew = idx >= animateFrom;
+        const animClass = isNew ? 'is-new' : 'is-history';
+        const delayMs = isNew ? Math.min(4, Math.max(0, idx - animateFrom)) * 70 : 0;
         const avH = entry.speaker === 'sibling_primary' ? s.primarySiblingH : s.humanity;
         const canSpeak = !entry.isPlayerChoice && !(entry.text.startsWith('[') && entry.text.endsWith(']'));
         return `
-          <div class="dialogue-entry role-${ch.role} ${playerClass} ${animClass}" style="border-left-color:${ch.accentColor};">
+          <div class="dialogue-entry role-${ch.role} ${playerClass} ${animClass}" data-channel="${channel}" style="border-left-color:${ch.accentColor};--entry-delay:${delayMs}ms;">
             <div class="dialogue-entry-head">
               ${renderSpeakerAvatar(entry.speaker, avH, 24, true)}
               <div class="dialogue-speaker" style="color:${ch.accentColor};">${ch.displayName}</div>
@@ -129,17 +149,27 @@ export class DialogueFeedView {
     if (opts?.typingSpeaker) {
       const tch = CHAR_MAP[opts.typingSpeaker] ?? CHAR_MAP.narrator;
       const tavH = opts.typingSpeaker === 'sibling_primary' ? s.primarySiblingH : s.humanity;
+      const indicator =
+        channel === 'overseer'
+          ? `<span class="typing-status">EVALUATING</span><span class="typing-cursor" aria-label="Evaluating"></span>`
+          : channel === 'comms'
+            ? `<span class="typing-status">RELAY PACKET</span><span class="typing-dots" aria-label="Receiving"><i></i><i></i><i></i></span>`
+            : `<span class="typing-dots" aria-label="Responding"><i></i><i></i><i></i></span>`;
       typingHtml = `
-        <div class="dialogue-typing" style="border-left-color:${tch.accentColor};">
+        <div class="dialogue-typing" data-channel="${channel}" style="border-left-color:${tch.accentColor};">
           ${renderSpeakerAvatar(opts.typingSpeaker, tavH, 20, true)}
           <span class="typing-name" style="color:${tch.accentColor};">${tch.displayName}</span>
-          <span class="typing-dots" aria-label="Responding"><i></i><i></i><i></i></span>
+          ${indicator}
         </div>
       `;
     }
 
     scrollEl.innerHTML = entryHtml + typingHtml;
-    scrollEl.scrollTop = scrollEl.scrollHeight;
+    if (typeof scrollEl.scrollTo === 'function') {
+      scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
+    } else {
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+    }
 
     scrollEl.querySelectorAll<HTMLButtonElement>('.voice-replay-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -164,15 +194,18 @@ export class DialogueFeedView {
   ): void {
     const scrollEl = this.root.querySelector<HTMLElement>(scrollSel)!;
     const choicesEl = this.root.querySelector<HTMLElement>(choicesSel)!;
+    const channel = inferChannel(scrollSel);
 
     const animateFrom = Math.max(0, snap.entries.length - Math.max(1, snap.lastAddedEntries.length));
-    this.renderEntriesOnly(scrollEl, snap.entries, { animateFromIndex: animateFrom });
+    this.renderEntriesOnly(scrollEl, snap.entries, { animateFromIndex: animateFrom, channel });
+
+    choicesEl.classList.remove('is-locked');
 
     if (snap.choices.length > 0) {
       choicesEl.innerHTML = snap.choices
         .map(
           (c, i) => `
-          <button class="choice-line" data-choice-index="${c.index}" type="button">
+          <button class="choice-line choice-enter" data-choice-index="${c.index}" style="--choice-idx:${i}" type="button">
             <span class="choice-num">${i + 1}.</span>
             <span>${c.text}</span>
           </button>
@@ -192,7 +225,7 @@ export class DialogueFeedView {
     if (snap.resumeDreamKnot && handlers.onResumeDream) {
       const nextKnot = snap.resumeDreamKnot;
       choicesEl.innerHTML = `
-        <button class="choice-line" id="btn-overseer-return" type="button">
+        <button class="choice-line choice-enter" id="btn-overseer-return" style="--choice-idx:0" type="button">
           <span class="choice-num">1.</span>
           <span>Return to the dream</span>
         </button>
@@ -206,7 +239,7 @@ export class DialogueFeedView {
 
     if (scrollSel === '#dream-scroll' && !snap.autoInterruptKnot && handlers.onWakeToSky) {
       choicesEl.innerHTML = `
-        <button class="choice-line" id="btn-return-3d" type="button"><span class="choice-num">1.</span><span>Wake up and return to the sky</span></button>
+        <button class="choice-line choice-enter" id="btn-return-3d" style="--choice-idx:0" type="button"><span class="choice-num">1.</span><span>Wake up and return to the sky</span></button>
       `;
       choicesEl.querySelector('#btn-return-3d')?.addEventListener('click', () => {
         this.audio.playCue('boot_click');
@@ -214,11 +247,13 @@ export class DialogueFeedView {
         handlers.onWakeToSky!();
       });
     } else if (scrollSel === '#comms-scroll' && handlers.onCloseComms) {
-      choicesEl.innerHTML = `<button class="choice-line" id="btn-comms-done" type="button"><span class="choice-num">→</span><span>Close relay</span></button>`;
+      choicesEl.innerHTML = `<button class="choice-line choice-enter" id="btn-comms-done" style="--choice-idx:0" type="button"><span class="choice-num">→</span><span>Close relay</span></button>`;
       choicesEl.querySelector('#btn-comms-done')?.addEventListener('click', () => {
         this.audio.playCue('tick');
         handlers.onCloseComms!();
       });
+    } else {
+      choicesEl.innerHTML = '';
     }
   }
 }

@@ -265,6 +265,9 @@ export class MinigameHostView {
     const refs = this.getHudRefs();
     if (refs.stageLabelEl && refs.stageLabelEl.textContent !== label) {
       refs.stageLabelEl.textContent = label;
+      refs.stageLabelEl.classList.remove('is-stage-bump');
+      void refs.stageLabelEl.offsetWidth;
+      refs.stageLabelEl.classList.add('is-stage-bump');
     }
     for (let i = 0; i < refs.stagePips.length; i++) {
       const pip = refs.stagePips[i];
@@ -380,6 +383,9 @@ export class MinigameHostView {
 
     if (refs.cueEl && refs.cueEl.textContent !== hud.promptText) {
       refs.cueEl.textContent = hud.promptText;
+      refs.cueEl.classList.remove('is-prompt-morph');
+      void refs.cueEl.offsetWidth;
+      refs.cueEl.classList.add('is-prompt-morph');
     }
 
     if (refs.helperBtn) {

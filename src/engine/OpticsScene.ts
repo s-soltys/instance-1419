@@ -103,6 +103,8 @@ export class OpticsScene {
   private anomalyProgress = 0;
   private lockProgress = 0;
   private lastLockedId = '';
+  private preDiveFovDeg = 54;
+  private transitionBoostUntil = 0;
 
   private isDragging = false;
   private lastPointerX = 0;
@@ -404,6 +406,24 @@ export class OpticsScene {
     this.targetFovDeg = Math.min(spec.recommendedFovMax - 4, 18);
   }
 
+  triggerTransitionDive(targetId: string): void {
+    const spec = this.anomalySpecs.find((a) => a.id === targetId);
+    this.preDiveFovDeg = this.targetFovDeg;
+    if (spec) {
+      this.targetYawDeg = spec.raDeg;
+      this.targetPitchDeg = spec.decDeg;
+    }
+    this.targetFovDeg = 3.6;
+    this.transitionBoostUntil = performance.now() + 620;
+  }
+
+  triggerPullbackArrival(): void {
+    const restoreFov = THREE.MathUtils.clamp(this.preDiveFovDeg || 54, 12, 72);
+    this.fovDeg = Math.max(8, Math.min(18, restoreFov * 0.42));
+    this.targetFovDeg = restoreFov;
+    this.transitionBoostUntil = performance.now() + 650;
+  }
+
   getAnomalySpecs(): AnomalySpec[] {
     return this.anomalySpecs;
   }
@@ -465,7 +485,8 @@ export class OpticsScene {
     this.lastFrameTime = now;
     const elapsed = now * 0.001;
 
-    const damp = 1 - Math.exp(-7.5 * dt);
+    const dampRate = now < this.transitionBoostUntil ? 12.5 : 7.5;
+    const damp = 1 - Math.exp(-dampRate * dt);
     this.yawDeg += (this.targetYawDeg - this.yawDeg) * damp;
     this.pitchDeg += (this.targetPitchDeg - this.pitchDeg) * damp;
     this.fovDeg += (this.targetFovDeg - this.fovDeg) * damp;
@@ -552,11 +573,6 @@ export class OpticsScene {
       markers: this.projectMarkers(),
     });
   };
-
-  applyDisplaySettings(opts: { quality: 'high' | 'performance'; reducedMotion: boolean }): void {
-    const maxDpr = opts.quality === 'performance' ? 1 : 2;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
-  }
 
   dispose(): void {
     this.setActive(false);

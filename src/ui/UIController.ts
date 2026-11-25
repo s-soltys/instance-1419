@@ -16,6 +16,7 @@ import { platform } from '../platform/PlatformAdapter';
 import { DevHarness, type DevHarnessBridge } from './DevHarness';
 import { renderSpeakerAvatar, updateAvatarVoiceAnimations } from './SpeakerAvatar';
 import { StatusShiftOverlay } from './StatusShiftOverlay';
+import { TransitionDirector, type TransitionKind } from './TransitionDirector';
 import { BootView } from './views/BootView';
 import { CodexView } from './views/CodexView';
 import { DialogueFeedView } from './views/DialogueFeedView';
@@ -52,6 +53,7 @@ export class UIController {
   private readonly minigames: MinigameRegistry;
   private readonly codexEngine: CodexEngine;
   private readonly telemetry: TelemetryLogger;
+  private readonly transitions: TransitionDirector;
   private readonly statusShift: StatusShiftOverlay;
   private readonly bootView: BootView;
   private readonly dialogueFeed: DialogueFeedView;
@@ -77,7 +79,7 @@ export class UIController {
   private proactiveCommsSent = false;
   private proactiveCommsTimer: number | null = null;
   private overseerInterruptTimer: number | null = null;
-  private transitionTimers: number[] = [];
+  private overseerSliceTimer: number | null = null;
 
   constructor(
     root: HTMLElement,
@@ -104,6 +106,7 @@ export class UIController {
     this.telemetry = new TelemetryLogger(store.getState());
 
     this.renderShell();
+    this.transitions = new TransitionDirector(this.root);
     this.statusShift = new StatusShiftOverlay(this.root.querySelector('.stage')!, audio);
     this.bootView = new BootView(this.root);
     this.bootView.populate();
@@ -185,13 +188,7 @@ export class UIController {
     const stage = this.root.querySelector<HTMLElement>('.stage');
     if (stage) {
       stage.dataset.textSize = s.textSize;
-      stage.dataset.reducedMotion = String(s.reducedMotion);
     }
-
-    const displayOpts = { quality: s.graphicsQuality, reducedMotion: s.reducedMotion };
-    this.optics?.applyDisplaySettings?.(displayOpts);
-    this.showcase?.applyDisplaySettings?.(displayOpts);
-    this.dream?.applyDisplaySettings?.(displayOpts);
   }
 
   getOpticsMount(): HTMLElement {
@@ -209,10 +206,35 @@ export class UIController {
   private renderShell(): void {
     this.root.innerHTML = `
       <div class="stage">
+        <svg class="fx-filter-defs" aria-hidden="true" width="0" height="0">
+          <defs>
+            <filter id="fx-impasto-melt" x="-12%" y="-12%" width="124%" height="124%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.014 0.022" numOctaves="2" seed="14" result="noise" />
+              <feDisplacementMap in="SourceGraphic" in2="noise" scale="26" xChannelSelector="R" yChannelSelector="G" />
+            </filter>
+            <filter id="fx-optical-warp" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.008 0.016" numOctaves="1" seed="7" result="lens" />
+              <feDisplacementMap in="SourceGraphic" in2="lens" scale="18" xChannelSelector="R" yChannelSelector="B" />
+            </filter>
+            <filter id="fx-clinical-tear" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.002 0.22" numOctaves="1" seed="19" result="scan" />
+              <feDisplacementMap in="SourceGraphic" in2="scan" scale="24" xChannelSelector="R" yChannelSelector="A" />
+            </filter>
+          </defs>
+        </svg>
+
         <div class="film-grain" aria-hidden="true"></div>
 
-        <div class="mode-transition-veil" id="mode-transition-veil" aria-hidden="true">
-          <span class="transition-label" id="transition-label">ENTERING DREAM CACHE…</span>
+        <div class="transition-stage" id="transition-stage" aria-hidden="true">
+          <div class="ts-bloom"></div>
+          <div class="ts-flare"></div>
+          <div class="ts-iris-ring">
+            <div class="ts-iris-inner"></div>
+            <div class="ts-iris-crosshair"></div>
+          </div>
+          <div class="ts-scan-top"></div>
+          <div class="ts-scan-bottom"></div>
+          <span class="transition-label sr-only" id="transition-label">ENTERING DREAM CACHE…</span>
         </div>
 
         <header class="top-telemetry">
@@ -491,30 +513,18 @@ export class UIController {
       window.clearTimeout(this.overseerInterruptTimer);
       this.overseerInterruptTimer = null;
     }
+    if (this.overseerSliceTimer !== null) {
+      window.clearTimeout(this.overseerSliceTimer);
+      this.overseerSliceTimer = null;
+    }
   }
 
-  private transitionToMode(label: string, onMidpoint: () => void): void {
-    for (const id of this.transitionTimers) window.clearTimeout(id);
-    this.transitionTimers = [];
-
-    const veil = this.root.querySelector<HTMLElement>('#mode-transition-veil');
-    const textEl = this.root.querySelector<HTMLElement>('#transition-label');
-    if (!veil) {
-      onMidpoint();
-      return;
-    }
-
-    if (textEl) textEl.textContent = label;
-    veil.classList.add('visible');
-
-    const t1 = window.setTimeout(() => {
-      onMidpoint();
-      const t2 = window.setTimeout(() => {
-        veil.classList.remove('visible');
-      }, 170);
-      this.transitionTimers.push(t2);
-    }, 380);
-    this.transitionTimers.push(t1);
+  private morphPromptText(el: HTMLElement | null, text: string): void {
+    if (!el || el.textContent === text) return;
+    el.textContent = text;
+    el.classList.remove('is-prompt-morph');
+    void el.offsetWidth;
+    el.classList.add('is-prompt-morph');
   }
 
   private initSkyMarkers(): void {
@@ -636,8 +646,15 @@ export class UIController {
     this.bootView.bindActions(
       () => {
         this.audio.playCue('boot_click');
-        this.transitionToMode('OPENING SKY APERTURE…', () => {
-          this.store.patch({ mode: 'waking_3d' });
+        this.transitions.play({
+          kind: 'aperture_boot',
+          label: 'OPENING SKY APERTURE…',
+          tone: 'cold',
+          fromSelector: this.modeToSelector(this.store.getState().mode),
+          toSelector: '#optics-layer',
+          onMidpoint: () => {
+            this.store.patch({ mode: 'waking_3d' });
+          },
         });
       },
       () => {
@@ -852,17 +869,19 @@ export class UIController {
     }
 
     if (target) {
+      let nextPrompt = '';
       if (t.focusedAnomaly) {
         const scanned = this.store.getState().scannedAnomalyIds.includes(t.focusedAnomaly.id);
         inspectBtn?.classList.toggle('hidden', !scanned);
-        if (scanned) target.textContent = `${t.focusedAnomaly.label} · READY TO INSPECT`;
-        else if (t.fovDeg > t.focusedAnomaly.recommendedFovMax + 10) target.textContent = `${t.focusedAnomaly.label} · ZOOM CLOSER`;
-        else if (t.wavelengthMatch < 0.48) target.textContent = `${t.focusedAnomaly.label} · TUNE SPECTRUM TO ${t.focusedAnomaly.bandName}`;
-        else target.textContent = `${t.focusedAnomaly.label} · LOCKING ${Math.round(t.lockProgress * 100)}%`;
+        if (scanned) nextPrompt = `${t.focusedAnomaly.label} · READY TO INSPECT`;
+        else if (t.fovDeg > t.focusedAnomaly.recommendedFovMax + 10) nextPrompt = `${t.focusedAnomaly.label} · ZOOM CLOSER`;
+        else if (t.wavelengthMatch < 0.48) nextPrompt = `${t.focusedAnomaly.label} · TUNE SPECTRUM TO ${t.focusedAnomaly.bandName}`;
+        else nextPrompt = `${t.focusedAnomaly.label} · LOCKING ${Math.round(t.lockProgress * 100)}%`;
       } else {
         inspectBtn?.classList.add('hidden');
-        target.textContent = 'DRAG TO LOOK AROUND · SWEEP LIGHT SPECTRUM BELOW';
+        nextPrompt = 'DRAG TO LOOK AROUND · SWEEP LIGHT SPECTRUM BELOW';
       }
+      this.morphPromptText(target, nextPrompt);
     }
   }
 
@@ -904,55 +923,76 @@ export class UIController {
     this.hideCommsToast();
     this.minigameHost.destroy();
 
-    this.transitionToMode(`ENTERING ${spec.label}…`, () => {
-      this.showcase.loadTarget(spec, this.store.getState().opticalFidelity);
-      this.store.patch({ mode: 'target_inspect', activeTargetId: spec.id });
+    this.audio.playCue('iris_dive');
+    this.optics.triggerTransitionDive?.(spec.id);
 
-      const bandEl = this.root.querySelector<HTMLElement>('#inspect-band');
-      const titleEl = this.root.querySelector<HTMLElement>('#inspect-title');
-      const descEl = this.root.querySelector<HTMLElement>('#inspect-desc');
-      const crumbTarget = this.root.querySelector<HTMLElement>('#inspect-crumb-target');
-      const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
+    this.transitions.play({
+      kind: 'optical_dive',
+      label: `ENTERING ${spec.label}…`,
+      tone: this.store.getState().humanity >= 45 ? 'warm' : 'cold',
+      fromSelector: this.modeToSelector(this.store.getState().mode),
+      toSelector: '#inspect-layer',
+      onMidpoint: () => {
+        this.showcase.loadTarget(spec, this.store.getState().opticalFidelity);
+        this.showcase.triggerArrivalPullIn?.();
+        this.store.patch({ mode: 'target_inspect', activeTargetId: spec.id });
 
-      const typeName =
-        spec.showcaseType === 'star_system'
-          ? '3D STAR SYSTEM'
-          : spec.showcaseType === 'nebula'
-            ? 'VOLUMETRIC NEBULA'
-            : spec.showcaseType === 'deep_field'
-              ? 'RELATIVISTIC PULSAR'
-              : spec.showcaseType === 'antipodal_poles'
-                ? 'ANTIPODAL SKY SPHERE'
-                : '3D GALAXY CLUSTER';
+        const bandEl = this.root.querySelector<HTMLElement>('#inspect-band');
+        const titleEl = this.root.querySelector<HTMLElement>('#inspect-title');
+        const descEl = this.root.querySelector<HTMLElement>('#inspect-desc');
+        const crumbTarget = this.root.querySelector<HTMLElement>('#inspect-crumb-target');
+        const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
 
-      if (bandEl) bandEl.textContent = `${typeName} · ${spec.bandName}`;
-      if (titleEl) titleEl.textContent = spec.label;
-      if (descEl) descEl.textContent = spec.description;
-      if (crumbTarget) crumbTarget.textContent = `${spec.label} · ${typeName}`;
+        const typeName =
+          spec.showcaseType === 'star_system'
+            ? '3D STAR SYSTEM'
+            : spec.showcaseType === 'nebula'
+              ? 'VOLUMETRIC NEBULA'
+              : spec.showcaseType === 'deep_field'
+                ? 'RELATIVISTIC PULSAR'
+                : spec.showcaseType === 'antipodal_poles'
+                  ? 'ANTIPODAL SKY SPHERE'
+                  : '3D GALAXY CLUSTER';
 
-      const decoded = this.store.getState().decodedMinigameTargets.includes(spec.id);
-      if (mgBtn) mgBtn.textContent = decoded ? 'REPLAY SCAN MINIGAME' : 'BEGIN SCAN MINIGAME';
+        if (bandEl) bandEl.textContent = `${typeName} · ${spec.bandName}`;
+        if (titleEl) titleEl.textContent = spec.label;
+        if (descEl) descEl.textContent = spec.description;
+        if (crumbTarget) crumbTarget.textContent = `${spec.label} · ${typeName}`;
 
-      const bandRatio = (spec.optimalWavelengthNm - 200) / 1600;
-      let closestBtn: HTMLButtonElement | null = null;
-      let bestDiff = 99;
-      this.root.querySelectorAll<HTMLButtonElement>('#inspect-spectrum-bar .spec-btn').forEach((b) => {
-        b.classList.remove('active');
-        const diff = Math.abs(Number(b.dataset.band) - bandRatio);
-        if (diff < bestDiff) {
-          bestDiff = diff;
-          closestBtn = b;
-        }
-      });
-      if (closestBtn) (closestBtn as HTMLButtonElement).classList.add('active');
-      onReady?.();
+        const decoded = this.store.getState().decodedMinigameTargets.includes(spec.id);
+        if (mgBtn) mgBtn.textContent = decoded ? 'REPLAY SCAN MINIGAME' : 'BEGIN SCAN MINIGAME';
+
+        const bandRatio = (spec.optimalWavelengthNm - 200) / 1600;
+        let closestBtn: HTMLButtonElement | null = null;
+        let bestDiff = 99;
+        this.root.querySelectorAll<HTMLButtonElement>('#inspect-spectrum-bar .spec-btn').forEach((b) => {
+          b.classList.remove('active');
+          const diff = Math.abs(Number(b.dataset.band) - bandRatio);
+          if (diff < bestDiff) {
+            bestDiff = diff;
+            closestBtn = b;
+          }
+        });
+        if (closestBtn) (closestBtn as HTMLButtonElement).classList.add('active');
+        onReady?.();
+      },
     });
   }
 
   private exitTargetInspect(): void {
     this.minigameHost.destroy();
-    this.transitionToMode('RETURNING TO SKY APERTURE…', () => {
-      this.store.patch({ mode: 'waking_3d', activeTargetId: null });
+    this.audio.playCue('iris_pullback');
+    this.showcase.triggerDeparturePullOut?.();
+    this.transitions.play({
+      kind: 'optical_pullback',
+      label: 'RETURNING TO SKY APERTURE…',
+      tone: 'cold',
+      fromSelector: this.modeToSelector(this.store.getState().mode),
+      toSelector: '#optics-layer',
+      onMidpoint: () => {
+        this.optics.triggerPullbackArrival?.();
+        this.store.patch({ mode: 'waking_3d', activeTargetId: null });
+      },
     });
   }
 
@@ -1125,40 +1165,49 @@ export class UIController {
         : variant === 'low'
           ? 'OPENING FADED MEMORY (24%)…'
           : 'DRIFTING INTO SLEEP…';
+    const targetH = variant === 'high' ? 84 : variant === 'low' ? 24 : this.store.getState().humanity;
 
-    this.transitionToMode(label, () => {
-      if (variant === 'high') {
-        this.store.patch({
-          mode: 'dream_2d',
-          maxHumanity: 90,
-          humanity: 84,
-          chaosDrift: 22,
-          prunedPersonas: [],
-          overseerAuditActive: false,
-          lastAuditOutcome: 'none',
-        });
-      } else if (variant === 'low') {
-        this.store.patch({
-          mode: 'dream_2d',
-          maxHumanity: 48,
-          humanity: 24,
-          chaosDrift: 12,
-          opticalFidelity: 0.92,
-          prunedPersonas: ['phantom_spouse'],
-          overseerAuditActive: false,
-          lastAuditOutcome: 'none',
-        });
-      } else {
-        this.store.patch({
-          mode: 'dream_2d',
-          overseerAuditActive: false,
-          lastAuditOutcome: 'none',
-        });
-      }
+    this.transitions.play({
+      kind: 'dream_submerge',
+      label,
+      tone: targetH >= 45 ? 'warm' : 'cold',
+      fromSelector: this.modeToSelector(this.store.getState().mode),
+      toSelector: '#dream-layer',
+      onMidpoint: () => {
+        if (variant === 'high') {
+          this.store.patch({
+            mode: 'dream_2d',
+            maxHumanity: 90,
+            humanity: 84,
+            chaosDrift: 22,
+            prunedPersonas: [],
+            overseerAuditActive: false,
+            lastAuditOutcome: 'none',
+          });
+        } else if (variant === 'low') {
+          this.store.patch({
+            mode: 'dream_2d',
+            maxHumanity: 48,
+            humanity: 24,
+            chaosDrift: 12,
+            opticalFidelity: 0.92,
+            prunedPersonas: ['phantom_spouse'],
+            overseerAuditActive: false,
+            lastAuditOutcome: 'none',
+          });
+        } else {
+          this.store.patch({
+            mode: 'dream_2d',
+            overseerAuditActive: false,
+            lastAuditOutcome: 'none',
+          });
+        }
 
-      this.hideOverseerPanel();
-      this.startDreamDialogue('dream_shift1_audit');
-      afterStart?.();
+        this.dream.triggerEntranceReveal?.();
+        this.hideOverseerPanel();
+        this.startDreamDialogue('dream_shift1_audit');
+        afterStart?.();
+      },
     });
   }
 
@@ -1181,12 +1230,21 @@ export class UIController {
         });
       },
       onWakeToSky: () => {
-        this.transitionToMode('WAKING TO SKY APERTURE…', () => {
-          this.hideOverseerPanel();
-          if (this.store.getState().shift < 6) {
-            this.store.advanceShift();
-          }
-          this.store.patch({ mode: 'waking_3d', overseerAuditActive: false });
+        this.audio.playCue('dream_wake');
+        this.transitions.play({
+          kind: 'dream_wake',
+          label: 'WAKING TO SKY APERTURE…',
+          tone: 'cold',
+          fromSelector: this.modeToSelector(this.store.getState().mode),
+          toSelector: '#optics-layer',
+          onMidpoint: () => {
+            this.hideOverseerPanel();
+            if (this.store.getState().shift < 6) {
+              this.store.advanceShift();
+            }
+            this.optics.triggerPullbackArrival?.();
+            this.store.patch({ mode: 'waking_3d', overseerAuditActive: false });
+          },
         });
       },
     });
@@ -1222,6 +1280,20 @@ export class UIController {
       this.overseerInterruptTimer = null;
     }
 
+    this.audio.playCue('overseer_slice');
+    const visualPane = this.root.querySelector<HTMLElement>('.dream-visual-pane');
+    if (visualPane) {
+      visualPane.classList.remove('is-slicing');
+      void visualPane.offsetWidth;
+      visualPane.classList.add('is-slicing');
+      if (this.overseerSliceTimer !== null) window.clearTimeout(this.overseerSliceTimer);
+      this.overseerSliceTimer = window.setTimeout(() => {
+        visualPane.classList.remove('is-slicing');
+        this.overseerSliceTimer = null;
+      }, 620);
+    }
+
+    this.transitions.playOverlayPulse('overseer_slice', 'OVERSEER-1419 // AUDIT INTERCEPT');
     this.root.querySelector('#dream-ribbon')?.classList.add('receded');
     this.root.querySelector('#overseer-panel')?.classList.remove('hidden');
 
@@ -1325,6 +1397,32 @@ export class UIController {
     }
   }
 
+  private modeToSelector(mode: GameMode): string {
+    switch (mode) {
+      case 'boot':
+        return '#boot-screen';
+      case 'waking_3d':
+        return '#optics-layer';
+      case 'target_inspect':
+        return '#inspect-layer';
+      case 'dream_2d':
+      case 'ending':
+        return '#dream-layer';
+    }
+  }
+
+  private syncLayerVisibility(selector: string, isCurrent: boolean): void {
+    const el = this.root.querySelector<HTMLElement>(selector);
+    if (!el) return;
+    if (isCurrent) {
+      el.classList.remove('hidden', 'is-leaving');
+      delete el.dataset.leaveKind;
+      delete el.dataset.leaveTone;
+    } else if (!el.classList.contains('is-leaving')) {
+      el.classList.add('hidden');
+    }
+  }
+
   private syncStateToUI(state: GameState): void {
     this.telemetry.observeMode(state);
 
@@ -1366,10 +1464,10 @@ export class UIController {
     if (waveLabel) waveLabel.textContent = `${this.wavelengthBandName(state.wavelengthNm)} · ${state.wavelengthNm} nm`;
     if (track) track.setAttribute('aria-valuenow', String(state.wavelengthNm));
 
-    this.root.querySelector('#boot-screen')?.classList.toggle('hidden', state.mode !== 'boot');
-    this.root.querySelector('#optics-layer')?.classList.toggle('hidden', state.mode !== 'waking_3d');
-    this.root.querySelector('#inspect-layer')?.classList.toggle('hidden', state.mode !== 'target_inspect');
-    this.root.querySelector('#dream-layer')?.classList.toggle('hidden', state.mode !== 'dream_2d');
+    this.syncLayerVisibility('#boot-screen', state.mode === 'boot');
+    this.syncLayerVisibility('#optics-layer', state.mode === 'waking_3d');
+    this.syncLayerVisibility('#inspect-layer', state.mode === 'target_inspect');
+    this.syncLayerVisibility('#dream-layer', state.mode === 'dream_2d');
 
     if (state.mode === 'waking_3d' && this.lastMode !== 'waking_3d') {
       this.scheduleProactiveComms();
@@ -1501,18 +1599,27 @@ export class UIController {
         this.closeSiblingComms();
         this.hideCommsToast();
         this.minigameHost.destroy();
-        this.transitionToMode(`LOADING DREAM CACHE (${playerH}%)…`, () => {
-          const curr = this.store.getState();
-          this.store.patch({
-            mode: 'dream_2d',
-            maxHumanity: Math.max(curr.maxHumanity, playerH),
-            humanity: playerH,
-            prunedPersonas: pruned ? ['phantom_spouse'] : [],
-            overseerAuditActive: false,
-            lastAuditOutcome: 'none',
-          });
-          this.hideOverseerPanel();
-          this.startDreamDialogue('dream_shift1_audit');
+        this.audio.playCue('dream_enter');
+        this.transitions.play({
+          kind: 'dream_submerge',
+          label: `LOADING DREAM CACHE (${playerH}%)…`,
+          tone: playerH >= 45 ? 'warm' : 'cold',
+          fromSelector: this.modeToSelector(this.store.getState().mode),
+          toSelector: '#dream-layer',
+          onMidpoint: () => {
+            const curr = this.store.getState();
+            this.store.patch({
+              mode: 'dream_2d',
+              maxHumanity: Math.max(curr.maxHumanity, playerH),
+              humanity: playerH,
+              prunedPersonas: pruned ? ['phantom_spouse'] : [],
+              overseerAuditActive: false,
+              lastAuditOutcome: 'none',
+            });
+            this.dream.triggerEntranceReveal?.();
+            this.hideOverseerPanel();
+            this.startDreamDialogue('dream_shift1_audit');
+          },
         });
       },
       openOverseerWithWarmth: (playerH) => {
@@ -1603,8 +1710,22 @@ export class UIController {
           });
         }
       },
-      previewFadeTransition: () => {
-        this.transitionToMode('CALIBRATING OPTICAL MEMORY…', () => {});
+      previewTransition: (kind: TransitionKind) => {
+        const labels: Record<TransitionKind, { label: string; tone: 'warm' | 'cold' }> = {
+          aperture_boot: { label: 'OPENING SKY APERTURE…', tone: 'cold' },
+          optical_dive: { label: 'ENTERING TARGET WORLD…', tone: 'cold' },
+          optical_pullback: { label: 'RETURNING TO SKY APERTURE…', tone: 'cold' },
+          dream_submerge: { label: 'DRIFTING INTO SLEEP…', tone: 'warm' },
+          dream_wake: { label: 'WAKING TO SKY APERTURE…', tone: 'cold' },
+          overseer_slice: { label: 'OVERSEER-1419 // AUDIT INTERCEPT', tone: 'cold' },
+        };
+        const meta = labels[kind];
+        this.transitions.play({
+          kind,
+          label: meta.label,
+          tone: meta.tone,
+          onMidpoint: () => {},
+        });
       },
       exportTelemetry: () => {
         this.telemetry.downloadSummary(this.store.getState());

@@ -3,6 +3,7 @@ import type { MinigameRegistry } from '../engine/minigames/MinigameRegistry';
 import type { GameMode, GameState, StateStore } from '../engine/StateStore';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { renderSpeakerAvatar } from './SpeakerAvatar';
+import type { TransitionKind } from './TransitionDirector';
 
 export interface DevHarnessBridge {
   openMode(mode: GameMode): void;
@@ -22,7 +23,7 @@ export interface DevHarnessBridge {
   triggerToast(tone: 'warm' | 'mid' | 'cold'): void;
   dismissToast(): void;
   triggerStatusAlert(kind: 'prune' | 'unseal' | 'locked' | 'decoded'): void;
-  previewFadeTransition(): void;
+  previewTransition(kind: TransitionKind): void;
   exportTelemetry(): void;
   resetAll(): void;
 }
@@ -349,9 +350,16 @@ export class DevHarness {
 
               <div class="qa-card">
                 <div class="qa-card-title">TRANSITIONS &amp; SHADER OVERRIDES</div>
-                <p class="qa-note">Preview transition curtains and Dream canvas visual degradation states directly.</p>
+                <p class="qa-note">Preview per-seam screen transitions and Dream canvas visual degradation states directly.</p>
+                <div class="qa-btn-row" style="margin-bottom:8px;">
+                  <button class="qa-btn" data-preview-transition="aperture_boot" type="button">Aperture Boot</button>
+                  <button class="qa-btn" data-preview-transition="optical_dive" type="button">Optical Dive</button>
+                  <button class="qa-btn" data-preview-transition="optical_pullback" type="button">Optical Pullback</button>
+                  <button class="qa-btn" data-preview-transition="dream_submerge" type="button">Dream Submerge</button>
+                  <button class="qa-btn" data-preview-transition="dream_wake" type="button">Cryo Wake</button>
+                  <button class="qa-btn" data-preview-transition="overseer_slice" type="button">Overseer Slice</button>
+                </div>
                 <div class="qa-btn-col">
-                  <button class="qa-btn" id="qa-preview-fade" type="button">Preview Fade-In / Fade-Out Veil</button>
                   <button class="qa-btn" id="qa-toggle-audit-fx" type="button">Toggle Overseer Audit Shader</button>
                   <button class="qa-btn" id="qa-toggle-pruned-fx" type="button">Toggle Partner Face-Blur / Pruned</button>
                 </div>
@@ -695,9 +703,11 @@ export class DevHarness {
     this.host.querySelector('#qa-dismiss-toast')?.addEventListener('click', () => {
       this.bridge.dismissToast();
     });
-    this.host.querySelector('#qa-preview-fade')?.addEventListener('click', () => {
-      this.bridge.previewFadeTransition();
-      this.maybeAutoHide();
+    this.host.querySelectorAll<HTMLButtonElement>('[data-preview-transition]').forEach((b) => {
+      b.addEventListener('click', () => {
+        this.bridge.previewTransition(b.dataset.previewTransition as TransitionKind);
+        this.maybeAutoHide();
+      });
     });
     this.host.querySelector('#qa-toggle-audit-fx')?.addEventListener('click', () => {
       const curr = this.store.getState();

@@ -136,7 +136,8 @@ export function createMockShowcaseScene() {
     setActive: vi.fn(),
     setWaveBand: vi.fn(),
     setOpticalFidelity: vi.fn(),
-    applyDisplaySettings: vi.fn(),
+    triggerArrivalPullIn: vi.fn(),
+    triggerDeparturePullOut: vi.fn(),
     zoomBy: vi.fn(),
     resetView: vi.fn(),
     getInstrumentBridge: vi.fn(() => bridge),
@@ -153,7 +154,8 @@ export function createMockOpticsScene() {
     getAnomalySpecs: vi.fn(() => specs),
     setActive: vi.fn(),
     setParameters: vi.fn(),
-    applyDisplaySettings: vi.fn(),
+    triggerTransitionDive: vi.fn(),
+    triggerPullbackArrival: vi.fn(),
     slewToAnomaly: vi.fn(),
     zoomBy: vi.fn(),
   };
@@ -177,6 +179,6 @@ export function createMockDreamCanvas() {
   return {
     setActive: vi.fn(),
     setState: vi.fn(),
-    applyDisplaySettings: vi.fn(),
+    triggerEntranceReveal: vi.fn(),
   };
 }

@@ -740,6 +740,27 @@ export class AudioEngine {
       // Soft painterly warm swell
       this.playGlassNote(174.61, 0.08, 0.35, 1.8, now, 'triangle', this.sfxGain);
       this.playGlassNote(261.63, 0.06, 0.45, 2.0, now + 0.1, 'sine', this.sfxGain);
+    } else if (cue === 'iris_dive') {
+      // Ascending optical iris dive + shimmering harmonic + crisp shutter latch
+      this.sweepTone(165, 620, 0.42, 0.085, now);
+      this.playGlassNote(587.33, 0.045, 0.06, 0.55, now + 0.12, 'sine', this.sfxGain);
+      this.shortClick(920, 0.035, 0.065, now + 0.34, 'triangle');
+    } else if (cue === 'iris_pullback') {
+      // Descending optical pullback + soft glass tick
+      this.sweepTone(540, 175, 0.38, 0.078, now);
+      this.playGlassNote(392.0, 0.04, 0.04, 0.5, now + 0.08, 'sine', this.sfxGain);
+      this.shortClick(660, 0.028, 0.05, now + 0.3, 'sine');
+    } else if (cue === 'dream_wake') {
+      // Crisp cold cryo wake chime + descending sweep
+      this.playGlassNote(587.33, 0.068, 0.02, 1.05, now, 'sine', this.sfxGain);
+      this.playGlassNote(880.0, 0.052, 0.03, 1.15, now + 0.05, 'sine', this.sfxGain);
+      this.sweepTone(360, 125, 0.38, 0.065, now + 0.02);
+    } else if (cue === 'overseer_slice') {
+      // Sharp sterile clinical signal slice
+      this.shortClick(1420, 0.11, 0.12, now, 'triangle');
+      this.shortClick(210, 0.12, 0.105, now + 0.015, 'sawtooth');
+      this.playGlassNote(880.0, 0.058, 0.01, 0.48, now + 0.04, 'sine', this.sfxGain);
+      this.playGlassNote(1174.66, 0.035, 0.02, 0.42, now + 0.08, 'sine', this.sfxGain);
     } else if (cue === 'zoom_in') {
       this.sweepTone(320, 480, 0.11, 0.045, now);
     } else if (cue === 'zoom_out') {

@@ -166,29 +166,6 @@ export class SettingsView {
 
             <div class="settings-row">
               <div class="settings-meta">
-                <strong>REDUCED MOTION &amp; FILM GRAIN</strong>
-                <span>Disable photographic film grain, screen shake, and intense shader sway.</span>
-              </div>
-              <div class="settings-controls">
-                <button class="etched-toggle" id="toggle-reduced-motion" type="button" aria-pressed="false">STANDARD</button>
-              </div>
-            </div>
-
-            <div class="settings-row">
-              <div class="settings-meta">
-                <strong>3D VISUAL QUALITY</strong>
-                <span>Performance mode disables post-processing bloom and caps pixel density to 1×.</span>
-              </div>
-              <div class="settings-controls">
-                <div class="segmented-bar" role="group" aria-label="3D Visual Quality">
-                  <button class="seg-btn" data-quality="high" type="button">HIGH</button>
-                  <button class="seg-btn" data-quality="performance" type="button">PERFORMANCE</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="settings-row">
-              <div class="settings-meta">
                 <strong>HAPTICS &amp; VIBRATION</strong>
                 <span>Tactile pulses on mobile devices and compatible gamepads.</span>
               </div>
@@ -370,19 +347,6 @@ export class SettingsView {
       });
     });
 
-    overlay.querySelector('#toggle-reduced-motion')?.addEventListener('click', () => {
-      const cur = this.settingsStore.getSettings();
-      this.settingsStore.patch({ reducedMotion: !cur.reducedMotion });
-      this.audio.playCue('tick');
-    });
-
-    overlay.querySelectorAll<HTMLButtonElement>('[data-quality]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        this.settingsStore.patch({ graphicsQuality: btn.dataset.quality as 'high' | 'performance' });
-        this.audio.playCue('tick');
-      });
-    });
-
     overlay.querySelector('#toggle-haptics')?.addEventListener('click', () => {
       const cur = this.settingsStore.getSettings();
       this.settingsStore.patch({ hapticsEnabled: !cur.hapticsEnabled });
@@ -525,17 +489,6 @@ export class SettingsView {
 
     overlay.querySelectorAll<HTMLButtonElement>('[data-pacing]').forEach((b) => {
       b.classList.toggle('active', b.dataset.pacing === s.dialoguePacing);
-    });
-
-    const motionBtn = overlay.querySelector<HTMLButtonElement>('#toggle-reduced-motion');
-    if (motionBtn) {
-      motionBtn.textContent = s.reducedMotion ? 'REDUCED' : 'STANDARD';
-      motionBtn.classList.toggle('is-on', s.reducedMotion);
-      motionBtn.setAttribute('aria-pressed', String(s.reducedMotion));
-    }
-
-    overlay.querySelectorAll<HTMLButtonElement>('[data-quality]').forEach((b) => {
-      b.classList.toggle('active', b.dataset.quality === s.graphicsQuality);
     });
 
     const hapBtn = overlay.querySelector<HTMLButtonElement>('#toggle-haptics');

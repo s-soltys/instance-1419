@@ -41,6 +41,8 @@ export class DreamCanvas {
   private overseerActive = false;
   private active = false;
   private rafId = 0;
+  private revealProgress = 1.0;
+  private lastFrameMs = performance.now();
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -64,6 +66,7 @@ export class DreamCanvas {
         uHumanity: { value: 0.7 },
         uPruned: { value: 0.0 },
         uOverseer: { value: 0.0 },
+        uReveal: { value: 1.0 },
         uViewAspect: {
           value: Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight),
         },
@@ -132,6 +135,7 @@ export class DreamCanvas {
     this.active = active;
     if (active) {
       this.resize();
+      this.lastFrameMs = performance.now();
       if (!this.rafId) this.loop();
     } else if (this.rafId) {
       cancelAnimationFrame(this.rafId);
@@ -139,12 +143,9 @@ export class DreamCanvas {
     }
   }
 
-  private reducedMotion = false;
-
-  applyDisplaySettings(opts: { quality: 'high' | 'performance'; reducedMotion: boolean }): void {
-    this.reducedMotion = opts.reducedMotion;
-    const maxDpr = opts.quality === 'performance' ? 1 : 2;
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+  triggerEntranceReveal(): void {
+    this.revealProgress = 0.0;
+    this.mat.uniforms.uReveal.value = 0.0;
   }
 
   dispose(): void {
@@ -162,14 +163,24 @@ export class DreamCanvas {
     if (!this.active) return;
     this.rafId = requestAnimationFrame(this.loop);
 
-    this.mat.uniforms.uTime.value = this.reducedMotion ? 0.0 : performance.now() * 0.001;
+    const now = performance.now();
+    const dt = Math.min(0.05, Math.max(0.001, (now - this.lastFrameMs) / 1000));
+    this.lastFrameMs = now;
+
+    this.mat.uniforms.uTime.value = now * 0.001;
     const targetH = this.humanity / 100;
     const targetPruned = this.pruned ? 1.0 : 0.0;
     const targetOverseer = this.overseerActive ? 1.0 : 0.0;
 
+    if (this.revealProgress < 1.0) {
+      this.revealProgress = Math.min(1.0, this.revealProgress + dt / 1.35);
+    }
+    const easedReveal = 1.0 - Math.pow(1.0 - this.revealProgress, 3);
+
     this.mat.uniforms.uHumanity.value += (targetH - this.mat.uniforms.uHumanity.value) * 0.12;
     this.mat.uniforms.uPruned.value += (targetPruned - this.mat.uniforms.uPruned.value) * 0.12;
     this.mat.uniforms.uOverseer.value += (targetOverseer - this.mat.uniforms.uOverseer.value) * 0.15;
+    this.mat.uniforms.uReveal.value = easedReveal;
 
     this.renderer.render(this.scene, this.camera);
   };

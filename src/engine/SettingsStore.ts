@@ -2,7 +2,6 @@ import { platform } from '../platform/PlatformAdapter';
 
 export type TextSizeSetting = 'standard' | 'large';
 export type DialoguePacingSetting = 'standard' | 'instant';
-export type GraphicsQualitySetting = 'high' | 'performance';
 
 export interface UserSettings {
   schemaVersion: number;
@@ -17,8 +16,6 @@ export interface UserSettings {
   voiceDucking: boolean;
   textSize: TextSizeSetting;
   dialoguePacing: DialoguePacingSetting;
-  reducedMotion: boolean;
-  graphicsQuality: GraphicsQualitySetting;
   hapticsEnabled: boolean;
 }
 
@@ -30,16 +27,6 @@ export type SettingsListener = (settings: UserSettings) => void;
 function clamp01(val: unknown, fallback: number): number {
   const num = typeof val === 'number' && Number.isFinite(val) ? val : fallback;
   return Math.max(0, Math.min(1, Math.round(num * 100) / 100));
-}
-
-function detectReducedMotionDefault(): boolean {
-  try {
-    return typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  } catch {
-    return false;
-  }
 }
 
 export function createDefaultSettings(): UserSettings {
@@ -56,8 +43,6 @@ export function createDefaultSettings(): UserSettings {
     voiceDucking: true,
     textSize: 'standard',
     dialoguePacing: 'standard',
-    reducedMotion: detectReducedMotionDefault(),
-    graphicsQuality: 'high',
     hapticsEnabled: true,
   };
 }
@@ -79,8 +64,6 @@ function sanitizeSettings(raw: Partial<UserSettings> | null): UserSettings {
     voiceDucking: typeof raw.voiceDucking === 'boolean' ? raw.voiceDucking : defaults.voiceDucking,
     textSize: raw.textSize === 'large' ? 'large' : 'standard',
     dialoguePacing: raw.dialoguePacing === 'instant' ? 'instant' : 'standard',
-    reducedMotion: typeof raw.reducedMotion === 'boolean' ? raw.reducedMotion : defaults.reducedMotion,
-    graphicsQuality: raw.graphicsQuality === 'performance' ? 'performance' : 'high',
     hapticsEnabled: typeof raw.hapticsEnabled === 'boolean' ? raw.hapticsEnabled : defaults.hapticsEnabled,
   };
 }

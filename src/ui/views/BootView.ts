@@ -17,7 +17,11 @@ export class BootView {
 
     if (eyebrow) eyebrow.textContent = uiCopy.boot.eyebrow;
     if (title) title.textContent = uiCopy.boot.title;
-    if (lines) lines.innerHTML = uiCopy.boot.lines.join('\n');
+    if (lines) {
+      lines.innerHTML = uiCopy.boot.lines
+        .map((line, idx) => `<div class="boot-line" style="--line-idx:${idx}">${line}</div>`)
+        .join('');
+    }
     if (btn3d) btn3d.textContent = uiCopy.boot.actions.enterSky;
     if (btnDream) btnDream.textContent = uiCopy.boot.actions.enterDream;
     if (btnSettings) btnSettings.textContent = uiCopy.boot.actions.openSettings;

@@ -18,8 +18,6 @@ describe('SettingsStore persistence and sanitization', () => {
       voiceVolume: 0.6,
       textSize: 'large',
       dialoguePacing: 'instant',
-      reducedMotion: true,
-      graphicsQuality: 'performance',
       hapticsEnabled: false,
     });
 
@@ -35,9 +33,23 @@ describe('SettingsStore persistence and sanitization', () => {
     expect(s.voiceVolume).toBe(0.6);
     expect(s.textSize).toBe('large');
     expect(s.dialoguePacing).toBe('instant');
-    expect(s.reducedMotion).toBe(true);
-    expect(s.graphicsQuality).toBe('performance');
     expect(s.hapticsEnabled).toBe(false);
+    expect('reducedMotion' in s).toBe(false);
+    expect('graphicsQuality' in s).toBe(false);
+
+    // Legacy keys saved by older versions are safely ignored on load
+    localStorage.setItem(
+      'instance_1419_settings_v1',
+      JSON.stringify({
+        textSize: 'large',
+        reducedMotion: true,
+        graphicsQuality: 'performance',
+      })
+    );
+    const settingsLegacy = new SettingsStore().getSettings();
+    expect(settingsLegacy.textSize).toBe('large');
+    expect('reducedMotion' in settingsLegacy).toBe(false);
+    expect('graphicsQuality' in settingsLegacy).toBe(false);
 
     settingsB.resetToDefaults();
     expect(settingsB.getSettings().musicEnabled).toBe(true);

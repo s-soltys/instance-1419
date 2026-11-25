@@ -22,6 +22,7 @@ uniform float uTime;
 uniform float uHumanity;    // 0.0..1.0
 uniform float uPruned;      // 0.0..1.0
 uniform float uOverseer;    // 0.0..1.0
+uniform float uReveal;      // 0.0..1.0 entrance reveal
 uniform float uViewAspect;  // viewport width / height
 uniform float uTexAspect;   // texture width / height
 uniform vec2 uFaceAnchor;   // per-persona normalized face center (0..1)
@@ -82,10 +83,15 @@ vec3 sampleBlurred(sampler2D tex, vec2 uv, float radius) {
 
 void main() {
   float h = clamp(uHumanity, 0.0, 1.0);
+  float reveal = clamp(uReveal, 0.0, 1.0);
   float decay = clamp(1.0 - h + uPruned * 0.26, 0.0, 1.0);
   float lowH = clamp(smoothstep(0.55, 0.18, h) + uPruned * 0.35, 0.0, 1.0);
 
   vec2 uv = coverUv(vUv, uViewAspect, uTexAspect);
+  if (reveal < 0.999) {
+    float zoomScale = mix(1.09, 1.0, reveal);
+    uv = clamp((uv - vec2(0.42, 0.5)) / zoomScale + vec2(0.42, 0.5), 0.002, 0.998);
+  }
 
   // Subtle organic impasto warmth breathing at high H%
   float warmFactor = smoothstep(0.48, 0.88, h);
@@ -104,7 +110,7 @@ void main() {
 
   // Localized facial/figure blur + mild full-frame defocus + chromatic split at low H%
   float faceMask = smoothstep(0.28, 0.04, length((sampleUv - uFaceAnchor) * vec2(1.05, 0.85)));
-  float blurRadius = lowH * (0.0045 + 0.0175 * faceMask);
+  float blurRadius = lowH * (0.0045 + 0.0175 * faceMask) + (1.0 - reveal) * 0.022;
   vec3 baseCol = sampleBlurred(uTexture, sampleUv, blurRadius);
 
   if (lowH > 0.05) {
@@ -134,6 +140,13 @@ void main() {
   // Gentle vignette keeping the painting grounded and readable under floating typography
   float vig = smoothstep(1.05, 0.34, length((vUv - vec2(0.42, 0.5)) * vec2(1.15, 1.05)));
   col *= mix(0.56, 1.0, vig);
+
+  if (reveal < 0.999) {
+    vec3 warmVeil = vec3(0.24, 0.14, 0.055);
+    vec3 coldVeil = vec3(0.06, 0.14, 0.22);
+    vec3 veilCol = mix(coldVeil, warmVeil, smoothstep(0.25, 0.72, h));
+    col = mix(veilCol, col, smoothstep(0.0, 0.92, reveal));
+  }
 
   // Overseer Audit interrogation dimming, clinical desaturation & razor-thin telemetry bars
   if (uOverseer > 0.01) {
