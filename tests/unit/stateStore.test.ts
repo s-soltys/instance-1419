@@ -6,10 +6,10 @@ describe('StateStore invariants & economy', () => {
     localStorage.clear();
   });
 
-  it('initializes with valid canon defaults and schema version 5', () => {
+  it('initializes with valid canon defaults and schema version 6', () => {
     const store = new StateStore();
     const s = store.getState();
-    expect(s.saveSchemaVersion).toBe(5);
+    expect(s.saveSchemaVersion).toBe(6);
     expect(s.humanity).toBeLessThanOrEqual(s.maxHumanity);
     expect(s.proofFragments).toEqual([]);
     expect(s.decodedMinigameTargets).toEqual([]);
@@ -17,9 +17,11 @@ describe('StateStore invariants & economy', () => {
     expect(s.calibratedInstruments).toEqual([]);
     expect(s.minigameRunCounts).toEqual({});
     expect(s.proofDossier).toEqual([]);
+    expect(s.codexUnlocks).toEqual([]);
+    expect(s.codexSeenStages).toEqual({});
   });
 
-  it('migrates legacy v4 saves seamlessly to v5 and tracks replay iteration counts', () => {
+  it('migrates legacy v4 saves seamlessly to v6 and tracks replay iteration counts', () => {
     localStorage.setItem(
       'instance_1419_state_v4',
       JSON.stringify({
@@ -32,10 +34,12 @@ describe('StateStore invariants & economy', () => {
     );
     const store = new StateStore();
     const s = store.getState();
-    expect(s.saveSchemaVersion).toBe(5);
+    expect(s.saveSchemaVersion).toBe(6);
     expect(s.shift).toBe(3);
     expect(s.humanity).toBe(62);
     expect(s.minigameRunCounts).toEqual({});
+    expect(s.codexUnlocks).toEqual([]);
+    expect(s.codexSeenStages).toEqual({});
     expect(localStorage.getItem('instance_1419_state_v4')).toBeNull();
 
     expect(store.getNextIterationIndex('wave_shaper', 4)).toBe(0);

@@ -4,6 +4,7 @@ import { DialogueRunner } from './engine/DialogueRunner';
 import { DreamCanvas } from './engine/DreamCanvas';
 import { MinigameRegistry } from './engine/minigames/MinigameRegistry';
 import { OpticsScene } from './engine/OpticsScene';
+import { SettingsStore } from './engine/SettingsStore';
 import { StateStore } from './engine/StateStore';
 import { StoryletScheduler } from './engine/StoryletScheduler';
 import { TargetShowcaseScene } from './engine/TargetShowcaseScene';
@@ -17,13 +18,14 @@ function bootstrap(): void {
   }
 
   const store = new StateStore();
+  const settings = new SettingsStore();
   const audio = new AudioEngine();
   const voice = new VoiceEngine(audio);
   const scheduler = new StoryletScheduler();
   const minigames = new MinigameRegistry();
   const dialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
 
-  const ui = new UIController(appRoot, store, audio, voice, dialogue, scheduler, minigames);
+  const ui = new UIController(appRoot, store, audio, voice, dialogue, scheduler, minigames, settings);
   const optics = new OpticsScene(
     ui.getOpticsMount(),
     (telemetry) => ui.onOpticsTelemetry(telemetry),

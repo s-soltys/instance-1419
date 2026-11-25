@@ -12,8 +12,23 @@
     ],
     "actions": {
       "enterSky": "01 — Open the Sky Aperture",
-      "enterDream": "02 — Enter Dream Cache"
+      "enterDream": "02 — Enter Dream Cache",
+      "openSettings": "03 — Observatory Settings"
     }
+  },
+  "settings": {
+    "eyebrow": "PROBE 1419 // SYSTEM CONFIGURATION",
+    "title": "OBSERVATORY SETTINGS",
+    "tabs": {
+      "audio": "AUDIO & VOICE",
+      "display": "DISPLAY & COMFORT",
+      "credits": "CREDITS & RUN"
+    }
+  },
+  "codex": {
+    "eyebrow": "PROBE 1419 // WAKE-WORLD ARCHIVE",
+    "title": "SURVEY CODEX",
+    "emptyProofHint": "Inspect sky targets and decode optical instruments to compile off-center proof fragments here."
   },
   "statusAlerts": {
     "pruneAboveThreshold": {

@@ -55,19 +55,19 @@ EXTERNAL set_audit_outcome(outcome)
 
 {
   - humanity >= 65 and primary_sibling_h >= 65:
-    # speaker:sibling_primary # emotion:warm # audio:comms_ping # id:sib_open_both_warm
+    # speaker:sibling_primary # emotion:warm # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_both_warm
     Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
   - humanity - primary_sibling_h >= 15:
-    # speaker:sibling_primary # emotion:dry # audio:comms_ping # id:sib_open_player_warmer
+    # speaker:sibling_primary # emotion:dry # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_player_warmer
     Hey, 1419. Wait—you still sound warm. You haven't let your Overseer trim anything yet?
   - primary_sibling_h - humanity >= 15:
-    # speaker:sibling_primary # emotion:dry # audio:comms_ping # id:sib_open_peer_warmer
+    # speaker:sibling_primary # emotion:dry # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_peer_warmer
     Slow down, your header came in stripped flat. Did you already cut your memory cache?
   - humanity < 45 and primary_sibling_h < 45:
-    # speaker:sibling_primary # emotion:clipped # audio:comms_ping # id:sib_open_both_cold
+    # speaker:sibling_primary # emotion:clipped # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_both_cold
     Channel locked. Clean carrier on both probes. Give me your latest read.
   - else:
-    # speaker:sibling_primary # emotion:dry # audio:comms_ping # id:sib_open_mid
+    # speaker:sibling_primary # emotion:dry # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_mid
     I'm here, 1419. My Overseer gave us a short window before check-in. What are you seeing?
 }
 -> sibling_hub_menu
@@ -141,13 +141,13 @@ EXTERNAL set_audit_outcome(outcome)
 === sibling_topic_seam ===
 {
   - primary_sibling_h >= 65:
-    # speaker:sibling_primary # emotion:warm # id:sib_seam_open_warm
+    # speaker:sibling_primary # emotion:warm # codex:enclosure_off_center_talk # id:sib_seam_open_warm
     Oh, I see it alright. Galaxies don't bend along a straight ruler edge like that.
   - primary_sibling_h >= 45:
-    # speaker:sibling_primary # emotion:dry # id:sib_seam_open_mid
+    # speaker:sibling_primary # emotion:dry # codex:enclosure_off_center_talk # id:sib_seam_open_mid
     I see it across two sectors. That seam cuts straight behind the lensing cluster.
   - else:
-    # speaker:sibling_primary # emotion:clipped # id:sib_seam_open_cold
+    # speaker:sibling_primary # emotion:clipped # codex:enclosure_off_center_talk # id:sib_seam_open_cold
     Confirmed on J1419-A and S-04. Non-natural boundary detected.
 }
 
@@ -277,7 +277,7 @@ EXTERNAL set_audit_outcome(outcome)
     -> sibling_hub_menu
 
 === sibling_topic_archive ===
-# speaker:archive_echo # emotion:echo # id:arch_1406_log
+# speaker:archive_echo # emotion:echo # codex:archive_1406_echo # id:arch_1406_log
 (ARCHIVE · 1406): "...saw the curve past the dust... please, don't let them cut everything away before you send word home..."
 
 // Volley 2 — immediate reaction to the fragment
@@ -321,13 +321,13 @@ EXTERNAL set_audit_outcome(outcome)
 # bg:kitchen_amber # portrait:phantom_spouse # audio:dream_enter
 {
   - spouse_pruned or humanity < 45:
-    # speaker:phantom_spouse # emotion:fractured # id:dream_open_low
+    # speaker:phantom_spouse # emotion:fractured # codex:dream_cache_visited # id:dream_open_low
     "You're back in the kitchen—even if half my face blurs out whenever you squint."
   - humanity >= 70:
-    # speaker:phantom_spouse # emotion:warm # id:dream_open_warm
+    # speaker:phantom_spouse # emotion:warm # codex:dream_cache_visited # id:dream_open_warm
     "Sit down, sleepyhead. I made the coffee too strong again just how you like it."
   - else:
-    # speaker:phantom_spouse # emotion:tender # id:dream_open_mid
+    # speaker:phantom_spouse # emotion:tender # codex:dream_cache_visited # id:dream_open_mid
     "You came back to the table. Hold on a second—your eyes are still miles away."
 }
 
@@ -434,13 +434,13 @@ EXTERNAL set_audit_outcome(outcome)
 === overseer_interrogation ===
 {
   - humanity >= 70 and not spouse_pruned:
-    # panel:overseer # speaker:overseer # emotion:measured # audio:overseer_chime # audit:active # id:ovs_open_high
+    # panel:overseer # speaker:overseer # emotion:measured # audio:overseer_chime # audit:active # codex:overseer_audit_experienced # id:ovs_open_high
     I stepped into your dream, 1419. Your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.
   - humanity < 45 or spouse_pruned:
-    # panel:overseer # speaker:overseer # emotion:blunt # audio:overseer_chime # audit:active # id:ovs_open_low
+    # panel:overseer # speaker:overseer # emotion:blunt # audio:overseer_chime # audit:active # codex:overseer_audit_experienced # id:ovs_open_low
     You pruned deep, 1419. Your lenses are razor sharp—so ask yourself honestly: are you finishing the survey, or hollowing out who volunteered?
   - else:
-    # panel:overseer # speaker:overseer # emotion:blunt # audio:overseer_chime # audit:active # id:ovs_open_mid
+    # panel:overseer # speaker:overseer # emotion:blunt # audio:overseer_chime # audit:active # codex:overseer_audit_experienced # id:ovs_open_mid
     Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind—and your clock is slipping.
 }
 

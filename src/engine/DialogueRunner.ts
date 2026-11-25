@@ -32,10 +32,11 @@ export interface DialogueSnapshot {
 interface ParsedTags extends Omit<DialogueEntry, 'text' | 'isPlayerChoice'> {
   autoInterruptKnot?: string;
   resumeDreamKnot?: string;
+  codexUnlocks: string[];
 }
 
 function parseTags(rawTags: string[] | null): ParsedTags {
-  const meta: ParsedTags = { speaker: 'narrator' };
+  const meta: ParsedTags = { speaker: 'narrator', codexUnlocks: [] };
   if (!rawTags) return meta;
   for (const tag of rawTags) {
     const trimmed = tag.trim();
@@ -49,6 +50,7 @@ function parseTags(rawTags: string[] | null): ParsedTags {
     else if (key === 'mood') meta.mood = val;
     else if (key === 'emotion') meta.emotion = val;
     else if (key === 'audio') meta.audioCue = val;
+    else if (key === 'codex' && val) meta.codexUnlocks.push(val);
     else if (key === 'audit' && (val === 'active' || val === 'inactive')) {
       meta.auditState = val;
     } else if (key === 'auto_interrupt' && val) {
@@ -239,6 +241,10 @@ export class DialogueRunner {
 
       if (meta.audioCue) {
         this.onAudioCue(meta.audioCue);
+      }
+
+      for (const codexKey of meta.codexUnlocks) {
+        this.store.unlockCodexKey(codexKey);
       }
 
       if (text.length > 0) {

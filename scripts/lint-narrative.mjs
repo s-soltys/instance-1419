@@ -136,7 +136,70 @@ function scanMinigamesTs(dir) {
 }
 scanMinigamesTs(MINIGAMES_DIR);
 
-// 4. Voice script audio file coverage
+// 4. Codex content canon, IP hygiene, plate manifest & anomaly cross-references
+const CODEX_PATH = path.join(ROOT, 'src', 'content', 'codex.json');
+const MANIFEST_PATH = path.join(ROOT, 'assets', 'MANIFEST.json');
+if (fs.existsSync(CODEX_PATH)) {
+  const codexRaw = fs.readFileSync(CODEX_PATH, 'utf8');
+  for (const rx of DISALLOWED_IP_TERMS) {
+    if (rx.test(codexRaw)) {
+      console.error(`[lint-narrative] IP boundary violation (${rx}) in codex.json`);
+      errors++;
+    }
+  }
+  const codexJson = JSON.parse(codexRaw);
+  const manifestAssets = new Set(
+    JSON.parse(fs.readFileSync(MANIFEST_PATH, 'utf8')).assets.map((a) => a.path)
+  );
+  const validCategories = new Set((codexJson.categories ?? []).map((c) => c.id));
+  const seenCodexIds = new Set();
+
+  for (const entry of codexJson.entries ?? []) {
+    if (seenCodexIds.has(entry.id)) {
+      console.error(`[lint-narrative] Duplicate codex entry id "${entry.id}"`);
+      errors++;
+    }
+    seenCodexIds.add(entry.id);
+
+    if (!validCategories.has(entry.category)) {
+      console.error(`[lint-narrative] Codex entry "${entry.id}" uses unknown category "${entry.category}"`);
+      errors++;
+    }
+    if (entry.targetId && !validAnomalyIds.has(entry.targetId)) {
+      console.error(`[lint-narrative] Codex entry "${entry.id}" references unknown targetId "${entry.targetId}"`);
+      errors++;
+    }
+    if (entry.plateAsset && !manifestAssets.has(entry.plateAsset)) {
+      console.error(`[lint-narrative] Codex entry "${entry.id}" references unmanifested plateAsset "${entry.plateAsset}"`);
+      errors++;
+    }
+    for (const stage of entry.stages ?? []) {
+      const cond = stage.unlock ?? {};
+      if (cond.scannedAnomaly && !validAnomalyIds.has(cond.scannedAnomaly)) {
+        console.error(`[lint-narrative] Codex stage "${entry.id}.${stage.id}" references unknown scannedAnomaly "${cond.scannedAnomaly}"`);
+        errors++;
+      }
+      if (cond.decodedTarget && !validAnomalyIds.has(cond.decodedTarget)) {
+        console.error(`[lint-narrative] Codex stage "${entry.id}.${stage.id}" references unknown decodedTarget "${cond.decodedTarget}"`);
+        errors++;
+      }
+    }
+  }
+}
+
+// 5. Anti-HTML rule enforcement on player-facing SettingsView & CodexView
+for (const relView of ['src/ui/views/SettingsView.ts', 'src/ui/views/CodexView.ts']) {
+  const fullView = path.join(ROOT, relView);
+  if (fs.existsSync(fullView)) {
+    const viewSrc = fs.readFileSync(fullView, 'utf8');
+    if (/type\s*=\s*['"]range['"]/i.test(viewSrc)) {
+      console.error(`[lint-narrative] Disallowed raw HTML <input type="range"> found in ${relView}`);
+      errors++;
+    }
+  }
+}
+
+// 6. Voice script audio file coverage
 if (fs.existsSync(VOICE_SCRIPT)) {
   const vs = JSON.parse(fs.readFileSync(VOICE_SCRIPT, 'utf8'));
   for (const line of vs.lines ?? []) {
@@ -154,5 +217,5 @@ if (errors > 0) {
 }
 
 console.log(
-  `[lint-narrative] PASS (speakers, portraits, ${seenLineIds.size} unique line IDs, cross-JSON refs, anti-HTML controls, and VO files verified).`
+  `[lint-narrative] PASS (speakers, portraits, ${seenLineIds.size} unique line IDs, cross-JSON/codex refs, anti-HTML controls, and VO files verified).`
 );

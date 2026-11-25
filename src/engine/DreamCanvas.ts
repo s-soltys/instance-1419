@@ -139,6 +139,14 @@ export class DreamCanvas {
     }
   }
 
+  private reducedMotion = false;
+
+  applyDisplaySettings(opts: { quality: 'high' | 'performance'; reducedMotion: boolean }): void {
+    this.reducedMotion = opts.reducedMotion;
+    const maxDpr = opts.quality === 'performance' ? 1 : 2;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+  }
+
   dispose(): void {
     this.setActive(false);
     window.removeEventListener('resize', this.onResizeBound);
@@ -154,7 +162,7 @@ export class DreamCanvas {
     if (!this.active) return;
     this.rafId = requestAnimationFrame(this.loop);
 
-    this.mat.uniforms.uTime.value = performance.now() * 0.001;
+    this.mat.uniforms.uTime.value = this.reducedMotion ? 0.0 : performance.now() * 0.001;
     const targetH = this.humanity / 100;
     const targetPruned = this.pruned ? 1.0 : 0.0;
     const targetOverseer = this.overseerActive ? 1.0 : 0.0;

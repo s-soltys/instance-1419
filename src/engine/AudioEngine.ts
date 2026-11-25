@@ -6,6 +6,9 @@ export interface AudioMixSettings {
   master: number; // 0..1
   ambience: number; // 0..1
   sfx: number; // 0..1
+  musicEnabled?: boolean;
+  sfxEnabled?: boolean;
+  voiceDuckingEnabled?: boolean;
 }
 
 /**
@@ -68,6 +71,9 @@ export class AudioEngine {
     master: 0.72,
     ambience: 0.78,
     sfx: 0.82,
+    musicEnabled: true,
+    sfxEnabled: true,
+    voiceDuckingEnabled: true,
   };
 
   unlock(): void {
@@ -97,10 +103,10 @@ export class AudioEngine {
       this.masterGain.gain.value = this.settings.muted ? 0 : this.settings.master;
 
       this.ambienceGain = ctx.createGain();
-      this.ambienceGain.gain.value = this.settings.ambience;
+      this.ambienceGain.gain.value = this.effectiveAmbienceGain();
 
       this.sfxGain = ctx.createGain();
-      this.sfxGain.gain.value = this.settings.sfx;
+      this.sfxGain.gain.value = this.effectiveSfxGain();
 
       this.voiceBus = ctx.createGain();
       this.voiceBus.gain.value = 1.0;
@@ -154,12 +160,23 @@ export class AudioEngine {
     return this.voiceBus;
   }
 
+  private effectiveAmbienceGain(): number {
+    if (this.settings.musicEnabled === false) return 0;
+    const duckMult =
+      this.voiceDucking && this.settings.voiceDuckingEnabled !== false ? 0.48 : 1.0;
+    return this.settings.ambience * duckMult;
+  }
+
+  private effectiveSfxGain(): number {
+    if (this.settings.sfxEnabled === false) return 0;
+    return this.settings.sfx;
+  }
+
   setVoiceDucking(ducking: boolean): void {
     this.voiceDucking = ducking;
     if (!this.ctx || !this.ambienceGain) return;
     const now = this.ctx.currentTime;
-    const target = this.settings.ambience * (ducking ? 0.48 : 1.0);
-    this.ambienceGain.gain.setTargetAtTime(target, now, ducking ? 0.08 : 0.28);
+    this.ambienceGain.gain.setTargetAtTime(this.effectiveAmbienceGain(), now, ducking ? 0.08 : 0.28);
   }
 
   private createImpulseResponse(ctx: AudioContext, durationSec: number, decay: number): AudioBuffer {
@@ -356,7 +373,7 @@ export class AudioEngine {
   }
 
   private triggerGenerativePhrase(): void {
-    if (!this.ctx || !this.ambienceGain || this.settings.muted) return;
+    if (!this.ctx || !this.ambienceGain || this.settings.muted || this.settings.musicEnabled === false) return;
     if (this.ctx.state !== 'running') return;
     const now = this.ctx.currentTime;
 
@@ -493,11 +510,10 @@ export class AudioEngine {
       );
     }
     if (this.ambienceGain) {
-      const target = this.settings.ambience * (this.voiceDucking ? 0.48 : 1.0);
-      this.ambienceGain.gain.setTargetAtTime(target, now, 0.05);
+      this.ambienceGain.gain.setTargetAtTime(this.effectiveAmbienceGain(), now, 0.05);
     }
     if (this.sfxGain) {
-      this.sfxGain.gain.setTargetAtTime(this.settings.sfx, now, 0.05);
+      this.sfxGain.gain.setTargetAtTime(this.effectiveSfxGain(), now, 0.05);
     }
   }
 

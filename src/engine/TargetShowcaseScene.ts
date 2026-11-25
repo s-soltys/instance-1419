@@ -236,6 +236,16 @@ export class TargetShowcaseScene {
     }
   }
 
+  applyDisplaySettings(opts: { quality: 'high' | 'performance'; reducedMotion: boolean }): void {
+    const maxDpr = opts.quality === 'performance' ? 1 : this.isCoarsePointer ? 1.5 : 2;
+    this.currentAppliedDpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+    this.renderer.setPixelRatio(this.currentAppliedDpr);
+    this.bloomEnabled = opts.quality === 'high';
+    if (this.bloomPass) {
+      this.bloomPass.enabled = opts.quality === 'high';
+    }
+  }
+
   loadTarget(spec: AnomalySpec, opticalFidelity: number): void {
     this.currentSpec = spec;
     this.opticalFidelity = opticalFidelity;

@@ -137,6 +137,10 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
     }
   }
 
+  getVolume(): number {
+    return this.volume;
+  }
+
   async speak(req: VoiceRequest): Promise<boolean> {
     const rec = findScriptRecord(req);
     if (!rec) {
@@ -316,6 +320,10 @@ export class VoiceEngine {
 
   setVolume(vol: number): void {
     this.prebaked.setVolume(vol);
+  }
+
+  getVolume(): number {
+    return this.prebaked.getVolume();
   }
 
   getActiveSpeaker(): string | null {

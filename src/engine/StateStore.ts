@@ -58,11 +58,14 @@ export interface GameState {
   overseerAuditActive: boolean;
   wavelengthNm: number;
   lastAuditOutcome: AuditOutcome;
+  codexUnlocks: string[];
+  codexSeenStages: Record<string, number>;
 }
 
-const SAVE_SCHEMA_VERSION = 5;
-const STORAGE_KEY = 'instance_1419_state_v5';
+const SAVE_SCHEMA_VERSION = 6;
+const STORAGE_KEY = 'instance_1419_state_v6';
 const LEGACY_STORAGE_KEYS = [
+  'instance_1419_state_v5',
   'instance_1419_state_v4',
   'instance_1419_state_v3',
   'instance_1419_spike_state_v2',
@@ -102,6 +105,8 @@ export function createInitialState(): GameState {
     overseerAuditActive: false,
     wavelengthNm: 560,
     lastAuditOutcome: 'none',
+    codexUnlocks: [],
+    codexSeenStages: {},
   };
 }
 
@@ -139,6 +144,12 @@ function migrateSavedState(raw: Partial<GameState> | null): GameState {
   }
   if (!Array.isArray(merged.proofDossier)) {
     merged.proofDossier = [];
+  }
+  if (!Array.isArray(merged.codexUnlocks)) {
+    merged.codexUnlocks = [];
+  }
+  if (!merged.codexSeenStages || typeof merged.codexSeenStages !== 'object') {
+    merged.codexSeenStages = {};
   }
   return merged;
 }
@@ -513,6 +524,25 @@ export class StateStore {
     if (this.state.completedStorylets.includes(id)) return;
     this.patch({
       completedStorylets: [...this.state.completedStorylets, id],
+    });
+  }
+
+  unlockCodexKey(key: string): boolean {
+    if (!key || this.state.codexUnlocks.includes(key)) return false;
+    this.patch({
+      codexUnlocks: [...this.state.codexUnlocks, key],
+    });
+    return true;
+  }
+
+  markCodexEntrySeen(entryId: string, stageCount: number): void {
+    const prev = this.state.codexSeenStages[entryId] ?? 0;
+    if (stageCount <= prev) return;
+    this.patch({
+      codexSeenStages: {
+        ...this.state.codexSeenStages,
+        [entryId]: stageCount,
+      },
     });
   }
 

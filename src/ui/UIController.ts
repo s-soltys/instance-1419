@@ -1,21 +1,26 @@
 import charactersData from '../content/characters.json';
 import uiCopy from '../content/ui_copy.json';
 import type { AudioEngine } from '../engine/AudioEngine';
+import { CodexEngine } from '../engine/CodexEngine';
 import { DialogueRunner, type DialogueSnapshot } from '../engine/DialogueRunner';
 import type { DreamCanvas } from '../engine/DreamCanvas';
 import type { MinigameRegistry } from '../engine/minigames/MinigameRegistry';
 import type { AnomalySpec, OpticsScene, OpticsTelemetry } from '../engine/OpticsScene';
+import { SettingsStore, type UserSettings } from '../engine/SettingsStore';
 import type { GameMode, GameState, StateStore } from '../engine/StateStore';
 import type { StoryletScheduler } from '../engine/StoryletScheduler';
 import type { ShowcaseTelemetry, TargetShowcaseScene } from '../engine/TargetShowcaseScene';
 import { TelemetryLogger } from '../engine/TelemetryLogger';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
+import { platform } from '../platform/PlatformAdapter';
 import { DevHarness, type DevHarnessBridge } from './DevHarness';
 import { renderSpeakerAvatar, updateAvatarVoiceAnimations } from './SpeakerAvatar';
 import { StatusShiftOverlay } from './StatusShiftOverlay';
 import { BootView } from './views/BootView';
+import { CodexView } from './views/CodexView';
 import { DialogueFeedView } from './views/DialogueFeedView';
 import { MinigameHostView } from './views/MinigameHostView';
+import { SettingsView } from './views/SettingsView';
 
 interface CharacterInfo {
   displayName: string;
@@ -31,11 +36,12 @@ const MAX_WAVE = 1800;
 
 /**
  * Lean top-level scene coordinator routing Boot, 3D Wide Sky, 3D Target Inspect,
- * and 2D Dreamscape views while delegating dialogue, minigames, and boot DOM to modular views.
+ * and 2D Dreamscape views while delegating dialogue, minigames, settings, codex, and boot DOM to modular views.
  */
 export class UIController {
   private readonly root: HTMLElement;
   private readonly store: StateStore;
+  private readonly settingsStore: SettingsStore;
   private readonly audio: AudioEngine;
   private readonly voice: VoiceEngine;
   private readonly commsDialogue: DialogueRunner;
@@ -44,11 +50,14 @@ export class UIController {
   private readonly futureDialogue: DialogueRunner;
   private readonly scheduler: StoryletScheduler;
   private readonly minigames: MinigameRegistry;
+  private readonly codexEngine: CodexEngine;
   private readonly telemetry: TelemetryLogger;
   private readonly statusShift: StatusShiftOverlay;
   private readonly bootView: BootView;
   private readonly dialogueFeed: DialogueFeedView;
   private readonly minigameHost: MinigameHostView;
+  private readonly settingsView: SettingsView;
+  private readonly codexView: CodexView;
 
   private optics!: OpticsScene;
   private showcase!: TargetShowcaseScene;
@@ -77,10 +86,12 @@ export class UIController {
     voice: VoiceEngine,
     dialogue: DialogueRunner,
     scheduler: StoryletScheduler,
-    minigames: MinigameRegistry
+    minigames: MinigameRegistry,
+    settingsStore?: SettingsStore
   ) {
     this.root = root;
     this.store = store;
+    this.settingsStore = settingsStore ?? new SettingsStore();
     this.audio = audio;
     this.voice = voice;
     this.commsDialogue = dialogue;
@@ -89,6 +100,7 @@ export class UIController {
     this.futureDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
     this.scheduler = scheduler;
     this.minigames = minigames;
+    this.codexEngine = new CodexEngine();
     this.telemetry = new TelemetryLogger(store.getState());
 
     this.renderShell();
@@ -103,6 +115,22 @@ export class UIController {
       minigames,
       this.telemetry
     );
+    this.settingsView = new SettingsView(this.root, this.settingsStore, audio, {
+      onRestartRun: () => this.resetRunState(),
+      onExportTelemetry: () => this.telemetry.downloadSummary(this.store.getState()),
+    });
+    this.codexView = new CodexView(this.root, store, audio, this.codexEngine, {
+      onFocusTarget: (targetId) => {
+        if (this.store.getState().scannedAnomalyIds.includes(targetId)) {
+          this.enterTargetInspect(targetId);
+        } else {
+          this.optics?.slewToAnomaly(targetId);
+        }
+      },
+      onLaunchCapstone: () => {
+        this.enterTargetInspect('sol_centauri_bearing', () => this.launchTargetMinigame('blink_spotter'));
+      },
+    });
     this.minigameHost.setBandSwitchCallback((bandIdx) => {
       const ratios = [0.04, 0.23, 0.61, 0.86];
       const val = ratios[bandIdx] ?? 0.23;
@@ -122,6 +150,7 @@ export class UIController {
     this.initSkyMarkers();
     this.renderBearingIndex();
     this.bindUIEvents();
+    this.settingsStore.subscribe((settings) => this.applyUserSettings(settings));
     this.store.subscribe((state) => this.syncStateToUI(state));
     this.store.subscribeStatusShift((ev) => this.statusShift.show(ev));
     this.startAvatarVoiceLoop();
@@ -133,6 +162,33 @@ export class UIController {
     if (this.store.getState().mode === 'dream_2d' && !this.activeDreamSnapshot) {
       this.startDreamDialogue('dream_shift1_audit');
     }
+  }
+
+  private applyUserSettings(s: UserSettings): void {
+    this.audio.setMix({
+      muted: !s.masterEnabled,
+      master: s.masterVolume,
+      ambience: s.musicVolume,
+      sfx: s.sfxVolume,
+      musicEnabled: s.musicEnabled,
+      sfxEnabled: s.sfxEnabled,
+      voiceDuckingEnabled: s.voiceDucking,
+    });
+    this.voice.setEnabled(s.masterEnabled && s.voiceEnabled);
+    this.voice.setVolume?.(s.voiceVolume);
+    platform.setHapticsEnabled(s.hapticsEnabled);
+    this.dialogueFeed.setInstantPacing(s.dialoguePacing === 'instant');
+
+    const stage = this.root.querySelector<HTMLElement>('.stage');
+    if (stage) {
+      stage.dataset.textSize = s.textSize;
+      stage.dataset.reducedMotion = String(s.reducedMotion);
+    }
+
+    const displayOpts = { quality: s.graphicsQuality, reducedMotion: s.reducedMotion };
+    this.optics?.applyDisplaySettings?.(displayOpts);
+    this.showcase?.applyDisplaySettings?.(displayOpts);
+    this.dream?.applyDisplaySettings?.(displayOpts);
   }
 
   getOpticsMount(): HTMLElement {
@@ -167,8 +223,7 @@ export class UIController {
             <span class="drift-flag hidden" id="hud-drift-flag" title="Psychic drift rising">DRIFT ELEVATED</span>
           </div>
           <div class="telemetry-actions">
-            <button class="etched-action" id="btn-voice" type="button">VOICE ON</button>
-            <button class="etched-action" id="btn-mute" type="button">AUDIO ON</button>
+            <button class="etched-action" id="btn-settings" type="button" aria-haspopup="dialog">SETTINGS</button>
           </div>
         </header>
 
@@ -180,6 +235,7 @@ export class UIController {
             <div class="boot-commands">
               <button class="boot-cmd" id="btn-boot-3d" type="button"></button>
               <button class="boot-cmd amber" id="btn-boot-dream" type="button"></button>
+              <button class="boot-cmd cyan" id="btn-boot-settings" type="button"></button>
             </div>
           </div>
         </section>
@@ -241,23 +297,13 @@ export class UIController {
                 <button class="etched-action" id="btn-zoom-in" type="button">+</button>
               </div>
             </div>
-            <button class="etched-action" id="btn-dossier" type="button">PROOF DOSSIER (0/5)</button>
+            <button class="etched-action codex-trigger" id="btn-codex" type="button" aria-haspopup="dialog">
+              <span>SURVEY CODEX</span>
+              <span class="codex-unread-dot hidden" id="codex-unread-dot">0</span>
+            </button>
             <button class="etched-action mint" id="btn-open-comms" type="button">TALK TO OTHER ME</button>
             <button class="etched-action amber" id="btn-enter-dream" type="button">SLEEP · ENTER DREAM</button>
           </div>
-
-          <aside class="dossier-drawer hidden" id="dossier-drawer" aria-label="Proof Dossier">
-            <div class="comms-header">
-              <div class="comms-title-group">
-                <span>PROOF DOSSIER · OFF-CENTER EVIDENCE</span>
-              </div>
-              <button class="etched-action mint" id="btn-dossier-close" type="button">CLOSE</button>
-            </div>
-            <div class="dossier-list" id="dossier-list"></div>
-            <div class="dossier-footer">
-              <button class="etched-action amber hidden" id="btn-launch-capstone" type="button">COMPOSE SHIFT-6 CARRIER (SIG-06)</button>
-            </div>
-          </aside>
 
           <aside class="comms-panel hidden" id="comms-panel" aria-label="Cluster Relay Communicator">
             <div class="comms-header">
@@ -334,6 +380,7 @@ export class UIController {
 
           <div class="inspect-actions">
             <button class="etched-action amber" id="btn-start-minigame" type="button">BEGIN SCAN MINIGAME</button>
+            <button class="etched-action" id="btn-inspect-codex" type="button" aria-haspopup="dialog">SURVEY CODEX</button>
             <button class="etched-action" id="btn-exit-inspect" type="button">RETURN TO SKY</button>
           </div>
 
@@ -593,23 +640,18 @@ export class UIController {
       () => {
         this.audio.playCue('dream_enter');
         this.enterDreamVariant('current');
+      },
+      () => {
+        this.audio.playCue('choice');
+        this.codexView.close();
+        this.settingsView.open();
       }
     );
 
-    const voiceBtn = this.root.querySelector<HTMLButtonElement>('#btn-voice')!;
-    voiceBtn.addEventListener('click', () => {
-      const next = !this.voice.isEnabled();
-      this.voice.setEnabled(next);
-      voiceBtn.textContent = next ? 'VOICE ON' : 'VOICE OFF';
-      this.audio.playCue('tick');
-    });
-
-    const muteBtn = this.root.querySelector<HTMLButtonElement>('#btn-mute')!;
-    muteBtn.addEventListener('click', () => {
-      const next = !this.audio.isMuted();
-      this.audio.setMuted(next);
-      muteBtn.textContent = next ? 'AUDIO OFF' : 'AUDIO ON';
-      if (!next) this.audio.playCue('tick');
+    this.root.querySelector('#btn-settings')?.addEventListener('click', () => {
+      this.audio.playCue('choice');
+      this.codexView.close();
+      this.settingsView.toggle();
     });
 
     this.root.querySelector('#btn-zoom-in')?.addEventListener('click', () => {
@@ -629,17 +671,23 @@ export class UIController {
       this.exitTargetInspect();
     });
 
-    this.root.querySelector('#btn-dossier')?.addEventListener('click', () => {
+    this.root.querySelector('#btn-codex')?.addEventListener('click', () => {
       this.audio.playCue('choice');
-      this.root.querySelector('#dossier-drawer')?.classList.toggle('hidden');
+      this.settingsView.close();
+      this.closeSiblingComms();
+      this.codexView.toggle();
     });
-    this.root.querySelector('#btn-dossier-close')?.addEventListener('click', () => {
-      this.audio.playCue('tick');
-      this.root.querySelector('#dossier-drawer')?.classList.add('hidden');
-    });
-    this.root.querySelector('#btn-launch-capstone')?.addEventListener('click', () => {
-      this.root.querySelector('#dossier-drawer')?.classList.add('hidden');
-      this.enterTargetInspect('sol_centauri_bearing', () => this.launchTargetMinigame('blink_spotter'));
+    this.root.querySelector('#btn-inspect-codex')?.addEventListener('click', () => {
+      this.audio.playCue('choice');
+      this.settingsView.close();
+      const targetId = this.store.getState().activeTargetId;
+      const snap = this.codexEngine.resolve(this.store.getState());
+      const match = targetId ? snap.entries.find((e) => e.spec.targetId === targetId) : undefined;
+      if (match) {
+        this.codexView.open('celestial', match.spec.id);
+      } else {
+        this.codexView.open('celestial');
+      }
     });
 
     this.root.querySelector('#btn-sc-zoom-in')?.addEventListener('click', () => {
@@ -675,6 +723,7 @@ export class UIController {
 
     this.root.querySelector('#btn-open-comms')?.addEventListener('click', () => {
       this.audio.playCue('comms_ping');
+      this.codexView.close();
       this.openSiblingComms();
     });
     this.root.querySelector('#btn-comms-close')?.addEventListener('click', () => {
@@ -683,6 +732,8 @@ export class UIController {
     });
     this.root.querySelector('#btn-toast-open')?.addEventListener('click', () => {
       this.audio.playCue('comms_ping');
+      this.codexView.close();
+      this.settingsView.close();
       if (this.store.getState().mode !== 'waking_3d') {
         this.store.patch({ mode: 'waking_3d' });
       }
@@ -694,12 +745,23 @@ export class UIController {
     });
     this.root.querySelector('#btn-enter-dream')?.addEventListener('click', () => {
       this.audio.playCue('dream_enter');
+      this.codexView.close();
       this.enterDreamVariant('current');
     });
 
     window.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === 'Escape') {
+        if (this.settingsView.isOpen()) {
+          this.audio.playCue('tick');
+          this.settingsView.close();
+          return;
+        }
+        if (this.codexView.isOpen()) {
+          this.audio.playCue('tick');
+          this.codexView.close();
+          return;
+        }
         this.statusShift.dismiss();
         this.root.querySelector('#future-panel')?.classList.add('hidden');
         const commsPanel = this.root.querySelector('#comms-panel');
@@ -708,6 +770,7 @@ export class UIController {
         }
         return;
       }
+      if (this.settingsView.isOpen() || this.codexView.isOpen()) return;
       const num = Number(e.key);
       if (num >= 1 && num <= 4) {
         const overseerOpen = !this.root.querySelector('#overseer-panel')?.classList.contains('hidden');
@@ -1285,35 +1348,11 @@ export class UIController {
 
     this.root.querySelector('#hud-drift-flag')?.classList.toggle('hidden', state.chaosDrift < 35);
 
-    const dossierBtn = this.root.querySelector<HTMLElement>('#btn-dossier');
-    const dossierList = this.root.querySelector<HTMLElement>('#dossier-list');
-    const capstoneBtn = this.root.querySelector<HTMLElement>('#btn-launch-capstone');
-    if (dossierBtn) {
-      dossierBtn.textContent = `PROOF DOSSIER (${state.proofDossier.length}/5)`;
-    }
-    if (dossierList) {
-      if (state.proofDossier.length === 0) {
-        dossierList.innerHTML =
-          '<p class="dossier-empty">Inspect sky anomalies and run optical instruments to log physical proof fragments here.</p>';
-      } else {
-        dossierList.innerHTML = state.proofDossier
-          .map(
-            (entry) => `
-            <div class="dossier-item">
-              <div class="dossier-item-head">
-                <strong>[${entry.instrumentCode}] ${entry.title}</strong>
-                <span>${entry.grade.replace('_', ' ').toUpperCase()}</span>
-              </div>
-              <p class="dossier-principle">${entry.principle}</p>
-            </div>
-          `
-          )
-          .join('');
-      }
-    }
-    if (capstoneBtn) {
-      const canCapstone = state.shift >= 5 || state.proofDossier.length >= 4;
-      capstoneBtn.classList.toggle('hidden', !canCapstone);
+    const codexSnap = this.codexView.syncState(state);
+    const codexDot = this.root.querySelector<HTMLElement>('#codex-unread-dot');
+    if (codexDot) {
+      codexDot.textContent = String(codexSnap.totalUnread);
+      codexDot.classList.toggle('hidden', codexSnap.totalUnread <= 0);
     }
 
     const ratio = (state.wavelengthNm - MIN_WAVE) / (MAX_WAVE - MIN_WAVE);
@@ -1552,21 +1591,24 @@ export class UIController {
       exportTelemetry: () => {
         this.telemetry.downloadSummary(this.store.getState());
       },
-      resetAll: () => {
-        this.clearTimers();
-        this.voice.stop();
-        this.minigameHost.destroy();
-        this.closeSiblingComms();
-        this.hideCommsToast();
-        this.hideOverseerPanel();
-        this.root.querySelector('#future-panel')?.classList.add('hidden');
-        this.activeCommsSnapshot = null;
-        this.activeDreamSnapshot = null;
-        this.activeOverseerSnapshot = null;
-        this.proactiveCommsSent = false;
-        this.store.reset();
-        this.renderBearingIndex();
-      },
+      resetAll: () => this.resetRunState(),
     };
+  }
+
+  private resetRunState(): void {
+    this.clearTimers();
+    this.voice.stop();
+    this.minigameHost.destroy();
+    this.codexView.close();
+    this.closeSiblingComms();
+    this.hideCommsToast();
+    this.hideOverseerPanel();
+    this.root.querySelector('#future-panel')?.classList.add('hidden');
+    this.activeCommsSnapshot = null;
+    this.activeDreamSnapshot = null;
+    this.activeOverseerSnapshot = null;
+    this.proactiveCommsSent = false;
+    this.store.reset();
+    this.renderBearingIndex();
   }
 }

@@ -162,6 +162,52 @@ async function run() {
     await page.waitForTimeout(450);
     await saveCheckedScreenshot(page, '02_sky_aperture.png');
 
+    // Flow 2b: Settings Screen (Audio/Voice toggles, Display, Auto-generated Credits)
+    await page.click('#btn-settings');
+    await page.waitForSelector('#settings-overlay:not(.hidden)', { timeout: 3000 });
+    await page.waitForTimeout(150);
+    const nativeRangeCount = await page.locator('#settings-overlay input[type="range"]').count();
+    if (nativeRangeCount > 0) {
+      throw new Error(`Expected 0 native <input type="range"> controls in Settings, found ${nativeRangeCount}`);
+    }
+    await page.click('#toggle-music');
+    await page.click('#toggle-voice');
+    await saveCheckedScreenshot(page, '02b_settings_audio.png');
+    await page.click('#toggle-music');
+    await page.click('#toggle-voice');
+    await page.click('[data-settings-tab="credits"]');
+    await page.waitForTimeout(120);
+    const creditCount = await page.locator('#settings-overlay .credit-item').count();
+    if (creditCount < 10) {
+      throw new Error(`Expected auto-generated MANIFEST credits (>=10), found ${creditCount}`);
+    }
+    await saveCheckedScreenshot(page, '02c_settings_credits.png');
+    await page.click('#btn-settings-close');
+    await page.waitForSelector('#settings-overlay', { state: 'hidden', timeout: 3000 });
+
+    // Flow 2c: Wake-World Survey Codex (Evidence + Celestial JWST plate + H%-reactive notes)
+    await page.click('#btn-codex');
+    await page.waitForSelector('#codex-overlay:not(.hidden)', { timeout: 3000 });
+    await page.click('[data-codex-cat="celestial"]');
+    await page.click('[data-codex-entry="celestial_carina_rift"]');
+    await page.waitForFunction(
+      () => {
+        const img = document.querySelector('#codex-overlay .codex-plate-img');
+        return img instanceof HTMLImageElement && img.complete && img.naturalWidth > 0;
+      },
+      { timeout: 5000 }
+    );
+    await page.evaluate(async () => {
+      const img = document.querySelector('#codex-overlay .codex-plate-img');
+      if (img instanceof HTMLImageElement && typeof img.decode === 'function') {
+        await img.decode().catch(() => {});
+      }
+    });
+    await page.waitForTimeout(120);
+    await saveCheckedScreenshot(page, '02d_codex_celestial.png');
+    await page.click('#btn-codex-close');
+    await page.waitForSelector('#codex-overlay', { state: 'hidden', timeout: 3000 });
+
     // Flow 3: All 21 Cosmic Instruments (V1 default + V2 variant spot-checks + Warm/Cold)
     const instruments = [
       { id: 'wave_shaper', code: 'WAV-01', checkCold: true, checkV2: true, capture: true },
@@ -278,6 +324,10 @@ async function run() {
     await page.waitForSelector('#dream-layer:not(.hidden)', { timeout: 6000 });
     await ensureQaClosed(page);
     await page.waitForTimeout(450);
+    const codexVisibleInDream = await page.locator('#btn-codex').isVisible();
+    if (codexVisibleInDream) {
+      throw new Error('Wake-World Codex button must not be visible inside 2D Dream View');
+    }
     const choiceCount = await page.locator('#dream-layer .choice-line').count();
     if (choiceCount > 0) {
       await page.locator('#dream-layer .choice-line').first().click();
@@ -300,6 +350,31 @@ async function run() {
     });
 
     await mPage.goto(url, { waitUntil: 'networkidle' });
+    await ensureQaClosed(mPage);
+    await mPage.click('#btn-boot-3d');
+    await mPage.waitForSelector('#optics-layer:not(.hidden)', { timeout: 6000 });
+    await mPage.click('#btn-settings');
+    await mPage.waitForSelector('#settings-overlay:not(.hidden)', { timeout: 3000 });
+    await mPage.waitForTimeout(140);
+    await saveCheckedScreenshot(mPage, '06_mobile_844x390_settings.png');
+    await mPage.click('#btn-settings-close');
+    await mPage.waitForSelector('#settings-overlay', { state: 'hidden', timeout: 3000 });
+
+    await mPage.click('#btn-codex');
+    await mPage.waitForSelector('#codex-overlay:not(.hidden)', { timeout: 3000 });
+    await mPage.click('[data-codex-cat="celestial"]');
+    await mPage.click('[data-codex-entry="celestial_carina_rift"]');
+    await mPage.waitForFunction(
+      () => {
+        const img = document.querySelector('#codex-overlay .codex-plate-img');
+        return img instanceof HTMLImageElement && img.complete && img.naturalWidth > 0;
+      },
+      { timeout: 5000 }
+    );
+    await mPage.waitForTimeout(140);
+    await saveCheckedScreenshot(mPage, '06_mobile_844x390_codex.png');
+    await mPage.click('#btn-codex-close');
+    await mPage.waitForSelector('#codex-overlay', { state: 'hidden', timeout: 3000 });
     const mobileTargets = [
       'lens_focus',
       'exposure_stacker',

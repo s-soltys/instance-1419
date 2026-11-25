@@ -553,6 +553,11 @@ export class OpticsScene {
     });
   };
 
+  applyDisplaySettings(opts: { quality: 'high' | 'performance'; reducedMotion: boolean }): void {
+    const maxDpr = opts.quality === 'performance' ? 1 : 2;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
+  }
+
   dispose(): void {
     this.setActive(false);
     this.skyMat.dispose();

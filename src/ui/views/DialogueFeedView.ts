@@ -21,6 +21,7 @@ const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
  */
 export class DialogueFeedView {
   private replyBeatTimer: number | null = null;
+  private instantPacing = false;
 
   constructor(
     private readonly root: HTMLElement,
@@ -29,6 +30,10 @@ export class DialogueFeedView {
     private readonly voice: VoiceEngine,
     private readonly telemetry: TelemetryLogger
   ) {}
+
+  setInstantPacing(instant: boolean): void {
+    this.instantPacing = instant;
+  }
 
   clearReplyBeatTimer(): void {
     if (this.replyBeatTimer !== null) {
@@ -67,7 +72,7 @@ export class DialogueFeedView {
     const scrollEl = this.root.querySelector<HTMLElement>(scrollSel);
     const choicesEl = this.root.querySelector<HTMLElement>(choicesSel);
 
-    if (scrollEl && choicesEl && snap.lastAddedEntries.length > 0) {
+    if (!this.instantPacing && scrollEl && choicesEl && snap.lastAddedEntries.length > 0) {
       const preReplyCount = Math.max(0, snap.entries.length - snap.lastAddedEntries.length);
       const preReplyEntries = snap.entries.slice(0, preReplyCount);
       this.renderEntriesOnly(scrollEl, preReplyEntries, {

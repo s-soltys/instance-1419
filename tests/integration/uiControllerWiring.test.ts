@@ -73,4 +73,60 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(showcase.loadTarget).toHaveBeenCalledTimes(2);
     expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
   });
+
+  it('opens Settings from top HUD, toggles music & voice, and enforces Wake-World-only Codex visibility', () => {
+    const appRoot = document.getElementById('app')!;
+    const store = new StateStore();
+    const audio = createMockAudioEngine();
+    const voice = createMockVoiceEngine();
+    const dialogue = new DialogueRunner(store, audio.playCue);
+    const scheduler = new StoryletScheduler();
+    const minigames = new MinigameRegistry();
+
+    const ui = new UIController(
+      appRoot,
+      store,
+      audio as never,
+      voice as never,
+      dialogue,
+      scheduler,
+      minigames
+    );
+
+    const optics = createMockOpticsScene();
+    const showcase = createMockShowcaseScene();
+    const dream = createMockDreamCanvas();
+    ui.attachRenderers(optics as never, showcase as never, dream as never);
+
+    // Top-right HUD exposes single SETTINGS button (old VOICE ON / AUDIO ON buttons removed)
+    expect(appRoot.querySelector('#btn-voice')).toBeNull();
+    expect(appRoot.querySelector('#btn-mute')).toBeNull();
+    const settingsBtn = appRoot.querySelector<HTMLButtonElement>('#btn-settings');
+    expect(settingsBtn).not.toBeNull();
+
+    settingsBtn!.click();
+    expect(appRoot.querySelector('#settings-overlay')?.classList.contains('hidden')).toBe(false);
+
+    // Turning off Music and Voice propagates cleanly to AudioEngine and VoiceEngine
+    appRoot.querySelector<HTMLButtonElement>('#toggle-music')!.click();
+    appRoot.querySelector<HTMLButtonElement>('#toggle-voice')!.click();
+    expect(audio.setMix).toHaveBeenLastCalledWith(
+      expect.objectContaining({ musicEnabled: false })
+    );
+    expect(voice.setEnabled).toHaveBeenLastCalledWith(false);
+
+    // Close Settings with Escape
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    expect(appRoot.querySelector('#settings-overlay')?.classList.contains('hidden')).toBe(true);
+
+    // Enter Wake World and open Survey Codex
+    store.patch({ mode: 'waking_3d' });
+    appRoot.querySelector<HTMLButtonElement>('#btn-codex')!.click();
+    expect(appRoot.querySelector('#codex-overlay')?.classList.contains('hidden')).toBe(false);
+
+    // Entering Dream View automatically closes Codex and keeps Dream View free of Codex buttons
+    store.patch({ mode: 'dream_2d' });
+    expect(appRoot.querySelector('#codex-overlay')?.classList.contains('hidden')).toBe(true);
+    expect(appRoot.querySelector('#dream-layer #btn-codex')).toBeNull();
+  });
 });

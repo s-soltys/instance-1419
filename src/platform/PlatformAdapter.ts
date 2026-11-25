@@ -21,6 +21,8 @@ export interface PlatformAdapter {
   saveStateAsync<T>(key: string, value: T): Promise<void>;
   exportJsonFile(filename: string, data: unknown): void;
   unlockAchievement(id: string): void;
+  setHapticsEnabled(enabled: boolean): void;
+  isHapticsEnabled(): boolean;
   hapticPulse(intensity: 'light' | 'medium'): void;
   triggerHaptic(pattern: HapticPattern, strength?: number): void;
 }
@@ -38,6 +40,7 @@ const HAPTIC_SPECS: Record<HapticPattern, { ms: number | number[]; weak: number;
 class WebPlatformAdapter implements PlatformAdapter {
   readonly kind = 'web' as const;
   private lastTickMs = 0;
+  private hapticsEnabled = true;
 
   loadState<T>(key: string): T | null {
     try {
@@ -92,11 +95,20 @@ class WebPlatformAdapter implements PlatformAdapter {
     // No-op in pure HTML playtesting; wired to steamworks.js in packaging phase.
   }
 
+  setHapticsEnabled(enabled: boolean): void {
+    this.hapticsEnabled = enabled;
+  }
+
+  isHapticsEnabled(): boolean {
+    return this.hapticsEnabled;
+  }
+
   hapticPulse(intensity: 'light' | 'medium'): void {
     this.triggerHaptic(intensity === 'light' ? 'proximityPulse' : 'phaseSnapLock', 1.0);
   }
 
   triggerHaptic(pattern: HapticPattern, strength = 1.0): void {
+    if (!this.hapticsEnabled) return;
     const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const isTick = pattern === 'vernierTick' || pattern === 'proximityPulse' || pattern === 'detentResistance';
     if (isTick && now - this.lastTickMs < 24) return;
