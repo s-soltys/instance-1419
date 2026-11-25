@@ -72,6 +72,7 @@ export class MinigameHostView {
   private isFinishing = false;
   private currentHelperActionId: string | null = null;
   private hudRefs: CachedHudRefs | null = null;
+  private launchSeq = 0;
 
   constructor(
     private readonly root: HTMLElement,
@@ -133,19 +134,26 @@ export class MinigameHostView {
     this.activeBandIdx = bandIdx;
   }
 
-  launch(
+  async launch(
     spec: AnomalySpec,
     overrideId?: string,
     onDecoded?: (spec: AnomalySpec) => void,
     options?: MinigameLaunchOptions
-  ): void {
+  ): Promise<void> {
     const s = this.store.getState();
     const chosenId = overrideId ?? spec.minigameId;
 
     this.destroy();
+    const token = ++this.launchSeq;
     this.hudRefs = null; // Re-query cleanly in case host DOM was rebuilt
     const refs = this.getHudRefs();
     if (!refs.overlay || !refs.mount) return;
+
+    const mg = await this.minigames.createAsync(chosenId);
+    if (token !== this.launchSeq) return;
+
+    const freshRefs = this.getHudRefs();
+    if (!freshRefs.overlay || !freshRefs.mount) return;
 
     this.activeSpec = spec;
     this.activeLaunchOpts = options;
@@ -156,10 +164,9 @@ export class MinigameHostView {
     this.isFinishing = false;
     this.currentHelperActionId = null;
 
-    refs.overlay.classList.remove('hidden');
+    freshRefs.overlay.classList.remove('hidden');
     this.applyVibeChrome(s.humanity);
 
-    const mg = this.minigames.create(chosenId);
     this.activeMinigame = mg;
     this.onActiveChangeCb?.(mg.id);
     const catalogEntry = this.minigames.getEntry(mg.id);
@@ -176,14 +183,14 @@ export class MinigameHostView {
       options?.variantSeed ?? `${spec.id}:${mg.id}:v${iterationIndex}:s${s.shift}`;
     const plateOverride = options?.plateOverride ?? activeVariant?.plateId;
 
-    if (refs.codeEl) refs.codeEl.textContent = mg.instrumentCode;
-    if (refs.titleEl) refs.titleEl.textContent = mg.title;
+    if (freshRefs.codeEl) freshRefs.codeEl.textContent = mg.instrumentCode;
+    if (freshRefs.titleEl) freshRefs.titleEl.textContent = mg.title;
 
     this.renderStagePips(1, '1/3 · EASY');
-    if (refs.helperBtn) {
-      refs.helperBtn.classList.add('hidden');
-      refs.helperBtn.classList.remove('active');
-      refs.helperBtn.textContent = '';
+    if (freshRefs.helperBtn) {
+      freshRefs.helperBtn.classList.add('hidden');
+      freshRefs.helperBtn.classList.remove('active');
+      freshRefs.helperBtn.textContent = '';
     }
 
     this.populateFieldGuide(mg, activeVariant?.label);
@@ -218,7 +225,7 @@ export class MinigameHostView {
     const isFirstRun = !s.calibratedInstruments.includes(mg.id);
 
     mg.mount({
-      container: refs.mount,
+      container: freshRefs.mount,
       targetId: spec.id,
       targetName: spec.label,
       minigameId: mg.id,
@@ -472,11 +479,12 @@ export class MinigameHostView {
       const spec = this.activeSpec;
       const opts = this.activeLaunchOpts;
       const onDecoded = this.activeOnDecoded;
-      this.launch(spec, id, onDecoded, opts);
+      void this.launch(spec, id, onDecoded, opts);
     }
   }
 
   destroy(preserveDecoded = false): void {
+    this.launchSeq++;
     this.isFinishing = false;
     this.lastProfileSig = '';
     this.lastHudSig = '';

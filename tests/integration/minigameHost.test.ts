@@ -86,7 +86,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     document.body.innerHTML = '';
   });
 
-  it('launches safely even when attachShowcase has not been called yet (graceful null guard)', () => {
+  it('launches safely even when attachShowcase has not been called yet (graceful null guard)', async () => {
     const mockAudio = createMockAudioEngine();
     const reg = new MinigameRegistry();
     const spec = anomaliesData.anomalies[0] as AnomalySpec;
@@ -98,12 +98,12 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       new TelemetryLogger(store.getState())
     );
 
-    expect(() => host.launch(spec)).not.toThrow();
+    await expect(host.launch(spec)).resolves.toBeUndefined();
     expect(root.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     expect(root.querySelector('#minigame-mount canvas.minigame-canvas')).not.toBeNull();
   });
 
-  it('mounts, populates Field Guide, bridges 3D showcase, and destroys cleanly for all 6 instruments', () => {
+  it('mounts, populates Field Guide, bridges 3D showcase, and destroys cleanly for all 6 instruments', async () => {
     const mockAudio = createMockAudioEngine();
     const mockShowcase = createMockShowcaseScene();
     const reg = new MinigameRegistry();
@@ -120,7 +120,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
 
     for (const meta of reg.listCatalog()) {
       mockShowcase.getInstrumentBridge.mockClear();
-      host.launch(spec, meta.id);
+      await host.launch(spec, meta.id);
 
       expect(mockShowcase.getInstrumentBridge).toHaveBeenCalled();
       expect(root.querySelector('#mg-instrument-code')?.textContent).toBe(meta.instrumentCode);
@@ -135,7 +135,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     }
   });
 
-  it('does not reset an active instrument on wavelength change, but updates when H% shifts', () => {
+  it('does not reset an active instrument on wavelength change, but updates when H% shifts', async () => {
     const mockAudio = createMockAudioEngine();
     const mockShowcase = createMockShowcaseScene();
     const reg = new MinigameRegistry();
@@ -150,7 +150,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     );
     host.attachShowcase(mockShowcase as never);
 
-    host.launch(spec, 'wave_shaper');
+    await host.launch(spec, 'wave_shaper');
     const firstCanvas = root.querySelector('#minigame-mount canvas');
 
     store.patch({ wavelengthNm: 1580 });
@@ -159,11 +159,13 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
 
     store.patch({ humanity: 28, opticalFidelity: 0.88 });
     host.updateSignalProfile(28, 0.88);
+    await Promise.resolve();
+    await Promise.resolve();
     expect(root.querySelector<HTMLElement>('#minigame-overlay')?.dataset.vibe).toBe('cold');
     expect(root.querySelector('#minigame-mount canvas')).not.toBe(firstCanvas);
   });
 
-  it('configures selective 3D backdrop mode per game and restores cleanly on destroy', () => {
+  it('configures selective 3D backdrop mode per game and restores cleanly on destroy', async () => {
     const mockAudio = createMockAudioEngine();
     const mockShowcase = createMockShowcaseScene();
     const reg = new MinigameRegistry();
@@ -179,7 +181,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     host.attachShowcase(mockShowcase as never);
 
     // Spatial game (wave_shaper) enables lightweight single-pass 3D backdrop mode
-    host.launch(spec, 'wave_shaper', undefined, { iterationIndex: 2 });
+    await host.launch(spec, 'wave_shaper', undefined, { iterationIndex: 2 });
     expect(mockShowcase._bridge.setMinigameBackdropMode).toHaveBeenCalledWith(
       expect.objectContaining({ mode: 'ambient_stars', propRig: 'dust_wisps' })
     );
@@ -187,7 +189,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
 
     // Pure-plate game (lens_focus) suspends 3D WebGL cleanly (mode: 'off')
     mockShowcase._bridge.setMinigameBackdropMode!.mockClear();
-    host.launch(spec, 'lens_focus');
+    await host.launch(spec, 'lens_focus');
     expect(mockShowcase._bridge.setMinigameBackdropMode).toHaveBeenCalledWith(
       expect.objectContaining({ mode: 'off' })
     );

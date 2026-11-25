@@ -23,6 +23,37 @@ function inferChannel(scrollSel: string): DialogueChannel {
   return 'dream';
 }
 
+interface ScrollFeedCache {
+  entries: DialogueEntry[];
+  renderedCount: number;
+  channel: DialogueChannel;
+  humanityBucket: number;
+  siblingBucket: number;
+  boundClick: boolean;
+}
+
+function humanityAvatarBucket(h: number): number {
+  return h < 45 ? 0 : h < 70 ? 1 : 2;
+}
+
+function prefixMatches(prev: DialogueEntry[], next: DialogueEntry[], count: number): boolean {
+  for (let i = 0; i < count; i++) {
+    const a = prev[i];
+    const b = next[i];
+    if (a === b) continue;
+    if (
+      !a ||
+      !b ||
+      a.text !== b.text ||
+      a.speaker !== b.speaker ||
+      Boolean(a.isPlayerChoice) !== Boolean(b.isPlayerChoice)
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 /**
  * Modular editorial dialogue renderer supporting live 220ms reply pacing,
  * non-blinking history vs. voice-matched kinetic entrances, staggered choices
@@ -31,6 +62,7 @@ function inferChannel(scrollSel: string): DialogueChannel {
 export class DialogueFeedView {
   private replyBeatTimer: number | null = null;
   private instantPacing = false;
+  private readonly feedCache = new WeakMap<HTMLElement, ScrollFeedCache>();
 
   constructor(
     private readonly root: HTMLElement,
@@ -110,6 +142,91 @@ export class DialogueFeedView {
     onSettled(snap);
   }
 
+  private renderEntryHtml(
+    entry: DialogueEntry,
+    idx: number,
+    animateFrom: number,
+    channel: DialogueChannel,
+    humanity: number,
+    siblingH: number
+  ): string {
+    const ch = CHAR_MAP[entry.speaker] ?? CHAR_MAP.narrator;
+    const playerClass = entry.isPlayerChoice ? 'is-player-echo' : '';
+    const isNew = idx >= animateFrom;
+    const animClass = isNew ? 'is-new' : 'is-history';
+    const delayMs = isNew ? Math.min(4, Math.max(0, idx - animateFrom)) * 70 : 0;
+    const avH = entry.speaker === 'sibling_primary' ? siblingH : humanity;
+    const canSpeak =
+      !entry.isPlayerChoice && !(entry.text.startsWith('[') && entry.text.endsWith(']'));
+    return `
+      <div class="dialogue-entry role-${ch.role} ${playerClass} ${animClass}" data-channel="${channel}" style="border-left-color:${ch.accentColor};--entry-delay:${delayMs}ms;">
+        <div class="dialogue-entry-head">
+          ${renderSpeakerAvatar(entry.speaker, avH, 24, true)}
+          <div class="dialogue-speaker" style="color:${ch.accentColor};">${ch.displayName}</div>
+          ${
+            canSpeak
+              ? `<button class="voice-replay-btn" data-replay-idx="${idx}" type="button" title="Listen to line">▶</button>`
+              : ''
+          }
+        </div>
+        <div class="dialogue-text">${entry.text}</div>
+      </div>
+    `;
+  }
+
+  private renderTypingHtml(
+    typingSpeaker: string | undefined,
+    channel: DialogueChannel,
+    humanity: number,
+    siblingH: number
+  ): string {
+    if (!typingSpeaker) return '';
+    const tch = CHAR_MAP[typingSpeaker] ?? CHAR_MAP.narrator;
+    const tavH = typingSpeaker === 'sibling_primary' ? siblingH : humanity;
+    const indicator =
+      channel === 'overseer'
+        ? `<span class="typing-status">EVALUATING</span><span class="typing-cursor" aria-label="Evaluating"></span>`
+        : channel === 'comms'
+          ? `<span class="typing-status">RELAY PACKET</span><span class="typing-dots" aria-label="Receiving"><i></i><i></i><i></i></span>`
+          : `<span class="typing-dots" aria-label="Responding"><i></i><i></i><i></i></span>`;
+    return `
+      <div class="dialogue-typing" data-channel="${channel}" style="border-left-color:${tch.accentColor};">
+        ${renderSpeakerAvatar(typingSpeaker, tavH, 20, true)}
+        <span class="typing-name" style="color:${tch.accentColor};">${tch.displayName}</span>
+        ${indicator}
+      </div>
+    `;
+  }
+
+  private ensureDelegatedReplay(scrollEl: HTMLElement): ScrollFeedCache {
+    let cache = this.feedCache.get(scrollEl);
+    if (!cache) {
+      cache = {
+        entries: [],
+        renderedCount: 0,
+        channel: inferChannel(`#${scrollEl.id}`),
+        humanityBucket: -1,
+        siblingBucket: -1,
+        boundClick: false,
+      };
+      this.feedCache.set(scrollEl, cache);
+    }
+    if (!cache.boundClick) {
+      cache.boundClick = true;
+      scrollEl.addEventListener('click', (e) => {
+        const target = e.target as Element | null;
+        const btn = target?.closest<HTMLButtonElement>('.voice-replay-btn');
+        if (!btn) return;
+        const current = this.feedCache.get(scrollEl);
+        const entry = current?.entries[Number(btn.dataset.replayIdx)];
+        if (entry) {
+          this.voice.speakSingle(entry.text, entry.speaker, entry.emotion, entry.lineId);
+        }
+      });
+    }
+    return cache;
+  }
+
   renderEntriesOnly(
     scrollEl: HTMLElement,
     entries: DialogueEntry[],
@@ -118,67 +235,61 @@ export class DialogueFeedView {
     const s = this.store.getState();
     const animateFrom = opts?.animateFromIndex ?? 0;
     const channel = opts?.channel ?? inferChannel(`#${scrollEl.id}`);
+    const hBucket = humanityAvatarBucket(s.humanity);
+    const sBucket = humanityAvatarBucket(s.primarySiblingH);
+    const cache = this.ensureDelegatedReplay(scrollEl);
+    const typingHtml = this.renderTypingHtml(opts?.typingSpeaker, channel, s.humanity, s.primarySiblingH);
 
-    const entryHtml = entries
-      .map((entry, idx) => {
-        const ch = CHAR_MAP[entry.speaker] ?? CHAR_MAP.narrator;
-        const playerClass = entry.isPlayerChoice ? 'is-player-echo' : '';
-        const isNew = idx >= animateFrom;
-        const animClass = isNew ? 'is-new' : 'is-history';
-        const delayMs = isNew ? Math.min(4, Math.max(0, idx - animateFrom)) * 70 : 0;
-        const avH = entry.speaker === 'sibling_primary' ? s.primarySiblingH : s.humanity;
-        const canSpeak = !entry.isPlayerChoice && !(entry.text.startsWith('[') && entry.text.endsWith(']'));
-        return `
-          <div class="dialogue-entry role-${ch.role} ${playerClass} ${animClass}" data-channel="${channel}" style="border-left-color:${ch.accentColor};--entry-delay:${delayMs}ms;">
-            <div class="dialogue-entry-head">
-              ${renderSpeakerAvatar(entry.speaker, avH, 24, true)}
-              <div class="dialogue-speaker" style="color:${ch.accentColor};">${ch.displayName}</div>
-              ${
-                canSpeak
-                  ? `<button class="voice-replay-btn" data-replay-idx="${idx}" type="button" title="Listen to line">▶</button>`
-                  : ''
-              }
-            </div>
-            <div class="dialogue-text">${entry.text}</div>
-          </div>
-        `;
-      })
-      .join('');
+    const canAppend =
+      cache.renderedCount > 0 &&
+      cache.renderedCount <= entries.length &&
+      cache.channel === channel &&
+      cache.humanityBucket === hBucket &&
+      cache.siblingBucket === sBucket &&
+      prefixMatches(cache.entries, entries, cache.renderedCount);
 
-    let typingHtml = '';
-    if (opts?.typingSpeaker) {
-      const tch = CHAR_MAP[opts.typingSpeaker] ?? CHAR_MAP.narrator;
-      const tavH = opts.typingSpeaker === 'sibling_primary' ? s.primarySiblingH : s.humanity;
-      const indicator =
-        channel === 'overseer'
-          ? `<span class="typing-status">EVALUATING</span><span class="typing-cursor" aria-label="Evaluating"></span>`
-          : channel === 'comms'
-            ? `<span class="typing-status">RELAY PACKET</span><span class="typing-dots" aria-label="Receiving"><i></i><i></i><i></i></span>`
-            : `<span class="typing-dots" aria-label="Responding"><i></i><i></i><i></i></span>`;
-      typingHtml = `
-        <div class="dialogue-typing" data-channel="${channel}" style="border-left-color:${tch.accentColor};">
-          ${renderSpeakerAvatar(opts.typingSpeaker, tavH, 20, true)}
-          <span class="typing-name" style="color:${tch.accentColor};">${tch.displayName}</span>
-          ${indicator}
-        </div>
-      `;
+    if (canAppend) {
+      scrollEl.querySelector('.dialogue-typing')?.remove();
+      if (animateFrom >= cache.renderedCount) {
+        scrollEl.querySelectorAll('.dialogue-entry.is-new').forEach((el) => {
+          el.classList.remove('is-new');
+          el.classList.add('is-history');
+        });
+      }
+      let deltaHtml = '';
+      for (let i = cache.renderedCount; i < entries.length; i++) {
+        deltaHtml += this.renderEntryHtml(
+          entries[i],
+          i,
+          animateFrom,
+          channel,
+          s.humanity,
+          s.primarySiblingH
+        );
+      }
+      if (deltaHtml || typingHtml) {
+        scrollEl.insertAdjacentHTML('beforeend', deltaHtml + typingHtml);
+      }
+    } else {
+      const entryHtml = entries
+        .map((entry, idx) =>
+          this.renderEntryHtml(entry, idx, animateFrom, channel, s.humanity, s.primarySiblingH)
+        )
+        .join('');
+      scrollEl.innerHTML = entryHtml + typingHtml;
     }
 
-    scrollEl.innerHTML = entryHtml + typingHtml;
+    cache.entries = entries.slice();
+    cache.renderedCount = entries.length;
+    cache.channel = channel;
+    cache.humanityBucket = hBucket;
+    cache.siblingBucket = sBucket;
+
     if (typeof scrollEl.scrollTo === 'function') {
       scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
     } else {
       scrollEl.scrollTop = scrollEl.scrollHeight;
     }
-
-    scrollEl.querySelectorAll<HTMLButtonElement>('.voice-replay-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const entry = entries[Number(btn.dataset.replayIdx)];
-        if (entry) {
-          this.voice.speakSingle(entry.text, entry.speaker, entry.emotion, entry.lineId);
-        }
-      });
-    });
   }
 
   renderInto(

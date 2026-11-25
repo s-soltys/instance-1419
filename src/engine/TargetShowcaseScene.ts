@@ -3,7 +3,6 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { platform } from '../platform/PlatformAdapter';
 import type {
   CameraKeyframe,
@@ -13,7 +12,7 @@ import type {
   ShowcaseCouplingUpdate,
   ShowcaseInstrumentBridge,
 } from './minigames/types';
-import type { AnomalySpec, ShowcaseType } from './OpticsScene';
+import type { AnomalySpec, RendererPerfInfo, ShowcaseType } from './OpticsScene';
 import {
   ACCRETION_DISK_FRAGMENT,
   ACCRETION_DISK_VERTEX,
@@ -60,6 +59,18 @@ export interface ShowcaseTelemetry {
   pitchDeg: number;
 }
 
+interface CachedShowcaseRig {
+  type: ShowcaseType;
+  group: THREE.Group;
+  shaderMats: THREE.ShaderMaterial[];
+  orbitingBodies: OrbitingBody[];
+  companionStar: OrbitingBody | null;
+  spinObjects: { obj: THREE.Object3D; speedX: number; speedY: number }[];
+  defaultYaw: number;
+  defaultPitch: number;
+  defaultDist: number;
+}
+
 const MIN_DIST = 8.5;
 const MAX_DIST = 46.0;
 
@@ -71,10 +82,18 @@ const MAX_DIST = 46.0;
  */
 export class TargetShowcaseScene {
   private readonly container: HTMLElement;
-  private readonly renderer: THREE.WebGLRenderer;
-  private readonly scene: THREE.Scene;
-  private readonly camera: THREE.PerspectiveCamera;
-  private readonly rootGroup: THREE.Group;
+  private readonly onResizeBound = () => this.resize();
+  private initialized = false;
+  private disposed = false;
+
+  private renderer: THREE.WebGLRenderer | null = null;
+  private scene: THREE.Scene | null = null;
+  private camera: THREE.PerspectiveCamera | null = null;
+  private rootGroup = new THREE.Group();
+  private ambientStarsPoints: THREE.Points | null = null;
+  private readonly rigCache = new Map<ShowcaseType, CachedShowcaseRig>();
+  private nebulaPuffAtlas: THREE.DataTexture | null = null;
+  private transitionBurst = 0.0;
 
   private orbitYaw = 0.35;
   private orbitPitch = 0.24;
@@ -164,7 +183,9 @@ export class TargetShowcaseScene {
   private bloomPass: UnrealBloomPass | null = null;
   private polishPass: ShaderPass | null = null;
   private bloomEnabled = true;
-  private frameAvgMs = 12;
+  private frameAvgMs = 16;
+  private showcaseFrameCount = 0;
+  private lastRafMs = 0;
   private lastVibeHapticMs = 0;
 
   private orbitingBodies: OrbitingBody[] = [];
@@ -175,43 +196,51 @@ export class TargetShowcaseScene {
   constructor(container: HTMLElement, onTelemetry?: (t: ShowcaseTelemetry) => void) {
     this.container = container;
     this.onTelemetry = onTelemetry;
-    this.scene = new THREE.Scene();
-    this.rootGroup = new THREE.Group();
-    this.scene.add(this.rootGroup);
+  }
+
+  private ensureInitialized(): void {
+    if (this.initialized || this.disposed) return;
+    this.initialized = true;
+
+    const w = Math.max(1, this.container.clientWidth || window.innerWidth || 1280);
+    const h = Math.max(1, this.container.clientHeight || window.innerHeight || 720);
+
+    const scene = new THREE.Scene();
+    scene.add(this.rootGroup);
     this.minigameBackdropGroup.visible = false;
     this.minigameBackdropGroup.add(this.minigamePropRigGroup);
-    this.scene.add(this.minigameBackdropGroup);
+    scene.add(this.minigameBackdropGroup);
 
-    this.camera = new THREE.PerspectiveCamera(
-      48,
-      Math.max(1, container.clientWidth) / Math.max(1, container.clientHeight),
-      0.1,
-      400
-    );
-
-    this.renderer = new THREE.WebGLRenderer({
+    const camera = new THREE.PerspectiveCamera(48, w / h, 0.1, 400);
+    const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
       powerPreference: 'high-performance',
     });
     const maxDpr = this.isCoarsePointer ? 1.5 : 2;
     this.currentAppliedDpr = Math.min(window.devicePixelRatio || 1, maxDpr);
-    this.renderer.setPixelRatio(this.currentAppliedDpr);
-    this.renderer.setSize(Math.max(1, container.clientWidth), Math.max(1, container.clientHeight));
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.12;
-    this.renderer.domElement.className = 'showcase-canvas';
-    this.renderer.domElement.addEventListener('webglcontextlost', (e) => e.preventDefault());
-    container.appendChild(this.renderer.domElement);
+    renderer.setPixelRatio(this.currentAppliedDpr);
+    renderer.setSize(w, h);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.12;
+    renderer.domElement.className = 'showcase-canvas';
+    renderer.domElement.addEventListener('webglcontextlost', (e) => e.preventDefault());
+    this.container.appendChild(renderer.domElement);
 
+    this.scene = scene;
+    this.camera = camera;
+    this.renderer = renderer;
+
+    this.addAmbientBackdropStars(1400);
     this.initPostProcessing();
     this.bindEvents();
   }
 
   private initPostProcessing(): void {
+    if (!this.renderer || !this.scene || !this.camera) return;
     try {
-      const w = Math.max(1, this.container.clientWidth);
-      const h = Math.max(1, this.container.clientHeight);
+      const w = Math.max(1, this.container.clientWidth || window.innerWidth || 1280);
+      const h = Math.max(1, this.container.clientHeight || window.innerHeight || 720);
       const composer = new EffectComposer(this.renderer);
       const renderPass = new RenderPass(this.scene, this.camera);
       const bloomPass = new UnrealBloomPass(
@@ -221,11 +250,9 @@ export class TargetShowcaseScene {
         0.82
       );
       const polishPass = new ShaderPass(OPTICAL_POLISH_SHADER);
-      const outputPass = new OutputPass();
       composer.addPass(renderPass);
       composer.addPass(bloomPass);
       composer.addPass(polishPass);
-      composer.addPass(outputPass);
       this.composer = composer;
       this.bloomPass = bloomPass;
       this.polishPass = polishPass;
@@ -241,50 +268,39 @@ export class TargetShowcaseScene {
     this.targetDist = this.defaultDist;
     this.orbitYaw = this.defaultYaw - 0.36;
     this.targetYaw = this.defaultYaw;
+    this.transitionBurst = 1.0;
   }
 
   triggerDeparturePullOut(): void {
     this.targetDist = Math.min(MAX_DIST, this.defaultDist * 1.55);
+    this.transitionBurst = 0.85;
   }
 
   loadTarget(spec: AnomalySpec, opticalFidelity: number): void {
+    this.ensureInitialized();
     this.currentSpec = spec;
     this.opticalFidelity = opticalFidelity;
-    this.clearRoot();
     this.waveBand = THREE.MathUtils.clamp((spec.optimalWavelengthNm - 200) / 1600, 0, 1);
+    this.showcaseFrameCount = 0;
+    this.lastRafMs = 0;
 
-    this.addAmbientBackdropStars(1400);
+    this.clearOverlayGroup();
+    for (const r of this.rigCache.values()) {
+      r.group.visible = false;
+    }
 
-    if (spec.showcaseType === 'star_system') {
-      this.defaultYaw = 0.42;
-      this.defaultPitch = 0.42;
-      this.defaultDist = 30;
-      this.buildStarSystemShowcase();
-      this.addSpatialReferenceRing(22, '#ebb062');
-    } else if (spec.showcaseType === 'nebula') {
-      this.defaultYaw = 0.32;
-      this.defaultPitch = 0.18;
-      this.defaultDist = 24;
-      this.buildNebulaShowcase();
-      this.addSpatialReferenceRing(13.5, '#f49d6a');
-    } else if (spec.showcaseType === 'deep_field') {
-      this.defaultYaw = 0.48;
-      this.defaultPitch = 0.28;
-      this.defaultDist = 25;
-      this.buildDeepFieldPulsarShowcase();
-      this.addSpatialReferenceRing(15.5, '#7ec8e8');
-    } else if (spec.showcaseType === 'antipodal_poles') {
-      this.defaultYaw = 0.25;
-      this.defaultPitch = 0.22;
-      this.defaultDist = 26;
-      this.buildAntipodalPolesShowcase();
-      this.addSpatialReferenceRing(16.5, '#9ee8ff');
-    } else {
-      this.defaultYaw = 0.38;
-      this.defaultPitch = 0.24;
-      this.defaultDist = 26;
-      this.buildGravLensShowcase(spec.showcaseType);
-      this.addSpatialReferenceRing(17.5, '#7ec8e8');
+    const rig = this.getOrBuildRig(spec.showcaseType);
+    rig.group.visible = true;
+    this.shaderMats = rig.shaderMats;
+    this.orbitingBodies = rig.orbitingBodies;
+    this.companionStar = rig.companionStar;
+    this.spinObjects = rig.spinObjects;
+    this.defaultYaw = rig.defaultYaw;
+    this.defaultPitch = rig.defaultPitch;
+    this.defaultDist = rig.defaultDist;
+
+    for (const m of this.shaderMats) {
+      if (m.uniforms.uPixelRatio) m.uniforms.uPixelRatio.value = this.currentAppliedDpr;
     }
 
     this.activeCameraKeyframe = null;
@@ -316,6 +332,76 @@ export class TargetShowcaseScene {
     }
   }
 
+  private getOrBuildRig(type: ShowcaseType): CachedShowcaseRig {
+    const cached = this.rigCache.get(type);
+    if (cached) return cached;
+
+    const group = new THREE.Group();
+    const rig: CachedShowcaseRig = {
+      type,
+      group,
+      shaderMats: [],
+      orbitingBodies: [],
+      companionStar: null,
+      spinObjects: [],
+      defaultYaw: 0.35,
+      defaultPitch: 0.24,
+      defaultDist: 28,
+    };
+    this.rootGroup.add(group);
+
+    // Temporarily route builders into this rig's group & arrays
+    const prevMats = this.shaderMats;
+    const prevBodies = this.orbitingBodies;
+    const prevComp = this.companionStar;
+    const prevSpins = this.spinObjects;
+    this.shaderMats = rig.shaderMats;
+    this.orbitingBodies = rig.orbitingBodies;
+    this.companionStar = null;
+    this.spinObjects = rig.spinObjects;
+
+    if (type === 'star_system') {
+      rig.defaultYaw = 0.42;
+      rig.defaultPitch = 0.42;
+      rig.defaultDist = 30;
+      this.buildStarSystemShowcase(group);
+      this.addSpatialReferenceRing(22, '#ebb062', group);
+    } else if (type === 'nebula') {
+      rig.defaultYaw = 0.32;
+      rig.defaultPitch = 0.18;
+      rig.defaultDist = 24;
+      this.buildNebulaShowcase(group);
+      this.addSpatialReferenceRing(13.5, '#f49d6a', group);
+    } else if (type === 'deep_field') {
+      rig.defaultYaw = 0.48;
+      rig.defaultPitch = 0.28;
+      rig.defaultDist = 25;
+      this.buildDeepFieldPulsarShowcase(group);
+      this.addSpatialReferenceRing(15.5, '#7ec8e8', group);
+    } else if (type === 'antipodal_poles') {
+      rig.defaultYaw = 0.25;
+      rig.defaultPitch = 0.22;
+      rig.defaultDist = 26;
+      this.buildAntipodalPolesShowcase(group);
+      this.addSpatialReferenceRing(16.5, '#9ee8ff', group);
+    } else {
+      rig.defaultYaw = 0.38;
+      rig.defaultPitch = 0.24;
+      rig.defaultDist = 26;
+      this.buildGravLensShowcase(type, group);
+      this.addSpatialReferenceRing(17.5, '#7ec8e8', group);
+    }
+
+    rig.companionStar = this.companionStar;
+    this.shaderMats = prevMats;
+    this.orbitingBodies = prevBodies;
+    this.companionStar = prevComp;
+    this.spinObjects = prevSpins;
+
+    this.rigCache.set(type, rig);
+    return rig;
+  }
+
   zoomBy(factor: number): void {
     this.targetDist = THREE.MathUtils.clamp(this.targetDist * factor, MIN_DIST, MAX_DIST);
   }
@@ -326,7 +412,7 @@ export class TargetShowcaseScene {
     this.targetDist = this.defaultDist;
   }
 
-  private addSpatialReferenceRing(radius: number, colorHex: string): void {
+  private addSpatialReferenceRing(radius: number, colorHex: string, targetGroup: THREE.Group = this.rootGroup): void {
     const pts: THREE.Vector3[] = [];
     for (let i = 0; i <= 128; i++) {
       const a = (i / 128) * Math.PI * 2;
@@ -338,7 +424,7 @@ export class TargetShowcaseScene {
       transparent: true,
       opacity: 0.16,
     });
-    this.rootGroup.add(new THREE.LineLoop(geo, mat));
+    targetGroup.add(new THREE.LineLoop(geo, mat));
 
     // 4 subtle cardinal calibration ticks on the equatorial plane
     for (let k = 0; k < 4; k++) {
@@ -353,7 +439,7 @@ export class TargetShowcaseScene {
         transparent: true,
         opacity: 0.34,
       });
-      this.rootGroup.add(new THREE.Line(tickGeo, tickMat));
+      targetGroup.add(new THREE.Line(tickGeo, tickMat));
     }
   }
 
@@ -399,6 +485,7 @@ export class TargetShowcaseScene {
         this.applyPatchObject(patch);
       },
       trigger3DSonarPulse: (originX: number, originY: number, bandIdx = 1) => {
+        if (!this.camera) return;
         if (!this.instrumentOverlayGroup.parent) {
           this.rootGroup.add(this.instrumentOverlayGroup);
         }
@@ -511,9 +598,10 @@ export class TargetShowcaseScene {
         this.applyPatchObject(patch);
       },
       projectWorldToScreen: (worldPos: { x: number; y: number; z: number }) => {
-        const v = new THREE.Vector3(worldPos.x, worldPos.y, worldPos.z).project(this.camera);
         const w = Math.max(1, this.container.clientWidth);
         const h = Math.max(1, this.container.clientHeight);
+        if (!this.camera) return { x: w * 0.5, y: h * 0.5, visible: false };
+        const v = new THREE.Vector3(worldPos.x, worldPos.y, worldPos.z).project(this.camera);
         return {
           x: (v.x * 0.5 + 0.5) * w,
           y: (-v.y * 0.5 + 0.5) * h,
@@ -582,17 +670,23 @@ export class TargetShowcaseScene {
     }
   }
 
-  private clearRoot(): void {
+  private clearRigCache(): void {
     this.shaderMats = [];
     this.orbitingBodies = [];
     this.companionStar = null;
     this.spinObjects = [];
     this.clearOverlayGroup();
 
-    while (this.rootGroup.children.length > 0) {
-      const child = this.rootGroup.children[0];
-      this.rootGroup.remove(child);
-      child.traverse((obj) => {
+    if (this.ambientStarsPoints) {
+      this.rootGroup.remove(this.ambientStarsPoints);
+      this.ambientStarsPoints.geometry.dispose();
+      (this.ambientStarsPoints.material as THREE.Material).dispose();
+      this.ambientStarsPoints = null;
+    }
+
+    for (const rig of this.rigCache.values()) {
+      this.rootGroup.remove(rig.group);
+      rig.group.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.Points || obj instanceof THREE.Line) {
           obj.geometry.dispose();
           const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
@@ -600,6 +694,79 @@ export class TargetShowcaseScene {
         }
       });
     }
+    this.rigCache.clear();
+  }
+
+  private getNebulaPuffAtlas(): THREE.DataTexture {
+    if (this.nebulaPuffAtlas) return this.nebulaPuffAtlas;
+    const size = 256;
+    const half = 128;
+    const data = new Uint8Array(size * size * 4);
+
+    const hash21 = (x: number, y: number): number => {
+      let px = (x * 127.1 + y * 311.7) % 43758.5453;
+      px = px - Math.floor(px);
+      let py = (x * 269.5 + y * 183.3) % 43758.5453;
+      py = py - Math.floor(py);
+      const d = px * (px + 19.19) + py * (py + 19.19);
+      const prod = (px + d) * (py + d);
+      return prod - Math.floor(prod);
+    };
+    const noise2 = (x: number, y: number): number => {
+      const ix = Math.floor(x);
+      const iy = Math.floor(y);
+      let fx = x - ix;
+      let fy = y - iy;
+      fx = fx * fx * (3 - 2 * fx);
+      fy = fy * fy * (3 - 2 * fy);
+      const a = hash21(ix, iy);
+      const b = hash21(ix + 1, iy);
+      const c = hash21(ix, iy + 1);
+      const d = hash21(ix + 1, iy + 1);
+      return (a + (b - a) * fx) + ((c + (d - c) * fx) - (a + (b - a) * fx)) * fy;
+    };
+    const fbm2 = (x: number, y: number): number => {
+      let v = 0;
+      let amp = 0.5;
+      let px = x;
+      let py = y;
+      for (let i = 0; i < 4; i++) {
+        v += amp * noise2(px, py);
+        px = px * 2.06 + 2.3;
+        py = py * 2.06 + 1.7;
+        amp *= 0.5;
+      }
+      return v;
+    };
+
+    for (let qy = 0; qy < 2; qy++) {
+      for (let qx = 0; qx < 2; qx++) {
+        const seedOffset = (qy * 2 + qx) * 7.31 + 1.17;
+        for (let ly = 0; ly < half; ly++) {
+          const ny = (ly / (half - 1)) * 2 - 1;
+          for (let lx = 0; lx < half; lx++) {
+            const nx = (lx / (half - 1)) * 2 - 1;
+            const n = fbm2(nx * 2.4 + seedOffset * 1.9, ny * 2.4 + seedOffset * 0.7);
+            const byteVal = Math.max(0, Math.min(255, Math.round(n * 255)));
+            const gx = qx * half + lx;
+            const gy = qy * half + ly;
+            const idx = (gy * size + gx) * 4;
+            data[idx] = byteVal;
+            data[idx + 1] = byteVal;
+            data[idx + 2] = byteVal;
+            data[idx + 3] = 255;
+          }
+        }
+      }
+    }
+
+    const tex = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    tex.needsUpdate = true;
+    this.nebulaPuffAtlas = tex;
+    return tex;
   }
 
   private makeRng(seedStart: number): () => number {
@@ -631,7 +798,7 @@ export class TargetShowcaseScene {
       uniforms: {
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
-        uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+        uPixelRatio: { value: this.currentAppliedDpr },
         uDustPeel: { value: this.instrumentPatch.dustPeel },
         uSlicePlaneZ: { value: this.instrumentPatch.slicePlaneZ },
         uJetResonance: { value: this.instrumentPatch.jetResonance },
@@ -672,10 +839,11 @@ export class TargetShowcaseScene {
       opacity: 0.7,
       depthWrite: false,
     });
-    this.rootGroup.add(new THREE.Points(geo, mat));
+    this.ambientStarsPoints = new THREE.Points(geo, mat);
+    this.rootGroup.add(this.ambientStarsPoints);
   }
 
-  private addOuterHorizonSphere(isPulsar: boolean): void {
+  private addOuterHorizonSphere(isPulsar: boolean, targetGroup: THREE.Group): void {
     const mat = new THREE.ShaderMaterial({
       vertexShader: HORIZON_SPHERE_VERTEX,
       fragmentShader: HORIZON_SPHERE_FRAGMENT,
@@ -695,10 +863,10 @@ export class TargetShowcaseScene {
       },
     });
     this.shaderMats.push(mat);
-    this.rootGroup.add(new THREE.Mesh(new THREE.SphereGeometry(54, 48, 32), mat));
+    targetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(54, 48, 32), mat));
   }
 
-  private buildStarSystemShowcase(): void {
+  private buildStarSystemShowcase(targetGroup: THREE.Group): void {
     const sunMat = new THREE.ShaderMaterial({
       vertexShader: STAR_PLASMA_VERTEX,
       fragmentShader: STAR_PLASMA_FRAGMENT,
@@ -710,7 +878,7 @@ export class TargetShowcaseScene {
       },
     });
     this.shaderMats.push(sunMat);
-    this.rootGroup.add(new THREE.Mesh(new THREE.SphereGeometry(3.8, 64, 64), sunMat));
+    targetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(3.8, 64, 64), sunMat));
 
     const coronaMat = new THREE.ShaderMaterial({
       vertexShader: CORONA_VERTEX,
@@ -726,7 +894,7 @@ export class TargetShowcaseScene {
       },
     });
     this.shaderMats.push(coronaMat);
-    this.rootGroup.add(new THREE.Mesh(new THREE.SphereGeometry(5.5, 48, 48), coronaMat));
+    targetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(5.5, 48, 48), coronaMat));
 
     const planetDefs = [
       {
@@ -782,7 +950,7 @@ export class TargetShowcaseScene {
         transparent: true,
         opacity: 0.18,
       });
-      this.rootGroup.add(new THREE.LineLoop(orbitGeo, orbitMat));
+      targetGroup.add(new THREE.LineLoop(orbitGeo, orbitMat));
 
       const planetGroup = new THREE.Group();
       const pMat = new THREE.ShaderMaterial({
@@ -818,7 +986,7 @@ export class TargetShowcaseScene {
         planetGroup.add(ringMesh);
       }
 
-      this.rootGroup.add(planetGroup);
+      targetGroup.add(planetGroup);
       this.orbitingBodies.push({
         mesh: planetGroup,
         radius: def.orbit,
@@ -841,7 +1009,7 @@ export class TargetShowcaseScene {
     });
     this.shaderMats.push(compMat);
     const compMesh = new THREE.Mesh(new THREE.SphereGeometry(1.1, 32, 32), compMat);
-    this.rootGroup.add(compMesh);
+    targetGroup.add(compMesh);
     this.companionStar = {
       mesh: compMesh,
       radius: 34,
@@ -857,10 +1025,11 @@ export class TargetShowcaseScene {
    * Zero flat planes—navigable 360 degrees around 4 curved 3D pillars, glowing
    * ionized gas halo, 2,400 newborn stars, and bipolar outflow jets.
    */
-  private buildNebulaShowcase(): void {
+  private buildNebulaShowcase(targetGroup: THREE.Group): void {
     const rand = this.makeRng(441902);
+    const puffAtlas = this.getNebulaPuffAtlas();
 
-    // 1. 4 Sculpted 3D Dust Pillar Spines + 140 Volumetric Dust Puffs
+    // 1. 4 Sculpted 3D Dust Pillar Spines + 260 Volumetric Dust Puffs
     const pillarSpines = [
       { base: new THREE.Vector3(-5.2, -5.8, -1.5), tip: new THREE.Vector3(-2.6, 5.2, 0.8), radius: 2.3 },
       { base: new THREE.Vector3(-0.4, -6.2, 2.8), tip: new THREE.Vector3(0.9, 4.4, -0.6), radius: 2.0 },
@@ -873,17 +1042,18 @@ export class TargetShowcaseScene {
     const dSize = new Float32Array(dustCount);
     const dSeed = new Float32Array(dustCount);
     const dKind = new Float32Array(dustCount);
+    const scratchCenter = new THREE.Vector3();
 
     for (let i = 0; i < dustCount; i++) {
       const sp = pillarSpines[i % pillarSpines.length];
       const t = Math.pow(rand(), 0.88);
-      const center = new THREE.Vector3().lerpVectors(sp.base, sp.tip, t);
+      scratchCenter.lerpVectors(sp.base, sp.tip, t);
       const spread = sp.radius * (1.2 - t * 0.65);
       const ang = rand() * Math.PI * 2;
       const rad = Math.sqrt(rand()) * spread;
-      dPos[i * 3] = center.x + Math.cos(ang) * rad;
-      dPos[i * 3 + 1] = center.y + (rand() - 0.5) * 1.4;
-      dPos[i * 3 + 2] = center.z + Math.sin(ang) * rad;
+      dPos[i * 3] = scratchCenter.x + Math.cos(ang) * rad;
+      dPos[i * 3 + 1] = scratchCenter.y + (rand() - 0.5) * 1.4;
+      dPos[i * 3 + 2] = scratchCenter.z + Math.sin(ang) * rad;
       dSize[i] = (2.6 - t * 1.1) * (0.75 + rand() * 0.7);
       dSeed[i] = rand();
       dKind[i] = 0.0;
@@ -900,9 +1070,10 @@ export class TargetShowcaseScene {
       transparent: true,
       depthWrite: false,
       uniforms: {
+        uPuffAtlas: { value: puffAtlas },
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
-        uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+        uPixelRatio: { value: this.currentAppliedDpr },
         uDustPeel: { value: this.instrumentPatch.dustPeel },
         uSlicePlaneZ: { value: this.instrumentPatch.slicePlaneZ },
         uJetResonance: { value: this.instrumentPatch.jetResonance },
@@ -910,7 +1081,7 @@ export class TargetShowcaseScene {
       },
     });
     this.shaderMats.push(dustMat);
-    this.rootGroup.add(new THREE.Points(dustGeo, dustMat));
+    targetGroup.add(new THREE.Points(dustGeo, dustMat));
 
     // 2. Additive Volumetric Ionized Gas Halo (190 3D clouds)
     const gasCount = 190;
@@ -944,9 +1115,10 @@ export class TargetShowcaseScene {
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       uniforms: {
+        uPuffAtlas: { value: puffAtlas },
         uTime: { value: 0 },
         uWaveBand: { value: this.waveBand },
-        uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2) },
+        uPixelRatio: { value: this.currentAppliedDpr },
         uDustPeel: { value: this.instrumentPatch.dustPeel },
         uSlicePlaneZ: { value: this.instrumentPatch.slicePlaneZ },
         uJetResonance: { value: this.instrumentPatch.jetResonance },
@@ -954,7 +1126,7 @@ export class TargetShowcaseScene {
       },
     });
     this.shaderMats.push(gasMat);
-    this.rootGroup.add(new THREE.Points(gasGeo, gasMat));
+    targetGroup.add(new THREE.Points(gasGeo, gasMat));
 
     // 3. 2,400 Embedded 3D Newborn Protostars inside & around the pillars
     const starCount = 2400;
@@ -962,15 +1134,18 @@ export class TargetShowcaseScene {
     const sCol = new Float32Array(starCount * 3);
     const sSize = new Float32Array(starCount);
     const sPhase = new Float32Array(starCount);
+    const nebColA = new THREE.Color('#ffd39e');
+    const nebColB = new THREE.Color('#9ec8ff');
+    const scratchCol = new THREE.Color();
 
     for (let i = 0; i < starCount; i++) {
       if (i < 900) {
         const sp = pillarSpines[i % pillarSpines.length];
         const t = 0.25 + rand() * 0.75;
-        const p = new THREE.Vector3().lerpVectors(sp.base, sp.tip, t);
-        sPos[i * 3] = p.x + (rand() - 0.5) * 3.2;
-        sPos[i * 3 + 1] = p.y + (rand() - 0.5) * 2.8;
-        sPos[i * 3 + 2] = p.z + (rand() - 0.5) * 3.2;
+        scratchCenter.lerpVectors(sp.base, sp.tip, t);
+        sPos[i * 3] = scratchCenter.x + (rand() - 0.5) * 3.2;
+        sPos[i * 3 + 1] = scratchCenter.y + (rand() - 0.5) * 2.8;
+        sPos[i * 3 + 2] = scratchCenter.z + (rand() - 0.5) * 3.2;
       } else {
         const r = 3 + rand() * 14;
         const th = rand() * Math.PI * 2;
@@ -982,14 +1157,14 @@ export class TargetShowcaseScene {
       }
 
       const hot = rand();
-      const c = new THREE.Color('#ffd39e').lerp(new THREE.Color('#9ec8ff'), hot * 0.7);
-      sCol[i * 3] = c.r;
-      sCol[i * 3 + 1] = c.g;
-      sCol[i * 3 + 2] = c.b;
+      scratchCol.lerpColors(nebColA, nebColB, hot * 0.7);
+      sCol[i * 3] = scratchCol.r;
+      sCol[i * 3 + 1] = scratchCol.g;
+      sCol[i * 3 + 2] = scratchCol.b;
       sSize[i] = 0.28 + Math.pow(rand(), 5.0) * 1.45;
       sPhase[i] = rand();
     }
-    this.rootGroup.add(this.createStarPoints(sPos, sCol, sSize, sPhase));
+    targetGroup.add(this.createStarPoints(sPos, sCol, sSize, sPhase));
 
     // 4. Twin 3D Bipolar Protostar Jets emerging from two pillar tips
     const jetTips = [
@@ -1021,7 +1196,7 @@ export class TargetShowcaseScene {
       const c2 = new THREE.Mesh(coneGeo.clone(), jetMat);
       c2.position.y = -2.25;
       group.add(c1, c2);
-      this.rootGroup.add(group);
+      targetGroup.add(group);
     }
 
     // 5. 4 Luminous Protostar Landmark Cores nestled inside the pillar tips (clear anchors when zoomed close!)
@@ -1031,7 +1206,7 @@ export class TargetShowcaseScene {
         new THREE.MeshBasicMaterial({ color: '#fff3d6' })
       );
       coreMesh.position.copy(sp.tip);
-      this.rootGroup.add(coreMesh);
+      targetGroup.add(coreMesh);
 
       const haloMat = new THREE.ShaderMaterial({
         vertexShader: CORONA_VERTEX,
@@ -1049,7 +1224,7 @@ export class TargetShowcaseScene {
       this.shaderMats.push(haloMat);
       const halo = new THREE.Mesh(new THREE.SphereGeometry(0.95, 20, 20), haloMat);
       halo.position.copy(sp.tip);
-      this.rootGroup.add(halo);
+      targetGroup.add(halo);
     }
   }
 
@@ -1058,7 +1233,7 @@ export class TargetShowcaseScene {
    * 16 3D tilted spiral/elliptical galaxies + central glowing BCG core + 3D view-dependent
    * Einstein ring shell + outer spherical horizon enclosure.
    */
-  private buildGravLensShowcase(_type: ShowcaseType): void {
+  private buildGravLensShowcase(_type: ShowcaseType, targetGroup: THREE.Group): void {
     const rand = this.makeRng(1419723);
 
     // 1. Central 3D Elliptical Core Galaxy (BCG) — volumetric core + 4,500 spheroid stars
@@ -1078,13 +1253,21 @@ export class TargetShowcaseScene {
     this.shaderMats.push(coreGlowMat);
     const coreGlow = new THREE.Mesh(new THREE.SphereGeometry(2.6, 36, 36), coreGlowMat);
     coreGlow.scale.set(1.25, 0.85, 1.05);
-    this.rootGroup.add(coreGlow);
+    targetGroup.add(coreGlow);
 
     const totalStars = 15000;
     const pos = new Float32Array(totalStars * 3);
     const col = new Float32Array(totalStars * 3);
     const size = new Float32Array(totalStars);
     const phase = new Float32Array(totalStars);
+
+    const bcgA = new THREE.Color('#fff1d6');
+    const bcgB = new THREE.Color('#ffbe73');
+    const spiA = new THREE.Color('#ffe2b0');
+    const spiB = new THREE.Color('#8ec2ff');
+    const ellA = new THREE.Color('#fff0d2');
+    const ellB = new THREE.Color('#f7ad62');
+    const scratchCol = new THREE.Color();
 
     let cursor = 0;
 
@@ -1098,10 +1281,10 @@ export class TargetShowcaseScene {
       pos[cursor * 3 + 1] = r * u * 0.78;
       pos[cursor * 3 + 2] = r * sq * Math.sin(th);
 
-      const c = new THREE.Color('#fff1d6').lerp(new THREE.Color('#ffbe73'), Math.min(1, r / 4.5));
-      col[cursor * 3] = c.r;
-      col[cursor * 3 + 1] = c.g;
-      col[cursor * 3 + 2] = c.b;
+      scratchCol.lerpColors(bcgA, bcgB, Math.min(1, r / 4.5));
+      col[cursor * 3] = scratchCol.r;
+      col[cursor * 3 + 1] = scratchCol.g;
+      col[cursor * 3 + 2] = scratchCol.b;
       size[cursor] = 0.25 + Math.pow(rand(), 4.5) * 1.1;
       phase[cursor] = rand();
       cursor++;
@@ -1113,13 +1296,14 @@ export class TargetShowcaseScene {
     const euler = new THREE.Euler();
     const quat = new THREE.Quaternion();
     const v = new THREE.Vector3();
+    const center = new THREE.Vector3();
 
     for (let g = 0; g < galCount; g++) {
       const dist = 7.5 + rand() * 14.5;
       const th = (g / galCount) * Math.PI * 2 + rand() * 0.5;
       const u = (rand() * 2 - 1) * 0.78;
       const sq = Math.sqrt(Math.max(0, 1 - u * u));
-      const center = new THREE.Vector3(dist * sq * Math.cos(th), dist * u, dist * sq * Math.sin(th));
+      center.set(dist * sq * Math.cos(th), dist * u, dist * sq * Math.sin(th));
 
       euler.set(rand() * Math.PI, rand() * Math.PI, rand() * Math.PI);
       quat.setFromEuler(euler);
@@ -1132,21 +1316,18 @@ export class TargetShowcaseScene {
           const r = Math.pow(rand(), 0.75) * galRadius;
           const angle = arm * Math.PI + r * 1.85 + (rand() - 0.5) * 0.55;
           v.set(Math.cos(angle) * r, (rand() - 0.5) * 0.22 * (1 - r / (galRadius * 1.3)), Math.sin(angle) * r);
-          const c = new THREE.Color('#ffe2b0').lerp(new THREE.Color('#8ec2ff'), Math.min(1, r / galRadius));
-          col[cursor * 3] = c.r;
-          col[cursor * 3 + 1] = c.g;
-          col[cursor * 3 + 2] = c.b;
+          scratchCol.lerpColors(spiA, spiB, Math.min(1, r / galRadius));
         } else {
           const r = Math.pow(rand(), 1.6) * galRadius * 0.85;
           const a = rand() * Math.PI * 2;
           const z = rand() * 2 - 1;
           const sq2 = Math.sqrt(Math.max(0, 1 - z * z));
           v.set(r * sq2 * Math.cos(a), r * z * 0.65, r * sq2 * Math.sin(a));
-          const c = new THREE.Color('#fff0d2').lerp(new THREE.Color('#f7ad62'), rand());
-          col[cursor * 3] = c.r;
-          col[cursor * 3 + 1] = c.g;
-          col[cursor * 3 + 2] = c.b;
+          scratchCol.lerpColors(ellA, ellB, rand());
         }
+        col[cursor * 3] = scratchCol.r;
+        col[cursor * 3 + 1] = scratchCol.g;
+        col[cursor * 3 + 2] = scratchCol.b;
 
         v.applyQuaternion(quat).add(center);
         pos[cursor * 3] = v.x;
@@ -1159,7 +1340,7 @@ export class TargetShowcaseScene {
     }
 
     const starPoints = this.createStarPoints(pos, col, size, phase);
-    this.rootGroup.add(starPoints);
+    targetGroup.add(starPoints);
     this.spinObjects.push({ obj: starPoints, speedX: 0, speedY: 0.015 });
 
     // 2. True 3D Spherical Gravitational Lensing Shell (Einstein arcs wrap from ANY angle!)
@@ -1187,17 +1368,17 @@ export class TargetShowcaseScene {
       },
     });
     this.shaderMats.push(einsteinMat);
-    this.rootGroup.add(new THREE.Mesh(new THREE.SphereGeometry(7.2, 64, 48), einsteinMat));
+    targetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(7.2, 64, 48), einsteinMat));
 
     // 3. 3D Outer Spherical Horizon Enclosure Shell
-    this.addOuterHorizonSphere(false);
+    this.addOuterHorizonSphere(false, targetGroup);
   }
 
   /**
    * 100% True-3D Relativistic Pulsar, Accretion Disk, Polar Jets & Supernova Shock Shell
    * (Pulsar Rift S-04). Navigable 360 degrees in every direction.
    */
-  private buildDeepFieldPulsarShowcase(): void {
+  private buildDeepFieldPulsarShowcase(targetGroup: THREE.Group): void {
     const rand = this.makeRng(991419);
 
     // 1. Magnetized Neutron Star Core
@@ -1213,12 +1394,12 @@ export class TargetShowcaseScene {
     });
     this.shaderMats.push(coreMat);
     const core = new THREE.Mesh(new THREE.SphereGeometry(1.05, 40, 40), coreMat);
-    this.rootGroup.add(core);
+    targetGroup.add(core);
 
     const pulsarRig = new THREE.Group();
     pulsarRig.rotation.z = 0.38;
     pulsarRig.rotation.x = 0.22;
-    this.rootGroup.add(pulsarRig);
+    targetGroup.add(pulsarRig);
     this.spinObjects.push({ obj: pulsarRig, speedX: 0, speedY: 0.42 });
 
     // 2. Swirling 3D Plasma Accretion Disk
@@ -1279,7 +1460,7 @@ export class TargetShowcaseScene {
     });
     this.shaderMats.push(shockMat);
     const shockShell = new THREE.Mesh(new THREE.SphereGeometry(12.2, 64, 48), shockMat);
-    this.rootGroup.add(shockShell);
+    targetGroup.add(shockShell);
     this.spinObjects.push({ obj: shockShell, speedX: 0.02, speedY: -0.03 });
 
     // 5. Orbiting Plasma & Distant Background Field Stars
@@ -1288,6 +1469,9 @@ export class TargetShowcaseScene {
     const col = new Float32Array(starCount * 3);
     const size = new Float32Array(starCount);
     const phase = new Float32Array(starCount);
+    const pColA = new THREE.Color('#9ad6ff');
+    const pColB = new THREE.Color('#ffbe78');
+    const scratchCol = new THREE.Color();
 
     for (let i = 0; i < starCount; i++) {
       if (i < 1600) {
@@ -1296,10 +1480,10 @@ export class TargetShowcaseScene {
         pos[i * 3] = Math.cos(a) * r;
         pos[i * 3 + 1] = (rand() - 0.5) * 0.45;
         pos[i * 3 + 2] = Math.sin(a) * r;
-        const c = new THREE.Color('#9ad6ff').lerp(new THREE.Color('#ffbe78'), r / 7.2);
-        col[i * 3] = c.r;
-        col[i * 3 + 1] = c.g;
-        col[i * 3 + 2] = c.b;
+        scratchCol.lerpColors(pColA, pColB, r / 7.2);
+        col[i * 3] = scratchCol.r;
+        col[i * 3 + 1] = scratchCol.g;
+        col[i * 3 + 2] = scratchCol.b;
       } else {
         const r = 16 + rand() * 24;
         const th = rand() * Math.PI * 2;
@@ -1319,19 +1503,21 @@ export class TargetShowcaseScene {
     pulsarRig.add(diskPoints);
 
     // 6. Outer 3D Horizon Lattice Shell
-    this.addOuterHorizonSphere(true);
+    this.addOuterHorizonSphere(true, targetGroup);
   }
 
   /**
    * 100% True-3D Dual-Pole Celestial Sphere & Antipodal Facet Lattice (Blink Comparator).
    */
-  private buildAntipodalPolesShowcase(): void {
+  private buildAntipodalPolesShowcase(targetGroup: THREE.Group): void {
     const rand = this.makeRng(141905);
     const starCount = 2800;
     const pos = new Float32Array(starCount * 3);
     const col = new Float32Array(starCount * 3);
     const size = new Float32Array(starCount);
     const phase = new Float32Array(starCount);
+    const northCol = new THREE.Color('#ffdba4');
+    const southCol = new THREE.Color('#9ce0ff');
 
     for (let i = 0; i < starCount; i++) {
       const r = 10 + rand() * 14;
@@ -1341,15 +1527,14 @@ export class TargetShowcaseScene {
       pos[i * 3] = r * sq * Math.cos(th);
       pos[i * 3 + 1] = r * u;
       pos[i * 3 + 2] = r * sq * Math.sin(th);
-      const isNorth = u >= 0;
-      const c = isNorth ? new THREE.Color('#ffdba4') : new THREE.Color('#9ce0ff');
+      const c = u >= 0 ? northCol : southCol;
       col[i * 3] = c.r;
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
       size[i] = 0.25 + Math.pow(rand(), 4.2) * 1.05;
       phase[i] = rand();
     }
-    this.rootGroup.add(this.createStarPoints(pos, col, size, phase));
+    targetGroup.add(this.createStarPoints(pos, col, size, phase));
 
     // Antipodal North & South Pole beacon halos
     const poleMat = new THREE.ShaderMaterial({
@@ -1370,13 +1555,13 @@ export class TargetShowcaseScene {
     north.position.set(0, 8.5, 0);
     const south = new THREE.Mesh(new THREE.SphereGeometry(2.8, 28, 28), poleMat);
     south.position.set(0, -8.5, 0);
-    this.rootGroup.add(north, south);
+    targetGroup.add(north, south);
 
-    this.addOuterHorizonSphere(true);
+    this.addOuterHorizonSphere(true, targetGroup);
   }
 
   private pickHandleAt(clientX: number, clientY: number): { handle: Interactive3DHandle; hitPoint: THREE.Vector3 } | null {
-    if (this.registeredHandles.size === 0) return null;
+    if (this.registeredHandles.size === 0 || !this.renderer || !this.camera) return null;
     const rect = this.renderer.domElement.getBoundingClientRect();
     const w = Math.max(1, rect.width);
     const h = Math.max(1, rect.height);
@@ -1420,6 +1605,7 @@ export class TargetShowcaseScene {
   }
 
   private intersectDragPlane(clientX: number, clientY: number, out: THREE.Vector3): boolean {
+    if (!this.renderer || !this.camera) return false;
     const rect = this.renderer.domElement.getBoundingClientRect();
     const w = Math.max(1, rect.width);
     const h = Math.max(1, rect.height);
@@ -1429,7 +1615,8 @@ export class TargetShowcaseScene {
   }
 
   private bindEvents(): void {
-    const el = this.renderer.domElement;
+    const el = this.renderer?.domElement;
+    if (!el) return;
 
     el.addEventListener('pointerdown', (e) => {
       el.setPointerCapture(e.pointerId);
@@ -1442,7 +1629,7 @@ export class TargetShowcaseScene {
         this.handleMoved = false;
 
         const picked = this.pickHandleAt(e.clientX, e.clientY);
-        if (picked) {
+        if (picked && this.camera) {
           this.activeHandleId = picked.handle.id;
           this.isDragging = false;
           const mode = picked.handle.dragPlane ?? 'camera';
@@ -1572,14 +1759,20 @@ export class TargetShowcaseScene {
       { passive: false }
     );
 
-    window.addEventListener('resize', () => this.resize());
+    window.addEventListener('resize', this.onResizeBound);
   }
 
   private applyTargetDpr(targetDpr: number): void {
+    if (!this.renderer) return;
     const clamped = Math.max(0.75, Math.min(window.devicePixelRatio || 1, targetDpr));
     if (Math.abs(clamped - this.currentAppliedDpr) < 0.02) return;
     this.currentAppliedDpr = clamped;
     this.renderer.setPixelRatio(clamped);
+    for (const rig of this.rigCache.values()) {
+      for (const m of rig.shaderMats) {
+        if (m.uniforms.uPixelRatio) m.uniforms.uPixelRatio.value = clamped;
+      }
+    }
     this.resize();
   }
 
@@ -1783,9 +1976,11 @@ export class TargetShowcaseScene {
       this.rootGroup.visible = true;
       this.minigameBackdropGroup.visible = false;
       this.disposeMinigamePropRig();
-      this.renderer.toneMappingExposure = 1.12;
-      this.applyTargetDpr(this.isCoarsePointer ? 1.5 : 2);
-      this.resize();
+      if (this.renderer) {
+        this.renderer.toneMappingExposure = 1.12;
+        this.applyTargetDpr(this.isCoarsePointer ? 1.5 : 2);
+        this.resize();
+      }
       if (this.desiredActive && !this.active) {
         this.resumeLoop();
       }
@@ -1799,8 +1994,11 @@ export class TargetShowcaseScene {
       return;
     }
 
+    this.ensureInitialized();
     this.minigameSuspended = false;
-    this.renderer.toneMappingExposure = cfg.exposure ?? 0.5;
+    if (this.renderer) {
+      this.renderer.toneMappingExposure = cfg.exposure ?? 0.5;
+    }
     this.applyTargetDpr(this.isCoarsePointer ? 1.0 : 1.25);
 
     const showFullShowcase = cfg.mode === 'coupled_showcase';
@@ -1825,8 +2023,9 @@ export class TargetShowcaseScene {
   }
 
   resize(): void {
-    const w = Math.max(1, this.container.clientWidth);
-    const h = Math.max(1, this.container.clientHeight);
+    if (!this.renderer || !this.camera) return;
+    const w = Math.max(1, this.container.clientWidth || window.innerWidth || 1280);
+    const h = Math.max(1, this.container.clientHeight || window.innerHeight || 720);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(w, h);
@@ -1837,9 +2036,12 @@ export class TargetShowcaseScene {
   }
 
   private resumeLoop(): void {
+    this.ensureInitialized();
     this.active = true;
     this.resize();
     this.lastFrameMs = performance.now();
+    this.lastRafMs = 0;
+    this.showcaseFrameCount = 0;
     if (!this.rafId) this.loop();
   }
 
@@ -1860,8 +2062,30 @@ export class TargetShowcaseScene {
     }
   }
 
+  getPerfInfo(): RendererPerfInfo {
+    if (!this.renderer) {
+      return {
+        active: this.active,
+        calls: 0,
+        triangles: 0,
+        geometries: 0,
+        textures: 0,
+        dpr: this.currentAppliedDpr,
+      };
+    }
+    const info = this.renderer.info;
+    return {
+      active: this.active,
+      calls: info.render.calls,
+      triangles: info.render.triangles,
+      geometries: info.memory.geometries,
+      textures: info.memory.textures,
+      dpr: this.currentAppliedDpr,
+    };
+  }
+
   private loop = (): void => {
-    if (!this.active) return;
+    if (!this.active || !this.renderer || !this.scene || !this.camera) return;
     this.rafId = requestAnimationFrame(this.loop);
 
     const frameStart = performance.now();
@@ -1953,8 +2177,12 @@ export class TargetShowcaseScene {
       if (m.uniforms.uWaveBand) m.uniforms.uWaveBand.value = this.waveBand;
       if (m.uniforms.uOpticalFidelity) m.uniforms.uOpticalFidelity.value = this.opticalFidelity;
     }
+    if (this.transitionBurst > 0) {
+      this.transitionBurst = Math.max(0, this.transitionBurst - dt / 0.55);
+    }
     if (this.polishPass) {
       this.polishPass.uniforms.uTime.value = elapsed;
+      this.polishPass.uniforms.uTransitionBurst.value = this.transitionBurst;
     }
 
     // Animate 3D rings/pulses triggered by instruments
@@ -2010,11 +2238,25 @@ export class TargetShowcaseScene {
       this.renderer.render(this.scene, this.camera);
     }
 
-    // Mobile 60fps perf guard: automatically step down bloom if rolling frame time exceeds 22ms
-    const frameElapsed = performance.now() - frameStart;
-    this.frameAvgMs = this.frameAvgMs * 0.9 + frameElapsed * 0.1;
-    if (this.frameAvgMs > 22 && this.bloomPass && this.bloomPass.enabled) {
-      this.bloomPass.enabled = false;
+    // Real rAF-to-rAF perf guard with 15-frame warmup: step down DPR before disabling bloom
+    const rafDtMs = this.lastRafMs > 0 ? frameStart - this.lastRafMs : 16.6;
+    this.lastRafMs = frameStart;
+    this.showcaseFrameCount++;
+    if (this.showcaseFrameCount > 15 && rafDtMs > 0 && rafDtMs < 250) {
+      this.frameAvgMs = this.frameAvgMs * 0.92 + Math.min(rafDtMs, 100) * 0.08;
+      if (this.frameAvgMs > 28) {
+        if (this.currentAppliedDpr > 1.26) {
+          this.applyTargetDpr(1.25);
+          this.frameAvgMs = 18;
+          this.showcaseFrameCount = 8;
+        } else if (this.currentAppliedDpr > 1.02) {
+          this.applyTargetDpr(1.0);
+          this.frameAvgMs = 18;
+          this.showcaseFrameCount = 8;
+        } else if (this.frameAvgMs > 30 && this.bloomPass && this.bloomPass.enabled) {
+          this.bloomPass.enabled = false;
+        }
+      }
     }
 
     if (this.onTelemetry && this.currentSpec) {
@@ -2058,8 +2300,11 @@ export class TargetShowcaseScene {
   };
 
   dispose(): void {
+    this.disposed = true;
     this.setActive(false);
-    this.clearRoot();
+    if (!this.initialized) return;
+    window.removeEventListener('resize', this.onResizeBound);
+    this.clearRigCache();
     this.disposeMinigamePropRig();
     if (this.minigameStarDome) {
       this.minigameStarDome.geometry.dispose();
@@ -2070,7 +2315,12 @@ export class TargetShowcaseScene {
       this.softPointTexture.dispose();
       this.softPointTexture = null;
     }
+    if (this.nebulaPuffAtlas) {
+      this.nebulaPuffAtlas.dispose();
+      this.nebulaPuffAtlas = null;
+    }
     this.composer?.dispose();
-    this.renderer.dispose();
+    this.renderer?.dispose();
+    this.renderer = null;
   }
 }

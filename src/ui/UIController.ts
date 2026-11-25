@@ -13,7 +13,7 @@ import type { ShowcaseTelemetry, TargetShowcaseScene } from '../engine/TargetSho
 import { TelemetryLogger } from '../engine/TelemetryLogger';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { platform } from '../platform/PlatformAdapter';
-import { DevHarness, type DevHarnessBridge } from './DevHarness';
+import type { DevHarnessBridge } from './DevHarness';
 import { renderSpeakerAvatar, updateAvatarVoiceAnimations } from './SpeakerAvatar';
 import { StatusShiftOverlay } from './StatusShiftOverlay';
 import { TransitionDirector, type TransitionKind } from './TransitionDirector';
@@ -34,6 +34,63 @@ interface CharacterInfo {
 const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
 const MIN_WAVE = 200;
 const MAX_WAVE = 1800;
+
+interface CachedShellRefs {
+  stage: HTMLElement | null;
+  warmthFill: HTMLElement | null;
+  warmthPct: HTMLElement | null;
+  surveyDots: HTMLElement | null;
+  driftFlag: HTMLElement | null;
+  codexUnreadDot: HTMLElement | null;
+  vernierNeedle: HTMLElement | null;
+  waveLabel: HTMLElement | null;
+  vernierTrack: HTMLElement | null;
+  dreamRibbon: HTMLElement | null;
+  dreamCaption: HTMLElement | null;
+  humanityReg: HTMLElement | null;
+  regBandLabel: HTMLElement | null;
+  regHVal: HTMLElement | null;
+  regFill: HTMLElement | null;
+  dreamSpeakerBay: HTMLElement | null;
+  commsPanel: HTMLElement | null;
+  commsAvatarBay: HTMLElement | null;
+  overseerPanel: HTMLElement | null;
+  overseerAvatarBay: HTMLElement | null;
+  bootScreen: HTMLElement | null;
+  opticsLayer: HTMLElement | null;
+  inspectLayer: HTMLElement | null;
+  dreamLayer: HTMLElement | null;
+}
+
+interface CachedOpticsHudRefs {
+  target: HTMLElement | null;
+  zoomLabel: HTMLElement | null;
+  stageLabel: HTMLElement | null;
+  zoomFill: HTMLElement | null;
+  zoomNeedle: HTMLElement | null;
+  zoomTrack: HTMLElement | null;
+  reticleEl: HTMLElement | null;
+  lockRing: SVGCircleElement | null;
+  raTicks: HTMLElement | null;
+  decTicks: HTMLElement | null;
+  inspectBtn: HTMLButtonElement | null;
+}
+
+interface CachedShowcaseHudRefs {
+  stageEl: HTMLElement | null;
+  xEl: HTMLElement | null;
+  fillEl: HTMLElement | null;
+  needleEl: HTMLElement | null;
+  zoomTrack: HTMLElement | null;
+  scaleEl: HTMLElement | null;
+  compassEl: HTMLElement | null;
+}
+
+interface MarkerDomCache {
+  lastTransform: string;
+  lastOpacity: string;
+  lastOffscreen: boolean;
+}
 
 /**
  * Lean top-level scene coordinator routing Boot, 3D Wide Sky, 3D Target Inspect,
@@ -65,6 +122,31 @@ export class UIController {
   private showcase!: TargetShowcaseScene;
   private dream!: DreamCanvas;
 
+  private shellRefs!: CachedShellRefs;
+  private opticsRefs!: CachedOpticsHudRefs;
+  private showcaseRefs!: CachedShowcaseHudRefs;
+  private markerCache = new Map<string, MarkerDomCache>();
+  private skyZoomTrackH = 92;
+  private showcaseZoomTrackH = 92;
+  private readonly onResizeBound = () => this.updateZoomTrackHeights();
+
+  private lastOpticsZoomText = '';
+  private lastOpticsStageText = '';
+  private lastOpticsFillTransform = '';
+  private lastOpticsNeedleTransform = '';
+  private lastReticleScale = '';
+  private lastRaTransform = '';
+  private lastDecTransform = '';
+  private lastLockOffset = -1;
+  private lastInspectHidden: boolean | null = null;
+
+  private lastScStageText = '';
+  private lastScXText = '';
+  private lastScFillTransform = '';
+  private lastScNeedleTransform = '';
+  private lastScScaleText = '';
+  private lastScCompassText = '';
+
   private activeCommsSnapshot: DialogueSnapshot | null = null;
   private activeDreamSnapshot: DialogueSnapshot | null = null;
   private activeOverseerSnapshot: DialogueSnapshot | null = null;
@@ -73,8 +155,25 @@ export class UIController {
   private markerEls = new Map<string, HTMLButtonElement>();
   private lastScannedSig = '';
   private lastDecodedSig = '';
+  private lastSurveyDotsSig = '';
+  private lastHumanityPct = -1;
+  private lastDriftElevated: boolean | null = null;
+  private lastCodexSig = '';
+  private lastWavelengthNm = -1;
   private lastMode: GameMode = 'boot';
+  private lastVisMode: GameMode | null = null;
+  private lastDreamRegSig = '';
+  private lastCommsBaySig = '';
+  private lastOverseerBaySig = '';
+  private lastMgProfileSig = '';
+  private lastDreamCaptionSig = '';
+  private lastOpticsParamSig = '';
+  private lastOpticsFidelity = -1;
+  private lastDreamStateSig = '';
+  private lastAudioMoodSig = '';
+  private lastMusicCtxSig = '';
   private avatarAnimRaf = 0;
+  private unbindVoiceSub: (() => void) | null = null;
 
   private proactiveCommsSent = false;
   private proactiveCommsTimer: number | null = null;
@@ -144,6 +243,9 @@ export class UIController {
       });
     });
     this.minigameHost.setActiveChangeCallback(() => {
+      if (this.shellRefs?.stage) {
+        this.shellRefs.stage.dataset.minigame = this.minigameHost.isActive() ? '1' : '0';
+      }
       this.syncAudioMusic(this.store.getState());
     });
   }
@@ -156,13 +258,17 @@ export class UIController {
     this.initSkyMarkers();
     this.renderBearingIndex();
     this.bindUIEvents();
+    window.addEventListener('resize', this.onResizeBound);
+    this.updateZoomTrackHeights();
     this.settingsStore.subscribe((settings) => this.applyUserSettings(settings));
     this.store.subscribe((state) => this.syncStateToUI(state));
     this.store.subscribeStatusShift((ev) => this.statusShift.show(ev));
-    this.startAvatarVoiceLoop();
+    this.bindAvatarVoiceLoop();
 
     if (import.meta.env.DEV || new URLSearchParams(window.location.search).get('dev') === '1') {
-      new DevHarness(this.store, this.audio, this.voice, this.minigames, this.createDevBridge());
+      void import('./DevHarness').then(({ DevHarness }) => {
+        new DevHarness(this.store, this.audio, this.voice, this.minigames, this.createDevBridge());
+      });
     }
 
     if (this.store.getState().mode === 'dream_2d' && !this.activeDreamSnapshot) {
@@ -205,24 +311,7 @@ export class UIController {
 
   private renderShell(): void {
     this.root.innerHTML = `
-      <div class="stage">
-        <svg class="fx-filter-defs" aria-hidden="true" width="0" height="0">
-          <defs>
-            <filter id="fx-impasto-melt" x="-12%" y="-12%" width="124%" height="124%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.014 0.022" numOctaves="2" seed="14" result="noise" />
-              <feDisplacementMap in="SourceGraphic" in2="noise" scale="26" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-            <filter id="fx-optical-warp" x="-10%" y="-10%" width="120%" height="120%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.008 0.016" numOctaves="1" seed="7" result="lens" />
-              <feDisplacementMap in="SourceGraphic" in2="lens" scale="18" xChannelSelector="R" yChannelSelector="B" />
-            </filter>
-            <filter id="fx-clinical-tear" x="-10%" y="-10%" width="120%" height="120%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.002 0.22" numOctaves="1" seed="19" result="scan" />
-              <feDisplacementMap in="SourceGraphic" in2="scan" scale="24" xChannelSelector="R" yChannelSelector="A" />
-            </filter>
-          </defs>
-        </svg>
-
+      <div class="stage" data-mode="boot" data-minigame="0">
         <div class="film-grain" aria-hidden="true"></div>
 
         <div class="transition-stage" id="transition-stage" aria-hidden="true">
@@ -313,8 +402,8 @@ export class UIController {
               <div class="zoom-ladder-body">
                 <div class="zoom-ladder-labels"><span>LOCK</span><span>DEEP</span><span>SECTOR</span><span>WIDE</span></div>
                 <div class="zoom-ladder-track">
-                  <div class="zoom-ladder-fill" id="sky-zoom-fill" style="height:26%"></div>
-                  <div class="zoom-ladder-needle" id="sky-zoom-needle" style="bottom:26%"></div>
+                  <div class="zoom-ladder-fill" id="sky-zoom-fill" style="transform:scaleY(0.26)"></div>
+                  <div class="zoom-ladder-needle" id="sky-zoom-needle" style="transform:translate3d(0,-24px,0)"></div>
                 </div>
               </div>
               <div class="zoom-inline">
@@ -374,8 +463,8 @@ export class UIController {
             <div class="zoom-ladder-body">
               <div class="zoom-ladder-labels"><span>CORE</span><span>CLOSE</span><span>MID</span><span>OVER</span></div>
               <div class="zoom-ladder-track">
-                <div class="zoom-ladder-fill" id="showcase-zoom-fill" style="height:45%"></div>
-                <div class="zoom-ladder-needle" id="showcase-zoom-needle" style="bottom:45%"></div>
+                <div class="zoom-ladder-fill" id="showcase-zoom-fill" style="transform:scaleY(0.45)"></div>
+                <div class="zoom-ladder-needle" id="showcase-zoom-needle" style="transform:translate3d(0,-41px,0)"></div>
               </div>
             </div>
             <div class="zoom-inline">
@@ -493,14 +582,102 @@ export class UIController {
         </aside>
       </div>
     `;
+    this.cacheDomRefs();
   }
 
-  private startAvatarVoiceLoop(): void {
-    const tick = () => {
-      this.avatarAnimRaf = requestAnimationFrame(tick);
-      updateAvatarVoiceAnimations(this.root, this.voice.getActiveSpeaker(), this.voice.getAmplitude());
+  private cacheDomRefs(): void {
+    const q = <T extends Element = HTMLElement>(sel: string) => this.root.querySelector<T>(sel);
+    const skyFill = q('#sky-zoom-fill');
+    const scFill = q('#showcase-zoom-fill');
+    this.shellRefs = {
+      stage: q('.stage'),
+      warmthFill: q('#hud-warmth-fill'),
+      warmthPct: q('#hud-warmth-pct'),
+      surveyDots: q('#hud-survey-dots'),
+      driftFlag: q('#hud-drift-flag'),
+      codexUnreadDot: q('#codex-unread-dot'),
+      vernierNeedle: q('#vernier-needle'),
+      waveLabel: q('#wave-label'),
+      vernierTrack: q('#vernier-track'),
+      dreamRibbon: q('#dream-ribbon'),
+      dreamCaption: q('#dream-caption'),
+      humanityReg: q('#humanity-register'),
+      regBandLabel: q('#register-band-label'),
+      regHVal: q('#register-h-val'),
+      regFill: q('#register-fill'),
+      dreamSpeakerBay: q('#dream-speaker-bay'),
+      commsPanel: q('#comms-panel'),
+      commsAvatarBay: q('#comms-avatar-bay'),
+      overseerPanel: q('#overseer-panel'),
+      overseerAvatarBay: q('#overseer-avatar-bay'),
+      bootScreen: q('#boot-screen'),
+      opticsLayer: q('#optics-layer'),
+      inspectLayer: q('#inspect-layer'),
+      dreamLayer: q('#dream-layer'),
     };
-    if (!this.avatarAnimRaf) tick();
+    this.opticsRefs = {
+      target: q('#reticle-target'),
+      zoomLabel: q('#zoom-label'),
+      stageLabel: q('#sky-zoom-stage-label'),
+      zoomFill: skyFill,
+      zoomNeedle: q('#sky-zoom-needle'),
+      zoomTrack: skyFill?.parentElement ?? null,
+      reticleEl: q('.reticle'),
+      lockRing: q<SVGCircleElement>('#reticle-lock-ring'),
+      raTicks: q('#ra-ruler-ticks'),
+      decTicks: q('#dec-ruler-ticks'),
+      inspectBtn: q<HTMLButtonElement>('#btn-enter-inspect'),
+    };
+    this.showcaseRefs = {
+      stageEl: q('#showcase-zoom-stage'),
+      xEl: q('#showcase-zoom-x'),
+      fillEl: scFill,
+      needleEl: q('#showcase-zoom-needle'),
+      zoomTrack: scFill?.parentElement ?? null,
+      scaleEl: q('#showcase-scale-text'),
+      compassEl: q('#showcase-compass'),
+    };
+  }
+
+  private updateZoomTrackHeights(): void {
+    const skyH = this.opticsRefs?.zoomTrack?.clientHeight;
+    if (skyH && skyH > 0) this.skyZoomTrackH = skyH;
+    const scH = this.showcaseRefs?.zoomTrack?.clientHeight;
+    if (scH && scH > 0) this.showcaseZoomTrackH = scH;
+  }
+
+  private startAvatarLoopIfNeeded(): void {
+    if (this.avatarAnimRaf) return;
+    const tick = () => {
+      const speaker = this.voice.getActiveSpeaker();
+      if (speaker === null) {
+        this.avatarAnimRaf = 0;
+        updateAvatarVoiceAnimations(this.root, null, 0);
+        return;
+      }
+      updateAvatarVoiceAnimations(this.root, speaker, this.voice.getAmplitude());
+      this.avatarAnimRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  private bindAvatarVoiceLoop(): void {
+    this.unbindVoiceSub?.();
+    const sub = this.voice.subscribe?.((speaker) => {
+      if (speaker !== null) {
+        this.startAvatarLoopIfNeeded();
+      } else {
+        if (this.avatarAnimRaf) {
+          cancelAnimationFrame(this.avatarAnimRaf);
+          this.avatarAnimRaf = 0;
+        }
+        updateAvatarVoiceAnimations(this.root, null, 0);
+      }
+    });
+    this.unbindVoiceSub = typeof sub === 'function' ? sub : null;
+    if (this.voice.getActiveSpeaker() !== null) {
+      this.startAvatarLoopIfNeeded();
+    }
   }
 
   private clearTimers(): void {
@@ -531,11 +708,13 @@ export class UIController {
     const container = this.root.querySelector<HTMLElement>('#sky-markers')!;
     container.innerHTML = '';
     this.markerEls.clear();
+    this.markerCache.clear();
 
     for (const spec of this.optics.getAnomalySpecs()) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'sky-marker';
+      btn.style.display = 'flex';
       btn.dataset.anomalyId = spec.id;
       btn.innerHTML = `
         <span class="diamond"></span>
@@ -547,6 +726,7 @@ export class UIController {
       });
       container.appendChild(btn);
       this.markerEls.set(spec.id, btn);
+      this.markerCache.set(spec.id, { lastTransform: '', lastOpacity: '', lastOffscreen: false });
     }
   }
 
@@ -815,73 +995,120 @@ export class UIController {
   }
 
   onOpticsTelemetry(t: OpticsTelemetry): void {
-    const target = this.root.querySelector<HTMLElement>('#reticle-target');
-    const zoomLabel = this.root.querySelector<HTMLElement>('#zoom-label');
-    const stageLabel = this.root.querySelector<HTMLElement>('#sky-zoom-stage-label');
-    const zoomFill = this.root.querySelector<HTMLElement>('#sky-zoom-fill');
-    const zoomNeedle = this.root.querySelector<HTMLElement>('#sky-zoom-needle');
-    const reticleEl = this.root.querySelector<HTMLElement>('.reticle');
-    const lockRing = this.root.querySelector<SVGCircleElement>('#reticle-lock-ring');
-    const raTicks = this.root.querySelector<HTMLElement>('#ra-ruler-ticks');
-    const decTicks = this.root.querySelector<HTMLElement>('#dec-ruler-ticks');
-    const inspectBtn = this.root.querySelector<HTMLButtonElement>('#btn-enter-inspect');
-
+    const refs = this.opticsRefs;
     this.audio.updateProbeSignal(t.alignmentScore, t.wavelengthMatch, t.lockProgress);
     this.focusedSpec = t.focusedAnomaly;
 
-    if (raTicks) raTicks.style.backgroundPositionX = `${(-t.raDeg * 6).toFixed(1)}px`;
-    if (decTicks) decTicks.style.backgroundPositionY = `${(t.decDeg * 6).toFixed(1)}px`;
-    if (reticleEl) {
-      const sc = (1.08 - 0.22 * t.zoomNorm).toFixed(3);
-      reticleEl.style.transform = `translate(-50%, -50%) scale(${sc})`;
+    if (refs.raTicks) {
+      let raOff = (-t.raDeg * 6) % 140;
+      if (raOff > 0) raOff -= 140;
+      const raTr = `translate3d(${raOff.toFixed(1)}px,0,0)`;
+      if (raTr !== this.lastRaTransform) {
+        this.lastRaTransform = raTr;
+        refs.raTicks.style.transform = raTr;
+      }
     }
-
-    for (const m of t.markers) {
-      const el = this.markerEls.get(m.id);
-      if (!el) continue;
-      const inSafeLens = m.inView && m.x > 0.14 && m.x < 0.86 && m.y > 0.14 && m.y < 0.76;
-      el.style.display = 'flex';
-      if (!inSafeLens) {
-        const ex = Math.max(0.08, Math.min(0.92, 0.5 + Math.cos(m.edgeAngleRad) * 0.42));
-        const ey = Math.max(0.14, Math.min(0.8, 0.5 + Math.sin(m.edgeAngleRad) * 0.34));
-        el.classList.add('offscreen');
-        el.style.left = `${(ex * 100).toFixed(2)}%`;
-        el.style.top = `${(ey * 100).toFixed(2)}%`;
-        el.style.opacity = '0.45';
-      } else {
-        el.classList.remove('offscreen');
-        el.style.left = `${(m.x * 100).toFixed(2)}%`;
-        el.style.top = `${(m.y * 100).toFixed(2)}%`;
-        const distCenter = Math.hypot(m.x - 0.5, m.y - 0.5);
-        el.style.opacity = distCenter < 0.09 ? '0.0' : '0.88';
+    if (refs.decTicks) {
+      let decOff = (t.decDeg * 6) % 140;
+      if (decOff > 0) decOff -= 140;
+      const decTr = `translate3d(0,${decOff.toFixed(1)}px,0)`;
+      if (decTr !== this.lastDecTransform) {
+        this.lastDecTransform = decTr;
+        refs.decTicks.style.transform = decTr;
+      }
+    }
+    if (refs.reticleEl) {
+      const sc = (1.08 - 0.22 * t.zoomNorm).toFixed(3);
+      if (sc !== this.lastReticleScale) {
+        this.lastReticleScale = sc;
+        refs.reticleEl.style.transform = `translate(-50%, -50%) scale(${sc})`;
       }
     }
 
-    const zoomPct = `${Math.round(t.zoomNorm * 100)}%`;
-    if (zoomLabel) zoomLabel.textContent = `${t.zoomX.toFixed(1)}×`;
-    if (stageLabel) stageLabel.textContent = t.zoomStage;
-    if (zoomFill) zoomFill.style.height = zoomPct;
-    if (zoomNeedle) zoomNeedle.style.bottom = zoomPct;
-
-    if (lockRing) {
-      const circ = 477.52;
-      lockRing.setAttribute('stroke-dashoffset', String(circ * (1 - t.lockProgress)));
+    const vp = this.optics.getViewportSize?.() ?? {
+      width: window.innerWidth || 1280,
+      height: window.innerHeight || 720,
+    };
+    for (let i = 0; i < t.markers.length; i++) {
+      const m = t.markers[i];
+      const el = this.markerEls.get(m.id);
+      const cache = this.markerCache.get(m.id);
+      if (!el || !cache) continue;
+      const inSafeLens = m.inView && m.x > 0.14 && m.x < 0.86 && m.y > 0.14 && m.y < 0.76;
+      let nx = m.x;
+      let ny = m.y;
+      let op = '0.88';
+      const isOffscreen = !inSafeLens;
+      if (isOffscreen) {
+        nx = Math.max(0.08, Math.min(0.92, 0.5 + Math.cos(m.edgeAngleRad) * 0.42));
+        ny = Math.max(0.14, Math.min(0.8, 0.5 + Math.sin(m.edgeAngleRad) * 0.34));
+        op = '0.45';
+      } else {
+        const distCenter = Math.hypot(m.x - 0.5, m.y - 0.5);
+        if (distCenter < 0.09) op = '0';
+      }
+      if (isOffscreen !== cache.lastOffscreen) {
+        cache.lastOffscreen = isOffscreen;
+        el.classList.toggle('offscreen', isOffscreen);
+      }
+      const tr = `translate3d(${(nx * vp.width).toFixed(1)}px,${(ny * vp.height).toFixed(1)}px,0) translate(-50%,-50%)`;
+      if (tr !== cache.lastTransform) {
+        cache.lastTransform = tr;
+        el.style.transform = tr;
+      }
+      if (op !== cache.lastOpacity) {
+        cache.lastOpacity = op;
+        el.style.opacity = op;
+      }
     }
 
-    if (target) {
+    const zoomText = `${t.zoomX.toFixed(1)}×`;
+    if (refs.zoomLabel && zoomText !== this.lastOpticsZoomText) {
+      this.lastOpticsZoomText = zoomText;
+      refs.zoomLabel.textContent = zoomText;
+    }
+    if (refs.stageLabel && t.zoomStage !== this.lastOpticsStageText) {
+      this.lastOpticsStageText = t.zoomStage;
+      refs.stageLabel.textContent = t.zoomStage;
+    }
+    const fillTr = `scaleY(${t.zoomNorm.toFixed(4)})`;
+    if (refs.zoomFill && fillTr !== this.lastOpticsFillTransform) {
+      this.lastOpticsFillTransform = fillTr;
+      refs.zoomFill.style.transform = fillTr;
+    }
+    const needleTr = `translate3d(0,${(-t.zoomNorm * this.skyZoomTrackH).toFixed(1)}px,0)`;
+    if (refs.zoomNeedle && needleTr !== this.lastOpticsNeedleTransform) {
+      this.lastOpticsNeedleTransform = needleTr;
+      refs.zoomNeedle.style.transform = needleTr;
+    }
+
+    if (refs.lockRing) {
+      const circ = 477.52;
+      const nextOffset = Math.round(circ * (1 - t.lockProgress) * 10) / 10;
+      if (nextOffset !== this.lastLockOffset) {
+        this.lastLockOffset = nextOffset;
+        refs.lockRing.setAttribute('stroke-dashoffset', String(nextOffset));
+      }
+    }
+
+    if (refs.target) {
       let nextPrompt = '';
+      let hideInspect = true;
       if (t.focusedAnomaly) {
         const scanned = this.store.getState().scannedAnomalyIds.includes(t.focusedAnomaly.id);
-        inspectBtn?.classList.toggle('hidden', !scanned);
+        hideInspect = !scanned;
         if (scanned) nextPrompt = `${t.focusedAnomaly.label} · READY TO INSPECT`;
         else if (t.fovDeg > t.focusedAnomaly.recommendedFovMax + 10) nextPrompt = `${t.focusedAnomaly.label} · ZOOM CLOSER`;
         else if (t.wavelengthMatch < 0.48) nextPrompt = `${t.focusedAnomaly.label} · TUNE SPECTRUM TO ${t.focusedAnomaly.bandName}`;
         else nextPrompt = `${t.focusedAnomaly.label} · LOCKING ${Math.round(t.lockProgress * 100)}%`;
       } else {
-        inspectBtn?.classList.add('hidden');
         nextPrompt = 'DRAG TO LOOK AROUND · SWEEP LIGHT SPECTRUM BELOW';
       }
-      this.morphPromptText(target, nextPrompt);
+      if (refs.inspectBtn && hideInspect !== this.lastInspectHidden) {
+        this.lastInspectHidden = hideInspect;
+        refs.inspectBtn.classList.toggle('hidden', hideInspect);
+      }
+      this.morphPromptText(refs.target, nextPrompt);
     }
   }
 
@@ -896,22 +1123,37 @@ export class UIController {
   }
 
   onShowcaseTelemetry(t: ShowcaseTelemetry): void {
-    const stageEl = this.root.querySelector<HTMLElement>('#showcase-zoom-stage');
-    const xEl = this.root.querySelector<HTMLElement>('#showcase-zoom-x');
-    const fillEl = this.root.querySelector<HTMLElement>('#showcase-zoom-fill');
-    const needleEl = this.root.querySelector<HTMLElement>('#showcase-zoom-needle');
-    const scaleEl = this.root.querySelector<HTMLElement>('#showcase-scale-text');
-    const compassEl = this.root.querySelector<HTMLElement>('#showcase-compass');
-
-    const pct = `${Math.round(t.zoomNorm * 100)}%`;
-    if (stageEl) stageEl.textContent = t.zoomStage;
-    if (xEl) xEl.textContent = `${t.zoomX.toFixed(1)}×`;
-    if (fillEl) fillEl.style.height = pct;
-    if (needleEl) needleEl.style.bottom = pct;
-    if (scaleEl) scaleEl.textContent = t.scaleText;
-    if (compassEl) {
+    const refs = this.showcaseRefs;
+    if (refs.stageEl && t.zoomStage !== this.lastScStageText) {
+      this.lastScStageText = t.zoomStage;
+      refs.stageEl.textContent = t.zoomStage;
+    }
+    const xText = `${t.zoomX.toFixed(1)}×`;
+    if (refs.xEl && xText !== this.lastScXText) {
+      this.lastScXText = xText;
+      refs.xEl.textContent = xText;
+    }
+    const fillTr = `scaleY(${t.zoomNorm.toFixed(4)})`;
+    if (refs.fillEl && fillTr !== this.lastScFillTransform) {
+      this.lastScFillTransform = fillTr;
+      refs.fillEl.style.transform = fillTr;
+    }
+    const needleTr = `translate3d(0,${(-t.zoomNorm * this.showcaseZoomTrackH).toFixed(1)}px,0)`;
+    if (refs.needleEl && needleTr !== this.lastScNeedleTransform) {
+      this.lastScNeedleTransform = needleTr;
+      refs.needleEl.style.transform = needleTr;
+    }
+    if (refs.scaleEl && t.scaleText !== this.lastScScaleText) {
+      this.lastScScaleText = t.scaleText;
+      refs.scaleEl.textContent = t.scaleText;
+    }
+    if (refs.compassEl) {
       const elSign = t.pitchDeg >= 0 ? '+' : '';
-      compassEl.textContent = `AZ ${String(t.yawDeg).padStart(3, '0')}° · EL ${elSign}${t.pitchDeg}°`;
+      const compText = `AZ ${String(t.yawDeg).padStart(3, '0')}° · EL ${elSign}${t.pitchDeg}°`;
+      if (compText !== this.lastScCompassText) {
+        this.lastScCompassText = compText;
+        refs.compassEl.textContent = compText;
+      }
     }
   }
 
@@ -1001,7 +1243,7 @@ export class UIController {
     const spec =
       this.optics.getAnomalySpecs().find((a) => a.id === s.activeTargetId) ?? this.optics.getAnomalySpecs()[0];
     if (!spec) return;
-    this.minigameHost.launch(
+    void this.minigameHost.launch(
       spec,
       overrideId,
       (decodedSpec) => {
@@ -1281,6 +1523,7 @@ export class UIController {
     }
 
     this.audio.playCue('overseer_slice');
+    this.dream.triggerSlicePulse?.();
     const visualPane = this.root.querySelector<HTMLElement>('.dream-visual-pane');
     if (visualPane) {
       visualPane.classList.remove('is-slicing');
@@ -1354,11 +1597,11 @@ export class UIController {
   }
 
   private syncHumanityRegister(s: GameState): void {
-    const regEl = this.root.querySelector<HTMLElement>('#humanity-register');
-    const bandEl = this.root.querySelector<HTMLElement>('#register-band-label');
-    const valEl = this.root.querySelector<HTMLElement>('#register-h-val');
-    const fillEl = this.root.querySelector<HTMLElement>('#register-fill');
-    const bayEl = this.root.querySelector<HTMLElement>('#dream-speaker-bay');
+    const regEl = this.shellRefs.humanityReg;
+    const bandEl = this.shellRefs.regBandLabel;
+    const valEl = this.shellRefs.regHVal;
+    const fillEl = this.shellRefs.regFill;
+    const bayEl = this.shellRefs.dreamSpeakerBay;
     if (!regEl || !bandEl || !valEl || !fillEl) return;
 
     const personaId = s.activeDreamPersonaId || 'phantom_spouse';
@@ -1411,8 +1654,7 @@ export class UIController {
     }
   }
 
-  private syncLayerVisibility(selector: string, isCurrent: boolean): void {
-    const el = this.root.querySelector<HTMLElement>(selector);
+  private syncLayerVisibility(el: HTMLElement | null, isCurrent: boolean): void {
     if (!el) return;
     if (isCurrent) {
       el.classList.remove('hidden', 'is-leaving');
@@ -1425,90 +1667,152 @@ export class UIController {
 
   private syncStateToUI(state: GameState): void {
     this.telemetry.observeMode(state);
+    const refs = this.shellRefs;
 
-    const warmthFill = this.root.querySelector<HTMLElement>('#hud-warmth-fill');
-    const warmthPct = this.root.querySelector<HTMLElement>('#hud-warmth-pct');
-    if (warmthFill) {
-      warmthFill.style.width = `${Math.max(4, Math.min(100, state.humanity))}%`;
-      warmthFill.style.background =
-        state.humanity >= 70 ? '#ebb062' : state.humanity >= 45 ? '#a8b7c6' : '#7ec8e8';
-    }
-    if (warmthPct) warmthPct.textContent = `${state.humanity}%`;
-
-    const dotsEl = this.root.querySelector<HTMLElement>('#hud-survey-dots');
-    if (dotsEl) {
-      const specs = this.optics.getAnomalySpecs();
-      dotsEl.innerHTML = specs
-        .map((sp) => {
-          const dec = state.decodedMinigameTargets.includes(sp.id);
-          const sc = state.scannedAnomalyIds.includes(sp.id);
-          return `<i class="s-dot ${dec ? 'decoded' : sc ? 'scanned' : ''}" title="${sp.label}"></i>`;
-        })
-        .join('');
+    if (state.humanity !== this.lastHumanityPct) {
+      this.lastHumanityPct = state.humanity;
+      if (refs.warmthFill) {
+        refs.warmthFill.style.width = `${Math.max(4, Math.min(100, state.humanity))}%`;
+        refs.warmthFill.style.background =
+          state.humanity >= 70 ? '#ebb062' : state.humanity >= 45 ? '#a8b7c6' : '#7ec8e8';
+      }
+      if (refs.warmthPct) refs.warmthPct.textContent = `${state.humanity}%`;
     }
 
-    this.root.querySelector('#hud-drift-flag')?.classList.toggle('hidden', state.chaosDrift < 35);
-
-    const codexSnap = this.codexView.syncState(state);
-    const codexDot = this.root.querySelector<HTMLElement>('#codex-unread-dot');
-    if (codexDot) {
-      codexDot.textContent = String(codexSnap.totalUnread);
-      codexDot.classList.toggle('hidden', codexSnap.totalUnread <= 0);
+    const scannedSig = state.scannedAnomalyIds.join('|');
+    const decodedSig = state.decodedMinigameTargets.join('|');
+    const surveyDotsSig = `${scannedSig}::${decodedSig}`;
+    if (surveyDotsSig !== this.lastSurveyDotsSig) {
+      this.lastSurveyDotsSig = surveyDotsSig;
+      if (refs.surveyDots) {
+        const specs = this.optics.getAnomalySpecs();
+        refs.surveyDots.innerHTML = specs
+          .map((sp) => {
+            const dec = state.decodedMinigameTargets.includes(sp.id);
+            const sc = state.scannedAnomalyIds.includes(sp.id);
+            return `<i class="s-dot ${dec ? 'decoded' : sc ? 'scanned' : ''}" title="${sp.label}"></i>`;
+          })
+          .join('');
+      }
     }
 
-    const ratio = (state.wavelengthNm - MIN_WAVE) / (MAX_WAVE - MIN_WAVE);
-    const needle = this.root.querySelector<HTMLElement>('#vernier-needle');
-    const waveLabel = this.root.querySelector<HTMLElement>('#wave-label');
-    const track = this.root.querySelector<HTMLElement>('#vernier-track');
-    if (needle) needle.style.left = `${(ratio * 100).toFixed(2)}%`;
-    if (waveLabel) waveLabel.textContent = `${this.wavelengthBandName(state.wavelengthNm)} · ${state.wavelengthNm} nm`;
-    if (track) track.setAttribute('aria-valuenow', String(state.wavelengthNm));
+    const driftElevated = state.chaosDrift >= 35;
+    if (driftElevated !== this.lastDriftElevated) {
+      this.lastDriftElevated = driftElevated;
+      refs.driftFlag?.classList.toggle('hidden', !driftElevated);
+    }
 
-    this.syncLayerVisibility('#boot-screen', state.mode === 'boot');
-    this.syncLayerVisibility('#optics-layer', state.mode === 'waking_3d');
-    this.syncLayerVisibility('#inspect-layer', state.mode === 'target_inspect');
-    this.syncLayerVisibility('#dream-layer', state.mode === 'dream_2d');
+    const prunedSig = state.prunedPersonas.join('|');
+    const codexSig = `${state.mode}|${state.shift}|${state.humanity}|${state.anomalyProgress}|${surveyDotsSig}|${state.proofDossier.length}|${prunedSig}|${state.completedStorylets.join('|')}|${state.codexUnlocks.join('|')}|${Object.entries(state.codexSeenStages).map(([k, v]) => `${k}:${v}`).join('|')}`;
+    if (codexSig !== this.lastCodexSig) {
+      this.lastCodexSig = codexSig;
+      const codexSnap = this.codexView.syncState(state);
+      if (refs.codexUnreadDot) {
+        refs.codexUnreadDot.textContent = String(codexSnap.totalUnread);
+        refs.codexUnreadDot.classList.toggle('hidden', codexSnap.totalUnread <= 0);
+      }
+    }
+
+    if (state.wavelengthNm !== this.lastWavelengthNm) {
+      this.lastWavelengthNm = state.wavelengthNm;
+      const ratio = (state.wavelengthNm - MIN_WAVE) / (MAX_WAVE - MIN_WAVE);
+      if (refs.vernierNeedle) refs.vernierNeedle.style.left = `${(ratio * 100).toFixed(2)}%`;
+      if (refs.waveLabel) refs.waveLabel.textContent = `${this.wavelengthBandName(state.wavelengthNm)} · ${state.wavelengthNm} nm`;
+      if (refs.vernierTrack) refs.vernierTrack.setAttribute('aria-valuenow', String(state.wavelengthNm));
+    }
+
+    const modeChanged = state.mode !== this.lastVisMode;
+    if (modeChanged) {
+      this.lastVisMode = state.mode;
+      if (refs.stage) {
+        refs.stage.dataset.mode = state.mode;
+      }
+      this.syncLayerVisibility(refs.bootScreen, state.mode === 'boot');
+      this.syncLayerVisibility(refs.opticsLayer, state.mode === 'waking_3d');
+      this.syncLayerVisibility(refs.inspectLayer, state.mode === 'target_inspect');
+      this.syncLayerVisibility(refs.dreamLayer, state.mode === 'dream_2d');
+      this.updateZoomTrackHeights();
+
+      this.optics.setActive(state.mode === 'waking_3d');
+      this.showcase.setActive(state.mode === 'target_inspect');
+      this.dream.setActive(state.mode === 'dream_2d');
+    }
 
     if (state.mode === 'waking_3d' && this.lastMode !== 'waking_3d') {
       this.scheduleProactiveComms();
     }
     this.lastMode = state.mode;
 
-    this.syncHumanityRegister(state);
-    this.updateCommsAvatarBay(state);
-    this.updateOverseerAvatarBay(state);
-    this.minigameHost.updateSignalProfile(state.humanity, state.opticalFidelity);
+    const activePersona = state.activeDreamPersonaId || 'phantom_spouse';
+    const personaPruned = state.prunedPersonas.includes(activePersona);
 
-    const dreamRibbon = this.root.querySelector('#dream-ribbon');
-    const caption = this.root.querySelector('#dream-caption');
-    const personaMeta = CHAR_MAP[state.activeDreamPersonaId] ?? CHAR_MAP.phantom_spouse;
-    dreamRibbon?.classList.toggle('audit-active', state.overseerAuditActive);
-    caption?.classList.toggle('audit-mode', state.overseerAuditActive);
-    if (caption) {
-      caption.textContent = state.overseerAuditActive
-        ? 'OVERSEER-1419 · AUDIT ACTIVE'
-        : personaMeta.displayName;
+    if (state.mode === 'dream_2d') {
+      const dreamRegSig = `${state.humanity}|${activePersona}|${personaPruned ? 1 : 0}`;
+      if (modeChanged || dreamRegSig !== this.lastDreamRegSig) {
+        this.lastDreamRegSig = dreamRegSig;
+        this.syncHumanityRegister(state);
+      }
+
+      const dreamCaptionSig = `${state.overseerAuditActive ? 1 : 0}|${activePersona}`;
+      if (modeChanged || dreamCaptionSig !== this.lastDreamCaptionSig) {
+        this.lastDreamCaptionSig = dreamCaptionSig;
+        const personaMeta = CHAR_MAP[activePersona] ?? CHAR_MAP.phantom_spouse;
+        refs.dreamRibbon?.classList.toggle('audit-active', state.overseerAuditActive);
+        refs.dreamCaption?.classList.toggle('audit-mode', state.overseerAuditActive);
+        if (refs.dreamCaption) {
+          refs.dreamCaption.textContent = state.overseerAuditActive
+            ? 'OVERSEER-1419 · AUDIT ACTIVE'
+            : personaMeta.displayName;
+        }
+      }
     }
 
-    this.optics.setParameters(state.wavelengthNm, state.opticalFidelity, state.anomalyProgress);
-    this.optics.setActive(state.mode === 'waking_3d');
+    if (refs.commsPanel && !refs.commsPanel.classList.contains('hidden')) {
+      const commsSig = `${state.humanity}|${state.primarySiblingH}`;
+      if (commsSig !== this.lastCommsBaySig) {
+        this.lastCommsBaySig = commsSig;
+        this.updateCommsAvatarBay(state);
+      }
+    }
 
-    this.showcase.setOpticalFidelity(state.opticalFidelity);
-    this.showcase.setActive(state.mode === 'target_inspect');
+    if (refs.overseerPanel && !refs.overseerPanel.classList.contains('hidden')) {
+      const ovSig = `${state.humanity}|${state.maxHumanity}`;
+      if (ovSig !== this.lastOverseerBaySig) {
+        this.lastOverseerBaySig = ovSig;
+        this.updateOverseerAvatarBay(state);
+      }
+    }
 
-    const activePersona = state.activeDreamPersonaId || 'phantom_spouse';
-    this.dream.setState(
-      state.humanity,
-      state.prunedPersonas.includes(activePersona),
-      state.overseerAuditActive,
-      activePersona
-    );
-    this.dream.setActive(state.mode === 'dream_2d');
+    const mgProfileSig = `${state.humanity}|${state.opticalFidelity.toFixed(2)}|${state.chaosDrift}|${state.overseerSuspicion}`;
+    if (mgProfileSig !== this.lastMgProfileSig) {
+      this.lastMgProfileSig = mgProfileSig;
+      this.minigameHost.updateSignalProfile(state.humanity, state.opticalFidelity);
+    }
+
+    const opticsParamSig = `${state.wavelengthNm}|${state.opticalFidelity.toFixed(2)}|${state.anomalyProgress}`;
+    if (opticsParamSig !== this.lastOpticsParamSig) {
+      this.lastOpticsParamSig = opticsParamSig;
+      this.optics.setParameters(state.wavelengthNm, state.opticalFidelity, state.anomalyProgress);
+    }
+
+    if (state.opticalFidelity !== this.lastOpticsFidelity) {
+      this.lastOpticsFidelity = state.opticalFidelity;
+      this.showcase.setOpticalFidelity(state.opticalFidelity);
+    }
+
+    const dreamStateSig = `${state.humanity}|${personaPruned ? 1 : 0}|${state.overseerAuditActive ? 1 : 0}|${activePersona}`;
+    if (dreamStateSig !== this.lastDreamStateSig) {
+      this.lastDreamStateSig = dreamStateSig;
+      this.dream.setState(
+        state.humanity,
+        personaPruned,
+        state.overseerAuditActive,
+        activePersona
+      );
+    }
 
     this.syncAudioMusic(state);
 
-    const scannedSig = state.scannedAnomalyIds.join('|');
-    const decodedSig = state.decodedMinigameTargets.join('|');
     if (scannedSig !== this.lastScannedSig || decodedSig !== this.lastDecodedSig) {
       this.lastScannedSig = scannedSig;
       this.lastDecodedSig = decodedSig;
@@ -1517,18 +1821,28 @@ export class UIController {
   }
 
   private syncAudioMusic(state: GameState): void {
-    this.audio.updateMood(state.mode, state.humanity, state.overseerAuditActive, state.wavelengthNm);
-    this.audio.syncMusicContext({
-      mode: state.mode,
-      humanity: state.humanity,
-      overseerAuditActive: state.overseerAuditActive,
-      overseerSuspicion: state.overseerSuspicion,
-      chaosDrift: state.chaosDrift,
-      shift: state.shift,
-      activeMinigameId: this.minigameHost.getActiveMinigameId(),
-      activePersonaId: state.activeDreamPersonaId || 'phantom_spouse',
-      prunedPersonas: state.prunedPersonas,
-    });
+    const moodSig = `${state.mode}|${state.humanity}|${state.overseerAuditActive ? 1 : 0}|${state.wavelengthNm}`;
+    if (moodSig !== this.lastAudioMoodSig) {
+      this.lastAudioMoodSig = moodSig;
+      this.audio.updateMood(state.mode, state.humanity, state.overseerAuditActive, state.wavelengthNm);
+    }
+    const activeMgId = this.minigameHost.getActiveMinigameId();
+    const activePersona = state.activeDreamPersonaId || 'phantom_spouse';
+    const musicSig = `${state.mode}|${state.humanity}|${state.overseerAuditActive ? 1 : 0}|${state.overseerSuspicion}|${state.chaosDrift}|${state.shift}|${activeMgId ?? ''}|${activePersona}|${state.prunedPersonas.join('|')}`;
+    if (musicSig !== this.lastMusicCtxSig) {
+      this.lastMusicCtxSig = musicSig;
+      this.audio.syncMusicContext({
+        mode: state.mode,
+        humanity: state.humanity,
+        overseerAuditActive: state.overseerAuditActive,
+        overseerSuspicion: state.overseerSuspicion,
+        chaosDrift: state.chaosDrift,
+        shift: state.shift,
+        activeMinigameId: activeMgId,
+        activePersonaId: activePersona,
+        prunedPersonas: state.prunedPersonas,
+      });
+    }
   }
 
   private createDevBridge(): DevHarnessBridge {
@@ -1731,6 +2045,26 @@ export class UIController {
         this.telemetry.downloadSummary(this.store.getState());
       },
       resetAll: () => this.resetRunState(),
+      getPerfSnapshot: () => {
+        const mode = this.store.getState().mode;
+        const info =
+          mode === 'waking_3d'
+            ? this.optics.getPerfInfo?.()
+            : mode === 'target_inspect'
+              ? this.showcase.getPerfInfo?.()
+              : mode === 'dream_2d'
+                ? this.dream.getPerfInfo?.()
+                : undefined;
+        return {
+          mode,
+          active: info?.active ?? false,
+          calls: info?.calls ?? 0,
+          triangles: info?.triangles ?? 0,
+          geometries: info?.geometries ?? 0,
+          textures: info?.textures ?? 0,
+          dpr: info?.dpr ?? 1,
+        };
+      },
     };
   }
 

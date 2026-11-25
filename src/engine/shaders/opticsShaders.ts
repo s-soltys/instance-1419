@@ -1,19 +1,15 @@
-export const SKY_VERTEX = /* glsl */ `
-varying vec3 vDir;
+export const SKY_BAKE_VERTEX = /* glsl */ `
+varying vec2 vUv;
 void main() {
-  vDir = normalize(position);
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  vUv = uv;
+  gl_Position = vec4(position.xy, 0.0, 1.0);
 }
 `;
 
-export const SKY_FRAGMENT = /* glsl */ `
+export const SKY_BAKE_FRAGMENT = /* glsl */ `
 precision highp float;
 
-varying vec3 vDir;
-uniform float uTime;
-uniform float uWavelengthNorm;   // 0.0 = 200nm (UV/X-ray), 0.225 = Visible, 0.61 = Near-IR, 1.0 = 1800nm (Mid-IR)
-uniform float uOpticalFidelity;  // 0.3..1.0 (higher when pruned)
-uniform float uAnomalyProgress;  // 0.0..1.0
+varying vec2 vUv;
 
 float hash(vec3 p) {
   p = fract(p * 0.3183099 + vec3(0.1, 0.2, 0.3));
@@ -37,13 +33,46 @@ float noise(vec3 x) {
 float fbm(vec3 p) {
   float v = 0.0;
   float a = 0.5;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 4; i++) {
     v += a * noise(p);
     p = p * 2.04 + vec3(1.7, 9.2, 4.3);
     a *= 0.5;
   }
   return v;
 }
+
+void main() {
+  float lon = (vUv.x - 0.5) * 6.28318530718;
+  float lat = (vUv.y - 0.5) * 3.14159265359;
+  float clat = cos(lat);
+  vec3 d = normalize(vec3(clat * cos(lon), sin(lat), clat * sin(lon)));
+
+  float cloud1 = fbm(d * 4.2);
+  float cloud2 = fbm(d * 9.5 + vec3(2.1, -1.4, 0.8));
+  float filament = pow(1.0 - abs(fbm(d * 6.8 + vec3(-1.3, 3.1, 2.2)) * 2.0 - 1.0), 3.0);
+  float uvKnots = pow(fbm(d * 7.2 + vec3(0.5, 2.4, -1.1)), 3.2);
+
+  gl_FragColor = vec4(cloud1, cloud2, filament, uvKnots);
+}
+`;
+
+export const SKY_VERTEX = /* glsl */ `
+varying vec3 vDir;
+void main() {
+  vDir = normalize(position);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+export const SKY_FRAGMENT = /* glsl */ `
+precision highp float;
+
+varying vec3 vDir;
+uniform sampler2D uSkyNoiseTex;
+uniform float uTime;
+uniform float uWavelengthNorm;   // 0.0 = 200nm (UV/X-ray), 0.225 = Visible, 0.61 = Near-IR, 1.0 = 1800nm (Mid-IR)
+uniform float uOpticalFidelity;  // 0.3..1.0 (higher when pruned)
+uniform float uAnomalyProgress;  // 0.0..1.0
 
 void main() {
   vec3 d = normalize(vDir);
@@ -59,9 +88,15 @@ void main() {
   float band = exp(-planeDist * 5.2);
   float bulge = exp(-length(d - normalize(vec3(0.32, -0.18, -0.93))) * 3.8);
 
-  float cloud1 = fbm(d * 4.2);
-  float cloud2 = fbm(d * 9.5 + vec3(2.1, -1.4, 0.8));
-  float filament = pow(1.0 - abs(fbm(d * 6.8 + vec3(-1.3, 3.1, 2.2)) * 2.0 - 1.0), 3.0);
+  vec2 eqUv = vec2(
+    atan(d.z, d.x) * 0.15915494309 + 0.5,
+    asin(clamp(d.y, -1.0, 1.0)) * 0.31830988618 + 0.5
+  );
+  vec4 nTex = texture2D(uSkyNoiseTex, eqUv);
+  float cloud1 = nTex.r;
+  float cloud2 = nTex.g;
+  float filament = nTex.b;
+  float uvKnots = nTex.a;
 
   // Dark dust lane blocks Visible light, turns transparent in Near-IR, and GLOWS in Mid-IR!
   float dustLane = smoothstep(0.38, 0.72, cloud2) * exp(-planeDist * 11.0);
@@ -73,12 +108,13 @@ void main() {
   vec3 col = voidUV * uvWeight + voidVis * visWeight + voidNearIR * nearIrWeight + voidMidIR * midIrWeight;
 
   // 1. UV / X-RAY: Violent sapphire-violet pulsar shocks & hot ionized knots
-  vec3 pulsarDir = normalize(vec3(-0.63, -0.31, -0.71));
-  float dPulsar = length(d - pulsarDir);
-  float shockRing = exp(-pow(abs(dPulsar - 0.12) * 34.0, 2.0)) * 0.55 + exp(-dPulsar * 18.0) * 0.45;
-  float uvKnots = pow(fbm(d * 7.2 + vec3(0.5, 2.4, -1.1)), 3.2);
-  col += vec3(0.26, 0.52, 0.98) * uvKnots * uvWeight * 0.52;
-  col += vec3(0.48, 0.72, 1.0) * shockRing * uvWeight * 0.55;
+  if (uvWeight > 0.005) {
+    vec3 pulsarDir = normalize(vec3(-0.63, -0.31, -0.71));
+    float dPulsar = length(d - pulsarDir);
+    float shockRing = exp(-pow(abs(dPulsar - 0.12) * 34.0, 2.0)) * 0.55 + exp(-dPulsar * 18.0) * 0.45;
+    col += vec3(0.26, 0.52, 0.98) * uvKnots * uvWeight * 0.52;
+    col += vec3(0.48, 0.72, 1.0) * shockRing * uvWeight * 0.55;
+  }
 
   // 2. VISIBLE: Rich sapphire-gold Milky Way with OPAQUE dark dust lanes
   vec3 mwVis = mix(vec3(0.05, 0.09, 0.17), vec3(0.17, 0.14, 0.11), cloud1);
@@ -93,7 +129,7 @@ void main() {
   col += dustGlowCol * (filament * band * 1.15 + dustLane * 0.72) * midIrWeight;
 
   // Subtle distant unresolved dust wisps
-  float neb = pow(fbm(d * 5.6 + vec3(4.0, 1.2, -3.0)), 3.6);
+  float neb = pow(clamp(cloud1 * 0.58 + cloud2 * 0.42, 0.0, 1.0), 3.4);
   vec3 nebTint = mix(vec3(0.08, 0.16, 0.34), vec3(0.28, 0.11, 0.07), uWavelengthNorm);
   col += nebTint * neb * 0.32;
 

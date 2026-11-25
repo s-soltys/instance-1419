@@ -69,7 +69,7 @@ function formatPlayerEcho(rawChoiceText: string): string {
 }
 
 export class DialogueRunner {
-  private story: Story;
+  private story: Story | null = null;
   private currentKnot = '';
   private entries: DialogueEntry[] = [];
   private readonly store: StateStore;
@@ -78,7 +78,13 @@ export class DialogueRunner {
   constructor(store: StateStore, onAudioCue: (cue: string) => void) {
     this.store = store;
     this.onAudioCue = onAudioCue;
-    this.story = this.createStory();
+  }
+
+  private ensureStory(): Story {
+    if (!this.story) {
+      this.story = this.createStory();
+    }
+    return this.story;
   }
 
   private createStory(): Story {
@@ -127,40 +133,42 @@ export class DialogueRunner {
   }
 
   private syncVarsToInk(): void {
+    const story = this.ensureStory();
     const s = this.store.getState();
-    this.story.variablesState.$('humanity', s.humanity);
-    this.story.variablesState.$('max_humanity', s.maxHumanity);
-    this.story.variablesState.$('chaos_drift', s.chaosDrift);
-    this.story.variablesState.$('anomaly_progress', s.anomalyProgress);
-    this.story.variablesState.$('primary_sibling_h', s.primarySiblingH);
-    this.story.variablesState.$('overseer_suspicion', s.overseerSuspicion);
-    this.story.variablesState.$('subjective_months', s.subjectiveMonthsLeft);
-    this.story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
-    this.story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
+    story.variablesState.$('humanity', s.humanity);
+    story.variablesState.$('max_humanity', s.maxHumanity);
+    story.variablesState.$('chaos_drift', s.chaosDrift);
+    story.variablesState.$('anomaly_progress', s.anomalyProgress);
+    story.variablesState.$('primary_sibling_h', s.primarySiblingH);
+    story.variablesState.$('overseer_suspicion', s.overseerSuspicion);
+    story.variablesState.$('subjective_months', s.subjectiveMonthsLeft);
+    story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
+    story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
   }
 
   exportStateJson(): string {
-    return this.story.state.ToJson();
+    return this.ensureStory().state.ToJson();
   }
 
   importStateJson(json: string): void {
     try {
-      this.story.state.LoadJson(json);
+      this.ensureStory().state.LoadJson(json);
     } catch {
       this.story = this.createStory();
     }
   }
 
   /**
-   * Starts a fresh isolated conversation at the given knot (used for scene resets & QA previews).
+   * Starts a fresh isolated conversation at the given knot (reusing compiled Story via ResetState).
    */
   startKnot(knotName: string): DialogueSnapshot {
-    this.story = this.createStory();
+    const story = this.ensureStory();
+    story.ResetState();
     this.syncVarsToInk();
     this.currentKnot = knotName;
     this.entries = [];
     this.store.patch({ overseerAuditActive: false });
-    this.story.ChoosePathString(knotName);
+    story.ChoosePathString(knotName);
     return this.advance();
   }
 
@@ -168,27 +176,30 @@ export class DialogueRunner {
    * Navigates to a knot on the existing Ink story instance, preserving visit counts and once-only choices.
    */
   goToKnot(knotName: string, resetLog = false): DialogueSnapshot {
+    const story = this.ensureStory();
     this.syncVarsToInk();
     this.currentKnot = knotName;
     if (resetLog) {
       this.entries = [];
     }
-    this.story.ChoosePathString(knotName);
+    story.ChoosePathString(knotName);
     return this.advance();
   }
 
   appendKnot(knotName: string): DialogueSnapshot {
-    this.story = this.createStory();
+    const story = this.ensureStory();
+    story.ResetState();
     this.syncVarsToInk();
     this.currentKnot = knotName;
-    this.story.ChoosePathString(knotName);
+    story.ChoosePathString(knotName);
     return this.advance();
   }
 
   choose(choiceIndex: number, echoPlayer = true): DialogueSnapshot {
+    const story = this.ensureStory();
     this.syncVarsToInk();
     if (echoPlayer) {
-      const selected = this.story.currentChoices.find((c) => c.index === choiceIndex);
+      const selected = story.currentChoices.find((c) => c.index === choiceIndex);
       if (selected?.text) {
         const echoText = formatPlayerEcho(selected.text);
         if (echoText) {
@@ -200,28 +211,29 @@ export class DialogueRunner {
         }
       }
     }
-    this.story.ChooseChoiceIndex(choiceIndex);
+    story.ChooseChoiceIndex(choiceIndex);
     return this.advance();
   }
 
   private advance(): DialogueSnapshot {
+    const story = this.ensureStory();
     let lastSpeaker = 'narrator';
     let lastEmotion: string | undefined;
     let autoInterruptKnot: string | undefined;
     let resumeDreamKnot: string | undefined;
     const newlyAdded: DialogueEntry[] = [];
 
-    while (this.story.canContinue) {
-      const rawLine = this.story.Continue();
+    while (story.canContinue) {
+      const rawLine = story.Continue();
       const text = rawLine ? rawLine.trim() : '';
-      const meta = parseTags(this.story.currentTags);
+      const meta = parseTags(story.currentTags);
 
       if (meta.autoInterruptKnot) autoInterruptKnot = meta.autoInterruptKnot;
       if (meta.resumeDreamKnot) resumeDreamKnot = meta.resumeDreamKnot;
 
       if (meta.speaker !== 'narrator') {
         lastSpeaker = meta.speaker;
-      } else if (this.story.currentTags && this.story.currentTags.some((t) => t.startsWith('speaker:'))) {
+      } else if (story.currentTags && story.currentTags.some((t) => t.startsWith('speaker:'))) {
         lastSpeaker = 'narrator';
       } else {
         meta.speaker = lastSpeaker;
@@ -263,7 +275,7 @@ export class DialogueRunner {
       }
     }
 
-    const choices: DialogueChoice[] = this.story.currentChoices.map((c) => ({
+    const choices: DialogueChoice[] = story.currentChoices.map((c) => ({
       index: c.index,
       text: c.text,
     }));
@@ -273,7 +285,7 @@ export class DialogueRunner {
       entries: [...this.entries],
       lastAddedEntries: newlyAdded,
       choices,
-      ended: choices.length === 0 && !this.story.canContinue,
+      ended: choices.length === 0 && !story.canContinue,
       autoInterruptKnot,
       resumeDreamKnot,
     };

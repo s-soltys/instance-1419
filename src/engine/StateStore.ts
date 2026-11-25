@@ -158,6 +158,14 @@ export class StateStore {
   private state: GameState;
   private listeners = new Set<StateListener>();
   private shiftListeners = new Set<StatusShiftListener>();
+  private saveTimerId: ReturnType<typeof setTimeout> | null = null;
+  private dirtySave = false;
+  private readonly onPageHideBound = () => this.flushSave();
+  private readonly onVisibilityChangeBound = () => {
+    if (typeof document !== 'undefined' && document.hidden) {
+      this.flushSave();
+    }
+  };
 
   constructor() {
     let saved = platform.loadState<Partial<GameState>>(STORAGE_KEY);
@@ -172,6 +180,12 @@ export class StateStore {
       }
     }
     this.state = migrateSavedState(saved);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('pagehide', this.onPageHideBound);
+    }
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', this.onVisibilityChangeBound);
+    }
   }
 
   getState(): GameState {
@@ -195,9 +209,44 @@ export class StateStore {
     }
   }
 
+  private scheduleSave(): void {
+    this.dirtySave = true;
+    if (this.saveTimerId !== null) {
+      clearTimeout(this.saveTimerId);
+    }
+    this.saveTimerId = setTimeout(() => {
+      this.saveTimerId = null;
+      if (this.dirtySave) {
+        this.dirtySave = false;
+        platform.saveState(STORAGE_KEY, this.state);
+      }
+    }, 250);
+  }
+
+  flushSave(): void {
+    if (this.saveTimerId !== null) {
+      clearTimeout(this.saveTimerId);
+      this.saveTimerId = null;
+    }
+    if (this.dirtySave) {
+      this.dirtySave = false;
+      platform.saveState(STORAGE_KEY, this.state);
+    }
+  }
+
+  dispose(): void {
+    this.flushSave();
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('pagehide', this.onPageHideBound);
+    }
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.onVisibilityChangeBound);
+    }
+  }
+
   private commit(next: GameState): void {
     this.state = next;
-    platform.saveState(STORAGE_KEY, this.state);
+    this.scheduleSave();
     for (const listener of this.listeners) {
       listener(this.state);
     }
@@ -547,10 +596,19 @@ export class StateStore {
   }
 
   reset(): void {
+    if (this.saveTimerId !== null) {
+      clearTimeout(this.saveTimerId);
+      this.saveTimerId = null;
+    }
+    this.dirtySave = false;
     platform.clearState(STORAGE_KEY);
     for (const legacyKey of LEGACY_STORAGE_KEYS) {
       platform.clearState(legacyKey);
     }
-    this.commit(createInitialState());
+    this.state = createInitialState();
+    platform.saveState(STORAGE_KEY, this.state);
+    for (const listener of this.listeners) {
+      listener(this.state);
+    }
   }
 }

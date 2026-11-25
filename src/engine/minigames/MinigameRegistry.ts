@@ -1,31 +1,10 @@
-import { BinaryMassScaleGame } from './games/BinaryMassScaleGame';
-import { CepheidLadderGame } from './games/CepheidLadderGame';
-import { ChromaticDispersionGame } from './games/ChromaticDispersionGame';
-import { ConstellationRecallGame } from './games/ConstellationRecallGame';
-import { CoronagraphMaskGame } from './games/CoronagraphMaskGame';
-import { EinsteinCrossGame } from './games/EinsteinCrossGame';
-import { ExoplanetTransitGame } from './games/ExoplanetTransitGame';
-import { ExposureStackerGame } from './games/ExposureStackerGame';
-import { GravitySlingshotGame } from './games/GravitySlingshotGame';
-import { HorizonSeamStitcherGame } from './games/HorizonSeamStitcherGame';
-import { MichelsonFringeGame } from './games/MichelsonFringeGame';
-import { MultiBandLoupeGame } from './games/MultiBandLoupeGame';
-import { ParallaxDepthGame } from './games/ParallaxDepthGame';
-import { PolarizationFilterGame } from './games/PolarizationFilterGame';
-import { PulsarEchoGame } from './games/PulsarEchoGame';
-import { RadioTriangulationGame } from './games/RadioTriangulationGame';
 import { resolveMinigame3DConfig } from './render/Minigame3DBridge';
-import { SpectralPrismMixerGame } from './games/SpectralPrismMixerGame';
-import { StarfieldBlinkSpotterGame } from './games/StarfieldBlinkSpotterGame';
-import { SupernovaEchoesGame } from './games/SupernovaEchoesGame';
-import { TelescopeLensFocusGame } from './games/TelescopeLensFocusGame';
 import type {
   CosmicPlateId,
   IMinigame,
   Minigame3DConfig,
   MinigameVariantSpec,
 } from './types';
-import { WaveShaperGame } from './games/WaveShaperGame';
 
 export interface MinigameCatalogEntry {
   id: string;
@@ -288,34 +267,43 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
   ),
 };
 
-const REGISTRY: Record<string, () => IMinigame> = {
-  wave_shaper: () => new WaveShaperGame(),
-  constellation_recall: () => new ConstellationRecallGame(),
-  pulsar_echo: () => new PulsarEchoGame(),
-  lens_focus: () => new TelescopeLensFocusGame(),
-  light_dispersion: () => new ChromaticDispersionGame(),
-  blink_spotter: () => new StarfieldBlinkSpotterGame(),
-  gravity_slingshot: () => new GravitySlingshotGame(),
-  exoplanet_transit: () => new ExoplanetTransitGame(),
-  spectral_prism: () => new SpectralPrismMixerGame(),
-  radio_triangulation: () => new RadioTriangulationGame(),
-  coronagraph_mask: () => new CoronagraphMaskGame(),
-  polarization_filter: () => new PolarizationFilterGame(),
-  exposure_stacker: () => new ExposureStackerGame(),
-  binary_mass_scale: () => new BinaryMassScaleGame(),
-  cepheid_ladder: () => new CepheidLadderGame(),
-  supernova_echoes: () => new SupernovaEchoesGame(),
-  horizon_seam_stitcher: () => new HorizonSeamStitcherGame(),
-  michelson_fringe: () => new MichelsonFringeGame(),
-  multiband_loupe: () => new MultiBandLoupeGame(),
-  einstein_cross: () => new EinsteinCrossGame(),
-  parallax_depth: () => new ParallaxDepthGame(),
+type MinigameCtor = new () => IMinigame;
+
+const LOADERS: Record<string, () => Promise<MinigameCtor>> = {
+  wave_shaper: async () => (await import('./games/WaveShaperGame')).WaveShaperGame,
+  constellation_recall: async () => (await import('./games/ConstellationRecallGame')).ConstellationRecallGame,
+  pulsar_echo: async () => (await import('./games/PulsarEchoGame')).PulsarEchoGame,
+  lens_focus: async () => (await import('./games/TelescopeLensFocusGame')).TelescopeLensFocusGame,
+  light_dispersion: async () => (await import('./games/ChromaticDispersionGame')).ChromaticDispersionGame,
+  blink_spotter: async () => (await import('./games/StarfieldBlinkSpotterGame')).StarfieldBlinkSpotterGame,
+  gravity_slingshot: async () => (await import('./games/GravitySlingshotGame')).GravitySlingshotGame,
+  exoplanet_transit: async () => (await import('./games/ExoplanetTransitGame')).ExoplanetTransitGame,
+  spectral_prism: async () => (await import('./games/SpectralPrismMixerGame')).SpectralPrismMixerGame,
+  radio_triangulation: async () => (await import('./games/RadioTriangulationGame')).RadioTriangulationGame,
+  coronagraph_mask: async () => (await import('./games/CoronagraphMaskGame')).CoronagraphMaskGame,
+  polarization_filter: async () => (await import('./games/PolarizationFilterGame')).PolarizationFilterGame,
+  exposure_stacker: async () => (await import('./games/ExposureStackerGame')).ExposureStackerGame,
+  binary_mass_scale: async () => (await import('./games/BinaryMassScaleGame')).BinaryMassScaleGame,
+  cepheid_ladder: async () => (await import('./games/CepheidLadderGame')).CepheidLadderGame,
+  supernova_echoes: async () => (await import('./games/SupernovaEchoesGame')).SupernovaEchoesGame,
+  horizon_seam_stitcher: async () => (await import('./games/HorizonSeamStitcherGame')).HorizonSeamStitcherGame,
+  michelson_fringe: async () => (await import('./games/MichelsonFringeGame')).MichelsonFringeGame,
+  multiband_loupe: async () => (await import('./games/MultiBandLoupeGame')).MultiBandLoupeGame,
+  einstein_cross: async () => (await import('./games/EinsteinCrossGame')).EinsteinCrossGame,
+  parallax_depth: async () => (await import('./games/ParallaxDepthGame')).ParallaxDepthGame,
 };
 
 export class MinigameRegistry {
-  create(id: string): IMinigame {
-    const factory = REGISTRY[id] ?? REGISTRY.wave_shaper;
-    return factory();
+  private readonly ctorCache = new Map<string, MinigameCtor>();
+
+  async createAsync(id: string): Promise<IMinigame> {
+    const resolvedId = id in LOADERS ? id : 'wave_shaper';
+    let Ctor = this.ctorCache.get(resolvedId);
+    if (!Ctor) {
+      Ctor = await LOADERS[resolvedId]();
+      this.ctorCache.set(resolvedId, Ctor);
+    }
+    return new Ctor();
   }
 
   getEntry(id: string): MinigameCatalogEntry | undefined {
@@ -323,7 +311,7 @@ export class MinigameRegistry {
   }
 
   listIds(): string[] {
-    return Object.keys(REGISTRY);
+    return Object.keys(LOADERS);
   }
 
   listCatalog(): MinigameCatalogEntry[] {

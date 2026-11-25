@@ -22,6 +22,7 @@ export class AudioEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private ambienceGain: GainNode | null = null;
+  private prebakedMusicGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;
   private voiceBus: GainNode | null = null;
   private reverbNode: ConvolverNode | null = null;
@@ -108,13 +109,17 @@ export class AudioEngine {
       this.ambienceGain = ctx.createGain();
       this.ambienceGain.gain.value = this.effectiveAmbienceGain();
 
+      // Pre-generated Lyria tracks already carry baked hall reverb; route direct to masterGain
+      this.prebakedMusicGain = ctx.createGain();
+      this.prebakedMusicGain.gain.value = this.effectiveAmbienceGain();
+
       this.sfxGain = ctx.createGain();
       this.sfxGain.gain.value = this.effectiveSfxGain();
 
       this.voiceBus = ctx.createGain();
       this.voiceBus.gain.value = 1.0;
 
-      // Algorithmic 3.4s stereo reverb for cosmic & painterly depth
+      // Algorithmic 3.4s stereo reverb for procedural cosmic & SFX depth
       this.reverbNode = ctx.createConvolver();
       this.reverbNode.buffer = this.createImpulseResponse(ctx, 3.4, 2.7);
       this.reverbGain = ctx.createGain();
@@ -122,6 +127,7 @@ export class AudioEngine {
 
       this.ambienceGain.connect(this.masterGain);
       this.ambienceGain.connect(this.reverbNode);
+      this.prebakedMusicGain.connect(this.masterGain);
       this.sfxGain.connect(this.masterGain);
       this.sfxGain.connect(this.reverbNode);
       this.voiceBus.connect(this.masterGain);
@@ -132,7 +138,7 @@ export class AudioEngine {
       comp.connect(ctx.destination);
 
       this.initContinuousBeds(ctx);
-      this.music.attach(ctx, this.ambienceGain, (prebaked) => {
+      this.music.attach(ctx, this.prebakedMusicGain, (prebaked) => {
         this.prebakedMusicActive = prebaked;
         this.applyBedMood();
       });
@@ -189,9 +195,12 @@ export class AudioEngine {
 
   setVoiceDucking(ducking: boolean): void {
     this.voiceDucking = ducking;
-    if (!this.ctx || !this.ambienceGain) return;
+    if (!this.ctx) return;
     const now = this.ctx.currentTime;
-    this.ambienceGain.gain.setTargetAtTime(this.effectiveAmbienceGain(), now, ducking ? 0.08 : 0.28);
+    const gainVal = this.effectiveAmbienceGain();
+    const tc = ducking ? 0.08 : 0.28;
+    this.ambienceGain?.gain.setTargetAtTime(gainVal, now, tc);
+    this.prebakedMusicGain?.gain.setTargetAtTime(gainVal, now, tc);
   }
 
   private createImpulseResponse(ctx: AudioContext, durationSec: number, decay: number): AudioBuffer {
@@ -284,71 +293,77 @@ export class AudioEngine {
     this.noiseFilter.connect(this.noiseGain);
     this.noiseGain.connect(this.ambienceGain!);
     noiseSrc.start();
+  }
 
-    // 3. Overseer sterile clinical audit hum (activates during dream audits)
-    this.auditHumOsc = ctx.createOscillator();
+  private ensureAuditHum(): void {
+    if (!this.ctx || !this.ambienceGain || this.auditHumOsc) return;
+    this.auditHumOsc = this.ctx.createOscillator();
     this.auditHumOsc.type = 'sine';
     this.auditHumOsc.frequency.value = 120;
-    this.auditHumGain = ctx.createGain();
+    this.auditHumGain = this.ctx.createGain();
     this.auditHumGain.gain.value = 0.0001;
     this.auditHumOsc.connect(this.auditHumGain);
-    this.auditHumGain.connect(this.ambienceGain!);
+    this.auditHumGain.connect(this.ambienceGain);
     this.auditHumOsc.start();
+  }
 
-    // 4. Continuous live optical probing / photon-integration carrier signal
-    this.probeOsc = ctx.createOscillator();
+  private ensureProbeCarrier(): void {
+    if (!this.ctx || !this.sfxGain || this.probeOsc) return;
+    this.probeOsc = this.ctx.createOscillator();
     this.probeOsc.type = 'sine';
     this.probeOsc.frequency.value = 293.66; // D4
 
-    this.probeHarmonicOsc = ctx.createOscillator();
+    this.probeHarmonicOsc = this.ctx.createOscillator();
     this.probeHarmonicOsc.type = 'triangle';
     this.probeHarmonicOsc.frequency.value = 440.0; // A4
 
-    this.probeGain = ctx.createGain();
+    this.probeGain = this.ctx.createGain();
     this.probeGain.gain.value = 0.0001;
 
-    const probeFilter = ctx.createBiquadFilter();
+    const probeFilter = this.ctx.createBiquadFilter();
     probeFilter.type = 'bandpass';
     probeFilter.frequency.value = 720;
     probeFilter.Q.value = 2.5;
 
-    const harmGain = ctx.createGain();
+    const harmGain = this.ctx.createGain();
     harmGain.gain.value = 0.35;
 
     this.probeOsc.connect(probeFilter);
     this.probeHarmonicOsc.connect(harmGain);
     harmGain.connect(probeFilter);
     probeFilter.connect(this.probeGain);
-    this.probeGain.connect(this.sfxGain!);
+    this.probeGain.connect(this.sfxGain);
 
     this.probeOsc.start();
     this.probeHarmonicOsc.start();
+  }
 
-    // 5. Stereo Instrument Beat Synth (Fourier / Lens / Parallax / Matrix acoustic lock)
-    this.beatOscA = ctx.createOscillator();
+  private ensureBeatSynth(): void {
+    if (!this.ctx || !this.sfxGain || this.beatOscA) return;
+    this.beatOscA = this.ctx.createOscillator();
     this.beatOscA.type = 'sine';
     this.beatOscA.frequency.value = 220;
 
-    this.beatOscB = ctx.createOscillator();
+    this.beatOscB = this.ctx.createOscillator();
     this.beatOscB.type = 'sine';
     this.beatOscB.frequency.value = 224;
 
-    this.beatHarmOsc = ctx.createOscillator();
+    this.beatHarmOsc = this.ctx.createOscillator();
     this.beatHarmOsc.type = 'triangle';
     this.beatHarmOsc.frequency.value = 330;
 
-    this.beatHarmGain = ctx.createGain();
+    this.beatHarmGain = this.ctx.createGain();
     this.beatHarmGain.gain.value = 0.25;
 
-    this.beatFilter = ctx.createBiquadFilter();
+    this.beatFilter = this.ctx.createBiquadFilter();
     this.beatFilter.type = 'lowpass';
     this.beatFilter.frequency.value = 1100;
     this.beatFilter.Q.value = 1.4;
 
-    this.beatPanner = ctx.createStereoPanner();
+    this.beatPanner = this.ctx.createStereoPanner();
     this.beatPanner.pan.value = 0;
 
-    this.beatGain = ctx.createGain();
+    this.beatGain = this.ctx.createGain();
     this.beatGain.gain.value = 0.0001;
 
     this.beatOscA.connect(this.beatFilter);
@@ -357,24 +372,26 @@ export class AudioEngine {
     this.beatHarmGain.connect(this.beatFilter);
     this.beatFilter.connect(this.beatPanner);
     this.beatPanner.connect(this.beatGain);
-    this.beatGain.connect(this.sfxGain!);
+    this.beatGain.connect(this.sfxGain);
 
     this.beatOscA.start();
     this.beatOscB.start();
     this.beatHarmOsc.start();
+  }
 
-    // 6. Overclock Watchdog low tension bed
-    this.watchdogOsc = ctx.createOscillator();
+  private ensureWatchdog(): void {
+    if (!this.ctx || !this.sfxGain || this.watchdogOsc) return;
+    this.watchdogOsc = this.ctx.createOscillator();
     this.watchdogOsc.type = 'sawtooth';
     this.watchdogOsc.frequency.value = 62;
-    const wdFilter = ctx.createBiquadFilter();
+    const wdFilter = this.ctx.createBiquadFilter();
     wdFilter.type = 'lowpass';
     wdFilter.frequency.value = 190;
-    this.watchdogGain = ctx.createGain();
+    this.watchdogGain = this.ctx.createGain();
     this.watchdogGain.gain.value = 0.0001;
     this.watchdogOsc.connect(wdFilter);
     wdFilter.connect(this.watchdogGain);
-    this.watchdogGain.connect(this.sfxGain!);
+    this.watchdogGain.connect(this.sfxGain);
     this.watchdogOsc.start();
   }
 
@@ -525,8 +542,12 @@ export class AudioEngine {
         0.05
       );
     }
+    const ambVal = this.effectiveAmbienceGain();
     if (this.ambienceGain) {
-      this.ambienceGain.gain.setTargetAtTime(this.effectiveAmbienceGain(), now, 0.05);
+      this.ambienceGain.gain.setTargetAtTime(ambVal, now, 0.05);
+    }
+    if (this.prebakedMusicGain) {
+      this.prebakedMusicGain.gain.setTargetAtTime(ambVal, now, 0.05);
     }
     if (this.sfxGain) {
       this.sfxGain.gain.setTargetAtTime(this.effectiveSfxGain(), now, 0.05);
@@ -553,7 +574,6 @@ export class AudioEngine {
       !this.fifthOsc ||
       !this.bedFilter ||
       !this.bedGain ||
-      !this.auditHumGain ||
       !this.noiseGain ||
       !this.noiseFilter
     ) {
@@ -572,7 +592,7 @@ export class AudioEngine {
       this.bedGain.gain.setTargetAtTime(0.065 * prebakedScale, now, 0.3);
       this.noiseFilter.frequency.setTargetAtTime(240, now, 0.4);
       this.noiseGain.gain.setTargetAtTime(0.018, now, 0.3);
-      this.auditHumGain.gain.setTargetAtTime(0.0001, now, 0.25);
+      this.auditHumGain?.gain.setTargetAtTime(0.0001, now, 0.25);
     } else if (this.mode === 'waking_3d' || this.mode === 'target_inspect') {
       // Deep space D2/A2 observatory drone subtly shifting with spectral wavelength
       this.subOsc.frequency.setTargetAtTime(73.42, now, 0.5);
@@ -581,7 +601,7 @@ export class AudioEngine {
       this.bedGain.gain.setTargetAtTime(0.11 * prebakedScale, now, 0.45);
       this.noiseFilter.frequency.setTargetAtTime(320 + waveNorm * 420, now, 0.35);
       this.noiseGain.gain.setTargetAtTime(0.022, now, 0.4);
-      this.auditHumGain.gain.setTargetAtTime(0.0001, now, 0.25);
+      this.auditHumGain?.gain.setTargetAtTime(0.0001, now, 0.25);
     } else {
       // 2D Dreamscape: warm F2/C3 oil warmth at high H% -> cool sterile higher bed at low H%
       const duck = this.overseerActive ? 0.32 : 1.0;
@@ -591,7 +611,10 @@ export class AudioEngine {
       this.bedGain.gain.setTargetAtTime((0.085 + 0.055 * hNorm) * duck * prebakedScale, now, 0.45);
       this.noiseFilter.frequency.setTargetAtTime(280 + (1 - hNorm) * 900, now, 0.4);
       this.noiseGain.gain.setTargetAtTime(0.014 + (1 - hNorm) * 0.024, now, 0.4);
-      this.auditHumGain.gain.setTargetAtTime(
+      if (this.overseerActive) {
+        this.ensureAuditHum();
+      }
+      this.auditHumGain?.gain.setTargetAtTime(
         this.overseerActive ? (this.prebakedMusicActive ? 0.018 : 0.048) : 0.0001,
         now,
         0.22
@@ -604,19 +627,22 @@ export class AudioEngine {
    * while aligning with a deep-field anomaly target.
    */
   updateProbeSignal(alignment: number, wavelengthMatch: number, lockProgress: number): void {
-    if (!this.ctx || !this.probeOsc || !this.probeHarmonicOsc || !this.probeGain) return;
+    if (!this.ctx) return;
     const now = this.ctx.currentTime;
 
     if (this.mode !== 'waking_3d' || this.settings.muted) {
-      this.probeGain.gain.setTargetAtTime(0.0001, now, 0.12);
+      this.probeGain?.gain.setTargetAtTime(0.0001, now, 0.12);
       return;
     }
 
     const strength = alignment * (0.25 + 0.75 * wavelengthMatch);
     if (strength < 0.22) {
-      this.probeGain.gain.setTargetAtTime(0.0001, now, 0.15);
+      this.probeGain?.gain.setTargetAtTime(0.0001, now, 0.15);
       return;
     }
+
+    this.ensureProbeCarrier();
+    if (!this.probeOsc || !this.probeHarmonicOsc || !this.probeGain) return;
 
     // Gentle rhythmic pulse speeding up as photon integration approaches lock
     const pulseHz = 1.6 + lockProgress * 4.5;
@@ -879,8 +905,14 @@ export class AudioEngine {
   }
 
   updateBeatSynth(params: BeatSynthParams): void {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    if (this.settings.muted || this.ctx.state !== 'running') {
+      this.beatGain?.gain.setTargetAtTime(0.0001, now, 0.08);
+      return;
+    }
+    this.ensureBeatSynth();
     if (
-      !this.ctx ||
       !this.beatOscA ||
       !this.beatOscB ||
       !this.beatHarmOsc ||
@@ -889,11 +921,6 @@ export class AudioEngine {
       !this.beatPanner ||
       !this.beatGain
     ) {
-      return;
-    }
-    const now = this.ctx.currentTime;
-    if (this.settings.muted || this.ctx.state !== 'running') {
-      this.beatGain.gain.setTargetAtTime(0.0001, now, 0.08);
       return;
     }
     const base = 196 + params.harmonicLock * 98;
@@ -946,12 +973,14 @@ export class AudioEngine {
   }
 
   setWatchdogBed(level: number): void {
-    if (!this.ctx || !this.watchdogGain || !this.watchdogOsc) return;
+    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     if (this.settings.muted || level <= 0.02) {
-      this.watchdogGain.gain.setTargetAtTime(0.0001, now, 0.06);
+      this.watchdogGain?.gain.setTargetAtTime(0.0001, now, 0.06);
       return;
     }
+    this.ensureWatchdog();
+    if (!this.watchdogGain || !this.watchdogOsc) return;
     const clamped = Math.max(0, Math.min(1, level));
     this.watchdogOsc.frequency.setTargetAtTime(58 + clamped * 44, now, 0.05);
     this.watchdogGain.gain.setTargetAtTime(clamped * 0.055, now, 0.06);

@@ -72,7 +72,7 @@ export interface HybridHMix {
 
 export const MUSIC_CATALOG = musicCatalogJson as unknown as MusicCatalog;
 
-const MAX_BUFFER_CACHE = 8;
+export const MAX_BUFFER_CACHE = 3;
 
 function clamp01(v: number): number {
   return Math.max(0, Math.min(1, v));

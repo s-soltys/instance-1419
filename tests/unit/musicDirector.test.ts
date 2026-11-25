@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   computeHybridHMix,
+  MAX_BUFFER_CACHE,
   MUSIC_CATALOG,
   resolveMusicCueId,
   type MusicContext,
@@ -117,5 +118,9 @@ describe('MusicDirector catalog integrity & Hybrid H% routing', () => {
     expect(cold.highpassHz).toBeGreaterThan(warm.highpassHz + 180);
     // Pruning the active persona immediately pushes the frost bed high even if global H% was mid-high
     expect(pruned.coldGain).toBeGreaterThan(0.65);
+  });
+
+  it('caps decoded MusicDirector PCM buffer cache at 3 slots to bound mobile/WebGL RAM', () => {
+    expect(MAX_BUFFER_CACHE).toBe(3);
   });
 });

@@ -140,6 +140,7 @@ export function createMockShowcaseScene() {
     triggerDeparturePullOut: vi.fn(),
     zoomBy: vi.fn(),
     resetView: vi.fn(),
+    getPerfInfo: vi.fn(() => ({ active: false, calls: 0, triangles: 0, geometries: 0, textures: 0, dpr: 1 })),
     getInstrumentBridge: vi.fn(() => bridge),
     _bridge: bridge,
   };
@@ -158,6 +159,8 @@ export function createMockOpticsScene() {
     triggerPullbackArrival: vi.fn(),
     slewToAnomaly: vi.fn(),
     zoomBy: vi.fn(),
+    getViewportSize: vi.fn(() => ({ width: 1280, height: 720 })),
+    getPerfInfo: vi.fn(() => ({ active: false, calls: 0, triangles: 0, geometries: 0, textures: 0, dpr: 1 })),
   };
 }
 
@@ -172,6 +175,7 @@ export function createMockVoiceEngine() {
     stop: vi.fn(),
     getActiveSpeaker: vi.fn(() => null),
     getAmplitude: vi.fn(() => 0),
+    subscribe: vi.fn(() => () => {}),
   };
 }
 
@@ -180,5 +184,7 @@ export function createMockDreamCanvas() {
     setActive: vi.fn(),
     setState: vi.fn(),
     triggerEntranceReveal: vi.fn(),
+    triggerSlicePulse: vi.fn(),
+    getPerfInfo: vi.fn(() => ({ active: false, calls: 0, triangles: 0, geometries: 0, textures: 0, dpr: 1 })),
   };
 }

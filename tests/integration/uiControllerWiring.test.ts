@@ -26,7 +26,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     document.body.innerHTML = '';
   });
 
-  it('wires showcase cleanly through DevHarness launch buttons without throwing TypeError', () => {
+  it('wires showcase cleanly through DevHarness launch buttons without throwing TypeError', async () => {
     const appRoot = document.getElementById('app')!;
     const store = new StateStore();
     const audio = createMockAudioEngine();
@@ -50,28 +50,35 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     const dream = createMockDreamCanvas();
 
     ui.attachRenderers(optics as never, showcase as never, dream as never);
+    await vi.waitFor(() => {
+      expect(document.querySelector('[data-launch-mg="lens_focus"]')).not.toBeNull();
+    });
 
     // Clicking DevHarness launch button reproduces the exact production trigger path
     const lensBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="lens_focus"]');
     expect(lensBtn).not.toBeNull();
     lensBtn!.click();
 
-    // Advance transitionToMode timers cleanly
-    vi.advanceTimersByTime(1000);
+    // Advance transitionToMode timers & dynamic import microtasks cleanly
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.waitFor(() => {
+      expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
+    });
 
     expect(showcase.loadTarget).toHaveBeenCalled();
     expect(showcase.getInstrumentBridge).toHaveBeenCalled();
-    expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('LNS-04');
 
     // Switching to another instrument whose anomaly targets a different 3D showcase reloads target
     const waveBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="wave_shaper"]');
     expect(waveBtn).not.toBeNull();
     waveBtn!.click();
-    vi.advanceTimersByTime(1000);
+    await vi.advanceTimersByTimeAsync(1000);
+    await vi.waitFor(() => {
+      expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
+    });
 
     expect(showcase.loadTarget).toHaveBeenCalledTimes(2);
-    expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
     expect(audio.syncMusicContext).toHaveBeenCalledWith(
       expect.objectContaining({ activeMinigameId: 'lens_focus' })
     );
@@ -138,7 +145,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(appRoot.querySelector('#dream-layer #btn-codex')).toBeNull();
   });
 
-  it('routes distinct per-seam transitions and voice-matched kinetic dialogue dynamics', () => {
+  it('routes distinct per-seam transitions and voice-matched kinetic dialogue dynamics', async () => {
     const appRoot = document.getElementById('app')!;
     const store = new StateStore();
     const audio = createMockAudioEngine();
@@ -161,6 +168,9 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     const showcase = createMockShowcaseScene();
     const dream = createMockDreamCanvas();
     ui.attachRenderers(optics as never, showcase as never, dream as never);
+    await vi.waitFor(() => {
+      expect(document.querySelector('[data-showcase="cluster_j1419_a"]')).not.toBeNull();
+    });
 
     const stageEl = appRoot.querySelector<HTMLElement>('#transition-stage')!;
     expect(stageEl).not.toBeNull();
@@ -170,7 +180,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(stageEl.dataset.kind).toBe('aperture_boot');
     expect(stageEl.classList.contains('is-active')).toBe(true);
     expect(appRoot.querySelector('#boot-screen')?.classList.contains('is-leaving')).toBe(true);
-    vi.advanceTimersByTime(1000);
+    await vi.advanceTimersByTimeAsync(1000);
     expect(store.getState().mode).toBe('waking_3d');
     expect(stageEl.classList.contains('is-active')).toBe(false);
     expect(appRoot.querySelector('#boot-screen')?.classList.contains('hidden')).toBe(true);
@@ -181,7 +191,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     document.querySelector<HTMLButtonElement>('[data-showcase="cluster_j1419_a"]')!.click();
     expect(stageEl.dataset.kind).toBe('optical_dive');
     expect(optics.triggerTransitionDive).toHaveBeenCalledWith('cluster_j1419_a');
-    vi.advanceTimersByTime(1050);
+    await vi.advanceTimersByTimeAsync(1050);
     expect(showcase.triggerArrivalPullIn).toHaveBeenCalled();
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#inspect-layer')?.classList.contains('hidden')).toBe(false);
@@ -190,7 +200,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     appRoot.querySelector<HTMLButtonElement>('#btn-exit-inspect')!.click();
     expect(stageEl.dataset.kind).toBe('optical_pullback');
     expect(showcase.triggerDeparturePullOut).toHaveBeenCalled();
-    vi.advanceTimersByTime(1000);
+    await vi.advanceTimersByTimeAsync(1000);
     expect(optics.triggerPullbackArrival).toHaveBeenCalled();
     expect(appRoot.querySelector('#inspect-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(false);
@@ -198,7 +208,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     // 4. 3D Sky -> 2D Dream uses dream_submerge + DreamCanvas entrance reveal + dream dialogue channel
     appRoot.querySelector<HTMLButtonElement>('#btn-enter-dream')!.click();
     expect(stageEl.dataset.kind).toBe('dream_submerge');
-    vi.advanceTimersByTime(1200);
+    await vi.advanceTimersByTimeAsync(1200);
     expect(dream.triggerEntranceReveal).toHaveBeenCalled();
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#dream-scroll .dialogue-entry')?.getAttribute('data-channel')).toBe('dream');
@@ -208,7 +218,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     firstChoice.click();
     expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(true);
     expect(firstChoice.classList.contains('is-selected')).toBe(true);
-    vi.advanceTimersByTime(320);
+    await vi.advanceTimersByTimeAsync(320);
     expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(false);
 
     // 5. Overseer interrogation triggers overseer_slice pulse + overseer channel
@@ -216,6 +226,6 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(stageEl.dataset.kind).toBe('overseer_slice');
     expect(appRoot.querySelector('#overseer-panel')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#overseer-scroll .dialogue-entry')?.getAttribute('data-channel')).toBe('overseer');
-    vi.advanceTimersByTime(700);
+    await vi.advanceTimersByTimeAsync(700);
   });
 });

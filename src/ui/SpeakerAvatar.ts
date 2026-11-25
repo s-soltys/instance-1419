@@ -115,10 +115,20 @@ export function updateAvatarVoiceAnimations(
   activeSpeaker: string | null,
   amplitude: number
 ): void {
-  const els = root.querySelectorAll<HTMLElement>('[data-avatar-speaker]');
-  for (const el of els) {
-    const isSpeaking = activeSpeaker !== null && el.dataset.avatarSpeaker === activeSpeaker;
-    el.classList.toggle('is-speaking', isSpeaking);
-    el.style.setProperty('--voice-amp', isSpeaking ? amplitude.toFixed(3) : '0');
+  const prevSpeaking = root.querySelectorAll<HTMLElement>('[data-avatar-speaker].is-speaking');
+  for (const el of prevSpeaking) {
+    if (activeSpeaker === null || el.dataset.avatarSpeaker !== activeSpeaker) {
+      el.classList.remove('is-speaking');
+      el.style.setProperty('--voice-amp', '0');
+    }
+  }
+  if (activeSpeaker === null) return;
+
+  const escaped = activeSpeaker.replace(/"/g, '\\"');
+  const activeEls = root.querySelectorAll<HTMLElement>(`[data-avatar-speaker="${escaped}"]`);
+  const ampStr = amplitude.toFixed(3);
+  for (const el of activeEls) {
+    el.classList.add('is-speaking');
+    el.style.setProperty('--voice-amp', ampStr);
   }
 }
