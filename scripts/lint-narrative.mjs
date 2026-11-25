@@ -211,11 +211,44 @@ if (fs.existsSync(VOICE_SCRIPT)) {
   }
 }
 
+// 7. Music catalog referential integrity & MP3 coverage
+const MUSIC_CATALOG_PATH = path.join(ROOT, 'src', 'content', 'music_catalog.json');
+if (fs.existsSync(MUSIC_CATALOG_PATH)) {
+  const mc = JSON.parse(fs.readFileSync(MUSIC_CATALOG_PATH, 'utf8'));
+  const coldStems = mc.coldStems ?? {};
+  const cues = mc.cues ?? {};
+  for (const stem of Object.values(coldStems)) {
+    const mp3Path = path.join(ROOT, 'public', stem.file);
+    if (!fs.existsSync(mp3Path) || fs.statSync(mp3Path).size <= 4096) {
+      console.error(`[lint-narrative] Missing or corrupt cold stem audio "${stem.id}": ${stem.file}`);
+      errors++;
+    }
+  }
+  for (const cue of Object.values(cues)) {
+    if (!coldStems[cue.coldStem]) {
+      console.error(`[lint-narrative] Music cue "${cue.id}" references missing coldStem "${cue.coldStem}"`);
+      errors++;
+    }
+    const mp3Path = path.join(ROOT, 'public', cue.file);
+    if (!fs.existsSync(mp3Path) || fs.statSync(mp3Path).size <= 4096) {
+      console.error(`[lint-narrative] Missing or corrupt music cue audio "${cue.id}": ${cue.file}`);
+      errors++;
+    }
+  }
+  for (const mgId of validMinigames) {
+    const mapped = mc.routing?.minigames?.[mgId];
+    if (!mapped || !cues[mapped]) {
+      console.error(`[lint-narrative] Minigame "${mgId}" missing valid music_catalog routing`);
+      errors++;
+    }
+  }
+}
+
 if (errors > 0) {
   console.error(`[lint-narrative] FAILED with ${errors} issue(s).`);
   process.exit(1);
 }
 
 console.log(
-  `[lint-narrative] PASS (speakers, portraits, ${seenLineIds.size} unique line IDs, cross-JSON/codex refs, anti-HTML controls, and VO files verified).`
+  `[lint-narrative] PASS (speakers, portraits, ${seenLineIds.size} unique line IDs, cross-JSON/codex refs, anti-HTML controls, VO & Lyria music files verified).`
 );

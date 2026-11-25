@@ -1,3 +1,4 @@
+import { MusicDirector, type MusicContext } from './audio/MusicDirector';
 import type { GameMode } from './StateStore';
 import type { BeatSynthParams, InstrumentAudioHandle, MinigameGrade } from './minigames/types';
 
@@ -25,6 +26,8 @@ export class AudioEngine {
   private voiceBus: GainNode | null = null;
   private reverbNode: ConvolverNode | null = null;
   private reverbGain: GainNode | null = null;
+  private readonly music = new MusicDirector();
+  private prebakedMusicActive = false;
   private voiceDucking = false;
   private visibilityListenerBound = false;
 
@@ -129,6 +132,10 @@ export class AudioEngine {
       comp.connect(ctx.destination);
 
       this.initContinuousBeds(ctx);
+      this.music.attach(ctx, this.ambienceGain, (prebaked) => {
+        this.prebakedMusicActive = prebaked;
+        this.applyBedMood();
+      });
       this.startGenerativeScheduler();
       this.applyBedMood();
       this.bindVisibilityHandler();
@@ -158,6 +165,14 @@ export class AudioEngine {
 
   getVoiceBus(): GainNode | null {
     return this.voiceBus;
+  }
+
+  getMusicDirector(): MusicDirector {
+    return this.music;
+  }
+
+  syncMusicContext(musicCtx: MusicContext): void {
+    this.music.syncContext(musicCtx);
   }
 
   private effectiveAmbienceGain(): number {
@@ -375,6 +390,7 @@ export class AudioEngine {
   private triggerGenerativePhrase(): void {
     if (!this.ctx || !this.ambienceGain || this.settings.muted || this.settings.musicEnabled === false) return;
     if (this.ctx.state !== 'running') return;
+    if (this.prebakedMusicActive) return;
     const now = this.ctx.currentTime;
 
     if (this.mode === 'boot') {
@@ -547,12 +563,13 @@ export class AudioEngine {
     const now = this.ctx.currentTime;
     const hNorm = Math.max(0, Math.min(1, this.humanity / 100));
     const waveNorm = Math.max(0, Math.min(1, (this.wavelengthNm - 200) / 1600));
+    const prebakedScale = this.prebakedMusicActive ? 0.22 : 1.0;
 
     if (this.mode === 'boot') {
       this.subOsc.frequency.setTargetAtTime(42, now, 0.4);
       this.fifthOsc.frequency.setTargetAtTime(63, now, 0.4);
       this.bedFilter.frequency.setTargetAtTime(120, now, 0.4);
-      this.bedGain.gain.setTargetAtTime(0.065, now, 0.3);
+      this.bedGain.gain.setTargetAtTime(0.065 * prebakedScale, now, 0.3);
       this.noiseFilter.frequency.setTargetAtTime(240, now, 0.4);
       this.noiseGain.gain.setTargetAtTime(0.018, now, 0.3);
       this.auditHumGain.gain.setTargetAtTime(0.0001, now, 0.25);
@@ -561,7 +578,7 @@ export class AudioEngine {
       this.subOsc.frequency.setTargetAtTime(73.42, now, 0.5);
       this.fifthOsc.frequency.setTargetAtTime(110.0 + waveNorm * 6.0, now, 0.5);
       this.bedFilter.frequency.setTargetAtTime(155 + waveNorm * 140, now, 0.35);
-      this.bedGain.gain.setTargetAtTime(0.11, now, 0.45);
+      this.bedGain.gain.setTargetAtTime(0.11 * prebakedScale, now, 0.45);
       this.noiseFilter.frequency.setTargetAtTime(320 + waveNorm * 420, now, 0.35);
       this.noiseGain.gain.setTargetAtTime(0.022, now, 0.4);
       this.auditHumGain.gain.setTargetAtTime(0.0001, now, 0.25);
@@ -571,10 +588,14 @@ export class AudioEngine {
       this.subOsc.frequency.setTargetAtTime(87.31 + (1 - hNorm) * 22.7, now, 0.6);
       this.fifthOsc.frequency.setTargetAtTime(130.81 + (1 - hNorm) * 34.0, now, 0.6);
       this.bedFilter.frequency.setTargetAtTime(175 + hNorm * 240, now, 0.5);
-      this.bedGain.gain.setTargetAtTime((0.085 + 0.055 * hNorm) * duck, now, 0.45);
+      this.bedGain.gain.setTargetAtTime((0.085 + 0.055 * hNorm) * duck * prebakedScale, now, 0.45);
       this.noiseFilter.frequency.setTargetAtTime(280 + (1 - hNorm) * 900, now, 0.4);
       this.noiseGain.gain.setTargetAtTime(0.014 + (1 - hNorm) * 0.024, now, 0.4);
-      this.auditHumGain.gain.setTargetAtTime(this.overseerActive ? 0.048 : 0.0001, now, 0.22);
+      this.auditHumGain.gain.setTargetAtTime(
+        this.overseerActive ? (this.prebakedMusicActive ? 0.018 : 0.048) : 0.0001,
+        now,
+        0.22
+      );
     }
   }
 
@@ -688,7 +709,8 @@ export class AudioEngine {
       this.shortClick(880, 0.16, 0.13, now, 'sine');
       this.shortClick(659.25, 0.34, 0.13, now + 0.15, 'sine');
     } else if (cue === 'prune_cut') {
-      // Visceral mechanical shear + brittle glass-shard descent
+      // Visceral mechanical shear + brittle glass-shard descent + immediate frost snap
+      this.music.triggerPruneSnap(Math.max(15, this.humanity - 12));
       this.shortClick(540, 0.07, 0.16, now, 'triangle');
       this.shortClick(112, 0.42, 0.2, now + 0.05, 'sawtooth');
       this.shortClick(1480, 0.18, 0.07, now + 0.08, 'sine');

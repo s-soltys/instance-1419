@@ -72,6 +72,12 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     expect(showcase.loadTarget).toHaveBeenCalledTimes(2);
     expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
+    expect(audio.syncMusicContext).toHaveBeenCalledWith(
+      expect.objectContaining({ activeMinigameId: 'lens_focus' })
+    );
+    expect(audio.syncMusicContext).toHaveBeenCalledWith(
+      expect.objectContaining({ activeMinigameId: 'wave_shaper' })
+    );
   });
 
   it('opens Settings from top HUD, toggles music & voice, and enforces Wake-World-only Codex visibility', () => {

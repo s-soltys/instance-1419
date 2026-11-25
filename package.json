@@ -9,6 +9,7 @@
     "build:single": "node scripts/compile-ink.mjs && tsc --noEmit && SINGLEFILE=1 vite build",
     "compile:ink": "node scripts/compile-ink.mjs",
     "generate:voices": "node scripts/generate-voices.mjs",
+    "generate:music": "node scripts/generate-music.mjs",
     "lint:narrative": "node scripts/lint-narrative.mjs",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",

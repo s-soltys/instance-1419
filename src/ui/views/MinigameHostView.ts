@@ -66,6 +66,7 @@ export class MinigameHostView {
   private finaleTimerId: number | null = null;
   private unbindControls: (() => void) | null = null;
   private onSwitchBandCb: ((bandIdx: number) => void) | null = null;
+  private onActiveChangeCb: ((minigameId: string | null) => void) | null = null;
   private lastProfileSig = '';
   private lastHudSig = '';
   private isFinishing = false;
@@ -89,6 +90,14 @@ export class MinigameHostView {
 
   isActive(): boolean {
     return this.activeMinigame !== null;
+  }
+
+  getActiveMinigameId(): string | null {
+    return this.activeMinigame?.id ?? null;
+  }
+
+  setActiveChangeCallback(cb: (minigameId: string | null) => void): void {
+    this.onActiveChangeCb = cb;
   }
 
   getActiveBackdrop3DConfig(): Minigame3DConfig | null {
@@ -152,6 +161,7 @@ export class MinigameHostView {
 
     const mg = this.minigames.create(chosenId);
     this.activeMinigame = mg;
+    this.onActiveChangeCb?.(mg.id);
     const catalogEntry = this.minigames.getEntry(mg.id);
 
     const variantList = mg.variants ?? catalogEntry?.variants ?? [];
@@ -475,9 +485,13 @@ export class MinigameHostView {
     this.root.querySelector('#mg-capture-finale')?.classList.add('hidden');
     this.root.querySelector('#mg-field-guide-card')?.classList.add('hidden');
     this.root.querySelector('#mg-helper-btn')?.classList.add('hidden');
+    const wasActive = this.activeMinigame !== null;
     if (this.activeMinigame) {
       this.activeMinigame.destroy();
       this.activeMinigame = null;
+    }
+    if (wasActive) {
+      this.onActiveChangeCb?.(null);
     }
     setGlobal3DBackdropComposite(false);
     const bridge = this.showcase?.getInstrumentBridge();

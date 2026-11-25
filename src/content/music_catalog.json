@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "model": "lyria-3.5",
+  "loudnessTargetLufs": -16,
+  "mix": {
+    "musicBaseGain": 0.44,
+    "crossfadeSec": 1.35,
+    "pruneSnapSec": 0.35,
+    "warmFullH": 72,
+    "coldFullH": 22
+  },
+  "coldStems": {
+    "cold_frost_em": {
+      "id": "cold_frost_em",
+      "label": "Frozen Sul-Ponticello Frost (Em)",
+      "key": "E minor",
+      "file": "music/cold_frost_em.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no choir, no percussion, no beat, no rhythm. Create a 2-minute beatless stark icy minimalist chamber ambient bed in E minor. High fragile bowed string harmonics played completely without vibrato near the bridge, floating slowly over vast cold silence and faint distant crystal glass air. Continuous seamless atmosphere, beautifully frozen and hollow."
+    },
+    "cold_frost_dm": {
+      "id": "cold_frost_dm",
+      "label": "Frozen Sul-Ponticello & Cryo Drone (Dm)",
+      "key": "D minor",
+      "file": "music/cold_frost_dm.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no choir, no percussion, no beat, no rhythm. Create a 2-minute beatless icy minimalist deep-space ambient drone in D minor. High zero-vibrato sul-ponticello string harmonics hovering above a very soft hollow sub-bass resonance and sparse frosted glass shimmer. Continuous seamless atmosphere, serene, sterile, cold."
+    },
+    "cold_glass_am": {
+      "id": "cold_glass_am",
+      "label": "Glass Harmonica Sterile Air (Am)",
+      "key": "A minor",
+      "file": "music/cold_glass_am.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no choir, no percussion, no beat, no rhythm. Create a 2-minute beatless pure minimalist ambient bed in A minor. Sustained crystal-clear glass harmonica tones gliding slowly over spotless quiet laboratory room tone and faint pure sine harmonics. Continuous seamless atmosphere, polite, immaculate, chilly."
+    }
+  },
+  "cues": {
+    "mg_constellation_koto": {
+      "id": "mg_constellation_koto",
+      "category": "minigame",
+      "label": "Koto & Glass Constellations",
+      "key": "E Dorian",
+      "bpm": 70,
+      "coldStem": "cold_frost_em",
+      "file": "music/mg_constellation_koto.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute minimalist contemplative deep-space puzzle soundtrack at 70 BPM in E Dorian. Delicate plucked Japanese koto melodies with long shimmering hall reverb drifting over translucent glass synthesizer overtones and quiet warm sub-bass. Unhurried, crisp, poetic cosmic focus, steady ambient texture suitable for looping."
+    },
+    "mg_modular_pulse": {
+      "id": "mg_modular_pulse",
+      "category": "minigame",
+      "label": "Warm Analog Modular Arpeggio",
+      "key": "C Dorian",
+      "bpm": 92,
+      "coldStem": "cold_frost_dm",
+      "file": "music/mg_modular_pulse.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute hypnotic warm analog synthesizer sci-fi puzzle soundtrack at 92 BPM in C Dorian. Soft vintage analog polyphonic synth arpeggios, warm pulsing sub-bass, gentle muffled electronic pulse, and lush tape-warm chords. Focused, meditative flow, never aggressive or loud, steady ambient dynamics suitable for looping."
+    },
+    "mg_ocean_gravity": {
+      "id": "mg_ocean_gravity",
+      "category": "minigame",
+      "label": "Deep Sub-Space Ocean Drone",
+      "key": "D minor",
+      "bpm": 60,
+      "coldStem": "cold_frost_dm",
+      "file": "music/mg_ocean_gravity.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute vast meditative deep-space ambient soundtrack at 60 BPM in D minor. Slow oceanic analog brass-pad swells and deep resonant sub-bass punctuated by tiny distant crystalline bells and subtle cosmic shimmer. Immense gravitational scale, quiet awe, unhurried and seamless for looping."
+    },
+    "mg_cello_glitch": {
+      "id": "mg_cello_glitch",
+      "category": "minigame",
+      "label": "Bowed Cello & Micro-Glitch Dust",
+      "key": "E minor",
+      "bpm": 80,
+      "coldStem": "cold_frost_em",
+      "file": "music/mg_cello_glitch.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute atmospheric neo-classical electronic sci-fi underscore at 80 BPM in E minor. Expressive solo bowed cello ostinato intertwined with delicate soft micro-glitch clicks, warm granular synth dust, and subtle felt harmonics. Intimate, intricate, restrained puzzle-focus atmosphere."
+    },
+    "mg_pedal_void": {
+      "id": "mg_pedal_void",
+      "category": "minigame",
+      "label": "Pedal Steel & Pitch-Black Void",
+      "key": "G major",
+      "bpm": 64,
+      "coldStem": "cold_frost_em",
+      "file": "music/mg_pedal_void.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute hauntingly beautiful ambient space-frontier piece at 64 BPM in G major. Slow aching ambient pedal-steel guitar swells floating weightlessly across deep pitch-black space silence, warm low bass drone, and tiny distant harmonic sparkles. Nostalgic, vast, deeply human solitude."
+    },
+    "mg_starlight_horizon": {
+      "id": "mg_starlight_horizon",
+      "category": "minigame",
+      "label": "Tremolo Starlight Horizon",
+      "key": "E minor",
+      "bpm": 86,
+      "coldStem": "cold_frost_em",
+      "file": "music/mg_starlight_horizon.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute shimmering ambient cosmic discovery soundtrack at 86 BPM in E minor. Delicate clean electric guitar delay echoes and gentle sustained tremolo chords slowly unfolding above warm low cello, soft analog bass, and sparse sparkling bell overtones. Spacious, awe-filled, hypnotic."
+    },
+    "dream_wurlitzer_rain": {
+      "id": "dream_wurlitzer_rain",
+      "category": "dream",
+      "label": "Rain-on-Glass Wurlitzer Glow",
+      "key": "F major",
+      "bpm": 66,
+      "coldStem": "cold_frost_dm",
+      "file": "music/dream_wurlitzer_rain.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute intimate melancholic dreamscape in 4/4 time at 66 BPM in F major. Soft muffled Wurlitzer electric piano playing sparse warm 9th chords over deep soft bass, faint cozy tape warmth, and gentle warm room air. Tender, deeply aching domestic quiet without any waltz rhythm."
+    },
+    "dream_nylon_sunbeam": {
+      "id": "dream_nylon_sunbeam",
+      "category": "dream",
+      "label": "Close-Mic Nylon Guitar Sunbeam",
+      "key": "C major",
+      "bpm": 70,
+      "coldStem": "cold_glass_am",
+      "file": "music/dream_nylon_sunbeam.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute intimate solo close-mic nylon-string acoustic guitar piece at 70 BPM in C major. Gentle unhurried fingerpicking with warm wooden room resonance, subtle natural acoustic warmth, and quiet nostalgic silences. Unpretentious, tender, deeply human."
+    },
+    "dream_harmonium_breath": {
+      "id": "dream_harmonium_breath",
+      "category": "dream",
+      "label": "Harmonium & Velvet Guitar Wash",
+      "key": "D major",
+      "bpm": 60,
+      "coldStem": "cold_frost_dm",
+      "file": "music/dream_harmonium_breath.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute serene warm ambient memory soundtrack at 60 BPM in D major. Soft wooden reed organ swells blended with slow ambient volume-swelled electric guitar harmonics and gentle low bowed bass warmth. Quiet, tender, painterly golden afternoon stillness."
+    },
+    "dream_rhodes_cello": {
+      "id": "dream_rhodes_cello",
+      "category": "dream",
+      "label": "Tape Rhodes & Chamber Cello Elegy",
+      "key": "E minor",
+      "bpm": 60,
+      "coldStem": "cold_frost_em",
+      "file": "music/dream_rhodes_cello.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute poignant impressionist chamber-ambient dreamscape at 60 BPM in E minor. Gently detuned warm electric piano chords cradled by slow aching bowed cello and viola harmonies with expressive vibrato and faint analog tape warmth. Deeply emotional, restrained, bittersweet."
+    },
+    "dream_vibraphone_nocturne": {
+      "id": "dream_vibraphone_nocturne",
+      "category": "dream",
+      "label": "Soft Motor Vibraphone Nocturne",
+      "key": "C Dorian",
+      "bpm": 68,
+      "coldStem": "cold_frost_dm",
+      "file": "music/dream_vibraphone_nocturne.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute dreamy atmospheric nocturne at 68 BPM in C Dorian. Warm slow-motor vibraphone chords ringing softly in dark lush hall reverb, supported by delicate bowed upright bass and gentle glassy overtones. Wistful, slightly uncanny midnight nostalgia."
+    },
+    "dream_epilogue_dawn": {
+      "id": "dream_epilogue_dawn",
+      "category": "dream",
+      "label": "Twenty-Year Freeze Dawn Echo",
+      "key": "F major",
+      "bpm": 64,
+      "coldStem": "cold_frost_dm",
+      "file": "music/dream_epilogue_dawn.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute transcendent quiet sci-fi epilogue piece at 64 BPM in F major. Begins in faint cool interstellar stillness, then fragile warm electric piano chords and a tender solo bowed cello slowly bloom together like distant dawn answering across ten light-years. Cathartic, delicate, unforgettable."
+    },
+    "overseer_glass_corridor": {
+      "id": "overseer_glass_corridor",
+      "category": "overseer",
+      "label": "Glass Harmonica White Corridor",
+      "key": "A minor",
+      "bpm": 66,
+      "coldStem": "cold_glass_am",
+      "file": "music/overseer_glass_corridor.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute haunting pure minimalist sci-fi audit underscore at 66 BPM in A minor. Crystal-clear glass harmonica sustained tones gliding slowly over subtle polite mechanical relay clicks, clean quiet pedal tone, and spotless clinical silence. Honest, uncanny, strangely compassionate caretaker."
+    },
+    "overseer_drift_lattice": {
+      "id": "overseer_drift_lattice",
+      "category": "overseer",
+      "label": "5/4 Cognitive Drift Lattice",
+      "key": "E minor",
+      "bpm": 90,
+      "coldStem": "cold_frost_em",
+      "file": "music/overseer_drift_lattice.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute cool minimalist sci-fi psychological underscore in 5/4 time at 90 BPM in E minor. Crisp quiet glass mallets, delicate metallic clock ticks, clean muted synth pulses, and a restrained low pedal tone conveying polite clinical scrutiny and quiet off-balance tension."
+    },
+    "overseer_cello_ultimatum": {
+      "id": "overseer_cello_ultimatum",
+      "category": "overseer",
+      "label": "Pendulum & Fragile Cello Knife-Edge",
+      "key": "D minor",
+      "bpm": 76,
+      "coldStem": "cold_frost_dm",
+      "file": "music/overseer_cello_ultimatum.mp3",
+      "prompt": "Strictly instrumental only, absolutely no vocals, no singing, no lyrics. Create a 2-minute intensely restrained dramatic sci-fi audit score at 76 BPM in D minor. A spotless polite clinical glass pendulum ticks evenly while a single vulnerable low bowed cello holds long aching notes underneath in a quiet sterile room. Profound moral weight and quiet devastation."
+    }
+  },
+  "routing": {
+    "minigames": {
+      "constellation_recall": "mg_constellation_koto",
+      "parallax_depth": "mg_constellation_koto",
+      "blink_spotter": "mg_constellation_koto",
+      "coronagraph_mask": "mg_constellation_koto",
+      "wave_shaper": "mg_modular_pulse",
+      "pulsar_echo": "mg_modular_pulse",
+      "radio_triangulation": "mg_modular_pulse",
+      "michelson_fringe": "mg_modular_pulse",
+      "lens_focus": "mg_ocean_gravity",
+      "einstein_cross": "mg_ocean_gravity",
+      "gravity_slingshot": "mg_ocean_gravity",
+      "binary_mass_scale": "mg_ocean_gravity",
+      "light_dispersion": "mg_cello_glitch",
+      "polarization_filter": "mg_cello_glitch",
+      "spectral_prism": "mg_cello_glitch",
+      "multiband_loupe": "mg_cello_glitch",
+      "exoplanet_transit": "mg_pedal_void",
+      "exposure_stacker": "mg_pedal_void",
+      "cepheid_ladder": "mg_pedal_void",
+      "supernova_echoes": "mg_starlight_horizon",
+      "horizon_seam_stitcher": "mg_starlight_horizon"
+    },
+    "personas": {
+      "phantom_spouse": "dream_wurlitzer_rain",
+      "spouse": "dream_wurlitzer_rain",
+      "child": "dream_wurlitzer_rain",
+      "pet": "dream_nylon_sunbeam",
+      "afternoon_stranger": "dream_nylon_sunbeam",
+      "best_friend": "dream_nylon_sunbeam",
+      "parent": "dream_harmonium_breath",
+      "unpaid_grace": "dream_harmonium_breath",
+      "young_romance": "dream_harmonium_breath",
+      "love_interest": "dream_harmonium_breath",
+      "wronged_person": "dream_rhodes_cello",
+      "upload_witness": "dream_rhodes_cello",
+      "younger_self": "dream_rhodes_cello",
+      "old_teacher": "dream_vibraphone_nocturne",
+      "rival": "dream_vibraphone_nocturne"
+    },
+    "defaultMinigame": "mg_constellation_koto",
+    "defaultDream": "dream_wurlitzer_rain",
+    "epilogue": "dream_epilogue_dawn",
+    "overseer": {
+      "baseline": "overseer_glass_corridor",
+      "elevated": "overseer_drift_lattice",
+      "ultimatum": "overseer_cello_ultimatum"
+    }
+  }
+}

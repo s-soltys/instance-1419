@@ -158,6 +158,15 @@
       "ai_generated": true,
       "internal_prototype_only": true,
       "notes": "Internal prototyping dialogue audio synthesized via scripts/generate-voices.mjs."
+    },
+    {
+      "path": "public/music/*.mp3",
+      "source_url": "https://aistudio.google.com/docs/music-generation",
+      "license": "Google DeepMind Lyria 3.5 (AI Studio Prototype / Vertex AI Commercial Pre-Release)",
+      "attribution": "Instance-1419 Hybrid Soundtrack generated via Google DeepMind Lyria 3.5 (scripts/generate-music.mjs; confirm Vertex AI / commercial terms prior to Steam launch)",
+      "ai_generated": true,
+      "internal_prototype_only": false,
+      "notes": "15 full-length scenario cues + 3 key-matched beatless Frozen Frost / Glass Harmonica cold stems normalized to -16 LUFS (96 kbps stereo MP3)."
     }
   ]
 }

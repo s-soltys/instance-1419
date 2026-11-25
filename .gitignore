@@ -13,3 +13,5 @@ artifacts/e2e-visual/
 .DS_Store
 Thumbs.db
 *.log
+.tmp-music-gen/
+

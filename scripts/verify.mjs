@@ -49,7 +49,8 @@ function verifyAssetManifest() {
 
   scanDir(path.join(ROOT, 'assets'));
   scanDir(path.join(ROOT, 'public', 'voices'));
-  console.log('[verify] Asset & Public Voice MANIFEST.json check PASS.');
+  scanDir(path.join(ROOT, 'public', 'music'));
+  console.log('[verify] Asset, Voice & Music MANIFEST.json check PASS.');
 }
 
 run('node scripts/compile-ink.mjs');

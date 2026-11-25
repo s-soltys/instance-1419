@@ -140,6 +140,9 @@ export class UIController {
         b.classList.toggle('active', Math.abs(Number(b.dataset.band) - val) < 0.08);
       });
     });
+    this.minigameHost.setActiveChangeCallback(() => {
+      this.syncAudioMusic(this.store.getState());
+    });
   }
 
   attachRenderers(optics: OpticsScene, showcase: TargetShowcaseScene, dream: DreamCanvas): void {
@@ -1404,7 +1407,7 @@ export class UIController {
     );
     this.dream.setActive(state.mode === 'dream_2d');
 
-    this.audio.updateMood(state.mode, state.humanity, state.overseerAuditActive, state.wavelengthNm);
+    this.syncAudioMusic(state);
 
     const scannedSig = state.scannedAnomalyIds.join('|');
     const decodedSig = state.decodedMinigameTargets.join('|');
@@ -1413,6 +1416,21 @@ export class UIController {
       this.lastDecodedSig = decodedSig;
       this.renderBearingIndex();
     }
+  }
+
+  private syncAudioMusic(state: GameState): void {
+    this.audio.updateMood(state.mode, state.humanity, state.overseerAuditActive, state.wavelengthNm);
+    this.audio.syncMusicContext({
+      mode: state.mode,
+      humanity: state.humanity,
+      overseerAuditActive: state.overseerAuditActive,
+      overseerSuspicion: state.overseerSuspicion,
+      chaosDrift: state.chaosDrift,
+      shift: state.shift,
+      activeMinigameId: this.minigameHost.getActiveMinigameId(),
+      activePersonaId: state.activeDreamPersonaId || 'phantom_spouse',
+      prunedPersonas: state.prunedPersonas,
+    });
   }
 
   private createDevBridge(): DevHarnessBridge {

@@ -386,6 +386,20 @@ export class DevHarness {
                   <button class="qa-btn" data-sfx="petition_warm" type="button">▸ Unseal Bloom</button>
                   <button class="qa-btn" data-sfx="choice" type="button">▸ UI Click</button>
                 </div>
+
+                <div class="qa-card-title" style="margin-top:14px;">LYRIA 3.5 HYBRID SOUNDTRACK</div>
+                <p class="qa-note" id="qa-music-now">Now Playing: Procedural Observatory Bed</p>
+                <div class="qa-slider-row">
+                  <label for="qa-music-cue">Audition Cue Override:</label>
+                  <select id="qa-music-cue" style="width:100%;padding:5px 8px;border-radius:4px;background:rgba(12,18,28,0.9);color:#e2e8f0;border:1px solid rgba(148,163,184,0.28);font-size:12px;">
+                    <option value="">AUTO (Scene &amp; Minigame Routed)</option>
+                    ${this.audio
+                      .getMusicDirector()
+                      .listCues()
+                      .map((c) => `<option value="${c.id}">[${c.category.toUpperCase()}] ${c.label} (${c.key})</option>`)
+                      .join('')}
+                  </select>
+                </div>
               </div>
 
               <div class="qa-card">
@@ -732,9 +746,26 @@ export class DevHarness {
         }
       });
     });
+
+    const musicCueSel = this.host.querySelector<HTMLSelectElement>('#qa-music-cue');
+    musicCueSel?.addEventListener('change', () => {
+      this.audio.unlock();
+      const val = musicCueSel.value.trim();
+      this.audio.getMusicDirector().setAuditionOverride(val ? val : null);
+      this.updateMusicReadout(this.store.getState());
+    });
+  }
+
+  private updateMusicReadout(s: GameState): void {
+    const el = this.host.querySelector<HTMLElement>('#qa-music-now');
+    if (!el) return;
+    const label = this.audio.getMusicDirector().getActiveCueLabel();
+    const frostPct = Math.round(Math.max(0, Math.min(1, (72 - s.humanity) / 50)) * 100);
+    el.textContent = `Now Playing: ${label} · H% Frost Blend: ${frostPct}%`;
   }
 
   private syncState(s: GameState): void {
+    this.updateMusicReadout(s);
     const stats = this.host.querySelector<HTMLElement>('#qa-live-stats');
     if (stats) {
       stats.textContent = `MODE ${s.mode.toUpperCase()} · H ${s.humanity}/${s.maxHumanity} · DRIFT ${s.chaosDrift}% · ANOM ${s.anomalyProgress}% · CLOCK ${s.subjectiveMonthsLeft} MO · SUSP ${s.overseerSuspicion}`;
