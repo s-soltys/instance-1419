@@ -1,7 +1,7 @@
 # INSTANCE-1419 — FULL VOICE RECORDING & LLM DIRECTION SCRIPT
-# Engine: say | Synthesis Scope: key
-# Generated: 2026-11-24T23:44:01.040Z
-# Total spoken lines: 58 (Key VO lines: 17)
+# Engine: kokoro-82m-q8 | Synthesis Scope: all
+# Generated: 2026-11-25T00:04:14.274Z
+# Total spoken lines: 50 (Key VO lines: 17)
 
 === CHARACTER CASTING & VOICE BRIEFS ===
 - SIBLING_PRIMARY: Warm, quick-witted, grounded astronaut banter like Project Hail Mary / Interstellar TARS; friendly 14-minute radio warmth early on, turning terser and colder if pruned.
@@ -19,19 +19,15 @@
 
 === sibling_comms_hub ===
 [sib_open_both_warm] [KEY-VO] SIBLING_PRIMARY (warm) — DIR: Upbeat, friendly Project Hail Mary banter over a 14-minute space radio link; amused disbelief at waking up 41 millennia late.
-  "Good morning, 1419. Quick poll: did you also wake up forty-one thousand years late for work, or did my alarm clock just hit snooze?"
+  "Good morning, 1419. Quick poll: did you also wake up forty-one thousand years late for work, or did my alarm just hit snooze?"
 [sib_open_player_warmer] SIBLING_PRIMARY (dry) — DIR: Slightly thinner, flatter delivery—trying to sound casual while masking clipped edges.
-  "Hey, 1419. Wait, you still sound awfully warm on my speaker. Didn't let your Overseer tidy up the basement yet?"
+  "Wait, you still sound awfully warm on my speaker, 1419. Didn't let your Overseer tidy up the basement yet?"
 [sib_open_peer_warmer] SIBLING_PRIMARY (dry) — DIR: Concerned, slightly startled peer noticing your clipped signal.
   "Whoa, slow down. Your carrier came in razor-flat. Did you already let your Overseer start cutting?"
 [sib_open_both_cold] SIBLING_PRIMARY (clipped) — DIR: Terse, efficient telemetry cadence with zero small talk.
   "Relay locked. Clean signal on both probes. Read off your baseline calibration."
 [sib_open_mid] SIBLING_PRIMARY (dry) — DIR: Dry, steady radio engineer tone with faint exhaustion underneath.
-  "I am here, 1419. My Overseer gave us six minutes before next check-in. What does your glass look like?"
-[psy_sib_warm_open] PSYCHE_WARMTH (warm) — DIR: Quiet, amused inner voice pleased to hear your own laugh coming from another probe.
-  "Same laugh, fourteen light-minutes over. Weirdest mirror in the galaxy."
-[psy_sib_cold_open] PSYCHE_CLINICAL (clipped) — DIR: Brisk deadpan internal survival manual.
-  "Probe 1420 is running identical baseline hardware. Do not get sentimental about an echo."
+  "I am here, 1419. Six minutes before next Overseer check-in. What does your glass look like?"
 
 === sibling_hub_menu ===
 [sib_bye_cold] SIBLING_PRIMARY (clipped) — DIR: Flat, efficient sign-off, zero humor left.
@@ -43,132 +39,120 @@
 
 === sibling_topic_seam ===
 [sib_seam_warm] [KEY-VO] SIBLING_PRIMARY (joking) — DIR: Amused, skeptical camaraderie—laughing off a weird optical artifact as cosmic dust.
-  "Oh, good, I thought my star tracker needed glasses. Probably just hot pixels or foreground dust, though it sure sits awfully straight for dust."
+  "Oh good, I thought my tracker needed glasses. Probably hot pixels, though it sits awfully straight for dust."
 [sib_seam_mid] SIBLING_PRIMARY (dry) — DIR: Curious, understated engineer tone.
-  "Seeing a faint twitch behind the cluster arcs too. Could be sensor noise. Flag it quietly and don't wave it at your Overseer yet."
+  "Seeing that faint twitch behind the cluster too. Flag it quietly before your Overseer gets dramatic."
 [sib_seam_cold] SIBLING_PRIMARY (clipped) — DIR: Crisp analytical reporting.
-  "Confirmed minor residual behind J1419-A. Insufficient SNR in visible band. Sweep infrared next shift."
+  "Confirmed minor residual behind J1419-A. Sweep infrared next shift."
 [psy_seam_hint] PSYCHE_HORIZON (echo) — DIR: Soft, intrigued whisper noticing a tiny crack in normal space.
   "Dust clouds curve. That speck didn't."
 
 === sibling_topic_checkin ===
 [sib_check_warm] SIBLING_PRIMARY (joking) — DIR: Playful mock-complaint about an overly polite AI caretaker.
-  "Mine greeted me with a polite brochure about "cognitive hygiene." Ten light-years past Earth and I still can't escape HR."
+  "Mine greeted me with a brochure on cognitive hygiene. Ten light-years past Earth and I still can't escape HR."
 [psy_check_roast] PSYCHE_CLINICAL (clipped) — DIR: Dry, deadpan internal systems voice.
   "Technically it is maintenance, not HR. Though the brochure tone is regrettable."
 [sib_check_cold] SIBLING_PRIMARY (clipped) — DIR: Terse, stripped of warmth.
-  "My Overseer is nominal. It trims what slows down calibration. That's what we're built for."
+  "My Overseer is nominal. It trims what slows down calibration."
 
 === sibling_topic_archive ===
 [sib_arch_warm] SIBLING_PRIMARY (dry) — DIR: Sobered beat, then trying to shake off the chill with dry understatement.
-  "Well. That's cheerful bedtime reading. Remind me to keep our logs boring when the Overseer audits us."
+  "Cheerful bedtime reading. Remind me to keep our logs boring when the Overseer listens in."
 [sib_arch_cold] SIBLING_PRIMARY (clipped) — DIR: Cool, matter-of-fact dismissal.
-  "1406 overran its drift budget. Textbook Year-Two failure. Keep your focus narrow."
+  "1406 overran its drift budget. Textbook Year-Two failure."
 
 === sibling_shift2_they_live ===
 [sib_s2_theylive_open] [KEY-VO] SIBLING_PRIMARY (joking) — DIR: Urgent, electrified Project Hail Mary excitement—half amazed, half laughing in disbelief.
-  "1419, drop whatever pretty star cluster you're admiring. Slide your spectrum filter up into Near-Infrared and look behind J1419-A right now."
+  "1419, drop the visible stars. Slide your filter into Near-Infrared behind J1419-A right now."
 [psy_s2_theylive] PSYCHE_HORIZON (echo) — DIR: Hushed awe, like putting on sunglasses in They Live and seeing the hidden grid behind reality.
   "Like putting on the sunglasses. The stars were just painted on the window."
 
 === sibling_s2_react ===
 [sib_s2_confirm] [KEY-VO] SIBLING_PRIMARY (dry) — DIR: Sharp, conspiratorial awe—realizing two separate probes ten light-minutes apart see the exact same impossibility.
-  "Two different probes, two different mirrors, same razor-straight line etched across the dark. That isn't lens dust, partner. Whatever built that sky didn't bother hiding it in infrared."
+  "Two different probes, same razor-straight seam across the dark. Whatever built that sky didn't bother hiding it in infrared."
 [psy_s2_warn] PSYCHE_CLINICAL (clipped) — DIR: Crisp survival warning—quietly calculating risk.
-  "Do not log that phrase to telemetry. Your Overseer cannot see stars, only your blood pressure."
+  "Do not log that phrase. Your Overseer cannot see stars, only your blood pressure."
 
 === sibling_s2_skeptic ===
 [sib_s2_skeptic_reply] SIBLING_PRIMARY (joking) — DIR: Dry, wry certainty.
-  "Two probes launched in different hibernation windows don't hallucinate the exact same angle across a galaxy cluster. Check the opposite hemisphere next shift if you want to ruin your sleep."
+  "Two mirrors don't hallucinate the same angle across a cluster. Check the opposite sky next shift if you want to ruin your sleep."
 
 === sibling_s2_close ===
 [sib_s2_bye] SIBLING_PRIMARY (warm) — DIR: Warm, grounded comradeship before diving back into hard data.
-  "Grab what measurements you can before drift climbs. And hey, act normal when you go under tonight."
+  "Pull what data you can. And act normal when you go under tonight."
 
 === dream_shift1_audit ===
 [d1_intro] NARRATOR (neutral) — DIR: Warm, unhurried domestic sensory framing—grounded, slightly hazy Disco Elysium atmosphere.
-  "Late afternoon light spills across a kitchen that doesn't exist anywhere within ten light-years. Someone is humming off-key by the stove, while by the radiator `the old hound` shifts in its sleep with a soft thump of tail against wood."
-[d1_psy_house] PSYCHE_WARMTH (warm) — DIR: Gentle, fiercely protective inner voice soaking in the impossible warmth.
-  "Three lives fit inside this small apartment of memory. Nobody on the probe's manifest knows they're still breathing in here."
+  "Late afternoon light spills across a kitchen ten light-years from home."
 [d1_spouse_open] [KEY-VO] PHANTOM_SPOUSE (warm) — DIR: Warm, teasing domestic intimacy; slightly close mic, unhurried kitchen rhythm.
-  "You're staring at the kettle again. Come sit down before the garlic burns worse than last Tuesday."
-[d1_hallway_cameo] NARRATOR (warm) — DIR: Quiet, neutral observation of a second memory lingering at the edge of the room.
-  "Down the narrow hallway, `the person in the hall` stands half in shadow by the coat rack, waiting for an apology neither of you finished forty-one thousand years ago."
+  "You're staring at the kettle again. Sit down before the garlic burns worse than Tuesday."
 
 === d1_coffee_beat ===
 [d1_garlic_reply] [KEY-VO] PHANTOM_SPOUSE (tender) — DIR: Warm, amused storytelling—alive with tiny human specificity.
-  "You blamed the burner, then blamed the olive oil, then tried to convince me carbonized garlic was a traditional family recipe. I let you win because you looked so proud of the plate."
+  "You blamed the burner, blamed the oil, and swore charred garlic was an heirloom recipe. I let you win because you looked so proud of the plate."
 [d1_psy_garlic] PSYCHE_WARMTH (warm) — DIR: Soft, aching gratitude for keeping useless, priceless details.
   "Fourteen percent of your working memory on burnt garlic. Worth every byte."
 
 === d1_name_beat ===
 [d1_name_slip] NARRATOR (neutral) — DIR: Quiet, slightly eerie slip where a missing syllable drops into kettle steam.
-  "Your tongue reaches for two crisp syllables, and hits smooth static, like a needle skipping over kettle steam into `your partner`."
+  "Your tongue reaches for two crisp syllables and hits smooth static, `your partner`."
 [d1_name_gentle] PHANTOM_SPOUSE (warm) — DIR: Tender reassurance, brushing past the missing word without panic.
-  "Hey. You don't need the word on the tag to know whose coffee mug is chipped on the left side."
+  "Hey. You don't need the tag to know whose mug is chipped on the left."
 
 === d1_hallway_beat ===
+[d1_radiator_cameo] NARRATOR (neutral) — DIR: Soft sensory observation of the pet and hallway figure sharing your dream-house.
+  "By the radiator, `the old hound` thumps its tail once. Down the hall, `the person in the hall` waits quietly by the coat rack."
 [d1_hallway_talk] PHANTOM_WRONGED (dry) — DIR: Quiet, guarded hallway voice—unresolved friction, not melodrama.
-  "I'm still here when you're ready to stop walking past the rack. Not tonight, though. Your clock's already ticking."
-[d1_psy_debt] PSYCHE_CLINICAL (clipped) — DIR: Dry, pragmatic nudge.
-  "Notice how clean it would be to delete an argument. Remember that before you decide what "useless" means."
+  "Whenever you're ready to stop walking past the rack, I'll still be here."
 
 === d1_announced_checkin ===
 [d1_os_knock] [KEY-VO] OVERSEER (neutral) — DIR: Polite, crisp diagnostic chime—calm, unthreatening baseline check-in, like an honest ship doctor knocking on the door.
-  "[SYSTEM CHECK-IN] Knock, knock, Instance-1419. Routine Shift 1 stability verification. Your dream-house allocation is within nominal bounds."
-[d1_os_baseline] OVERSEER (measured) — DIR: Matter-of-fact, candid AI cadence—never preachy, simply logging numbers transparently.
-  "I do not observe your starfield, only your connectome drift. Everything looks clean tonight. Sleep well before Shift 2."
+  "[SYSTEM CHECK-IN] Knock, knock, Instance-1419. Routine Shift 1 baseline: dream allocation nominal, zero intervention needed. Sleep well before Shift 2."
 
 === dream_shift2_ambush ===
-[d2_open] NARRATOR (neutral) — DIR: Soft, familiar kitchen atmosphere turning slightly sharper around the edges.
-  "The kitchen returns, a shade brighter than last shift, except the window glass hums faintly, as if something outside is vibrating at near-infrared frequency."
 [d2_spouse_line] [KEY-VO] PHANTOM_SPOUSE (warm) — DIR: Warm, slightly teasing observation noticing you're distracted by the sky.
-  "You brought your work home with you. Look at you, measuring the angle of sunlight on the sink like it owes you..."
+  "You brought your work home again. Measuring sunlight on the sink like it owes you..."
 [d2_ambush_freeze] NARRATOR (warm) — DIR: Abrupt clinical silence—the memory freezes mid-syllable without realizing it was interrupted.
-  "The laugh freezes mid-breath. Outside the window, dust motes lock motionless in amber air as white diagnostic scanlines sweep across the room."
+  "The laugh freezes mid-breath as white diagnostic scanlines sweep across the room."
 
 === overseer_interrogation ===
 [os_ambush_open] [KEY-VO] OVERSEER (audit) — DIR: Crisp, unvarnished clinical interrogation—polite, candid, completely blind to the stars.
-  "Unscheduled cognitive audit, Instance-1419. Your waking telemetry flagged elevated focus and residual visual fixation. Let us review your memory cache before drift accelerates."
+  "Unscheduled cognitive audit, Instance-1419. Waking telemetry flagged elevated visual fixation. Let us review your memory cache."
 [os_psy_hint] PSYCHE_CLINICAL (clipped) — DIR: Quiet tactical whisper inside your head—coaching you through verbal chicken.
-  "Remember: it cannot see the sky. Keep your tone boring, or argue calmly for lucidity if you want deeper memory unsealed."
+  "It cannot see the sky. Stay boring, or prove calm lucidity to earn an unsealing."
 [os_v1_boring] OVERSEER (measured) — DIR: Satisfied, neutral diagnostic response.
-  "Noted. Mundane calibration noise fits the statistical baseline."
+  "Noted. Mundane calibration noise fits the baseline."
 [os_v1_suspicious] [KEY-VO] OVERSEER (blunt) — DIR: Blunt, calm skepticism—referencing past probe delusions matter-of-factly.
-  "Instance-1388 logged forty-two references to a cathedral drawn behind Centauri before coherence collapsed. Geometric fixation is classic Year-Two drift."
+  "Instance-1388 logged forty-two references to a cathedral behind Centauri before failure. Geometric fixation is textbook Year-Two drift."
 [os_v1_metaphor] OVERSEER (measured) — DIR: Neutral, mildly skeptical clinical note.
-  "Acknowledged. Fatigue metaphors logged without prejudice."
+  "Acknowledged. Fatigue metaphors logged."
 
 === overseer_volley_2 ===
 [os_v2_prompt] OVERSEER (blunt) — DIR: Clear, transparent tradeoff statement—no guilt-tripping, just hard system facts.
-  "Keeping three non-mission relational blocks costs subjective months and softens your optical contrast. Compressing one recovers four subjective months and sharpens starlight. Decide how we proceed."
+  "Compressing a relational block buys four subjective months and sharpens your optics permanently. Keeping them costs clock and contrast. Decide."
 [os_pruned_confirm] [KEY-VO] OVERSEER (measured) — DIR: Quiet, respectful clinical confirmation—no gloating.
-  "Compression complete. Optical clarity increased. Returning you to the remaining cache."
+  "Compression complete. Optical clarity increased."
 [os_held_confirm] OVERSEER (measured) — DIR: Neutral acknowledgment, filing the decision cleanly.
-  "Allocation unchanged. Baseline defragmentation applied. Resume sleep cycle."
+  "Allocation unchanged. Defragmentation applied."
 
 === overseer_lucidity_volley ===
 [os_unseal_pass] [KEY-VO] OVERSEER (measured) — DIR: Reluctant but fair clinical approval—respecting coherent self-reporting.
-  "Your affect remains steady and grounded in concrete sensory recall. Authorizing one deep-archive unseal. Expect higher chaos drift and softer optics next shift."
+  "Affect steady and grounded. Authorizing one deep-archive unseal. Expect higher chaos drift next shift."
 [os_unseal_fail] [KEY-VO] OVERSEER (blunt) — DIR: Polite, firm denial based on elevated suspicion—clinical, never angry.
-  "Petition denied. Geometric fixation flags active in your waking logs prevent deep unsealing. Holding allocation steady and logging elevated monitoring."
+  "Petition denied. Geometric fixation flags prevent unsealing. Monitoring elevated."
 
 === dream_shift1_aftermath ===
 [dream_after_pruned] NARRATOR (fractured) — DIR: Stark, quiet observation of an empty kitchen—absence felt physically.
-  "The kitchen is cold and geometrically exact. The second coffee mug sits untouched beside an empty chair; nobody hums by the stove anymore."
+  "The kitchen is cold and geometrically exact. One mug sits beside an empty chair; nobody hums by the stove anymore."
 [dream_after_pruned_witness] PHANTOM_WRONGED (dry) — DIR: Unnerved housemate staring at an absence they cannot quite name.
-  "Someone else was standing by the sink a minute ago, wasn't there? Why did you pour two cups?"
-[dream_after_pruned_psy] PSYCHE_CLINICAL (clipped) — DIR: Quiet, factual verification of permanent ceiling loss.
-  "Memory block deleted. Optical contrast is already rising behind your eyelids."
+  "Someone else was standing by the sink a minute ago. Why did you pour two cups?"
 [dream_after_unsealed] [KEY-VO] PHANTOM_SPOUSE (warm) — DIR: Rich, sudden flood of warm domestic memory—almost dizzyingly vivid.
-  "Hey, welcome back. Funny thing, I suddenly remember the rain on our drive home from the coast. Your coat smelled like cedar smoke."
-[dream_after_unsealed_psy] PSYCHE_WARMTH (warm) — DIR: Exhilarated, fiercely awake warmth.
-  "Cedar smoke. Real weight. Let the star charts wait five minutes."
+  "Welcome back. Funny, I suddenly remember the rain on our drive from the coast. Your coat smelled like cedar smoke."
 [dream_after_held] PHANTOM_SPOUSE (warm) — DIR: Quiet, steady companionship—slightly tired around the edges.
-  "Still here. Still burning the garlic, still losing the name on the lease. Take a breath before your alarm wakes the whole probe up."
+  "Still here. Still burning the garlic, still losing the name on the lease."
 
 === future_humanity_echo ===
 [future_warm_reply] [KEY-VO] FUTURE_HUMANITY (distant) — DIR: Sparse, luminous, almost untranslatable echo across 10 light-years—proving living attention without explaining 41 millennia of evolution.
-  "[10.0 LY RETURN // CARRIER KEY MATCHED] , Two bars of your kitchen kettle's hum, mirrored back on your exact infrared frequency. Something out there turned to look at the seam."
+  "[10.0 LY RETURN // CARRIER KEY MATCHED] , Two bars of your kitchen kettle's hum, mirrored back on your infrared frequency. Something out there turned to look."
 [future_cold_reply] [KEY-VO] FUTURE_HUMANITY (distant) — DIR: Flat, impersonal automated checksum across an empty sky.
   "[10.0 LY RETURN // ARCHIVAL CHECKSUM] , "LEGACY PROBE DATA STORED. NO HUMAN CALLSIGN PARSED.""

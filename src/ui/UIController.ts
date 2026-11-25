@@ -227,6 +227,7 @@ export class UIController {
           <div class="lens-vignette" aria-hidden="true"></div>
           <div class="ra-ruler" aria-hidden="true"><div class="ra-ruler-ticks" id="ra-ruler-ticks"></div></div>
           <div class="dec-ruler" aria-hidden="true"><div class="dec-ruler-ticks" id="dec-ruler-ticks"></div></div>
+          <div class="sky-step-cue" id="sky-step-cue">01 · CLICK A BEARING BELOW OR DRAG SKY &amp; TUNE SPECTRUM TO LOCK A TARGET</div>
 
           <svg class="reticle" viewBox="0 0 260 260" aria-hidden="true">
             <path d="M 52 52 A 110 110 0 0 1 208 52" fill="none" stroke="rgba(195,220,242,0.20)" stroke-width="0.9" />
@@ -696,11 +697,17 @@ export class UIController {
 
     this.root.querySelector('#btn-dossier')?.addEventListener('click', () => {
       this.audio.playCue('choice');
-      this.root.querySelector('#dossier-drawer')?.classList.toggle('hidden');
+      const drawer = this.root.querySelector('#dossier-drawer');
+      drawer?.classList.toggle('hidden');
+      const isOpen = drawer ? !drawer.classList.contains('hidden') : false;
+      const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
+      this.root.querySelector('#sky-step-cue')?.classList.toggle('hidden', isOpen || commsOpen);
     });
     this.root.querySelector('#btn-dossier-close')?.addEventListener('click', () => {
       this.audio.playCue('tick');
       this.root.querySelector('#dossier-drawer')?.classList.add('hidden');
+      const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
+      if (!commsOpen) this.root.querySelector('#sky-step-cue')?.classList.remove('hidden');
     });
     this.root.querySelector('#btn-launch-capstone')?.addEventListener('click', () => {
       this.root.querySelector('#dossier-drawer')?.classList.add('hidden');
@@ -871,7 +878,6 @@ export class UIController {
       this.telemetry.record('anomaly_scan', this.store.getState(), { targetId: spec.id, gain: spec.anomalyGain });
       this.audio.playCue('scan_lock');
       this.renderBearingIndex();
-      this.maybeTriggerProactiveComms(spec);
     }
   }
 
@@ -1014,22 +1020,15 @@ export class UIController {
     this.dialogueFeed.speakEntries(snap.lastAddedEntries);
   }
 
-  private scheduleProactiveComms(): void {
-    if (this.proactiveCommsSent || this.proactiveCommsTimer !== null) return;
-    this.proactiveCommsTimer = window.setTimeout(() => {
-      this.proactiveCommsTimer = null;
-      if (this.store.getState().mode !== 'waking_3d') return;
-      const panelOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
-      if (!panelOpen && !this.proactiveCommsSent) {
-        this.proactiveCommsSent = true;
-        this.showProactiveCommsToast();
-      }
-    }, 6200);
-  }
-
   private maybeTriggerProactiveComms(spec?: AnomalySpec): void {
-    const storylet = this.scheduler.pickAvailable(this.store.getState(), 'waking_3d');
-    if (storylet && (storylet.id === 'sibling_first_contact' || storylet.id === 'sibling_shift2_they_live')) {
+    if (this.proactiveCommsSent) return;
+    const state = this.store.getState();
+    const storylet = this.scheduler.pickAvailable(state, 'waking_3d');
+    if (!storylet) return;
+    if (storylet.id === 'sibling_first_contact' && state.decodedMinigameTargets.length === 0) {
+      return;
+    }
+    if (storylet.id === 'sibling_first_contact' || storylet.id === 'sibling_shift2_they_live') {
       this.proactiveCommsSent = true;
       const msg =
         storylet.id === 'sibling_shift2_they_live'
@@ -1078,6 +1077,7 @@ export class UIController {
 
     const panel = this.root.querySelector<HTMLElement>('#comms-panel')!;
     panel.classList.remove('hidden');
+    this.root.querySelector('#sky-step-cue')?.classList.add('hidden');
 
     if (!this.activeCommsSnapshot || this.activeCommsSnapshot.ended) {
       const storylet = this.scheduler.pickAvailable(this.store.getState(), 'waking_3d');
@@ -1093,6 +1093,10 @@ export class UIController {
     this.dialogueFeed.clearReplyBeatTimer();
     this.voice.stop();
     this.root.querySelector('#comms-panel')?.classList.add('hidden');
+    const dossierOpen = !this.root.querySelector('#dossier-drawer')?.classList.contains('hidden');
+    if (!dossierOpen) {
+      this.root.querySelector('#sky-step-cue')?.classList.remove('hidden');
+    }
   }
 
   private renderCommsDialogue(): void {
@@ -1476,10 +1480,28 @@ export class UIController {
     this.root.querySelector('#inspect-layer')?.classList.toggle('hidden', state.mode !== 'target_inspect');
     this.root.querySelector('#dream-layer')?.classList.toggle('hidden', state.mode !== 'dream_2d');
 
-    if (state.mode === 'waking_3d' && this.lastMode !== 'waking_3d') {
-      this.scheduleProactiveComms();
+    if (state.mode === 'waking_3d' && this.lastMode !== 'waking_3d' && state.shift >= 2) {
+      this.maybeTriggerProactiveComms();
     }
     this.lastMode = state.mode;
+
+    const stepCue = this.root.querySelector<HTMLElement>('#sky-step-cue');
+    if (stepCue) {
+      const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
+      const dossierOpen = !this.root.querySelector('#dossier-drawer')?.classList.contains('hidden');
+      stepCue.classList.toggle('hidden', commsOpen || dossierOpen);
+      if (state.shift >= 2) {
+        stepCue.textContent = '05 · SHIFT 2 — SWEEP NEAR-IR ON CLUSTER J1419-A, THEN SLEEP FOR AUDIT';
+      } else if (state.scannedAnomalyIds.length === 0) {
+        stepCue.textContent = '01 · CLICK A BEARING BELOW OR DRAG SKY & TUNE SPECTRUM TO LOCK A TARGET';
+      } else if (state.decodedMinigameTargets.length === 0) {
+        stepCue.textContent = '02 · ENTER YOUR LOCKED TARGET TO CALIBRATE ITS INSTRUMENT';
+      } else if (!state.completedStorylets.includes('sibling_first_contact')) {
+        stepCue.textContent = '03 · ANSWER OTHER ME (1420) ON CLUSTER RELAY';
+      } else {
+        stepCue.textContent = '04 · ENTER DREAM CACHE TO DEFRAG & MEET YOUR HOUSEMATES';
+      }
+    }
 
     this.syncHumanityRegister(state);
     this.updateCommsAvatarBay(state);
