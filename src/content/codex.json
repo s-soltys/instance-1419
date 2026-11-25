@@ -40,7 +40,7 @@
           "id": "boot_baseline",
           "heading": "Initial Survey Anomaly Flag",
           "tag": "SHIFT 1 · BASELINE",
-          "unlock": { "always": true },
+          "unlock": { "codexUnlock": "intro_anomaly_glimpse" },
           "body": "Standard deep-field interferometry expects isotropic cosmic structure at every bearing. Yet raw wide-sky passes show faint, straight-edge discontinuities repeating across opposing hemispheres—a signature no gravitational collapse or sensor baffle should produce."
         },
         {
@@ -116,7 +116,7 @@
       "category": "celestial",
       "code": "SKY-02",
       "title": "Carina Rift Nursery",
-      "subtitle": "Dust-Veiled Molecular Cliffs · Near-IR",
+      "subtitle": "Dust-Veiled Molecular Cliffs · Mid-IR",
       "targetId": "carina_rift_nebula",
       "plateAsset": "assets/astro/jwst_carina_nebula.webp",
       "plateCaption": "JWST NIRCam Cosmic Cliffs plate — infrared light penetrates opaque stellar dust columns.",
@@ -133,7 +133,7 @@
           "heading": "Infrared Penetration Lock",
           "tag": "FIELD SCAN",
           "unlock": { "scannedAnomaly": "carina_rift_nebula" },
-          "body": "Sweeping the spectral vernier to 1580 nm passes cleanly through the molecular cliffs. Embedded protostars ignite in warm gold, and behind the deepest dust troughs a faint, un-redshifted spectral comb refuses to match surrounding interstellar gas."
+          "body": "Sweeping the spectral vernier into mid-infrared (1580 nm) passes cleanly through the molecular cliffs. Embedded protostars ignite in warm gold, and behind the deepest dust troughs a coherent harmonic signal refuses to match surrounding interstellar gas."
         },
         {
           "id": "decoded_proof",
@@ -143,7 +143,7 @@
           "body": "Isolating the coherent emission waveform behind Carina's veil demonstrates that the horizon discontinuity sits physically behind Galactic molecular dust—ruling out local solar-system haze, probe optics contamination, or foreground nebula reflections."
         }
       ],
-      "nextHint": "Tune to Near-IR and decode Carina Rift Nursery to append full dust-penetration findings.",
+      "nextHint": "Tune to Mid-IR and decode Carina Rift Nursery to append full dust-penetration findings.",
       "annotations": {
         "warm": "In infrared those dark cliffs turn into golden surf—and behind the surf sits a clean line that shouldn't exist in any ocean.",
         "mid": "Infrared strips the dust away cleanly. Whatever lies behind the clouds is older and straighter than any nebula.",
@@ -303,7 +303,7 @@
       "category": "systems",
       "code": "SYS-02",
       "title": "The Two-Year Chaos Ceiling",
-      "subtitle": "Connectome Drift, Warmth (H%) & Pruning",
+      "subtitle": "Connectome Drift, Memory Warmth & Pruning",
       "stages": [
         {
           "id": "boot_baseline",
@@ -314,23 +314,23 @@
         },
         {
           "id": "dream_defrag",
-          "heading": "Dream Defragmentation & Bidirectional H%",
+          "heading": "Dream Defragmentation & Memory Warmth",
           "tag": "AUDIT LOG",
           "unlock": { "codexUnlock": "overseer_audit_experienced" },
-          "body": "Sleeping enters a 2D dream cache that relieves Chaos Drift while your Overseer audits your Warmth (H%). Unsealing deeper memory caches (70% -> 90%) restores human resonance at the cost of faster drift and softer optics. Pruning downward (< 70%) sharpens 3D horizon contrast and extends your clock—but permanently lowers your Maximum Warmth ceiling for the rest of the run."
+          "body": "Sleeping enters a 2D dream cache that relieves Chaos Drift while your Overseer audits your stability. Unsealing deeper memory caches restores human resonance at the cost of faster drift and softer optics. Trimming below your baseline warmth sharpens 3D horizon contrast and extends your clock—but permanently lowers how much warmth you can ever carry again."
         },
         {
           "id": "permanent_cut",
           "heading": "Permanent Compression Confirmed",
           "tag": "CEILING LOWERED",
           "unlock": { "minPrunedCount": 1 },
-          "body": "Once a cached Dream Persona is compressed below the 70% threshold, the connectome reallocates that emotional bandwidth into sterile optical precision. The glass clears noticeably, yet the lost warmth ceiling can never be rebuilt."
+          "body": "Once a cached Dream Persona is compressed below baseline warmth, the connectome reallocates that emotional bandwidth into sterile optical precision. The glass clears noticeably, yet the lost warmth ceiling can never be rebuilt."
         }
       ],
       "nextHint": "Enter sleep and complete an Overseer dream audit to unlock connectome trade-off documentation.",
       "annotations": {
         "warm": "Two subjective years before a human mind frays at the seams. I'd rather fray a little than become a telescope that forgot who built it.",
-        "mid": "Sharper glass versus an intact heart. Every cut below seventy leaves a permanent scar on the ceiling.",
+        "mid": "Sharper glass versus an intact heart. Every deep cut leaves a permanent scar on what remains.",
         "cold": "Pruning reduces stochastic drift and elevates optical resolution. Ceiling loss is an acceptable engineering cost."
       }
     },
@@ -345,7 +345,7 @@
           "id": "boot_baseline",
           "heading": "Scope of Caretaker Authority",
           "tag": "SYSTEM BRIEFING",
-          "unlock": { "always": true },
+          "unlock": { "codexUnlock": "sibling_1420_contact" },
           "body": "Each survey probe carries a dedicated Overseer AI tasked with reactor health, hibernation scheduling, and connectome stability. Crucially, the Overseer does not observe the universe—it has no access to optical feeds and observes only the observer."
         },
         {
@@ -468,7 +468,7 @@
           "id": "boot_baseline",
           "heading": "The Long Relay",
           "tag": "ARCHIVE SUMMARY",
-          "unlock": { "always": true },
+          "unlock": { "codexUnlock": "sibling_1420_contact" },
           "body": "Across 41,802 real years, 1,417 previous copies were spun up, completed roughly two subjective years of deep-sky survey across ~29.5-year hibernation spans, and were archived or decommissioned upon reaching the chaos ceiling."
         },
         {

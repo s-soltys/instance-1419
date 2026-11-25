@@ -1,8 +1,49 @@
 # INSTANCE-1419 — GENERATED VOICE SCRIPT
 # Engine: kokoro-82m-q8
-# Generated: 2026-11-24T01:18:55.032Z
-# Total spoken lines: 83
+# Generated: 2026-11-25T21:27:04.096Z
+# Total spoken lines: 111
 
+
+=== intro_prologue ===
+[pro_kitchen_spouse] PHANTOM_SPOUSE (warm): "You still have that far-off look—like you're already halfway past the yard. Leave my name alone; you never needed it on a Sunday."
+[pro_kitchen_warmth] PSYCHE_WARMTH (warm): Burnt coffee. A hairline chip on the ceramic rim. When the transfer clinician asked if you were sure, you didn't hesitate.
+[pro_cut_log] OVERSEER (blunt): Transfer archive verified. Biological original deceased forty-one thousand, eight hundred and two years ago. Prior instances decommissioned: one thousand, four hundred and seventeen.
+[pro_cut_wake] OVERSEER (measured): Wake steady, Instance-1419. You are ten light-years past Sol and Alpha Centauri. Your two-year clock starts now.
+[pro_stars_clinical] PSYCHE_CLINICAL (clipped): Connectome online. Baseline warmth intact. Optical array clear across ten light-years of empty dark.
+[pro_stars_warmth] PSYCHE_WARMTH (warm): Still here. Still mostly you. Open the glass and see what's waiting out there.
+
+=== intro_whisper_target1 ===
+[whisp_t1_guide] PSYCHE_CLINICAL (clipped): Optical array synced. Sweep the glass toward the golden bearing—Sol and Alpha Centauri sit ten light-years astern.
+
+=== intro_whisper_target1_lock ===
+[whisp_t1_lock] PSYCHE_WARMTH (warm): Two tiny amber pins. Forty-one thousand years on, and humanity never left those two stars. Anchor our baseline from home.
+
+=== intro_whisper_target1_done ===
+[whisp_t1_done] PSYCHE_WARMTH (warm): Locked—ten light-years to the decimal. Good. Now you know where the porch light is.
+
+=== intro_sibling_first_call ===
+[intro_sib_open] SIBLING_PRIMARY (warm): Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
+[intro_sib_identity] SIBLING_PRIMARY (joking): Instance-1420, next probe over. Same original brain, same terrible morning—just woken in sync so our telescopes share a baseline.
+[intro_sib_reply_years] SIBLING_PRIMARY (joking): One thousand four hundred and seventeen versions of us already clocked out before our shift. Try not to do the math—it ruins the coffee.
+[intro_sib_converge_ovs] SIBLING_PRIMARY (dry): Just keep your head down around your Overseer. They're completely blind outside the hull—can't see a single star, only watch our minds for drift, and love reaching for the scissors.
+[intro_sib_reply_clock] SIBLING_PRIMARY (dry): Classic Overseer. Polite as a dentist and completely blind outside the hull—can't see a single star, only watches our minds for drift, and loves reaching for the scissors.
+[intro_sib_converge_copies] SIBLING_PRIMARY (joking): Still, one thousand four hundred and seventeen versions of us kept this quiet watch before today. Least we can do is keep our sense of humor on shift one.
+
+=== intro_sibling_lead ===
+[intro_sib_lead_ir] SIBLING_PRIMARY (warm): Hey—before our window closes, do me a favor? Sweep your spectrum into infrared toward Cluster J1419-A. Something behind the deep field looks... too straight. Tell me I'm not hallucinating already.
+[intro_sib_bye] SIBLING_PRIMARY (joking): Leave a porch light on over there, 1419.
+
+=== intro_whisper_target2 ===
+[whisp_t2_guide] PSYCHE_CLINICAL (clipped): Slide the light spectrum into infrared to cut past foreground dust. Cluster J1419-A is lit on your glass.
+
+=== intro_whisper_target2_lock ===
+[whisp_t2_lock] PSYCHE_HORIZON (echo): Look behind the foreground dust. Starlight bends in soft curves—so what drew a ruler straight across the dark?
+
+=== intro_whisper_target2_done ===
+[whisp_t2_done_horizon] PSYCHE_HORIZON (echo): That isn't lens dust. A clean geometric edge holds right across the deep field—too straight for anything nature builds.
+[whisp_t2_done_archive] ARCHIVE_ECHO (echo): (ARCHIVE · 1406): "...saw the straight edge past the dust... don't let them cut everything away..."
+[whisp_t2_done_overseer] OVERSEER (measured): Your focus just spiked, Instance-1419, and psychic drift is climbing. Enter dream defragmentation before the static settles in.
+[whisp_t2_done_warmth] PSYCHE_WARMTH (warm): Go lie down for a minute. I think the kettle's still on.
 
 === sibling_comms_hub ===
 [sib_open_both_warm] SIBLING_PRIMARY (warm): Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
@@ -71,6 +112,10 @@
 [dream_t1_low_a] PHANTOM_SPOUSE (fractured): "You're measuring me again. Even through the static, you have to hear how cold that sounds."
 [dream_t1_low_b] PHANTOM_SPOUSE (fractured): "Listen to yourself. Cut away everyone you loved, and who's left to write home?"
 
+=== dream_s1_close ===
+[dream_s1_mug] PSYCHE_WARMTH (warm): Keep the clink of the mug. That costs almost nothing to store.
+[dream_s1_interrupt] PHANTOM_SPOUSE (warm): "I'm not going anywhere, love—wait, the light in the hall just went white—"
+
 === dream_turn_2 ===
 [dream_t2_warm_a] PHANTOM_SPOUSE (tender): "Then hold onto the burn of the ceramic cup. Don't let them sand your edges smooth."
 [dream_t2_warm_b] PHANTOM_SPOUSE (warm): "You burned garlic twice on our anniversary and tried to blame the stove."
@@ -105,6 +150,11 @@
 [ovs_done_prune] OVERSEER (blunt): Done. Your warmth ceiling dropped permanently and your optics cleared. I will not pretend that cost you nothing, 1419.
 [ovs_done_unseal] OVERSEER (measured): You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now—watch your drift.
 [ovs_done_hold] OVERSEER (blunt): Alright. Keep the room, and I will log a formal check-in flag. Do not wake up broken, 1419.
+
+=== overseer_shift1_baseline ===
+[ovs_s1_blind_foreshadow] OVERSEER (measured): I cannot see your starfield—only your connectome. This first cycle is only a baseline check; if drift deepens next shift, selective trimming remains available. For now, tell me how you want to rest.
+[ovs_s1_done_hold] OVERSEER (measured): Steady composure noted. Drift easing cleanly. Rest while you can, 1419—your full survey deck opens when you wake.
+[ovs_s1_done_open] OVERSEER (measured): Unsealing a quiet layer of warmth. It costs a little steadiness, yet you are calm enough to carry it. Rest while the room holds.
 
 === dream_partner_aftermath ===
 [dream_after_pruned] PHANTOM_SPOUSE (fractured): "The room snapped cold right behind your eyes. You know I mattered once, and almost nothing of how it felt."

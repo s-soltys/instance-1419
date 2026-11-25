@@ -1,15 +1,30 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { createInitialState, StateStore } from '../../src/engine/StateStore';
+import {
+  createInitialState,
+  INTRO_TARGET_1_ID,
+  INTRO_TARGET_2_ID,
+  migrateSavedState,
+  STARTER_POOL_1,
+  STARTER_POOL_2,
+  StateStore,
+} from '../../src/engine/StateStore';
 
 describe('StateStore invariants & economy', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('initializes with valid canon defaults and schema version 6', () => {
+  it('initializes with valid canon defaults, introStage prologue, starter pools, and schema version 7', () => {
     const store = new StateStore();
     const s = store.getState();
-    expect(s.saveSchemaVersion).toBe(6);
+    expect(s.saveSchemaVersion).toBe(7);
+    expect(s.introStage).toBe('prologue');
+    expect(store.hasSavedProgress()).toBe(false);
+    expect(STARTER_POOL_1).toContain(s.introTarget1Minigame);
+    expect(STARTER_POOL_2).toContain(s.introTarget2Minigame);
+    expect(store.getMinigameIdForTarget(INTRO_TARGET_1_ID, 'fallback_mg')).toBe(s.introTarget1Minigame);
+    expect(store.getMinigameIdForTarget(INTRO_TARGET_2_ID, 'fallback_mg')).toBe(s.introTarget2Minigame);
+    expect(store.getMinigameIdForTarget('carina_rift_nebula', 'wave_shaper')).toBe('wave_shaper');
     expect(s.humanity).toBeLessThanOrEqual(s.maxHumanity);
     expect(s.proofFragments).toEqual([]);
     expect(s.decodedMinigameTargets).toEqual([]);
@@ -21,12 +36,42 @@ describe('StateStore invariants & economy', () => {
     expect(s.codexSeenStages).toEqual({});
   });
 
-  it('migrates legacy v4 saves seamlessly to v6 and tracks replay iteration counts', () => {
+  it('deterministically seeds starter pools per run and persists introStage transitions', () => {
+    const seededA = createInitialState(141901);
+    const seededB = createInitialState(141901);
+    expect(seededA.introTarget1Minigame).toBe(seededB.introTarget1Minigame);
+    expect(seededA.introTarget2Minigame).toBe(seededB.introTarget2Minigame);
+
+    const seenPool1 = new Set<string>();
+    const seenPool2 = new Set<string>();
+    for (let seed = 1; seed <= 40; seed++) {
+      const st = createInitialState(seed * 97);
+      seenPool1.add(st.introTarget1Minigame);
+      seenPool2.add(st.introTarget2Minigame);
+    }
+    expect(seenPool1.size).toBe(STARTER_POOL_1.length);
+    expect(seenPool2.size).toBe(STARTER_POOL_2.length);
+
+    const store = new StateStore();
+    expect(store.hasSavedProgress()).toBe(false);
+    store.setIntroStage('scan_target_1');
+    expect(store.getState().introStage).toBe('scan_target_1');
+    expect(store.hasSavedProgress()).toBe(true);
+
+    const reloaded = new StateStore();
+    expect(reloaded.getState().introStage).toBe('scan_target_1');
+    expect(reloaded.getState().introTarget1Minigame).toBe(store.getState().introTarget1Minigame);
+    expect(reloaded.getState().introTarget2Minigame).toBe(store.getState().introTarget2Minigame);
+  });
+
+  it('migrates legacy v4/v6 saves (including removed target_inspect mode) seamlessly to v7', () => {
     localStorage.setItem(
-      'instance_1419_state_v4',
+      'instance_1419_state_v6',
       JSON.stringify({
-        saveSchemaVersion: 4,
+        saveSchemaVersion: 6,
         shift: 3,
+        mode: 'target_inspect',
+        activeTargetId: 'cluster_j1419_a',
         humanity: 62,
         maxHumanity: 78,
         decodedMinigameTargets: ['cluster_j1419_a'],
@@ -34,13 +79,21 @@ describe('StateStore invariants & economy', () => {
     );
     const store = new StateStore();
     const s = store.getState();
-    expect(s.saveSchemaVersion).toBe(6);
+    expect(s.saveSchemaVersion).toBe(7);
+    expect(s.mode).toBe('waking_3d');
+    expect(s.introStage).toBe('complete');
     expect(s.shift).toBe(3);
     expect(s.humanity).toBe(62);
+    expect(STARTER_POOL_1).toContain(s.introTarget1Minigame);
+    expect(STARTER_POOL_2).toContain(s.introTarget2Minigame);
     expect(s.minigameRunCounts).toEqual({});
     expect(s.codexUnlocks).toEqual([]);
     expect(s.codexSeenStages).toEqual({});
-    expect(localStorage.getItem('instance_1419_state_v4')).toBeNull();
+    expect(localStorage.getItem('instance_1419_state_v6')).toBeNull();
+
+    // Fresh untouched v6 boot save migrates to introStage 'prologue'
+    const freshLegacy = migrateSavedState({ saveSchemaVersion: 6, shift: 1, mode: 'boot' });
+    expect(freshLegacy.introStage).toBe('prologue');
 
     expect(store.getNextIterationIndex('wave_shaper', 4)).toBe(0);
     expect(store.recordMinigameRun('wave_shaper')).toBe(1);

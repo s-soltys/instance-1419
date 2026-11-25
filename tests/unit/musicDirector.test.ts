@@ -29,7 +29,7 @@ describe('MusicDirector catalog integrity & Hybrid H% routing', () => {
     expect(ids.length).toBe(21);
 
     for (const mgId of ids) {
-      const cueId = resolveMusicCueId(baseCtx({ mode: 'target_inspect', activeMinigameId: mgId }));
+      const cueId = resolveMusicCueId(baseCtx({ mode: 'waking_3d', activeMinigameId: mgId }));
       expect(cueId, `Missing cue mapping for minigame ${mgId}`).toBeTruthy();
       const cue = MUSIC_CATALOG.cues[cueId!];
       expect(cue, `Cue ${cueId} missing from catalog`).toBeDefined();
@@ -40,8 +40,7 @@ describe('MusicDirector catalog integrity & Hybrid H% routing', () => {
 
   it('keeps open 3D waking sky and boot on the procedural observatory bed', () => {
     expect(resolveMusicCueId(baseCtx({ mode: 'boot' }))).toBeNull();
-    expect(resolveMusicCueId(baseCtx({ mode: 'waking_3d' }))).toBeNull();
-    expect(resolveMusicCueId(baseCtx({ mode: 'target_inspect', activeMinigameId: null }))).toBeNull();
+    expect(resolveMusicCueId(baseCtx({ mode: 'waking_3d', activeMinigameId: null }))).toBeNull();
   });
 
   it('routes Dream personas and Shift 6 Epilogue cleanly', () => {

@@ -399,7 +399,7 @@ export class AudioEngine {
       return;
     }
 
-    if (this.mode === 'waking_3d' || this.mode === 'target_inspect') {
+    if (this.mode === 'waking_3d') {
       // Meditative D-Lydian deep-space observatory glass harmonics
       const spaceScale = [293.66, 329.63, 369.99, 440.0, 554.37, 659.25, 739.99];
       const waveNorm = Math.max(0, Math.min(1, (this.wavelengthNm - 200) / 1600));
@@ -573,7 +573,7 @@ export class AudioEngine {
       this.noiseFilter.frequency.setTargetAtTime(240, now, 0.4);
       this.noiseGain.gain.setTargetAtTime(0.018, now, 0.3);
       this.auditHumGain.gain.setTargetAtTime(0.0001, now, 0.25);
-    } else if (this.mode === 'waking_3d' || this.mode === 'target_inspect') {
+    } else if (this.mode === 'waking_3d') {
       // Deep space D2/A2 observatory drone subtly shifting with spectral wavelength
       this.subOsc.frequency.setTargetAtTime(73.42, now, 0.5);
       this.fifthOsc.frequency.setTargetAtTime(110.0 + waveNorm * 6.0, now, 0.5);

@@ -14,12 +14,13 @@ interface CharacterInfo {
 
 const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
 
-export type DialogueChannel = 'dream' | 'comms' | 'overseer' | 'future';
+export type DialogueChannel = 'dream' | 'comms' | 'overseer' | 'future' | 'prologue';
 
 function inferChannel(scrollSel: string): DialogueChannel {
   if (scrollSel.includes('comms')) return 'comms';
   if (scrollSel.includes('overseer')) return 'overseer';
   if (scrollSel.includes('future')) return 'future';
+  if (scrollSel.includes('prologue')) return 'prologue';
   return 'dream';
 }
 

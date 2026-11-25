@@ -88,15 +88,22 @@ export class OpticsScene {
   private readonly starMat: THREE.ShaderMaterial;
   private readonly anomalySpecs: AnomalySpec[];
   private readonly anomalyMats: Map<string, THREE.ShaderMaterial> = new Map();
+  private readonly anomalyMeshes: Map<string, THREE.Mesh> = new Map();
   private readonly anomalyDirs: Map<string, THREE.Vector3> = new Map();
   private readonly anomalyPositions: Map<string, THREE.Vector3> = new Map();
 
-  private yawDeg = 12;
-  private pitchDeg = 0;
-  private targetYawDeg = 12;
-  private targetPitchDeg = 0;
-  private fovDeg = 54;
-  private targetFovDeg = 54;
+  private yawDeg = 16;
+  private pitchDeg = -4;
+  private targetYawDeg = 16;
+  private targetPitchDeg = -4;
+  private fovDeg = 62;
+  private targetFovDeg = 62;
+
+  private ambientDrift = false;
+  private driftBasePitchDeg = -4;
+  private visibleTargetIds: Set<string> | null = null;
+  private magneticDetentTargetId: string | null = null;
+  private introPullUntil = 0;
 
   private wavelengthNm = 560;
   private opticalFidelity = 0.55;
@@ -311,6 +318,8 @@ export class OpticsScene {
       const mesh = new THREE.Mesh(new THREE.PlaneGeometry(cfg.size, cfg.size), mat);
       mesh.position.copy(pos);
       mesh.lookAt(0, 0, 0);
+      mesh.visible = this.isTargetVisible(spec.id);
+      this.anomalyMeshes.set(spec.id, mesh);
       this.scene.add(mesh);
     }
   }
@@ -319,6 +328,7 @@ export class OpticsScene {
     const el = this.renderer.domElement;
 
     el.addEventListener('pointerdown', (e) => {
+      if (this.ambientDrift) return;
       el.setPointerCapture(e.pointerId);
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       if (this.activePointers.size === 1) {
@@ -334,6 +344,7 @@ export class OpticsScene {
     });
 
     el.addEventListener('pointermove', (e) => {
+      if (this.ambientDrift) return;
       if (!this.activePointers.has(e.pointerId)) return;
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
@@ -353,7 +364,12 @@ export class OpticsScene {
       this.lastPointerX = e.clientX;
       this.lastPointerY = e.clientY;
 
-      const sens = (this.fovDeg / 60) * 0.16;
+      let sens = (this.fovDeg / 60) * 0.16;
+      const detentDist = this.getMagneticDetentAngleDeg();
+      if (detentDist !== null && detentDist < 7.0) {
+        // Soft ~7° magnetic optical detent damping so aiming feels warm and effortless
+        sens *= 0.48 + 0.52 * (detentDist / 7.0);
+      }
       this.targetYawDeg -= dx * sens;
       this.targetPitchDeg = THREE.MathUtils.clamp(this.targetPitchDeg + dy * sens, -78, 78);
     });
@@ -370,6 +386,7 @@ export class OpticsScene {
     el.addEventListener(
       'wheel',
       (e) => {
+        if (this.ambientDrift) return;
         e.preventDefault();
         const factor = e.deltaY > 0 ? 1.12 : 0.89;
         this.targetFovDeg = THREE.MathUtils.clamp(this.targetFovDeg * factor, 4, 72);
@@ -392,6 +409,85 @@ export class OpticsScene {
     this.wavelengthNm = THREE.MathUtils.clamp(wavelengthNm, 200, 1800);
     this.opticalFidelity = opticalFidelity;
     this.anomalyProgress = anomalyProgress / 100;
+  }
+
+  setAmbientDrift(enabled: boolean): void {
+    this.ambientDrift = enabled;
+    if (enabled) {
+      this.isDragging = false;
+      this.activePointers.clear();
+      this.pinchStartDist = 0;
+      this.lockProgress = 0;
+      this.lastLockedId = '';
+      this.targetFovDeg = 62;
+      this.driftBasePitchDeg = THREE.MathUtils.clamp(this.pitchDeg, -18, 18);
+    }
+  }
+
+  isAmbientDrift(): boolean {
+    return this.ambientDrift;
+  }
+
+  setVisibleTargetIds(ids: string[] | null): void {
+    this.visibleTargetIds = ids ? new Set(ids) : null;
+    for (const [id, mesh] of this.anomalyMeshes.entries()) {
+      mesh.visible = this.isTargetVisible(id);
+    }
+    if (this.lastLockedId && !this.isTargetVisible(this.lastLockedId)) {
+      this.lockProgress = 0;
+      this.lastLockedId = '';
+    }
+  }
+
+  getVisibleTargetIds(): string[] | null {
+    return this.visibleTargetIds ? [...this.visibleTargetIds] : null;
+  }
+
+  setMagneticDetentTarget(targetId: string | null): void {
+    this.magneticDetentTargetId = targetId;
+  }
+
+  getMagneticDetentTarget(): string | null {
+    return this.magneticDetentTargetId;
+  }
+
+  setIntroFraming(raDeg: number, decDeg: number, fov: number, immediate = false): void {
+    const clampedPitch = THREE.MathUtils.clamp(decDeg, -78, 78);
+    const clampedFov = THREE.MathUtils.clamp(fov, 4, 72);
+    this.targetYawDeg = raDeg;
+    this.targetPitchDeg = clampedPitch;
+    this.targetFovDeg = clampedFov;
+    if (immediate) {
+      this.yawDeg = raDeg;
+      this.pitchDeg = clampedPitch;
+      this.fovDeg = clampedFov;
+      this.camera.fov = clampedFov;
+      this.camera.updateProjectionMatrix();
+      this.applyCameraOrientation();
+    }
+  }
+
+  pullInToTarget1(): void {
+    this.ambientDrift = false;
+    // Shortest angular path from current drifting yaw to RA 22°
+    const delta = ((((22 - this.yawDeg) % 360) + 540) % 360) - 180;
+    this.targetYawDeg = this.yawDeg + delta;
+    this.targetPitchDeg = -6;
+    this.targetFovDeg = 56;
+    this.introPullUntil = performance.now() + 1250;
+  }
+
+  private isTargetVisible(id: string): boolean {
+    return this.visibleTargetIds === null || this.visibleTargetIds.has(id);
+  }
+
+  private getMagneticDetentAngleDeg(): number | null {
+    if (!this.magneticDetentTargetId || this.ambientDrift) return null;
+    if (!this.isTargetVisible(this.magneticDetentTargetId)) return null;
+    const dir = this.anomalyDirs.get(this.magneticDetentTargetId);
+    if (!dir) return null;
+    const aim = raDecToVec3(this.targetYawDeg, this.targetPitchDeg, 1).normalize();
+    return THREE.MathUtils.radToDeg(Math.acos(THREE.MathUtils.clamp(aim.dot(dir), -1, 1)));
   }
 
   zoomBy(factor: number): void {
@@ -446,10 +542,12 @@ export class OpticsScene {
   }
 
   private projectMarkers(): ProjectedMarker[] {
+    if (this.ambientDrift) return [];
     const camForward = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion).normalize();
     const out: ProjectedMarker[] = [];
 
     for (const spec of this.anomalySpecs) {
+      if (!this.isTargetVisible(spec.id)) continue;
       const worldPos = this.anomalyPositions.get(spec.id)!.clone();
       const dir = this.anomalyDirs.get(spec.id)!;
       const inFront = camForward.dot(dir) > 0.1;
@@ -485,7 +583,23 @@ export class OpticsScene {
     this.lastFrameTime = now;
     const elapsed = now * 0.001;
 
-    const dampRate = now < this.transitionBoostUntil ? 12.5 : 7.5;
+    if (this.ambientDrift) {
+      this.targetYawDeg += dt * 1.15;
+      this.targetPitchDeg = this.driftBasePitchDeg + Math.sin(elapsed * 0.16) * 2.4;
+      this.targetFovDeg = 62;
+    } else if (!this.isDragging && this.magneticDetentTargetId && this.isTargetVisible(this.magneticDetentTargetId)) {
+      const detentSpec = this.anomalySpecs.find((a) => a.id === this.magneticDetentTargetId);
+      const angleDeg = this.getMagneticDetentAngleDeg();
+      if (detentSpec && angleDeg !== null && angleDeg > 0.15 && angleDeg < 7.0) {
+        const pull = (1 - angleDeg / 7.0) * Math.min(1, dt * 2.4);
+        const yawDelta = ((((detentSpec.raDeg - this.targetYawDeg) % 360) + 540) % 360) - 180;
+        this.targetYawDeg += yawDelta * pull;
+        this.targetPitchDeg += (detentSpec.decDeg - this.targetPitchDeg) * pull;
+      }
+    }
+
+    const dampRate =
+      now < this.transitionBoostUntil ? 12.5 : now < this.introPullUntil ? 3.8 : this.ambientDrift ? 2.8 : 7.5;
     const damp = 1 - Math.exp(-dampRate * dt);
     this.yawDeg += (this.targetYawDeg - this.yawDeg) * damp;
     this.pitchDeg += (this.targetPitchDeg - this.pitchDeg) * damp;
@@ -515,6 +629,11 @@ export class OpticsScene {
     let bestWaveMatch = 0;
 
     for (const spec of this.anomalySpecs) {
+      const visible = this.isTargetVisible(spec.id);
+      const mesh = this.anomalyMeshes.get(spec.id);
+      if (mesh) mesh.visible = visible;
+      if (!visible) continue;
+
       const dir = this.anomalyDirs.get(spec.id)!;
       const angleDeg = THREE.MathUtils.radToDeg(Math.acos(THREE.MathUtils.clamp(camForward.dot(dir), -1, 1)));
       const align = THREE.MathUtils.clamp(1 - angleDeg / Math.max(5.5, this.fovDeg * 0.30), 0, 1);
@@ -527,14 +646,20 @@ export class OpticsScene {
       mat.uniforms.uOpticalFidelity.value = this.opticalFidelity;
       mat.uniforms.uZoomFactor.value = zoomFactor;
 
-      if (align > bestAlign) {
+      if (!this.ambientDrift && align > bestAlign) {
         bestAlign = align;
         bestSpec = spec;
         bestWaveMatch = waveMatch;
       }
     }
 
-    if (bestSpec && bestAlign > 0.5 && bestWaveMatch > 0.48 && this.fovDeg <= bestSpec.recommendedFovMax + 10) {
+    if (
+      !this.ambientDrift &&
+      bestSpec &&
+      bestAlign > 0.5 &&
+      bestWaveMatch > 0.48 &&
+      this.fovDeg <= bestSpec.recommendedFovMax + 10
+    ) {
       const rate = 0.46 * (0.65 + 0.6 * this.opticalFidelity);
       this.lockProgress = Math.min(1, this.lockProgress + dt * rate);
       if (this.lockProgress >= 1 && this.lastLockedId !== bestSpec.id) {
@@ -566,10 +691,10 @@ export class OpticsScene {
       zoomX: 72 / this.fovDeg,
       zoomNorm,
       zoomStage,
-      focusedAnomaly: bestAlign > 0.34 ? bestSpec : null,
-      alignmentScore: bestAlign,
-      wavelengthMatch: bestWaveMatch,
-      lockProgress: this.lockProgress,
+      focusedAnomaly: !this.ambientDrift && bestAlign > 0.34 ? bestSpec : null,
+      alignmentScore: this.ambientDrift ? 0 : bestAlign,
+      wavelengthMatch: this.ambientDrift ? 0 : bestWaveMatch,
+      lockProgress: this.ambientDrift ? 0 : this.lockProgress,
       markers: this.projectMarkers(),
     });
   };

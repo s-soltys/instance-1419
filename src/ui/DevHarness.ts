@@ -1,13 +1,13 @@
 import type { AudioEngine } from '../engine/AudioEngine';
 import type { MinigameRegistry } from '../engine/minigames/MinigameRegistry';
-import type { GameMode, GameState, StateStore } from '../engine/StateStore';
+import type { GameMode, GameState, IntroStage, StateStore } from '../engine/StateStore';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { renderSpeakerAvatar } from './SpeakerAvatar';
 import type { TransitionKind } from './TransitionDirector';
 
 export interface DevHarnessBridge {
   openMode(mode: GameMode): void;
-  openShowcase(targetId: string, waveNm?: number): void;
+  jumpToIntroStage(stage: IntroStage): void;
   launchMinigame(
     minigameId: string,
     warmth?: number,
@@ -172,16 +172,19 @@ export class DevHarness {
               <div class="qa-card">
                 <div class="qa-card-title">PRIMARY GAME SCREENS</div>
                 <div class="qa-btn-row">
-                  <button class="qa-btn" data-scene-mode="boot" type="button">Boot Screen</button>
+                  <button class="qa-btn" data-scene-mode="boot" type="button">Prologue / Title</button>
                   <button class="qa-btn" data-scene-mode="waking_3d" type="button">3D Wide Sky</button>
                   <button class="qa-btn" data-scene-mode="dream_2d" type="button">2D Dreamscape</button>
                 </div>
-                <div class="qa-card-title" style="margin-top:12px;">3D DEEP-TARGET SHOWCASES</div>
+                <div class="qa-card-title" style="margin-top:12px;">INTRO STAGE QUICK-JUMP</div>
                 <div class="qa-btn-row">
-                  <button class="qa-btn primary" data-showcase="sol_centauri_bearing" type="button">Sol–Centauri Star System</button>
-                  <button class="qa-btn primary" data-showcase="carina_rift_nebula" type="button">Carina Volumetric Nebula</button>
-                  <button class="qa-btn primary" data-showcase="cluster_j1419_a" type="button">Cluster J1419-A (3D Lens)</button>
-                  <button class="qa-btn primary" data-showcase="sector_s04_seam" type="button">Pulsar Rift S-04</button>
+                  <button class="qa-btn primary" data-intro-jump="prologue" type="button">Prologue</button>
+                  <button class="qa-btn primary" data-intro-jump="title" type="button">Title Beat</button>
+                  <button class="qa-btn primary" data-intro-jump="scan_target_1" type="button">Scan Target #1</button>
+                  <button class="qa-btn primary" data-intro-jump="mg_1_done" type="button">Post-MG #1 (1420)</button>
+                  <button class="qa-btn primary" data-intro-jump="scan_target_2" type="button">Scan Target #2 (IR)</button>
+                  <button class="qa-btn primary" data-intro-jump="mg_2_done" type="button">Post-MG #2 (Dream)</button>
+                  <button class="qa-btn" data-intro-jump="complete" type="button">Full Sandbox</button>
                 </div>
               </div>
 
@@ -501,9 +504,9 @@ export class DevHarness {
         this.maybeAutoHide();
       });
     });
-    this.host.querySelectorAll<HTMLButtonElement>('[data-showcase]').forEach((btn) => {
+    this.host.querySelectorAll<HTMLButtonElement>('[data-intro-jump]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        this.bridge.openShowcase(btn.dataset.showcase!);
+        this.bridge.jumpToIntroStage(btn.dataset.introJump as IntroStage);
         this.maybeAutoHide();
       });
     });
@@ -778,7 +781,7 @@ export class DevHarness {
     this.updateMusicReadout(s);
     const stats = this.host.querySelector<HTMLElement>('#qa-live-stats');
     if (stats) {
-      stats.textContent = `MODE ${s.mode.toUpperCase()} · H ${s.humanity}/${s.maxHumanity} · DRIFT ${s.chaosDrift}% · ANOM ${s.anomalyProgress}% · CLOCK ${s.subjectiveMonthsLeft} MO · SUSP ${s.overseerSuspicion}`;
+      stats.textContent = `MODE ${s.mode.toUpperCase()} · INTRO ${s.introStage.toUpperCase()} · H ${s.humanity}/${s.maxHumanity} · DRIFT ${s.chaosDrift}% · ANOM ${s.anomalyProgress}% · CLOCK ${s.subjectiveMonthsLeft} MO · SUSP ${s.overseerSuspicion}`;
     }
 
     const gH = this.host.querySelector<HTMLInputElement>('#qa-global-h');

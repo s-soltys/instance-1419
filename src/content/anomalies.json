@@ -6,7 +6,7 @@
       "subtitle": "Home System · Twin Golden Reference",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
-      "minigameId": "constellation_recall",
+      "minigameId": "light_dispersion",
       "raDeg": 46.0,
       "decDeg": -16.0,
       "optimalWavelengthNm": 560,
@@ -15,13 +15,13 @@
       "anomalyGain": 3,
       "kind": "home_reference",
       "accentHex": "#ffd88a",
-      "description": "Ten light-years behind you, Sol and Alpha Centauri burn steady in visible light. Step inside to triangulate cluster parallax baselines and prove the horizon curvature points straight back home."
+      "description": "Ten light-years astern, Sol and Alpha Centauri burn steady in visible light. Calibrate the home-star reference to anchor your astrometric baseline across the quiet dark."
     },
     {
       "id": "carina_rift_nebula",
       "label": "CARINA RIFT NURSERY",
       "subtitle": "Dust-Veiled Stellar Cliffs",
-      "bandName": "NEAR-IR",
+      "bandName": "MID-IR",
       "showcaseType": "nebula",
       "minigameId": "wave_shaper",
       "raDeg": -34.0,
@@ -32,12 +32,12 @@
       "anomalyGain": 3,
       "kind": "nebula_cloud",
       "accentHex": "#f49d6a",
-      "description": "Opaque molecular dust hides this stellar nursery in visible light. Sweep into infrared to slice through the dark veil and match spectral absorption lines against an un-redshifted comb behind it."
+      "description": "Opaque molecular dust hides this stellar nursery in visible light. Tune into mid-infrared to slice past the dark cliffs and shape the resonant emission wave emerging behind them."
     },
     {
       "id": "cluster_j1419_a",
       "label": "CLUSTER J1419-A",
-      "subtitle": "Gravitational Lens & Horizon Seam",
+      "subtitle": "Deep-Field Lens & Horizon Edge",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
       "minigameId": "lens_focus",
@@ -49,7 +49,7 @@
       "anomalyGain": 3,
       "kind": "einstein_ring",
       "accentHex": "#f4b96a",
-      "description": "A massive foreground cluster bends ancient starlight into bright arcs. Model the cluster mass and quadrupole shear to pull the lensed galaxies round and expose the rigid geometric seam behind them."
+      "description": "A massive foreground galaxy cluster bends ancient starlight in near-infrared. Resolve the deep-field optics to strip away glare and uncover the impossibly straight edge behind it."
     },
     {
       "id": "sector_s04_seam",
@@ -66,7 +66,7 @@
       "anomalyGain": 3,
       "kind": "horizon_lattice",
       "accentHex": "#9cc8ff",
-      "description": "Violent ultraviolet and X-ray jets flare along the survey boundary. Route coherent beams around plasma occluders and equalize the optical delay line to resolve the repeating facet."
+      "description": "Violent ultraviolet and X-ray jets flare along Sector S-04. Sync your timing aperture to the spinning neutron star's synchrotron beam to expose the repeating boundary facet."
     },
     {
       "id": "antipodal_poles_seam",
@@ -83,7 +83,7 @@
       "anomalyGain": 3,
       "kind": "horizon_lattice",
       "accentHex": "#a8e6ff",
-      "description": "Directly opposite J1419-A across 93 billion light-years, four-month shift plates reveal synchronized geometric shifts faster than light permits."
+      "description": "Directly opposite Cluster J1419-A across the sky, dispersive multi-band checks reveal synchronized boundary shifts faster than light could ever carry a signal."
     }
   ]
 }

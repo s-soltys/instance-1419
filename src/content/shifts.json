@@ -6,8 +6,8 @@
       "title": "Wake & Local Cluster Calibration",
       "targetAnomalies": [
         "sol_centauri_bearing",
-        "carina_rift_nebula",
         "cluster_j1419_a",
+        "carina_rift_nebula",
         "sector_s04_seam",
         "antipodal_poles_seam"
       ],

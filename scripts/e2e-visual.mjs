@@ -144,20 +144,43 @@ async function run() {
       if (res.status() >= 400) errors.push(`[http ${res.status()}] ${res.url()}`);
     });
 
-    // Flow 1: Boot & QA Harness
+    // Flow 1: Integrated Prologue -> Live-Cosmos Title Beat & QA Harness
     await page.goto(url, { waitUntil: 'networkidle' });
     await page.waitForSelector('#boot-screen:not(.hidden)');
     await page.waitForSelector('#qa-drawer');
     await ensureQaClosed(page);
+
+    const inspectLayerCount = await page.locator('#inspect-layer').count();
+    if (inspectLayerCount !== 0) {
+      throw new Error(`Expected removed #inspect-layer count to be 0, found ${inspectLayerCount}`);
+    }
+
+    // Step through Prologue (warm kitchen -> optical fracture -> live starfield -> Title)
+    for (let i = 0; i < 8; i++) {
+      const visual = await page.evaluate(() => document.querySelector('#boot-screen')?.dataset.bootVisual ?? '');
+      if (visual === 'title') break;
+      await page.mouse.click(640, 360);
+      await page.waitForTimeout(160);
+    }
+    await page.waitForSelector('#title-overlay:not(.hidden)', { timeout: 4000 });
+    await page.waitForTimeout(220);
     await saveCheckedScreenshot(page, '01_boot.png');
 
-    // Flow 2: 3D Sky Aperture & Target Selection
-    await page.click('#btn-boot-3d');
+    // Flow 2: Single-CTA Open Aperture -> Scan Target #1 -> Full Sandbox Sky Aperture
+    await page.click('#btn-title-primary');
     await page.waitForSelector('#optics-layer:not(.hidden)', { timeout: 6000 });
     const opticsCanvasBox = await page.locator('#optics-mount canvas').boundingBox();
     if (!opticsCanvasBox || opticsCanvasBox.width < 800 || opticsCanvasBox.height < 400) {
       throw new Error(`3D Optics canvas box invalid: ${JSON.stringify(opticsCanvasBox)}`);
     }
+    await page.waitForTimeout(450);
+
+    // Jump to full sandbox via DevHarness to inspect full bearing index, settings, and codex
+    await ensureQaOpen(page);
+    await page.click('[data-qa-tab="scenes"]');
+    await page.click('[data-intro-jump="complete"]');
+    await ensureQaClosed(page);
+    await page.waitForSelector('[data-bearing-id="cluster_j1419_a"]', { timeout: 4000 });
     await page.click('[data-bearing-id="cluster_j1419_a"]');
     await page.waitForTimeout(450);
     await saveCheckedScreenshot(page, '02_sky_aperture.png');
@@ -322,8 +345,9 @@ async function run() {
     await page.click('[data-qa-tab="scenes"]');
     await page.click('[data-scene-mode="dream_2d"]');
     await page.waitForSelector('#dream-layer:not(.hidden)', { timeout: 6000 });
+    await page.waitForSelector('#optics-layer', { state: 'hidden', timeout: 4000 });
     await ensureQaClosed(page);
-    await page.waitForTimeout(450);
+    await page.waitForTimeout(200);
     const codexVisibleInDream = await page.locator('#btn-codex').isVisible();
     if (codexVisibleInDream) {
       throw new Error('Wake-World Codex button must not be visible inside 2D Dream View');
@@ -350,8 +374,10 @@ async function run() {
     });
 
     await mPage.goto(url, { waitUntil: 'networkidle' });
+    await ensureQaOpen(mPage);
+    await mPage.click('[data-qa-tab="scenes"]');
+    await mPage.click('[data-intro-jump="complete"]');
     await ensureQaClosed(mPage);
-    await mPage.click('#btn-boot-3d');
     await mPage.waitForSelector('#optics-layer:not(.hidden)', { timeout: 6000 });
     await mPage.click('#btn-settings');
     await mPage.waitForSelector('#settings-overlay:not(.hidden)', { timeout: 3000 });

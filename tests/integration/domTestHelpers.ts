@@ -92,6 +92,7 @@ export function createMockAudioEngine() {
   return {
     unlock: vi.fn(),
     playCue: vi.fn(),
+    playStatusShift: vi.fn(),
     playHoverTick: vi.fn(),
     playVernierDetent: vi.fn(),
     isMuted: vi.fn(() => false),
@@ -133,6 +134,8 @@ export function createMockShowcaseScene() {
 
   return {
     loadTarget: vi.fn(),
+    enterTarget: vi.fn(),
+    setMinigameBackdropMode: vi.fn(),
     setActive: vi.fn(),
     setWaveBand: vi.fn(),
     setOpticalFidelity: vi.fn(),
@@ -154,6 +157,14 @@ export function createMockOpticsScene() {
     getAnomalySpecs: vi.fn(() => specs),
     setActive: vi.fn(),
     setParameters: vi.fn(),
+    setAmbientDrift: vi.fn(),
+    isAmbientDrift: vi.fn(() => false),
+    setVisibleTargetIds: vi.fn(),
+    getVisibleTargetIds: vi.fn(() => null),
+    setMagneticDetentTarget: vi.fn(),
+    getMagneticDetentTarget: vi.fn(() => null),
+    setIntroFraming: vi.fn(),
+    pullInToTarget1: vi.fn(),
     triggerTransitionDive: vi.fn(),
     triggerPullbackArrival: vi.fn(),
     slewToAnomaly: vi.fn(),

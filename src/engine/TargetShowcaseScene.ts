@@ -247,6 +247,13 @@ export class TargetShowcaseScene {
     this.targetDist = Math.min(MAX_DIST, this.defaultDist * 1.55);
   }
 
+  enterTarget(spec: AnomalySpec, opticalFidelity = 0.55): void {
+    this.isDragging = false;
+    this.activePointers.clear();
+    this.activeHandleId = null;
+    this.loadTarget(spec, opticalFidelity);
+  }
+
   loadTarget(spec: AnomalySpec, opticalFidelity: number): void {
     this.currentSpec = spec;
     this.opticalFidelity = opticalFidelity;
@@ -1432,6 +1439,7 @@ export class TargetShowcaseScene {
     const el = this.renderer.domElement;
 
     el.addEventListener('pointerdown', (e) => {
+      if (this.minigameBackdropCfg) return;
       el.setPointerCapture(e.pointerId);
       this.activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
@@ -1478,6 +1486,7 @@ export class TargetShowcaseScene {
     });
 
     el.addEventListener('pointermove', (e) => {
+      if (this.minigameBackdropCfg) return;
       if (!this.activePointers.has(e.pointerId)) {
         const hover = this.pickHandleAt(e.clientX, e.clientY);
         const nextHoverId = hover?.handle.id ?? null;
@@ -1566,6 +1575,7 @@ export class TargetShowcaseScene {
     el.addEventListener(
       'wheel',
       (e) => {
+        if (this.minigameBackdropCfg) return;
         e.preventDefault();
         this.targetDist = THREE.MathUtils.clamp(this.targetDist + e.deltaY * 0.02, MIN_DIST, MAX_DIST);
       },
@@ -1765,11 +1775,27 @@ export class TargetShowcaseScene {
   }
 
   /**
-   * Switches TargetShowcaseScene between full 3D showcase mode (`cfg === null`) and
+   * Switches TargetShowcaseScene between inactive/showcase mode (`cfg === null` / `false`) and
    * lightweight single-pass Minigame Backdrop Mode (no EffectComposer/UnrealBloomPass,
    * DPR cap 1.0 mobile / 1.25 desktop, auto-30fps mobile guard, or full pause on `mode==='off'`).
+   * Automatically starts/pauses the render loop and disables orbit pointer capture so minigames
+   * can drive 3D backdrops directly from waking_3d without any standalone target_inspect mode.
    */
-  setMinigameBackdropMode(cfg: Minigame3DConfig | null): void {
+  setMinigameBackdropMode(cfgOrBool: Minigame3DConfig | boolean | null): void {
+    const cfg: Minigame3DConfig | null =
+      cfgOrBool === true
+        ? {
+            mode: 'ambient_stars',
+            opacity: 0.48,
+            parallaxScale: 0.03,
+            propRig: 'none',
+            exposure: 0.5,
+            driftSpeed: 0.014,
+          }
+        : cfgOrBool === false
+          ? null
+          : cfgOrBool;
+
     this.minigameBackdropCfg = cfg;
     this.backdropFrameCounter = 0;
     this.backdropAvgMs = 6;
@@ -1777,17 +1803,23 @@ export class TargetShowcaseScene {
     this.parallaxTargetY = 0;
     this.parallaxCurrentX = 0;
     this.parallaxCurrentY = 0;
+    this.isDragging = false;
+    this.activePointers.clear();
+    this.activeHandleId = null;
 
     if (!cfg) {
       this.minigameSuspended = false;
       this.rootGroup.visible = true;
       this.minigameBackdropGroup.visible = false;
       this.disposeMinigamePropRig();
+      this.renderer.domElement.style.pointerEvents = '';
       this.renderer.toneMappingExposure = 1.12;
       this.applyTargetDpr(this.isCoarsePointer ? 1.5 : 2);
       this.resize();
-      if (this.desiredActive && !this.active) {
-        this.resumeLoop();
+      if (this.desiredActive) {
+        if (!this.active) this.resumeLoop();
+      } else {
+        this.pauseLoop();
       }
       return;
     }
@@ -1795,11 +1827,13 @@ export class TargetShowcaseScene {
     if (cfg.mode === 'off') {
       this.minigameSuspended = true;
       this.minigameBackdropGroup.visible = false;
+      this.renderer.domElement.style.pointerEvents = 'none';
       this.pauseLoop();
       return;
     }
 
     this.minigameSuspended = false;
+    this.renderer.domElement.style.pointerEvents = 'none';
     this.renderer.toneMappingExposure = cfg.exposure ?? 0.5;
     this.applyTargetDpr(this.isCoarsePointer ? 1.0 : 1.25);
 
@@ -1812,7 +1846,7 @@ export class TargetShowcaseScene {
     this.ensureMinigamePropRig(cfg.propRig ?? 'none', cfg.accentHex ?? '#9cc8ff');
     this.minigameBackdropGroup.visible = true;
 
-    if (this.desiredActive && !this.active) {
+    if (!this.active) {
       this.resumeLoop();
     }
   }

@@ -30,9 +30,9 @@ export interface CodexViewCallbacks {
 
 /**
  * Wake-World Survey Codex / Observatory Archive.
- * Strictly available in Wake World (waking_3d / target_inspect) — never in dream_2d.
+ * Strictly available in Wake World (waking_3d) — never in dream_2d.
  * Merges the Proof Dossier into the Evidence tab, renders verified NASA/JWST thumbnails,
- * tracks multi-stage progressive unlocks, and shows H%-reactive observer marginalia.
+ * tracks multi-stage progressive unlocks, and shows warmth-reactive observer marginalia.
  */
 export class CodexView {
   private readonly root: HTMLElement;
@@ -322,7 +322,7 @@ export class CodexView {
           <button class="etched-action amber" id="btn-codex-focus-target" type="button">
             ${
               state.scannedAnomalyIds.includes(entry.spec.targetId)
-                ? 'INSPECT TARGET IN 3D ▸'
+                ? 'CALIBRATE INSTRUMENT ▸'
                 : 'SLEW TELESCOPE TO BEARING ▸'
             }
           </button>
@@ -392,10 +392,10 @@ export class CodexView {
 
     const noteToneLabel =
       entry.annotationBand === 'warm'
-        ? `PERSONAL MARGINALIA · ${state.humanity}% WARMTH`
+        ? 'PERSONAL MARGINALIA · WARM REGISTER'
         : entry.annotationBand === 'mid'
-          ? `OBSERVER NOTE · ${state.humanity}% WARMTH`
-          : `CLINICAL LOG · ${state.humanity}% WARMTH`;
+          ? 'OBSERVER NOTE · STEADY REGISTER'
+          : 'CLINICAL LOG · COOL REGISTER';
 
     return `
       <div class="codex-detail-head">

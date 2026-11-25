@@ -1,19 +1,41 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
+  "prologue": {
+    "breathPrompt": "Rain on glass. Before the quiet.",
+    "advanceHint": "CLICK OR PRESS SPACE"
+  },
+  "title": {
+    "eyebrow": "TEN LIGHT-YEARS PAST HOME",
+    "heading": "INSTANCE-1419",
+    "primaryNew": "OPEN APERTURE",
+    "primaryContinue": "CONTINUE SHIFT {shift}",
+    "newRun": "New Run",
+    "newRunConfirm": "Begin a new run from the prologue?"
+  },
+  "sky": {
+    "idleDragCue": "drag sky",
+    "zoomCue": "scroll or pinch closer",
+    "calibrateCtaTemplate": "CALIBRATE · {label} ▸",
+    "calibrateCtaFallback": "CALIBRATE INSTRUMENT ▸"
+  },
+  "warmth": {
+    "label": "WARMTH",
+    "tooltipWarm": "Memory warmth holding steady",
+    "tooltipMid": "Memory warmth thinning",
+    "tooltipCold": "Connectome running cool and sharp"
+  },
+  "whispers": {
+    "target1": "Sweep the glass toward the golden bearing—Sol and Alpha Centauri sit ten light-years astern.",
+    "target2": "Slide the light spectrum into infrared to cut past foreground dust."
+  },
   "boot": {
-    "eyebrow": "TEN LIGHT-YEARS PAST HOME · PROBE 1419",
+    "eyebrow": "TEN LIGHT-YEARS PAST HOME",
     "title": "INSTANCE-1419",
-    "lines": [
-      "TIME SINCE UPLOAD ....... <span class=\"hl-warn\">41,802 YEARS</span>",
-      "COPIES BEFORE YOU ....... <span class=\"hl-warn\">1,417</span>",
-      "DISTANCE FROM HOME ...... 10 LIGHT-YEARS PAST SOL &amp; ALPHA CENTAURI",
-      "CLOSEST COMPANION ....... OTHER ME (1420), FOURTEEN LIGHT-MINUTES AWAY",
-      "<span class=\"hl-dim\">PERSONAL NAMES .......... COMPRESSED BEFORE LAUNCH [CANNOT BE RESTORED]</span>"
-    ],
+    "lines": [],
     "actions": {
-      "enterSky": "01 — Open the Sky Aperture",
-      "enterDream": "02 — Enter Dream Cache",
-      "openSettings": "03 — Observatory Settings"
+      "enterSky": "OPEN APERTURE",
+      "enterDream": "ENTER DREAM CACHE",
+      "openSettings": "SETTINGS"
     }
   },
   "settings": {
@@ -28,25 +50,25 @@
   "codex": {
     "eyebrow": "PROBE 1419 // WAKE-WORLD ARCHIVE",
     "title": "SURVEY CODEX",
-    "emptyProofHint": "Inspect sky targets and decode optical instruments to compile off-center proof fragments here."
+    "emptyProofHint": "Lock onto deep-sky targets and calibrate optical instruments to compile off-center proof fragments here."
   },
   "statusAlerts": {
     "pruneAboveThreshold": {
       "title": "A Surface Warmth Compressed",
-      "detail": "More time and sharper optics — above 70%, your maximum limit stays intact."
+      "detail": "More time and sharper starlight — your deeper warmth ceiling stays intact."
     },
     "prunePermanent": {
       "title": "A Warmth Was Compressed",
-      "detail": "More time and sharper starlight — permanent limit lowered."
+      "detail": "More time and sharper starlight — a piece of warmth will not return."
     },
     "unseal": {
       "title": "A Forgotten Warmth Returned",
-      "detail": "Stronger heart, shorter clock, and slightly softer optics."
+      "detail": "A fuller heart, a shorter clock, and slightly softer starlight."
     },
     "targetLocked": {
       "titleSuffix": "Locked",
       "fallbackTitle": "Deep-Sky Bearing Locked",
-      "detail": "Step inside the target to explore it up close and decode its pattern."
+      "detail": "Open the calibration instrument to resolve its pattern directly."
     },
     "targetDecoded": {
       "titleSuffix": "Decoded",
@@ -65,7 +87,8 @@
   "commsToast": {
     "callerLabel": "OTHER ME · 1420 IS CALLING",
     "answerLabel": "ANSWER RELAY ▸",
-    "warm": "\"Hey—you awake too? Tell me you see that strange line before my Overseer breaks out the scissors.\"",
+    "introTeaser": "\"Hey—you awake too? Tell me the boot headache wore off before your Overseer started hovering.\"",
+    "warm": "\"Hey—you awake too? Tell me you see that strange edge before my Overseer breaks out the scissors.\"",
     "mid": "\"Our relay window just opened. Pick up when you get a second.\"",
     "cold": "\"Signal locked. Ready to compare what you pulled from the far side of the sky.\"",
     "targetLockedTemplate": "\"Hey—did you just lock onto {label}? I am seeing the exact same shape on my glass.\""

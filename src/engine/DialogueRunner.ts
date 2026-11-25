@@ -10,9 +10,13 @@ export interface DialogueEntry {
   mood?: string;
   emotion?: string;
   audioCue?: string;
+  visualCue?: string;
+  whisper?: boolean;
   auditState?: 'active' | 'inactive';
   isPlayerChoice?: boolean;
 }
+
+export type DialogueLine = DialogueEntry;
 
 export interface DialogueChoice {
   index: number;
@@ -40,8 +44,14 @@ function parseTags(rawTags: string[] | null): ParsedTags {
   if (!rawTags) return meta;
   for (const tag of rawTags) {
     const trimmed = tag.trim();
+    if (!trimmed) continue;
     const colon = trimmed.indexOf(':');
-    if (colon === -1) continue;
+    if (colon === -1) {
+      if (trimmed.toLowerCase() === 'whisper') {
+        meta.whisper = true;
+      }
+      continue;
+    }
     const key = trimmed.slice(0, colon).trim().toLowerCase();
     const val = trimmed.slice(colon + 1).trim();
     if (key === 'speaker') meta.speaker = val;
@@ -49,12 +59,16 @@ function parseTags(rawTags: string[] | null): ParsedTags {
     else if (key === 'portrait') meta.portrait = val;
     else if (key === 'mood') meta.mood = val;
     else if (key === 'emotion') meta.emotion = val;
-    else if (key === 'audio') meta.audioCue = val;
+    else if ((key === 'audio' || key === 'sound') && val) meta.audioCue = val;
+    else if (key === 'visual' && val) meta.visualCue = val;
+    else if (key === 'whisper') meta.whisper = val.toLowerCase() !== 'false' && val !== '0';
     else if (key === 'codex' && val) meta.codexUnlocks.push(val);
     else if (key === 'audit' && (val === 'active' || val === 'inactive')) {
       meta.auditState = val;
     } else if (key === 'auto_interrupt' && val) {
       meta.autoInterruptKnot = val;
+    } else if (key === 'interrupt' && val) {
+      meta.autoInterruptKnot = val === 'overseer' ? 'overseer_interrogation' : val;
     } else if (key === 'resume_dream' && val) {
       meta.resumeDreamKnot = val;
     }
@@ -126,6 +140,17 @@ export class DialogueRunner {
     return story;
   }
 
+  private setInkVarIfDeclared(name: string, value: number | string | boolean): void {
+    try {
+      const existing = this.story.variablesState.$(name);
+      if (existing !== null && existing !== undefined) {
+        this.story.variablesState.$(name, value);
+      }
+    } catch {
+      // Ignore variables not yet declared in compiled story JSON
+    }
+  }
+
   private syncVarsToInk(): void {
     const s = this.store.getState();
     this.story.variablesState.$('humanity', s.humanity);
@@ -137,6 +162,7 @@ export class DialogueRunner {
     this.story.variablesState.$('subjective_months', s.subjectiveMonthsLeft);
     this.story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
     this.story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
+    this.setInkVarIfDeclared('current_shift', s.shift);
   }
 
   exportStateJson(): string {
@@ -256,6 +282,8 @@ export class DialogueRunner {
           mood: meta.mood,
           emotion: meta.emotion,
           audioCue: meta.audioCue,
+          visualCue: meta.visualCue,
+          whisper: meta.whisper,
           auditState: meta.auditState,
         };
         this.entries.push(entry);

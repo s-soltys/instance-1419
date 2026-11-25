@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DialogueRunner } from '../../src/engine/DialogueRunner';
 import { MinigameRegistry } from '../../src/engine/minigames/MinigameRegistry';
-import { StateStore } from '../../src/engine/StateStore';
+import { INTRO_TARGET_1_ID, STARTER_POOL_1, StateStore } from '../../src/engine/StateStore';
 import { StoryletScheduler } from '../../src/engine/StoryletScheduler';
 import { UIController } from '../../src/ui/UIController';
 import {
@@ -26,7 +26,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     document.body.innerHTML = '';
   });
 
-  it('wires showcase cleanly through DevHarness launch buttons without throwing TypeError', () => {
+  it('wires showcase directly into MinigameHostView without target_inspect or throwing TypeError', () => {
     const appRoot = document.getElementById('app')!;
     const store = new StateStore();
     const audio = createMockAudioEngine();
@@ -51,16 +51,22 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     ui.attachRenderers(optics as never, showcase as never, dream as never);
 
-    // Clicking DevHarness launch button reproduces the exact production trigger path
+    // #inspect-layer is completely removed overall
+    expect(appRoot.querySelector('#inspect-layer')).toBeNull();
+    expect(appRoot.querySelector('#minigame-layer')).not.toBeNull();
+
+    // Clicking DevHarness launch button reproduces the direct sky -> minigame path
     const lensBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="lens_focus"]');
     expect(lensBtn).not.toBeNull();
     lensBtn!.click();
 
-    // Advance transitionToMode timers cleanly
+    // Advance optical_dive transition cleanly
     vi.advanceTimersByTime(1000);
 
-    expect(showcase.loadTarget).toHaveBeenCalled();
+    expect(showcase.enterTarget).toHaveBeenCalled();
     expect(showcase.getInstrumentBridge).toHaveBeenCalled();
+    expect(store.getState().mode).toBe('waking_3d');
+    expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('LNS-04');
 
@@ -70,7 +76,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     waveBtn!.click();
     vi.advanceTimersByTime(1000);
 
-    expect(showcase.loadTarget).toHaveBeenCalledTimes(2);
+    expect(showcase.enterTarget).toHaveBeenCalledTimes(2);
     expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
     expect(audio.syncMusicContext).toHaveBeenCalledWith(
       expect.objectContaining({ activeMinigameId: 'lens_focus' })
@@ -127,8 +133,8 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     expect(appRoot.querySelector('#settings-overlay')?.classList.contains('hidden')).toBe(true);
 
-    // Enter Wake World and open Survey Codex
-    store.patch({ mode: 'waking_3d' });
+    // Enter Wake World (complete intro) and open Survey Codex
+    store.patch({ mode: 'waking_3d', introStage: 'complete' });
     appRoot.querySelector<HTMLButtonElement>('#btn-codex')!.click();
     expect(appRoot.querySelector('#codex-overlay')?.classList.contains('hidden')).toBe(false);
 
@@ -138,7 +144,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(appRoot.querySelector('#dream-layer #btn-codex')).toBeNull();
   });
 
-  it('routes distinct per-seam transitions and voice-matched kinetic dialogue dynamics', () => {
+  it('routes Prologue -> Live Title -> Direct Sky -> Minigame -> Sky -> Shift-1 Soft Dream transitions', () => {
     const appRoot = document.getElementById('app')!;
     const store = new StateStore();
     const audio = createMockAudioEngine();
@@ -163,39 +169,76 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     ui.attachRenderers(optics as never, showcase as never, dream as never);
 
     const stageEl = appRoot.querySelector<HTMLElement>('#transition-stage')!;
+    const bootEl = appRoot.querySelector<HTMLElement>('#boot-screen')!;
     expect(stageEl).not.toBeNull();
+    expect(store.getState().introStage).toBe('prologue');
+    expect(bootEl.dataset.bootVisual).toBe('breath');
 
-    // 1. Boot -> 3D Sky uses aperture_boot and leaves no stale .is-leaving/.is-arriving state
-    appRoot.querySelector<HTMLButtonElement>('#btn-boot-3d')!.click();
-    expect(stageEl.dataset.kind).toBe('aperture_boot');
-    expect(stageEl.classList.contains('is-active')).toBe(true);
-    expect(appRoot.querySelector('#boot-screen')?.classList.contains('is-leaving')).toBe(true);
-    vi.advanceTimersByTime(1000);
+    // 1. Click through Prologue breath + 6 voiced beats into Integrated Title over live drifting 3D sky
+    const seenVisuals = new Set<string>();
+    for (let i = 0; i < 8; i++) {
+      bootEl.click();
+      vi.advanceTimersByTime(120);
+      if (bootEl.dataset.bootVisual) seenVisuals.add(bootEl.dataset.bootVisual);
+      if (store.getState().introStage === 'title') break;
+    }
+    expect(seenVisuals.has('prologue_kitchen')).toBe(true);
+    expect(seenVisuals.has('prologue_fracture')).toBe(true);
+    expect(seenVisuals.has('prologue_starfield')).toBe(true);
+    expect(store.getState().introStage).toBe('title');
+    expect(optics.setAmbientDrift).toHaveBeenCalledWith(true);
+    expect(appRoot.querySelector('#title-overlay')?.classList.contains('hidden')).toBe(false);
+
+    // 2. Single primary CTA (`OPEN APERTURE`) pulls cleanly into scan_target_1 (Target #1 only + magnetic detent)
+    appRoot.querySelector<HTMLButtonElement>('#btn-title-primary')!.click();
+    vi.advanceTimersByTime(600);
     expect(store.getState().mode).toBe('waking_3d');
-    expect(stageEl.classList.contains('is-active')).toBe(false);
-    expect(appRoot.querySelector('#boot-screen')?.classList.contains('hidden')).toBe(true);
-    expect(appRoot.querySelector('#boot-screen')?.classList.contains('is-leaving')).toBe(false);
-    expect(appRoot.querySelector('#optics-layer')?.classList.contains('is-arriving')).toBe(false);
+    expect(store.getState().introStage).toBe('scan_target_1');
+    expect(optics.pullInToTarget1).toHaveBeenCalled();
+    expect(optics.setVisibleTargetIds).toHaveBeenCalledWith([INTRO_TARGET_1_ID]);
+    expect(optics.setMagneticDetentTarget).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
 
-    // 2. 3D Sky -> Target Inspect uses optical_dive + 3D camera hooks
-    document.querySelector<HTMLButtonElement>('[data-showcase="cluster_j1419_a"]')!.click();
+    // 3. Locking Target #1 and clicking etched CTA dives DIRECTLY into curated starter pool #1 minigame
+    const target1Spec = optics.getAnomalySpecs().find((a) => a.id === INTRO_TARGET_1_ID)!;
+    store.recordAnomalyScan(target1Spec.id, target1Spec.anomalyGain, target1Spec.label);
+    ui.onOpticsTelemetry({
+      raDeg: target1Spec.raDeg,
+      decDeg: target1Spec.decDeg,
+      fovDeg: 22,
+      zoomX: 3.2,
+      zoomNorm: 0.72,
+      zoomStage: 'DEEP FIELD',
+      focusedAnomaly: target1Spec,
+      alignmentScore: 0.96,
+      wavelengthMatch: 0.98,
+      lockProgress: 1,
+      markers: [],
+    });
+
+    const calibrateBtn = appRoot.querySelector<HTMLButtonElement>('#btn-enter-inspect')!;
+    expect(calibrateBtn.classList.contains('hidden')).toBe(false);
+    calibrateBtn.click();
     expect(stageEl.dataset.kind).toBe('optical_dive');
-    expect(optics.triggerTransitionDive).toHaveBeenCalledWith('cluster_j1419_a');
+    expect(optics.triggerTransitionDive).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
     vi.advanceTimersByTime(1050);
-    expect(showcase.triggerArrivalPullIn).toHaveBeenCalled();
-    expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
-    expect(appRoot.querySelector('#inspect-layer')?.classList.contains('hidden')).toBe(false);
 
-    // 3. Target Inspect -> 3D Sky uses optical_pullback
-    appRoot.querySelector<HTMLButtonElement>('#btn-exit-inspect')!.click();
+    expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
+    expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(false);
+    expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
+    expect(STARTER_POOL_1).toContain(store.getState().introTarget1Minigame);
+
+    // 4. Closing minigame runs optical_pullback directly back to waking_3d (no intermediate inspect screen)
+    appRoot.querySelector<HTMLButtonElement>('#mg-btn-close')!.click();
     expect(stageEl.dataset.kind).toBe('optical_pullback');
-    expect(showcase.triggerDeparturePullOut).toHaveBeenCalled();
     vi.advanceTimersByTime(1000);
     expect(optics.triggerPullbackArrival).toHaveBeenCalled();
-    expect(appRoot.querySelector('#inspect-layer')?.classList.contains('hidden')).toBe(true);
+    expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(false);
+    expect(store.getState().mode).toBe('waking_3d');
 
-    // 4. 3D Sky -> 2D Dream uses dream_submerge + DreamCanvas entrance reveal + dream dialogue channel
+    // 5. Entering 2D Dream uses dream_submerge + DreamCanvas entrance reveal + soft Shift-1 audit
+    document.querySelector<HTMLButtonElement>('[data-intro-jump="complete"]')!.click();
+    vi.advanceTimersByTime(300);
     appRoot.querySelector<HTMLButtonElement>('#btn-enter-dream')!.click();
     expect(stageEl.dataset.kind).toBe('dream_submerge');
     vi.advanceTimersByTime(1200);
@@ -203,7 +246,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#dream-scroll .dialogue-entry')?.getAttribute('data-channel')).toBe('dream');
 
-    // Choice click triggers selection pulse during 280ms reply beat and settles cleanly
+    // Choice click triggers selection pulse during reply beat and settles cleanly
     const firstChoice = appRoot.querySelector<HTMLButtonElement>('#dream-choices .choice-line')!;
     firstChoice.click();
     expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(true);
@@ -211,7 +254,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     vi.advanceTimersByTime(320);
     expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(false);
 
-    // 5. Overseer interrogation triggers overseer_slice pulse + overseer channel
+    // 6. Overseer interrogation triggers overseer_slice pulse + overseer channel
     document.querySelector<HTMLButtonElement>('[data-overseer-h="84"]')!.click();
     expect(stageEl.dataset.kind).toBe('overseer_slice');
     expect(appRoot.querySelector('#overseer-panel')?.classList.contains('hidden')).toBe(false);

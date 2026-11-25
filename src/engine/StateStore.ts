@@ -3,10 +3,45 @@ import shiftsData from '../content/shifts.json';
 import uiCopy from '../content/ui_copy.json';
 import { platform } from '../platform/PlatformAdapter';
 
-export type GameMode = 'boot' | 'waking_3d' | 'target_inspect' | 'dream_2d' | 'ending';
+export type GameMode = 'boot' | 'waking_3d' | 'dream_2d' | 'ending';
+export type ViewMode = GameMode;
+export type IntroStage =
+  | 'prologue'
+  | 'title'
+  | 'scan_target_1'
+  | 'mg_1_done'
+  | 'scan_target_2'
+  | 'mg_2_done'
+  | 'complete';
 export type AuditOutcome = 'none' | 'pruned' | 'unsealed' | 'held';
 export type EndingId = 'ending_whole_incomplete' | 'ending_cold_complete' | 'ending_sweet_spot';
 export type MinigameGradeTier = 'partial' | 'clean' | 'deep_overclock';
+
+export const INTRO_TARGET_1_ID = 'sol_centauri_bearing';
+export const INTRO_TARGET_2_ID = 'cluster_j1419_a';
+export const STARTER_POOL_1 = ['light_dispersion', 'wave_shaper', 'constellation_recall'] as const;
+export const STARTER_POOL_2 = ['lens_focus', 'multiband_loupe', 'polarization_filter'] as const;
+
+const VALID_GAME_MODES = new Set<GameMode>(['boot', 'waking_3d', 'dream_2d', 'ending']);
+const VALID_INTRO_STAGES = new Set<IntroStage>([
+  'prologue',
+  'title',
+  'scan_target_1',
+  'mg_1_done',
+  'scan_target_2',
+  'mg_2_done',
+  'complete',
+]);
+
+function pickStarterPair(seed: number): { target1: string; target2: string } {
+  const s = (Math.abs(Math.floor(seed)) >>> 0) || 1419;
+  const h1 = (Math.imul(s, 1664525) + 1013904223) >>> 0;
+  const h2 = (Math.imul(h1, 1664525) + 1013904223) >>> 0;
+  return {
+    target1: STARTER_POOL_1[h1 % STARTER_POOL_1.length],
+    target2: STARTER_POOL_2[h2 % STARTER_POOL_2.length],
+  };
+}
 
 export interface ProofDossierEntry {
   id: string;
@@ -33,6 +68,10 @@ export interface GameState {
   saveSchemaVersion: number;
   shift: number;
   mode: GameMode;
+  introStage: IntroStage;
+  runSeed: number;
+  introTarget1Minigame: string;
+  introTarget2Minigame: string;
   activeTargetId: string | null;
   activeDreamPersonaId: string;
   dreamPersonaCache: string[];
@@ -62,9 +101,10 @@ export interface GameState {
   codexSeenStages: Record<string, number>;
 }
 
-const SAVE_SCHEMA_VERSION = 6;
-const STORAGE_KEY = 'instance_1419_state_v6';
+const SAVE_SCHEMA_VERSION = 7;
+const STORAGE_KEY = 'instance_1419_state_v7';
 const LEGACY_STORAGE_KEYS = [
+  'instance_1419_state_v6',
   'instance_1419_state_v5',
   'instance_1419_state_v4',
   'instance_1419_state_v3',
@@ -74,12 +114,23 @@ const LEGACY_STORAGE_KEYS = [
 export type StateListener = (state: GameState) => void;
 export type StatusShiftListener = (event: StatusShiftEvent) => void;
 
-export function createInitialState(): GameState {
+function generateRunSeed(): number {
+  return (Math.floor(Math.random() * 0x7fffffff) >>> 0) || 1419;
+}
+
+export function createInitialState(seed?: number): GameState {
   const s = balance.startingState;
+  const runSeed =
+    typeof seed === 'number' && Number.isFinite(seed) ? (Math.abs(Math.floor(seed)) >>> 0) || 1419 : generateRunSeed();
+  const starters = pickStarterPair(runSeed);
   return {
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     shift: s.shift,
     mode: 'boot',
+    introStage: 'prologue',
+    runSeed,
+    introTarget1Minigame: starters.target1,
+    introTarget2Minigame: starters.target2,
     activeTargetId: null,
     activeDreamPersonaId: 'phantom_spouse',
     dreamPersonaCache: ['phantom_spouse'],
@@ -110,17 +161,49 @@ export function createInitialState(): GameState {
   };
 }
 
-function migrateSavedState(raw: Partial<GameState> | null): GameState {
+export function migrateSavedState(raw: Partial<GameState> | null): GameState {
   const base = createInitialState();
   if (!raw || typeof raw !== 'object') return base;
+  const rawMode = (raw as { mode?: string }).mode;
   const merged: GameState = {
     ...base,
     ...raw,
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
   };
-  if (merged.mode === 'target_inspect' && !merged.activeTargetId) {
+
+  // Migrate removed 'target_inspect' or unknown modes cleanly to 'waking_3d'
+  if (rawMode === 'target_inspect' || !VALID_GAME_MODES.has(merged.mode)) {
     merged.mode = 'waking_3d';
   }
+
+  // Migrate introStage for legacy saves (v6 and earlier)
+  if (!VALID_INTRO_STAGES.has(raw.introStage as IntroStage)) {
+    const hadProgress =
+      (raw.shift ?? 1) > 1 ||
+      (Array.isArray(raw.decodedMinigameTargets) && raw.decodedMinigameTargets.length > 0) ||
+      (Array.isArray(raw.scannedAnomalyIds) && raw.scannedAnomalyIds.length > 0) ||
+      (Array.isArray(raw.completedStorylets) && raw.completedStorylets.length > 0) ||
+      rawMode === 'waking_3d' ||
+      rawMode === 'dream_2d' ||
+      rawMode === 'target_inspect' ||
+      rawMode === 'ending';
+    merged.introStage = hadProgress ? 'complete' : 'prologue';
+  }
+
+  // Ensure deterministic runSeed and valid starter pool picks
+  const seed =
+    typeof raw.runSeed === 'number' && Number.isFinite(raw.runSeed)
+      ? (Math.abs(Math.floor(raw.runSeed)) >>> 0) || 1419
+      : base.runSeed;
+  merged.runSeed = seed;
+  const fallbackStarters = pickStarterPair(seed);
+  if (!(STARTER_POOL_1 as readonly string[]).includes(merged.introTarget1Minigame)) {
+    merged.introTarget1Minigame = fallbackStarters.target1;
+  }
+  if (!(STARTER_POOL_2 as readonly string[]).includes(merged.introTarget2Minigame)) {
+    merged.introTarget2Minigame = fallbackStarters.target2;
+  }
+
   if (!Array.isArray(merged.dreamPersonaCache) || merged.dreamPersonaCache.length === 0) {
     merged.dreamPersonaCache = ['phantom_spouse'];
   }
@@ -205,6 +288,12 @@ export class StateStore {
 
   patch(partial: Partial<GameState>): void {
     const merged: GameState = { ...this.state, ...partial, saveSchemaVersion: SAVE_SCHEMA_VERSION };
+    if (!VALID_GAME_MODES.has(merged.mode)) {
+      merged.mode = 'waking_3d';
+    }
+    if (!VALID_INTRO_STAGES.has(merged.introStage)) {
+      merged.introStage = this.state.introStage;
+    }
     const maxCap = balance.petitionUpward.maxHumanityCap;
     const minCeil = balance.pruning.minMaxHumanity;
     merged.maxHumanity = Math.max(minCeil, Math.min(maxCap, Math.round(merged.maxHumanity)));
@@ -216,6 +305,31 @@ export class StateStore {
     merged.wavelengthNm = Math.max(200, Math.min(1800, Math.round(merged.wavelengthNm)));
     merged.shift = Math.max(1, Math.min(shiftsData.shifts.length, Math.round(merged.shift)));
     this.commit(merged);
+  }
+
+  setIntroStage(stage: IntroStage): void {
+    this.patch({ introStage: stage });
+  }
+
+  getMinigameIdForTarget(targetId: string, defaultId: string): string {
+    if (targetId === INTRO_TARGET_1_ID) {
+      return this.state.introTarget1Minigame || defaultId;
+    }
+    if (targetId === INTRO_TARGET_2_ID) {
+      return this.state.introTarget2Minigame || defaultId;
+    }
+    return defaultId;
+  }
+
+  hasSavedProgress(): boolean {
+    const s = this.state;
+    return (
+      s.introStage !== 'prologue' ||
+      s.decodedMinigameTargets.length > 0 ||
+      s.scannedAnomalyIds.length > 0 ||
+      s.shift > 1 ||
+      s.completedStorylets.length > 0
+    );
   }
 
   pruneHumanity(delta: number, personaId: string): void {
