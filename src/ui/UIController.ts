@@ -580,7 +580,7 @@ export class UIController {
 
           <aside class="overseer-panel hidden" id="overseer-panel" aria-label="Overseer Interrogation">
             <div class="overseer-header">
-              <span>OVERSEER-1419 // DIRECT INTERROGATION</span>
+              <span>OVERSEER // DIRECT INTERROGATION</span>
               <span class="rec-indicator">● LIVE AUDIT</span>
             </div>
             <div class="overseer-avatar-bay" id="overseer-avatar-bay"></div>
@@ -1869,11 +1869,11 @@ export class UIController {
         <div class="dual-avatar-pair">
           <div class="avatar-chip">
             ${renderSpeakerAvatar('overseer', s.humanity, 44)}
-            <div class="avatar-meta"><strong>OVERSEER-1419</strong><span>CARETAKER</span></div>
+            <div class="avatar-meta"><strong>OVERSEER</strong><span>CARETAKER</span></div>
           </div>
           <span class="pair-link">ARCHIVE BLEED</span>
           <div class="avatar-chip right">
-            <div class="avatar-meta"><strong>PRIOR COPY · 1406</strong><span>ARCHIVED</span></div>
+            <div class="avatar-meta"><strong>PRIOR WATCH · LOG 1406</strong><span>ARCHIVED</span></div>
             ${renderSpeakerAvatar('archive_echo', s.humanity, 44)}
           </div>
         </div>
@@ -1890,12 +1890,12 @@ export class UIController {
     bay.innerHTML = `
       <div class="dual-avatar-pair">
         <div class="avatar-chip">
-          <span class="voice-live-dot" data-voice-dot-speaker="player" style="background:#ebb062;"></span>
-          <div class="avatar-meta"><strong>YOU · 1419</strong><span>${this.warmthDescriptor(s.humanity)}</span></div>
+          <span class="voice-live-dot" data-voice-dot-speaker="player" style="background:#eef0ec;"></span>
+          <div class="avatar-meta"><strong>YOU</strong><span>${this.warmthDescriptor(s.humanity)}</span></div>
         </div>
         <span class="pair-link">${toneTag}</span>
         <div class="avatar-chip right">
-          <div class="avatar-meta"><strong>OTHER ME · 1420</strong><span>${this.warmthDescriptor(s.primarySiblingH)}</span></div>
+          <div class="avatar-meta"><strong>OTHER ME</strong><span>${this.warmthDescriptor(s.primarySiblingH)}</span></div>
           ${renderSpeakerAvatar('sibling_primary', s.primarySiblingH, 40)}
         </div>
       </div>
@@ -2031,7 +2031,7 @@ export class UIController {
       choicesEl.innerHTML = `
         <button class="choice-line audit-incoming-btn is-tier-action" id="btn-audit-now" type="button">
           <span class="choice-num">!</span>
-          <span class="choice-body">OVERSEER-1419 IS STEPPING IN…</span>
+          <span class="choice-body">OVERSEER IS STEPPING IN…</span>
         </button>
       `;
       choicesEl.querySelector('#btn-audit-now')?.addEventListener('click', () => {
@@ -2068,7 +2068,7 @@ export class UIController {
       }, 620);
     }
 
-    this.transitions.playOverlayPulse('overseer_slice', 'OVERSEER-1419 // AUDIT INTERCEPT');
+    this.transitions.playOverlayPulse('overseer_slice', 'OVERSEER // AUDIT INTERCEPT');
     this.root.querySelector('#dream-ribbon')?.classList.add('receded');
     this.root.querySelector('#overseer-panel')?.classList.remove('hidden');
 
@@ -2106,7 +2106,7 @@ export class UIController {
       <div class="avatar-card">
         ${renderSpeakerAvatar('overseer', s.humanity, 50)}
         <div class="avatar-meta">
-          <strong>OVERSEER-1419 · MIND CARETAKER</strong>
+          <strong>OVERSEER · MIND CARETAKER</strong>
           <span>BLIND TO THE SKY · WATCHING YOUR WARMTH</span>
         </div>
       </div>
@@ -2328,7 +2328,7 @@ export class UIController {
         refs.dreamCaption?.classList.toggle('audit-mode', state.overseerAuditActive);
         if (refs.dreamCaption) {
           refs.dreamCaption.textContent = state.overseerAuditActive
-            ? 'OVERSEER-1419 · AUDIT ACTIVE'
+            ? 'OVERSEER · AUDIT ACTIVE'
             : personaMeta.displayName;
         }
       }
@@ -2676,7 +2676,7 @@ export class UIController {
           optical_pullback: { label: 'RETURNING TO SKY APERTURE…', tone: 'cold' },
           dream_submerge: { label: 'DRIFTING INTO SLEEP…', tone: 'warm' },
           dream_wake: { label: 'WAKING TO SKY APERTURE…', tone: 'cold' },
-          overseer_slice: { label: 'OVERSEER-1419 // AUDIT INTERCEPT', tone: 'cold' },
+          overseer_slice: { label: 'OVERSEER // AUDIT INTERCEPT', tone: 'cold' },
         };
         const meta = labels[kind];
         this.transitions.play({

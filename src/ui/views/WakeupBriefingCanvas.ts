@@ -430,7 +430,7 @@ export class WakeupBriefingCanvas {
     ctx.fillText(`${years.toLocaleString()} YRS`, cx, cy - 4);
     ctx.font = '10px ui-monospace, SFMono-Regular, Menlo, monospace';
     ctx.fillStyle = 'rgba(235, 176, 98, 0.86)';
-    ctx.fillText(`${copies.toLocaleString()} PRIOR COPIES · YOU ARE 1419`, cx, cy + 16);
+    ctx.fillText(`${copies.toLocaleString()} PRIOR WATCHES · WATCH #1419`, cx, cy + 16);
     ctx.textAlign = 'left';
   }
 

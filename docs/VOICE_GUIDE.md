@@ -8,9 +8,9 @@ Every `.ink` script must obey this guide. The `consistency-auditor` checks all d
 * **Non-Abrupt, Explanatory Pacing:** Give conversations room to breathe (~2,000-word intro scale, 2-line beats, and optional `◇` Q&A hubs via `# kind:ask # weight:explore` so players can unpack world/physics details without ending the scene). Avoid 1-line trailer ping-pong.
 * **Tone DNA (Dry Humor + Cosmic Horror):** Reserved, adult, and grounded—never grandiose sci-fi melodrama or sitcom pep. Let concrete domestic or engineering detail sit beside eerie cosmic scale.
 * **Choice Tagging Contract (Zero Warm/Cold Spoiler Dots):** Tag choices cleanly with `# kind:ask|reply|action|prune`, `# weight:explore|consequential|permanent`, and `# hint:<plain-language cost>` (never surface `.choice-affinity-dot` Warm/Cold stat indicators on conversational choices).
-* **Reserved Cast 2 Voice Discipline:** Always understated, natural, and zero-theatrics—grounded female **Spouse** (chest voice, zero ASMR breathiness, `warm`/`fractured` anchors, no `aecho`), dry early-30s **male** **Sibling 1420** (`warm`/`clipped` anchors) sharing the **same biological-original male voice** on probe-tape EQ for **Archive 1406**, calm late-40s neutral **male** **Overseer**, and **unvoiced** Internal Psyche (`"voiced": false`). Keep voiced lines `<=160` chars (`~10s`) per line, splitting longer thoughts into consecutive turn-grouped lines.
+* **Reserved Cast 2 Voice Discipline:** Always understated, natural, and zero-theatrics—grounded female **Spouse** (chest voice, fierce unsentimental banter, zero ASMR breathiness, `warm`/`fractured` anchors, no `aecho`), dry early-30s **male** **Sibling 1420** (`warm`/`clipped` anchors) sharing the **same biological-original male voice** on probe-tape EQ for **Archive 1406**, calm late-40s neutral **male** **Overseer**, and **unvoiced** Internal Psyche (`"voiced": false`). Keep voiced lines `<=160` chars (`~10s`) per line, splitting longer thoughts into consecutive turn-grouped lines.
 * **Mobile-Legible Cadence:** Short paragraphs (1–3 sentences max per beat). High emotional density per line.
-* **Name Redaction Rule:** Never write a proper name for any loved one or dream persona. Use compressed relational tags (`[RELATION:SPOUSE_01]`) or sensory substitutes (*"the laugh you know the pitch of, not the word for"*), and keep the Kitchen Prologue header spoiler-free (`ACROSS THE TABLE`).
+* **Name Redaction & Humane Address Rules:** Never write a proper name for any loved one or dream persona (use `[RELATION:SPOUSE_01]` or sensory substitutes, keeping the Kitchen Prologue header spoiler-free `ACROSS THE TABLE`). Equally, **never address the willing volunteer protagonist as `"Instance-1419"` or `"1419"`** in spoken dialogue or speaker headers (`YOU`, `OVERSEER`, `OTHER ME`)—Overseer uses direct `"you"` or respectful `"Observer"`, Sibling uses `"hey, me"` / `"other me"` / `"twin"`, and `1419` stays reserved strictly for the title and technical probe/watch logs.
 * **Originality Boundary:** 100% original idioms, telemetry formats, and character voices—zero borrowed phrases or concepts from external CC BY-SA fiction.
 
 ---
@@ -41,17 +41,23 @@ Rendered sparingly at real turning points as softly styled italic marginalia (`�
   * *Early Shifts (`sibling_h >= 65%`):* Dry, tired 3 AM deadpan gallows wit + sharp, lucid scientist/engineer; zero sitcom pep. Explains hard-sci-fi mechanics cleanly so cosmic dread hits harder when the math breaks.
   * *Late Shifts (`sibling_h < 45%`):* Humor evaporates into clipped precision; sentences shorten; stops asking how you feel and only sends coordinates and error margins.
   * *Mirroring:* Reacts explicitly to `sibling_delta = player_h - sibling_h` (pitying/grieving if you stay warm, eerily finishing each other's math if you both prune, or startled/hurt if you prune first).
-* **Secondary Sibling (`sibling_secondary` — Missable):**
-  * *Style:* Eccentric, slightly out-of-phase, dryly amused by their own glitchy Overseer; treats deep-space solitude like an absurd clerical job.
+* **Secondary Sibling (`sibling_secondary` — `1418`, Missable):**
+  * *Style:* Deadpan night-shift bureaucrat whose glitchy Overseer clock left them weirdly calm; treats deep-space solitude like an eccentric clerical desk.
+  * *Biological Parity:* Reuses `sibling_primary`'s exact biological voice anchor (`sibling_primary_warm.wav`), shifted via brisker cadence and off-phase carrier EQ (`210–5600 Hz`, subtle `1.03x` rate) so they register immediately as another copy of you.
 
-### D. Dream Personas (`phantom_*` — Grounded Natural Female Chest Voice)
-* **High `H%` (`>= 75%`):** Warm kitchen surface with subtle uncanny memory-cracks (*looping raindrops, strange what sticks*) and candid, unsentimental emotional honesty underneath—zero ASMR breathiness.
-* **Mid `H%` (`45–74%`):** Slightly looped or elliptical; warmth remains, edges fray into repetition or clinical metadata bleed.
-* **Low `H%` (`< 45%`):** Rendered half-as-telemetry, half-as-ghost (*"Gesture classified: reassurance. Audio warmth degraded."*).
+### D. Dream Personas (`phantom_*` — 9-Persona Cast 2 Roster)
+All 9 Dream Personas (`phantom_spouse`, `phantom_parent`, `phantom_upload_witness` [politely nihilistic Take C `14523`], `phantom_afternoon_stranger`, `phantom_rival` [neurotic, fiercely competitive, patterned precision, darkly extravagant Take B `14442`], `phantom_younger_self`, `phantom_skeptic`, `phantom_technician`, `phantom_waiting_room` — detailed in [`docs/CHARACTER_BIBLE.md`](CHARACTER_BIBLE.md)) preserve Cast 2 restraint (natural close-mic warmth, zero melodrama or ASMR breathiness) with distinct age/gender/cadence registers and dual `warm` / `fractured` emotion anchors (single anchor for `phantom_upload_witness`).
+* **High `H%` (`>= 75%`):** Warm grounded presence with subtle uncanny memory-cracks (*looping raindrops, slipped years*) and unsentimental honesty.
+* **Mid `H%` (`45–74%`):** Slightly looped or elliptical; warmth remains while edges fray.
+* **Low `H%` (`< 45%`):** Flattened, brittle, or half-clinical memory bleed (*"Gesture classified: reassurance. Audio warmth degraded."*).
 
 ### E. Archived Prior Copies (`archive_echo` — Same Biological-Original Male Voice on Probe Tape)
-* Used sparingly (2–4 brief fragments across the whole 2-hour run).
-* *Style:* Dry, lucid "post-it note to my next self" gallows humor hiding real urgency (*"Hi, me. If you're reading this..."*)—sharing the exact same biological voice as Sibling 1420, degraded through old probe tape.
+* Used sparingly (**3-tape arc** across the 2-hour run: `1406` warm warner → `1411` hollowed `<30%` solver on `clipped` anchor → `0812` ancient ordinary watch).
+* *Style:* Dry, lucid "post-it note to my next self" gallows humor hiding real urgency (*"Hi, me. If you're reading this..."*)—sharing the exact same biological voice as Siblings `1420`/`1418`, degraded through old probe tape (`320–3400 Hz`).
+
+### F. Future Humanity (`future_humanity` — Ending Epilogue Boundary)
+* **Ending 2 (`Low H%`):** Pure **silence** after the 20-year freeze (no chatty critique).
+* **Ending 3 (`Balanced Sweet Spot`):** Minimal, uncanny human echo mirroring back a warm phrase/rhythm from your own broadcast without demystifying 41,802 years of evolution.
 
 ---
 

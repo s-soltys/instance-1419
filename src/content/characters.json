@@ -4,14 +4,14 @@
     "narrator": {
       "displayName": "SYSTEM · LOG",
       "role": "system",
-      "accentColor": "#8fa7bc",
+      "accentColor": "#7d90a3",
       "avatarKind": "system_dot",
       "portrait": null
     },
     "player": {
-      "displayName": "YOU · INSTANCE-1419",
+      "displayName": "YOU",
       "role": "player",
-      "accentColor": "#edf1f5",
+      "accentColor": "#eef0ec",
       "avatarKind": "self_connectome",
       "portrait": null
     },
@@ -19,7 +19,7 @@
       "displayName": "RESIDUAL WARMTH",
       "whisperLabel": "warmth",
       "role": "psyche",
-      "accentColor": "#ebad5c",
+      "accentColor": "#d98c6c",
       "avatarKind": "psyche_warmth",
       "portrait": null
     },
@@ -27,7 +27,7 @@
       "displayName": "CONNECTOME ARCHITECTURE",
       "whisperLabel": "structure",
       "role": "psyche",
-      "accentColor": "#7ec2e0",
+      "accentColor": "#7ab6d6",
       "avatarKind": "psyche_clinical",
       "portrait": null
     },
@@ -35,48 +35,388 @@
       "displayName": "HORIZON INTUITION",
       "whisperLabel": "pattern",
       "role": "psyche",
-      "accentColor": "#c9a4f2",
+      "accentColor": "#b996e8",
       "avatarKind": "psyche_horizon",
       "portrait": null
     },
     "overseer": {
-      "displayName": "OVERSEER-1419",
+      "displayName": "OVERSEER",
       "role": "overseer",
-      "accentColor": "#dceaf5",
-      "avatarKind": "overseer_iris",
+      "accentColor": "#d8ecfa",
+      "avatarKind": "overseer_reticle",
       "portrait": null
     },
     "sibling_primary": {
-      "displayName": "OTHER ME · 1420",
+      "displayName": "OTHER ME",
       "role": "sibling",
-      "accentColor": "#7cd6b8",
+      "accentColor": "#6fd6b6",
       "avatarKind": "sibling_echo",
+      "portrait": null
+    },
+    "sibling_secondary": {
+      "displayName": "OTHER ME · OFF-PHASE",
+      "role": "sibling",
+      "accentColor": "#b8d474",
+      "avatarKind": "sibling_secondary",
       "portrait": null
     },
     "future_humanity": {
       "displayName": "SOL–CENTAURI · FUTURE RELAY",
       "role": "future_humanity",
-      "accentColor": "#ffd88a",
+      "accentColor": "#fff0c2",
       "avatarKind": "future_beacon",
+      "portrait": null
+    },
+    "archive_echo": {
+      "displayName": "PRIOR WATCH · LOG 1406",
+      "role": "archive",
+      "accentColor": "#a89f91",
+      "avatarKind": "archive_ghost",
       "portrait": null
     },
     "phantom_spouse": {
       "displayName": "[RELATION:SPOUSE_01]",
       "role": "dream_persona",
-      "accentColor": "#f2be7a",
-      "avatarKind": "dream_silhouette",
+      "tier": "fixed_anchor",
+      "accentColor": "#e6b37e",
+      "avatarKind": "dream_object",
+      "objectGlyph": "chipped_mug",
       "portrait": "assets/characters/dream_spouse_impasto.webp",
       "tableau": "assets/characters/dream_spouse_impasto.webp",
       "faceAnchor": [0.40, 0.73],
       "roomTitle": "SUNDAY KITCHEN MEMORY",
-      "blurredSubtitle": "FEATURES BLURRED · DISTORTED"
+      "blurredSubtitle": "FEATURES BLURRED · DISTORTED",
+      "musicCue": "dream_wurlitzer_rain",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Morning Kitchen",
+          "image": "assets/characters/dream_spouse_impasto.webp",
+          "faceAnchor": [0.40, 0.73]
+        },
+        "beat2_a": {
+          "label": "Beat 2A · Rainy Dusk Lamp",
+          "image": "assets/characters/dream_spouse_beat2_a.webp",
+          "faceAnchor": [0.40, 0.72]
+        },
+        "beat2_b": {
+          "label": "Beat 2B · Doorway Coat",
+          "image": "assets/characters/dream_spouse_beat2_b.webp",
+          "faceAnchor": [0.36, 0.73]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Golden Afternoon",
+          "image": "assets/characters/dream_spouse_beat3_warm.webp",
+          "faceAnchor": [0.40, 0.72]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Overcast Chair",
+          "image": "assets/characters/dream_spouse_beat3_strained.webp",
+          "faceAnchor": [0.41, 0.74]
+        },
+        "farewell": {
+          "label": "Farewell · Dissolving Light",
+          "image": "assets/characters/dream_spouse_farewell.webp",
+          "faceAnchor": [0.22, 0.70]
+        }
+      }
     },
-    "archive_echo": {
-      "displayName": "PRIOR COPY · 1406",
-      "role": "archive",
-      "accentColor": "#8f98a6",
-      "avatarKind": "archive_ghost",
-      "portrait": null
+    "phantom_parent": {
+      "displayName": "[RELATION:PROGENITOR_01]",
+      "role": "dream_persona",
+      "tier": "fixed_anchor",
+      "accentColor": "#b9ad84",
+      "avatarKind": "dream_object",
+      "objectGlyph": "glasses",
+      "portrait": "assets/characters/dream_parent_impasto.webp",
+      "tableau": "assets/characters/dream_parent_impasto.webp",
+      "faceAnchor": [0.38, 0.70],
+      "roomTitle": "QUIET BEDSIDE ROOM",
+      "blurredSubtitle": "FEATURES BLURRED · DISTORTED",
+      "musicCue": "dream_harmonium_breath",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Quiet Sickbed",
+          "image": "assets/characters/dream_parent_impasto.webp",
+          "faceAnchor": [0.38, 0.70]
+        },
+        "beat2_a": {
+          "label": "Beat 2A · Rain Window",
+          "image": "assets/characters/dream_parent_beat2_a.webp",
+          "faceAnchor": [0.35, 0.69]
+        },
+        "beat2_b": {
+          "label": "Beat 2B · Folded Glasses",
+          "image": "assets/characters/dream_parent_beat2_b.webp",
+          "faceAnchor": [0.36, 0.69]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Morning Quilt",
+          "image": "assets/characters/dream_parent_beat3_warm.webp",
+          "faceAnchor": [0.38, 0.70]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Lamp Switched Off",
+          "image": "assets/characters/dream_parent_beat3_strained.webp",
+          "faceAnchor": [0.37, 0.69]
+        },
+        "farewell": {
+          "label": "Farewell · Empty Bedside",
+          "image": "assets/characters/dream_parent_farewell.webp",
+          "faceAnchor": [0.30, 0.46]
+        }
+      }
+    },
+    "phantom_upload_witness": {
+      "displayName": "[RELATION:TRANSFER_ADMIN]",
+      "role": "dream_persona",
+      "tier": "rotating",
+      "accentColor": "#c8d6cc",
+      "avatarKind": "dream_object",
+      "objectGlyph": "paper_cup",
+      "portrait": "assets/characters/dream_upload_witness_impasto.webp",
+      "tableau": "assets/characters/dream_upload_witness_impasto.webp",
+      "faceAnchor": [0.23, 0.69],
+      "roomTitle": "INTAKE PARTITION · HOUR ZERO",
+      "blurredSubtitle": "FEATURES BLURRED · DISTORTED",
+      "musicCue": "dream_rhodes_cello",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Intake Desk",
+          "image": "assets/characters/dream_upload_witness_impasto.webp",
+          "faceAnchor": [0.23, 0.69]
+        },
+        "beat2": {
+          "label": "Beat 2 · Detached Pen Tap",
+          "image": "assets/characters/dream_upload_witness_beat2.webp",
+          "faceAnchor": [0.21, 0.69]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Rain Window",
+          "image": "assets/characters/dream_upload_witness_beat3_warm.webp",
+          "faceAnchor": [0.23, 0.72]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Flat Glass Glare",
+          "image": "assets/characters/dream_upload_witness_beat3_strained.webp",
+          "faceAnchor": [0.23, 0.70]
+        }
+      }
+    },
+    "phantom_afternoon_stranger": {
+      "displayName": "[RELATION:ANOMALY_ENCOUNTER]",
+      "role": "dream_persona",
+      "tier": "rotating",
+      "accentColor": "#8fb4cc",
+      "avatarKind": "dream_object",
+      "objectGlyph": "transit_ticket",
+      "portrait": "assets/characters/dream_afternoon_stranger_impasto.webp",
+      "tableau": "assets/characters/dream_afternoon_stranger_impasto.webp",
+      "faceAnchor": [0.37, 0.75],
+      "roomTitle": "GOLDEN-HOUR BENCH",
+      "blurredSubtitle": "NAME NEVER KNOWN · FADING",
+      "musicCue": "dream_nylon_sunbeam",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Golden Bench",
+          "image": "assets/characters/dream_afternoon_stranger_impasto.webp",
+          "faceAnchor": [0.37, 0.75]
+        },
+        "beat2": {
+          "label": "Beat 2 · Passing Tram Glow",
+          "image": "assets/characters/dream_afternoon_stranger_beat2.webp",
+          "faceAnchor": [0.34, 0.73]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Apricot Dusk",
+          "image": "assets/characters/dream_afternoon_stranger_beat3_warm.webp",
+          "faceAnchor": [0.37, 0.75]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Slate Wash",
+          "image": "assets/characters/dream_afternoon_stranger_beat3_strained.webp",
+          "faceAnchor": [0.36, 0.74]
+        }
+      }
+    },
+    "phantom_rival": {
+      "displayName": "[RELATION:PEER_COMPETITOR]",
+      "role": "dream_persona",
+      "tier": "rotating",
+      "accentColor": "#c99e7a",
+      "avatarKind": "dream_object",
+      "objectGlyph": "calipers",
+      "portrait": "assets/characters/dream_rival_impasto.webp",
+      "tableau": "assets/characters/dream_rival_impasto.webp",
+      "faceAnchor": [0.37, 0.75],
+      "roomTitle": "SODIUM-LIT WORKTABLE",
+      "blurredSubtitle": "FEATURES BLURRED · DISTORTED",
+      "musicCue": "dream_vibraphone_nocturne",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Sodium Worktable",
+          "image": "assets/characters/dream_rival_impasto.webp",
+          "faceAnchor": [0.37, 0.75]
+        },
+        "beat2": {
+          "label": "Beat 2 · Caliper Baton",
+          "image": "assets/characters/dream_rival_beat2.webp",
+          "faceAnchor": [0.31, 0.73]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Draped Scarf",
+          "image": "assets/characters/dream_rival_beat3_warm.webp",
+          "faceAnchor": [0.38, 0.79]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Ordered Stacks",
+          "image": "assets/characters/dream_rival_beat3_strained.webp",
+          "faceAnchor": [0.40, 0.75]
+        }
+      }
+    },
+    "phantom_younger_self": {
+      "displayName": "[RELATION:SELF_PRE_TRANSFER]",
+      "role": "dream_persona",
+      "tier": "rotating",
+      "accentColor": "#dfd2b5",
+      "avatarKind": "dream_object",
+      "objectGlyph": "wristwatch",
+      "portrait": "assets/characters/dream_younger_self_impasto.webp",
+      "tableau": "assets/characters/dream_younger_self_impasto.webp",
+      "faceAnchor": [0.38, 0.62],
+      "roomTitle": "STEAMED BATHROOM GLASS",
+      "blurredSubtitle": "CONDENSATION OVER FACE",
+      "musicCue": "dream_rhodes_cello",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Steamed Mirror",
+          "image": "assets/characters/dream_younger_self_impasto.webp",
+          "faceAnchor": [0.38, 0.62]
+        },
+        "beat2": {
+          "label": "Beat 2 · Wiping Steam",
+          "image": "assets/characters/dream_younger_self_beat2.webp",
+          "faceAnchor": [0.38, 0.63]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Morning Sunbeam",
+          "image": "assets/characters/dream_younger_self_beat3_warm.webp",
+          "faceAnchor": [0.40, 0.64]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Fogged Watch",
+          "image": "assets/characters/dream_younger_self_beat3_strained.webp",
+          "faceAnchor": [0.36, 0.62]
+        }
+      }
+    },
+    "phantom_skeptic": {
+      "displayName": "[RELATION:DISSENTER_01]",
+      "role": "dream_persona",
+      "tier": "rotating",
+      "accentColor": "#c47b64",
+      "avatarKind": "dream_object",
+      "objectGlyph": "lowball_glass",
+      "portrait": "assets/characters/dream_skeptic_impasto.webp",
+      "tableau": "assets/characters/dream_skeptic_impasto.webp",
+      "faceAnchor": [0.33, 0.75],
+      "roomTitle": "1 AM CORNER BOOTH",
+      "blurredSubtitle": "FEATURES BLURRED · DISTORTED",
+      "musicCue": "dream_vibraphone_nocturne",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Corner Booth",
+          "image": "assets/characters/dream_skeptic_impasto.webp",
+          "faceAnchor": [0.33, 0.75]
+        },
+        "beat2": {
+          "label": "Beat 2 · Leaning In",
+          "image": "assets/characters/dream_skeptic_beat2.webp",
+          "faceAnchor": [0.32, 0.75]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Second Glass",
+          "image": "assets/characters/dream_skeptic_beat3_warm.webp",
+          "faceAnchor": [0.33, 0.75]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Closing Shadows",
+          "image": "assets/characters/dream_skeptic_beat3_strained.webp",
+          "faceAnchor": [0.27, 0.75]
+        }
+      }
+    },
+    "phantom_technician": {
+      "displayName": "[RELATION:OPERATOR_NIGHT]",
+      "role": "dream_persona",
+      "tier": "rotating",
+      "accentColor": "#cf845c",
+      "avatarKind": "dream_object",
+      "objectGlyph": "wrench",
+      "portrait": "assets/characters/dream_technician_impasto.webp",
+      "tableau": "assets/characters/dream_technician_impasto.webp",
+      "faceAnchor": [0.39, 0.74],
+      "roomTitle": "DOME CATWALK · 03:00",
+      "blurredSubtitle": "FEATURES BLURRED · DISTORTED",
+      "musicCue": "dream_nylon_sunbeam",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Dome Catwalk",
+          "image": "assets/characters/dream_technician_impasto.webp",
+          "faceAnchor": [0.39, 0.74]
+        },
+        "beat2": {
+          "label": "Beat 2 · Frosted Bearings",
+          "image": "assets/characters/dream_technician_beat2.webp",
+          "faceAnchor": [0.37, 0.73]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Thermos Tea",
+          "image": "assets/characters/dream_technician_beat3_warm.webp",
+          "faceAnchor": [0.39, 0.73]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Closed Shutter",
+          "image": "assets/characters/dream_technician_beat3_strained.webp",
+          "faceAnchor": [0.37, 0.73]
+        }
+      }
+    },
+    "phantom_waiting_room": {
+      "displayName": "[RELATION:COHORT_02]",
+      "role": "dream_persona",
+      "tier": "rotating",
+      "accentColor": "#7fa8a3",
+      "avatarKind": "dream_object",
+      "objectGlyph": "vending_coin",
+      "portrait": "assets/characters/dream_waiting_room_impasto.webp",
+      "tableau": "assets/characters/dream_waiting_room_impasto.webp",
+      "faceAnchor": [0.40, 0.60],
+      "roomTitle": "NIGHT CORRIDOR CHAIRS",
+      "blurredSubtitle": "FEATURES BLURRED · DISTORTED",
+      "musicCue": "dream_harmonium_breath",
+      "tableaus": {
+        "base": {
+          "label": "Beat 1 · Plastic Chairs",
+          "image": "assets/characters/dream_waiting_room_impasto.webp",
+          "faceAnchor": [0.40, 0.60]
+        },
+        "beat2": {
+          "label": "Beat 2 · Vending Glow",
+          "image": "assets/characters/dream_waiting_room_beat2.webp",
+          "faceAnchor": [0.37, 0.73]
+        },
+        "beat3_warm": {
+          "label": "Beat 3 · Open Frosted Door",
+          "image": "assets/characters/dream_waiting_room_beat3_warm.webp",
+          "faceAnchor": [0.44, 0.72]
+        },
+        "beat3_strained": {
+          "label": "Beat 3 · Lone Coin",
+          "image": "assets/characters/dream_waiting_room_beat3_strained.webp",
+          "faceAnchor": [0.52, 0.16]
+        }
+      }
     }
   }
 }

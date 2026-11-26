@@ -3,10 +3,17 @@ import charactersData from '../content/characters.json';
 import type { RendererPerfInfo } from './OpticsScene';
 import { DREAM_FRAGMENT, DREAM_VERTEX } from './shaders/dreamShaders';
 
+interface TableauVariant {
+  image: string;
+  faceAnchor?: number[];
+  label?: string;
+}
+
 interface CharacterEntry {
   tableau?: string | null;
   portrait?: string | null;
   faceAnchor?: number[];
+  tableaus?: Record<string, TableauVariant>;
 }
 
 const CHAR_MAP = charactersData.characters as Record<string, CharacterEntry>;
@@ -45,6 +52,7 @@ export class DreamCanvas {
   private appliedDpr = 1;
 
   private currentPersonaId = 'phantom_spouse';
+  private currentVariantKey = 'base';
   private humanity = 70;
   private pruned = false;
   private overseerActive = false;
@@ -105,20 +113,22 @@ export class DreamCanvas {
     this.mat = mat;
     this.loader = new THREE.TextureLoader();
 
-    this.setPersona(this.currentPersonaId);
+    this.setPersona(this.currentPersonaId, this.currentVariantKey);
     window.addEventListener('resize', this.onResizeBound);
   }
 
-  setPersona(personaId: string): void {
+  setPersona(personaId: string, variantKey = 'base'): void {
     this.currentPersonaId = personaId;
+    this.currentVariantKey = variantKey;
     if (!this.mat || !this.loader) return;
 
     const entry = CHAR_MAP[personaId] ?? CHAR_MAP.phantom_spouse;
-    const anchor = entry?.faceAnchor ?? [0.4, 0.73];
+    const variant = entry?.tableaus?.[variantKey] ?? entry?.tableaus?.base;
+    const anchor = variant?.faceAnchor ?? entry?.faceAnchor ?? [0.4, 0.73];
     (this.mat.uniforms.uFaceAnchor.value as THREE.Vector2).set(anchor[0], anchor[1]);
 
     const url =
-      resolveCharacterAssetUrl(entry?.tableau ?? entry?.portrait) ??
+      resolveCharacterAssetUrl(variant?.image ?? entry?.tableau ?? entry?.portrait) ??
       Object.values(CHAR_ASSETS)[0];
     if (!url) return;
 
@@ -157,12 +167,22 @@ export class DreamCanvas {
     this.lastRenderMs = 0;
   }
 
-  setState(humanity: number, pruned: boolean, overseerActive: boolean, personaId?: string): void {
+  setState(
+    humanity: number,
+    pruned: boolean,
+    overseerActive: boolean,
+    personaId?: string,
+    variantKey?: string
+  ): void {
     this.humanity = humanity;
     this.pruned = pruned;
     this.overseerActive = overseerActive;
-    if (personaId && personaId !== this.currentPersonaId) {
-      this.setPersona(personaId);
+    const nextVariant = variantKey ?? (personaId && personaId !== this.currentPersonaId ? 'base' : this.currentVariantKey);
+    if (
+      (personaId && personaId !== this.currentPersonaId) ||
+      nextVariant !== this.currentVariantKey
+    ) {
+      this.setPersona(personaId ?? this.currentPersonaId, nextVariant);
     }
     this.lastRenderMs = 0;
   }

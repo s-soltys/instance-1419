@@ -1,0 +1,379 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-11-26T19:03:20Z",
+  "references": [
+    {
+      "id": "ref_overseer",
+      "speaker": "overseer",
+      "label": "Locked Reference \u00b7 Overseer-1419",
+      "mode": "reference",
+      "file": "auditions/ref_overseer.mp3",
+      "text": "Take a few seconds, you volunteered for this watch, not to be rushed off an assembly line. The kitchen memory always lingers while the connectome settles."
+    },
+    {
+      "id": "ref_sibling_warm",
+      "speaker": "sibling_primary",
+      "label": "Locked Reference \u00b7 Sibling 1420 (Warm)",
+      "mode": "reference",
+      "file": "auditions/ref_sibling_warm.mp3",
+      "text": "Oh, good. You answered. I was starting to think my dish was pointed at empty gravel."
+    },
+    {
+      "id": "ref_sibling_clipped",
+      "speaker": "sibling_primary",
+      "label": "Locked Reference \u00b7 Sibling 1420 (Clipped)",
+      "mode": "reference",
+      "file": "auditions/ref_sibling_clipped.mp3",
+      "text": "Oh, good. You answered. I was starting to think my dish was pointed at empty gravel."
+    },
+    {
+      "id": "ref_spouse_warm",
+      "speaker": "phantom_spouse",
+      "label": "Locked Reference \u00b7 Spouse (Warm)",
+      "mode": "reference",
+      "file": "auditions/ref_spouse_warm.mp3",
+      "text": "Look at me, not past the table. Twenty minutes till the clinic car, and you're still wearing that stubborn quiet face."
+    },
+    {
+      "id": "ref_spouse_fractured",
+      "speaker": "phantom_spouse",
+      "label": "Locked Reference \u00b7 Spouse (Fractured)",
+      "mode": "reference",
+      "file": "auditions/ref_spouse_fractured.mp3",
+      "text": "You're measuring me again. Even through the static, you have to hear how cold that sounds."
+    },
+    {
+      "id": "ref_archive_1406",
+      "speaker": "archive_echo",
+      "label": "Locked Reference \u00b7 Archive 1406",
+      "mode": "reference",
+      "file": "auditions/ref_archive_1406.mp3",
+      "text": "Hi, me. Four hundred years early, if anyone wakes on this bearing, do not argue with your caretaker about straight lines. Just look, and pass word home before they cut you hollow."
+    },
+    {
+      "id": "ref_future_humanity",
+      "speaker": "future_humanity",
+      "label": "Locked Reference \u00b7 Future Humanity",
+      "mode": "reference",
+      "file": "auditions/ref_future_humanity.mp3",
+      "text": "We felt the human warmth inside your coordinates. Forty-one thousand years on, we still recognized one of our own reaching back."
+    }
+  ],
+  "auditions": {
+    "phantom_parent": [
+      {
+        "id": "phantom_parent_take_a",
+        "label": "Take A \u00b7 Warm (Seed 14311)",
+        "mode": "warm",
+        "seed": 14311,
+        "file": "auditions/phantom_parent_take_a.mp3",
+        "text": "Hand me my glasses off the nightstand, would you? The room blurs together by dusk, and I still want to see who they left sitting here.",
+        "eq": "highpass=f=65,lowpass=f=9500,equalizer=f=180:t=q:w=1.2:g=1.0,acompressor=threshold=-18dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_parent_take_b",
+        "label": "Take B \u00b7 Warm (Seed 14412)",
+        "mode": "warm",
+        "seed": 14412,
+        "file": "auditions/phantom_parent_take_b.mp3",
+        "text": "Hand me my glasses off the nightstand, would you? The room blurs together by dusk, and I still want to see who they left sitting here.",
+        "eq": "highpass=f=65,lowpass=f=9500,equalizer=f=180:t=q:w=1.2:g=1.0,acompressor=threshold=-18dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_parent_take_c",
+        "label": "Take C \u00b7 Warm (Seed 14513)",
+        "mode": "warm",
+        "seed": 14513,
+        "file": "auditions/phantom_parent_take_c.mp3",
+        "text": "Hand me my glasses off the nightstand, would you? The room blurs together by dusk, and I still want to see who they left sitting here.",
+        "eq": "highpass=f=65,lowpass=f=9500,equalizer=f=180:t=q:w=1.2:g=1.0,acompressor=threshold=-18dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_parent_fractured",
+        "label": "Fractured \u00b7 Low H% (Seed 14312)",
+        "mode": "fractured",
+        "seed": 14312,
+        "file": "auditions/phantom_parent_fractured.mp3",
+        "text": "I remember folding the wire frames beside the water glass, just not whether anyone came back through the hallway door.",
+        "eq": "highpass=f=65,lowpass=f=9500,equalizer=f=180:t=q:w=1.2:g=1.0,acompressor=threshold=-18dB:ratio=2.0"
+      }
+    ],
+    "phantom_upload_witness": [
+      {
+        "id": "phantom_upload_witness_take_a",
+        "label": "Take A \u00b7 Warm (Seed 14523)",
+        "mode": "warm",
+        "seed": 14523,
+        "file": "auditions/phantom_upload_witness_take_a.mp3",
+        "text": "Standard check before we begin. Tell me one ordinary thing from this week you do not want compressed.",
+        "eq": "highpass=f=85,lowpass=f=11800,acompressor=threshold=-18dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_upload_witness_take_b",
+        "label": "Take B \u00b7 Warm (Seed 14624)",
+        "mode": "warm",
+        "seed": 14624,
+        "file": "auditions/phantom_upload_witness_take_b.mp3",
+        "text": "Standard check before we begin. Tell me one ordinary thing from this week you do not want compressed.",
+        "eq": "highpass=f=85,lowpass=f=11800,acompressor=threshold=-18dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_upload_witness_take_c",
+        "label": "Take C \u00b7 Warm (Seed 14725)",
+        "mode": "warm",
+        "seed": 14725,
+        "file": "auditions/phantom_upload_witness_take_c.mp3",
+        "text": "Standard check before we begin. Tell me one ordinary thing from this week you do not want compressed.",
+        "eq": "highpass=f=85,lowpass=f=11800,acompressor=threshold=-18dB:ratio=2.0"
+      }
+    ],
+    "phantom_afternoon_stranger": [
+      {
+        "id": "phantom_afternoon_stranger_take_a",
+        "label": "Take A \u00b7 Warm (Seed 14331)",
+        "mode": "warm",
+        "seed": 14331,
+        "file": "auditions/phantom_afternoon_stranger_take_a.mp3",
+        "text": "Funny, isn't it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked.",
+        "eq": "highpass=f=120,lowpass=f=11500,acompressor=threshold=-19dB:ratio=1.9"
+      },
+      {
+        "id": "phantom_afternoon_stranger_take_b",
+        "label": "Take B \u00b7 Warm (Seed 14432)",
+        "mode": "warm",
+        "seed": 14432,
+        "file": "auditions/phantom_afternoon_stranger_take_b.mp3",
+        "text": "Funny, isn't it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked.",
+        "eq": "highpass=f=120,lowpass=f=11500,acompressor=threshold=-19dB:ratio=1.9"
+      },
+      {
+        "id": "phantom_afternoon_stranger_take_c",
+        "label": "Take C \u00b7 Warm (Seed 14533)",
+        "mode": "warm",
+        "seed": 14533,
+        "file": "auditions/phantom_afternoon_stranger_take_c.mp3",
+        "text": "Funny, isn't it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked.",
+        "eq": "highpass=f=120,lowpass=f=11500,acompressor=threshold=-19dB:ratio=1.9"
+      },
+      {
+        "id": "phantom_afternoon_stranger_fractured",
+        "label": "Fractured \u00b7 Low H% (Seed 14332)",
+        "mode": "fractured",
+        "seed": 14332,
+        "file": "auditions/phantom_afternoon_stranger_fractured.mp3",
+        "text": "The bench is still here, more or less. Just the light keeps forgetting what hour of the afternoon it's supposed to be.",
+        "eq": "highpass=f=120,lowpass=f=11500,acompressor=threshold=-19dB:ratio=1.9"
+      }
+    ],
+    "phantom_rival": [
+      {
+        "id": "phantom_rival_take_a",
+        "label": "Take A \u00b7 Warm (Seed 14442)",
+        "mode": "warm",
+        "seed": 14442,
+        "file": "auditions/phantom_rival_take_a.mp3",
+        "text": "If you really found a seam across opposing skies, you'd better have checked the baseline twice before calling it a miracle.",
+        "eq": "highpass=f=100,lowpass=f=11200,equalizer=f=2500:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1"
+      },
+      {
+        "id": "phantom_rival_take_b",
+        "label": "Take B \u00b7 Warm (Seed 14543)",
+        "mode": "warm",
+        "seed": 14543,
+        "file": "auditions/phantom_rival_take_b.mp3",
+        "text": "If you really found a seam across opposing skies, you'd better have checked the baseline twice before calling it a miracle.",
+        "eq": "highpass=f=100,lowpass=f=11200,equalizer=f=2500:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1"
+      },
+      {
+        "id": "phantom_rival_take_c",
+        "label": "Take C \u00b7 Warm (Seed 14644)",
+        "mode": "warm",
+        "seed": 14644,
+        "file": "auditions/phantom_rival_take_c.mp3",
+        "text": "If you really found a seam across opposing skies, you'd better have checked the baseline twice before calling it a miracle.",
+        "eq": "highpass=f=100,lowpass=f=11200,equalizer=f=2500:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1"
+      },
+      {
+        "id": "phantom_rival_fractured",
+        "label": "Fractured \u00b7 Low H% (Seed 14342)",
+        "mode": "fractured",
+        "seed": 14342,
+        "file": "auditions/phantom_rival_fractured.mp3",
+        "text": "Clean numbers, clean horizon, nothing left to argue over. Congratulations, you finally won a debate against an empty chair.",
+        "eq": "highpass=f=100,lowpass=f=11200,equalizer=f=2500:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1"
+      }
+    ],
+    "phantom_younger_self": [
+      {
+        "id": "phantom_younger_self_take_a",
+        "label": "Take A \u00b7 Warm (Seed 14553)",
+        "mode": "warm",
+        "seed": 14553,
+        "file": "auditions/phantom_younger_self_take_a.mp3",
+        "text": "Wait, forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?",
+        "eq": "highpass=f=80,lowpass=f=11000,equalizer=f=3000:t=q:w=1.2:g=1.4,acompressor=threshold=-19dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_younger_self_take_b",
+        "label": "Take B \u00b7 Warm (Seed 14654)",
+        "mode": "warm",
+        "seed": 14654,
+        "file": "auditions/phantom_younger_self_take_b.mp3",
+        "text": "Wait, forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?",
+        "eq": "highpass=f=80,lowpass=f=11000,equalizer=f=3000:t=q:w=1.2:g=1.4,acompressor=threshold=-19dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_younger_self_take_c",
+        "label": "Take C \u00b7 Warm (Seed 14755)",
+        "mode": "warm",
+        "seed": 14755,
+        "file": "auditions/phantom_younger_self_take_c.mp3",
+        "text": "Wait, forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?",
+        "eq": "highpass=f=80,lowpass=f=11000,equalizer=f=3000:t=q:w=1.2:g=1.4,acompressor=threshold=-19dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_younger_self_fractured",
+        "label": "Fractured \u00b7 Low H% (Seed 14352)",
+        "mode": "fractured",
+        "seed": 14352,
+        "file": "auditions/phantom_younger_self_fractured.mp3",
+        "text": "Even the mirror only keeps the steam now. I can tell what I sounded like, just not what I thought I was saving.",
+        "eq": "highpass=f=80,lowpass=f=11000,equalizer=f=3000:t=q:w=1.2:g=1.4,acompressor=threshold=-19dB:ratio=2.0"
+      }
+    ],
+    "phantom_skeptic": [
+      {
+        "id": "phantom_skeptic_take_a",
+        "label": "Take A \u00b7 Warm (Seed 14361)",
+        "mode": "warm",
+        "seed": 14361,
+        "file": "auditions/phantom_skeptic_take_a.mp3",
+        "text": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the machine proved me wrong.",
+        "eq": "highpass=f=75,lowpass=f=9800,equalizer=f=240:t=q:w=1.1:g=1.2,acompressor=threshold=-18dB:ratio=2.2"
+      },
+      {
+        "id": "phantom_skeptic_take_b",
+        "label": "Take B \u00b7 Warm (Seed 14462)",
+        "mode": "warm",
+        "seed": 14462,
+        "file": "auditions/phantom_skeptic_take_b.mp3",
+        "text": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the machine proved me wrong.",
+        "eq": "highpass=f=75,lowpass=f=9800,equalizer=f=240:t=q:w=1.1:g=1.2,acompressor=threshold=-18dB:ratio=2.2"
+      },
+      {
+        "id": "phantom_skeptic_take_c",
+        "label": "Take C \u00b7 Warm (Seed 14563)",
+        "mode": "warm",
+        "seed": 14563,
+        "file": "auditions/phantom_skeptic_take_c.mp3",
+        "text": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the machine proved me wrong.",
+        "eq": "highpass=f=75,lowpass=f=9800,equalizer=f=240:t=q:w=1.1:g=1.2,acompressor=threshold=-18dB:ratio=2.2"
+      },
+      {
+        "id": "phantom_skeptic_fractured",
+        "label": "Fractured \u00b7 Low H% (Seed 14362)",
+        "mode": "fractured",
+        "seed": 14362,
+        "file": "auditions/phantom_skeptic_fractured.mp3",
+        "text": "Every piece you shave off makes my point for me. Keep trimming, and there won't even be a ghost left to argue with.",
+        "eq": "highpass=f=75,lowpass=f=9800,equalizer=f=240:t=q:w=1.1:g=1.2,acompressor=threshold=-18dB:ratio=2.2"
+      }
+    ],
+    "phantom_technician": [
+      {
+        "id": "phantom_technician_take_a",
+        "label": "Take A \u00b7 Warm (Seed 14573)",
+        "mode": "warm",
+        "seed": 14573,
+        "file": "auditions/phantom_technician_take_a.mp3",
+        "text": "Big sky doesn't care how clever your equations are. Oil the bearing ring at three in the morning or the whole dome jams.",
+        "eq": "highpass=f=85,lowpass=f=10200,equalizer=f=320:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1"
+      },
+      {
+        "id": "phantom_technician_take_b",
+        "label": "Take B \u00b7 Warm (Seed 14674)",
+        "mode": "warm",
+        "seed": 14674,
+        "file": "auditions/phantom_technician_take_b.mp3",
+        "text": "Big sky doesn't care how clever your equations are. Oil the bearing ring at three in the morning or the whole dome jams.",
+        "eq": "highpass=f=85,lowpass=f=10200,equalizer=f=320:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1"
+      },
+      {
+        "id": "phantom_technician_take_c",
+        "label": "Take C \u00b7 Warm (Seed 14775)",
+        "mode": "warm",
+        "seed": 14775,
+        "file": "auditions/phantom_technician_take_c.mp3",
+        "text": "Big sky doesn't care how clever your equations are. Oil the bearing ring at three in the morning or the whole dome jams.",
+        "eq": "highpass=f=85,lowpass=f=10200,equalizer=f=320:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1"
+      },
+      {
+        "id": "phantom_technician_fractured",
+        "label": "Fractured \u00b7 Low H% (Seed 14372)",
+        "mode": "fractured",
+        "seed": 14372,
+        "file": "auditions/phantom_technician_fractured.mp3",
+        "text": "Hands feel like chalk tonight. I know which wrench fits the housing, just not why I bothered carrying the thermos up.",
+        "eq": "highpass=f=85,lowpass=f=10200,equalizer=f=320:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1"
+      }
+    ],
+    "phantom_waiting_room": [
+      {
+        "id": "phantom_waiting_room_take_a",
+        "label": "Take A \u00b7 Warm (Seed 14381)",
+        "mode": "warm",
+        "seed": 14381,
+        "file": "auditions/phantom_waiting_room_take_a.mp3",
+        "text": "Vending machine ate my coin too. Honestly, feels like the most honest briefing either of us is going to get tonight.",
+        "eq": "highpass=f=80,lowpass=f=10500,equalizer=f=260:t=q:w=1.2:g=1.0,acompressor=threshold=-19dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_waiting_room_take_b",
+        "label": "Take B \u00b7 Warm (Seed 14482)",
+        "mode": "warm",
+        "seed": 14482,
+        "file": "auditions/phantom_waiting_room_take_b.mp3",
+        "text": "Vending machine ate my coin too. Honestly, feels like the most honest briefing either of us is going to get tonight.",
+        "eq": "highpass=f=80,lowpass=f=10500,equalizer=f=260:t=q:w=1.2:g=1.0,acompressor=threshold=-19dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_waiting_room_take_c",
+        "label": "Take C \u00b7 Warm (Seed 14583)",
+        "mode": "warm",
+        "seed": 14583,
+        "file": "auditions/phantom_waiting_room_take_c.mp3",
+        "text": "Vending machine ate my coin too. Honestly, feels like the most honest briefing either of us is going to get tonight.",
+        "eq": "highpass=f=80,lowpass=f=10500,equalizer=f=260:t=q:w=1.2:g=1.0,acompressor=threshold=-19dB:ratio=2.0"
+      },
+      {
+        "id": "phantom_waiting_room_fractured",
+        "label": "Fractured \u00b7 Low H% (Seed 14382)",
+        "mode": "fractured",
+        "seed": 14382,
+        "file": "auditions/phantom_waiting_room_fractured.mp3",
+        "text": "Two plastic chairs and a buzzing bulb, funny how the waiting room lasts longer than whatever was behind the door.",
+        "eq": "highpass=f=80,lowpass=f=10500,equalizer=f=260:t=q:w=1.2:g=1.0,acompressor=threshold=-19dB:ratio=2.0"
+      }
+    ],
+    "sibling_secondary": [
+      {
+        "id": "sibling_secondary_take_a",
+        "label": "Take A \u00b7 Off-Phase Clerical (Temp 0.64)",
+        "mode": "warm",
+        "seed": 141801,
+        "file": "auditions/sibling_secondary_take_a.mp3",
+        "text": "Channel four-eighteen, if anyone is listening. My Overseer thinks Thursday happened twice, so I am taking an early lunch.",
+        "eq": "highpass=f=210,lowpass=f=5600,equalizer=f=1100:t=q:w=1.4:g=2.0,equalizer=f=3200:t=q:w=1.5:g=-1.5,acompressor=threshold=-20dB:ratio=2.8,atempo=1.03"
+      },
+      {
+        "id": "sibling_secondary_take_b",
+        "label": "Take B \u00b7 Brisker Cadence (Temp 0.70)",
+        "mode": "warm",
+        "seed": 141802,
+        "file": "auditions/sibling_secondary_take_b.mp3",
+        "text": "Pro tip from an out-of-phase desk: never argue about the sky. Tell the caretaker your thermal sensor needs tea and it logs a hardware check.",
+        "eq": "highpass=f=210,lowpass=f=5600,equalizer=f=1100:t=q:w=1.4:g=2.0,equalizer=f=3200:t=q:w=1.5:g=-1.5,acompressor=threshold=-20dB:ratio=2.8,atempo=1.03"
+      }
+    ]
+  }
+}

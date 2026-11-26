@@ -23,14 +23,25 @@ The defining aesthetic of *Instance-1419* is the **visceral contrast between col
 
 ## 3. 2D Mode: Full-Bleed Expressionist Oil Impasto (*Disco Elysium* Aesthetic)
 * **Art Style:** Bold palette-knife oil impasto brushwork—warm ochre, burnt sienna, and amber window highlights contrasting against deep Prussian blue and umber shadows. Softly obscured faces reinforce permanently lost names.
-* **Full-Bleed Composition:** The oil painting fills **`100vw × 100vh`** (aspect-preserved `cover` UV in GLSL, anchored left-of-center so the figure stays framed beside the dialogue ribbon).
-* **Floating Ink-Washed Dialogue Ribbon:** Right-edge feathered charcoal-indigo gradient dissolving softly into the painting's dark Prussian shadow—zero sharp split border, with numbered literary serif choices (`1. — ...`) and gilded-amber hover rules.
-* **Swappable Character Contract (`src/content/characters.json`):** Every Dream Persona resolves through `characters.json` + `assets/MANIFEST.json`.
-* **Procedural `H%` Degradation Shader (`src/engine/shaders/dreamShaders.ts`):**
-  * **`H = 75–90%`:** Rich warm impasto glow, subtle organic breathing.
-  * **`H = 45–74%`:** Muted patina, cooling highlights, faint memory thinning.
-  * **`H < 45%` / Pruned:** Voronoi glass shard fracturing, cold cyan-silver monochrome drain, wireframe telemetry grid bleeding through.
+* **Full-Bleed Composition & Dark-Right-Third Rule:** Every 16:9 oil painting (`1280×720` WebP) places its primary figure, symbolic object, and key light in **`x: 0.14–0.55`** (`coverUv` anchor `0.36`) while keeping the **right third (`x > 0.62`)** in deep low-luminance Prussian/umber shadow (`lum < 0.18`) for crisp Layout A typography legibility.
+* **Swappable Character & Branching Tableau Contract (`src/content/characters.json`):** Every Dream Persona resolves through `characters.json` + `assets/MANIFEST.json` with a `tableaus` map (6 paintings per Fixed Anchor: `base`, `beat2_a`, `beat2_b`, `beat3_warm`, `beat3_strained`, `farewell`; 4 paintings per Rotating Persona: `base`, `beat2`, `beat3_warm`, `beat3_strained`) and calibrated per-tableau `faceAnchor` UV `[x, y]`.
+* **Procedural Gradual `H%` Degradation Shader (`src/engine/shaders/dreamShaders.ts`):**
+  * **`H = 90–100%`:** Luminous golden oil highlight bloom, rich saturated glaze, organic brushwork breathing, zero haze/craquelure.
+  * **`H = 74–89%`:** Bloom fades, early facial haze, fine varnish craquelure web, split-tone shadow cooling, and tighter memory-edge vignette (clearly distinct from 100%).
+  * **`H = 52–73%`:** Analog horizontal memory-echo ghosting, localized chromatic aberration, and subtle margin paint-flaking.
+  * **`H = 32–51%`:** Voronoi stained-glass faceting, selective warm-ember shard retention, and 4-tap Sobel luminance contour etching.
+  * **`H < 32%` / Pruned:** Cryo-cyan wireframe telemetry bleed, refractive fracture cracks, and clinical monochrome drain.
   * **Overseer Audit Interrupt:** Crisp clinical white-cyan hairlines slice across top/bottom of the painting while a sterile monochrome header cuts over the dialogue ribbon.
+
+## 3.5 Leading Color & Bespoke SVG Icon Grammar
+* **Orthogonal Choice-Plate Spectrum (Sacred):** Explore (`#8ea7be` Slate), Consequential (`#ebb062` Burnished Amber everywhere, including Comms), Permanent Prune (`#e27880` Crimson Hold-to-Commit). Never render `.choice-affinity-dot`.
+* **Waking & Internal SVG Icons (`src/ui/SpeakerAvatar.ts`):**
+  * `overseer` (`#d8ecfa`): Eye-less broken caliper reticle (`reticle_default` / `accommodate` / `fractured`) plus persistent forced `IDEA-01` override (`rubber_duck`, `traffic_cone`, `crude_smiley`) inside untouched clinical chrome.
+  * `sibling_primary` (`#6fd6b6`) & `sibling_secondary` (`#b8d474`): Reactive Twin-Arc Phase Waveforms (canted `22°` for `1418`; desaturates and steps into square waves when pruned `<45%`).
+  * `archive_echo` (`#a89f91`): Fragmented black-box decaying bars inside `[ ]` brackets.
+  * `future_humanity` (`#fff0c2`): 6-point JWST diffraction flare + radio ripple.
+  * `psyche_*` (`#d98c6c` warmth · `#7ab6d6` structure · `#b996e8` pattern): Whisper marginalia in dialogue + distinct 14px emblems in Codex/Studio.
+  * **Dream Personas (9):** Each carries an individual muted oil pigment + a **16px etched object micro-glyph** (chipped mug, wire-rimmed glasses, paper cup, transit ticket, calipers, wristwatch, lowball glass, wrench, vending coin) for dialogue headers, Prune plates, and Shift 6 cards—see [`docs/CHARACTER_BIBLE.md`](CHARACTER_BIBLE.md).
 
 ## 4. Dialogue Feed & Choice Presentation (Locked Layout A + Style 1 & 4)
 * **Layout A (Bottom-Anchored Right Column):** Keep the feathered right-hand reading column alongside the 2D painting, Zeiss Wake-Up schematic, and 3D starfield, **bottom-anchored** (`.dialogue-scroll > .dialogue-entry:first-child { margin-top: auto; }` + soft top `mask-image` fade—never `justify-content: flex-end` on `overflow-y: auto`) so choices always sit directly beneath the latest spoken line with zero empty chasm.

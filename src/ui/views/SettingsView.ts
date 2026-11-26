@@ -119,7 +119,7 @@ export class SettingsView {
             ${this.renderChannelRow('master', 'MASTER AUDIO', 'Global output across observatory, dreamscape, and relay.')}
             ${this.renderChannelRow('music', 'MUSIC & ATMOSPHERE', 'Generative observatory harmonics, deep-space drones, and H%-reactive dream chords.')}
             ${this.renderChannelRow('sfx', 'SOUND EFFECTS & INSTRUMENTS', 'Optical vernier detents, probe carrier lock, UI ticks, and minigame cues.')}
-            ${this.renderChannelRow('voice', 'VOICE ACTING', 'Spoken dialogue for Other Me (1420), Dream Personas, and Overseer-1419.')}
+            ${this.renderChannelRow('voice', 'VOICE ACTING', 'Spoken dialogue for Other Me, Dream Personas, and Overseer.')}
 
             <div class="settings-row">
               <div class="settings-meta">

@@ -73,7 +73,7 @@ const VOICE_AUDITIONS = [
   {
     lineId: 'ovs_open_mid',
     speaker: 'overseer',
-    label: 'Overseer-1419',
+    label: 'Overseer',
     emotion: 'blunt',
     text: "Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind—and your clock is slipping.",
   },
@@ -82,7 +82,7 @@ const VOICE_AUDITIONS = [
     speaker: 'future_humanity',
     label: 'Future Humanity',
     emotion: 'distant',
-    text: '"We felt the human warmth inside your coordinates, 1419. Forty-one thousand years on, we still recognized one of our own reaching back."',
+    text: '"We felt the human warmth inside your coordinates. Forty-one thousand years on, we still recognized one of our own reaching back."',
   },
   {
     lineId: 'arch_1406_log',
@@ -255,7 +255,7 @@ export class DevHarness {
                 <div class="qa-card-title">NPC CONVERSATIONS (WARMTH-ADAPTIVE)</div>
 
                 <div class="qa-subblock">
-                  <div class="qa-subblock-label">OTHER ME · INSTANCE-1420 (3D CLUSTER RELAY)</div>
+                  <div class="qa-subblock-label">OTHER ME (PROBE 1420 RELAY)</div>
                   <div class="qa-btn-row">
                     <button class="qa-btn" data-comms-preset="80,78" type="button">Both Warm &amp; Joking (80/78)</button>
                     <button class="qa-btn" data-comms-preset="82,26" type="button">You Warm / Peer Cold (82/26)</button>
@@ -286,7 +286,7 @@ export class DevHarness {
               </div>
 
               <div class="qa-card qa-overseer-card">
-                <div class="qa-card-title">OVERSEER-1419 · SEPARATE INTERROGATION TEST</div>
+                <div class="qa-card-title">OVERSEER · SEPARATE INTERROGATION TEST</div>
                 <p class="qa-note">
                   Opens the blunt, honest Overseer Interrogation panel directly over the Dream cache without needing to play through Turn 1 &amp; Turn 2 first.
                 </p>

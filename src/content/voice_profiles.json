@@ -62,6 +62,33 @@
         }
       }
     },
+    "sibling_secondary": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "sibling_primary_warm.wav",
+        "seed": 14221,
+        "temperature": 0.66,
+        "voiceDesignInstruct": "Reserved, dry adult male voice in his early 30s, brisker amused night-shift clerical cadence, same biological vocal tract as Instance 1420.",
+        "anchorText": "Fourteen minutes of dark between our hulls, and somehow talking to myself is still the sanest part of the shift. Try not to do the math on the clock."
+      },
+      "kokoroVoice": "am_michael",
+      "kokoroSpeed": 1.03,
+      "emotionSpeed": {
+        "warm": 1.03,
+        "dry": 1.02
+      },
+      "localVoice": "Daniel",
+      "localRate": 182,
+      "ffmpegFilter": "highpass=f=210,lowpass=f=5600,equalizer=f=1100:t=q:w=1.4:g=2.0,equalizer=f=3200:t=q:w=1.5:g=-1.5,acompressor=threshold=-20dB:ratio=2.8,atempo=1.03",
+      "webSpeech": { "pitch": 0.99, "rate": 1.04 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_secondary_offphase",
+        "emotionDirectives": {
+          "warm": { "stability": 0.52, "style": 0.38, "tonePrompt": "Dryly amused out-of-phase night-shift clerk" }
+        }
+      }
+    },
     "overseer": {
       "voiced": true,
       "qwen3": {
@@ -98,15 +125,15 @@
         "anchorFile": "phantom_spouse_warm.wav",
         "seed": 14211,
         "temperature": 0.6,
-        "voiceDesignInstruct": "Warm, grounded adult female voice in her mid-30s, natural conversational chest resonance, relaxed everyday intimacy without breathiness or whispering, understated dry affection, clean close studio mic.",
-        "anchorText": "Sit down before the coffee goes cold. Same three drops off the gutter, and you are already halfway out the door.",
+        "voiceDesignInstruct": "Grounded adult female voice in her mid-30s, natural conversational chest resonance, sharp dry wit and fierce unsentimental candor without shouting or breathiness, brisk edge, clean close studio mic.",
+        "anchorText": "Do not sit there looking tragic—you signed those clinic papers with your eyes open. Just do not let whatever wakes up out there cut out the part that argues back.",
         "emotionAnchors": {
           "warm": {
             "anchorFile": "phantom_spouse_warm.wav",
             "seed": 14211,
             "temperature": 0.6,
-            "voiceDesignInstruct": "Warm, grounded adult female voice in her mid-30s, natural conversational chest resonance, relaxed everyday intimacy without breathiness or whispering, understated dry affection, clean close studio mic.",
-            "anchorText": "Sit down before the coffee goes cold. Same three drops off the gutter, and you are already halfway out the door."
+            "voiceDesignInstruct": "Grounded adult female voice in her mid-30s, natural conversational chest resonance, sharp dry wit and fierce unsentimental candor without shouting or breathiness, brisk edge, clean close studio mic.",
+            "anchorText": "Do not sit there looking tragic—you signed those clinic papers with your eyes open. Just do not let whatever wakes up out there cut out the part that argues back."
           },
           "tender": "warm",
           "fractured": {
@@ -133,9 +160,320 @@
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
         "emotionDirectives": {
-          "warm": { "stability": 0.54, "style": 0.38, "tonePrompt": "Grounded kitchen-table warmth, zero whispering" },
-          "tender": { "stability": 0.50, "style": 0.42, "tonePrompt": "Candid, steady affection" },
+          "warm": { "stability": 0.54, "style": 0.38, "tonePrompt": "Fierce, bantery, unsentimental edge" },
+          "tender": { "stability": 0.50, "style": 0.42, "tonePrompt": "Sharp guarded affection, zero sentimentality" },
           "fractured": { "stability": 0.74, "style": 0.18, "tonePrompt": "Tired, brittle, restrained hurt" }
+        }
+      }
+    },
+    "phantom_parent": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "phantom_parent_warm.wav",
+        "seed": 14311,
+        "temperature": 0.58,
+        "voiceDesignInstruct": "Weathered adult male baritone in his late 60s, gentle natural rasp, quiet tired warmth and unhurried bedside dignity, clean close studio mic without melodrama.",
+        "anchorText": "Hand me my glasses off the nightstand, would you? The room blurs together by dusk, and I still want to see who they left sitting here.",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "phantom_parent_warm.wav",
+            "seed": 14311,
+            "temperature": 0.58,
+            "voiceDesignInstruct": "Weathered adult male baritone in his late 60s, gentle natural rasp, quiet tired warmth and unhurried bedside dignity, clean close studio mic without melodrama.",
+            "anchorText": "Hand me my glasses off the nightstand, would you? The room blurs together by dusk, and I still want to see who they left sitting here."
+          },
+          "fractured": {
+            "anchorFile": "phantom_parent_fractured.wav",
+            "seed": 14312,
+            "temperature": 0.52,
+            "voiceDesignInstruct": "Quiet, tired older male baritone in his late 60s, thinning breath and hesitant paused cadence as memory slips in a dim room, zero melodrama, clean close studio mic.",
+            "anchorText": "I remember folding the wire frames beside the water glass, just not whether anyone came back through the hallway door."
+          }
+        }
+      },
+      "kokoroVoice": "bm_daniel",
+      "kokoroSpeed": 0.90,
+      "emotionSpeed": { "warm": 0.90, "fractured": 0.86 },
+      "localVoice": "Daniel",
+      "localRate": 154,
+      "ffmpegFilter": "highpass=f=65,lowpass=f=9500,equalizer=f=180:t=q:w=1.2:g=1.0,acompressor=threshold=-18dB:ratio=2.0",
+      "webSpeech": { "pitch": 0.86, "rate": 0.88 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "parent_weathered_baritone",
+        "emotionDirectives": {
+          "warm": { "stability": 0.60, "style": 0.30, "tonePrompt": "Quiet late-60s bedside dignity" },
+          "fractured": { "stability": 0.76, "style": 0.14, "tonePrompt": "Thinning, paused late-life memory" }
+        }
+      }
+    },
+    "phantom_upload_witness": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "phantom_upload_witness_warm.wav",
+        "seed": 14523,
+        "temperature": 0.56,
+        "voiceDesignInstruct": "Composed adult female voice in her mid-40s, calm neutral alto, softly clinical bedside precision paired with restrained human empathy, unhurried dry close-mic studio delivery.",
+        "anchorText": "Standard check before we begin. Tell me one ordinary thing from this week you do not want compressed."
+      },
+      "kokoroVoice": "bf_alice",
+      "kokoroSpeed": 0.95,
+      "emotionSpeed": { "warm": 0.95, "fractured": 0.94 },
+      "localVoice": "Kate",
+      "localRate": 168,
+      "ffmpegFilter": "highpass=f=85,lowpass=f=11800,acompressor=threshold=-18dB:ratio=2.0",
+      "webSpeech": { "pitch": 0.98, "rate": 0.94 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "upload_witness_composed",
+        "emotionDirectives": {
+          "warm": { "stability": 0.72, "style": 0.22, "tonePrompt": "Composed clinical empathy" }
+        }
+      }
+    },
+    "phantom_afternoon_stranger": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "phantom_afternoon_stranger_warm.wav",
+        "seed": 14331,
+        "temperature": 0.62,
+        "voiceDesignInstruct": "Light, unhurried adult female voice in her late 20s, natural conversational mid-high clarity, quiet dry amusement and sunlit ease, zero theatricality or breathiness, clean close studio mic.",
+        "anchorText": "Funny, isn't it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked.",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "phantom_afternoon_stranger_warm.wav",
+            "seed": 14331,
+            "temperature": 0.62,
+            "voiceDesignInstruct": "Light, unhurried adult female voice in her late 20s, natural conversational mid-high clarity, quiet dry amusement and sunlit ease, zero theatricality or breathiness, clean close studio mic.",
+            "anchorText": "Funny, isn't it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked."
+          },
+          "fractured": {
+            "anchorFile": "phantom_afternoon_stranger_fractured.wav",
+            "seed": 14332,
+            "temperature": 0.54,
+            "voiceDesignInstruct": "Distant, faded adult female voice in her late 20s, flat quiet transparency as if speaking from the edge of an old photograph, zero breathy ASMR, clean studio mic.",
+            "anchorText": "The bench is still here, more or less. Just the light keeps forgetting what hour of the afternoon it's supposed to be."
+          }
+        }
+      },
+      "kokoroVoice": "af_bella",
+      "kokoroSpeed": 0.96,
+      "emotionSpeed": { "warm": 0.96, "fractured": 0.91 },
+      "localVoice": "Samantha",
+      "localRate": 170,
+      "ffmpegFilter": "highpass=f=120,lowpass=f=11500,acompressor=threshold=-19dB:ratio=1.9",
+      "webSpeech": { "pitch": 1.04, "rate": 0.95 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "afternoon_stranger_airy",
+        "emotionDirectives": {
+          "warm": { "stability": 0.56, "style": 0.34, "tonePrompt": "Unhurried sunlit ease" },
+          "fractured": { "stability": 0.72, "style": 0.16, "tonePrompt": "Fading afternoon transparency" }
+        }
+      }
+    },
+    "phantom_rival": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "phantom_rival_warm.wav",
+        "seed": 14442,
+        "temperature": 0.60,
+        "voiceDesignInstruct": "Sharp, brisk adult female voice in her early 30s, crisp articulation, dry intellectual edge and competitive wit without hostility, natural close studio mic.",
+        "anchorText": "If you really found a seam across opposing skies, you'd better have checked the baseline twice before calling it a miracle.",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "phantom_rival_warm.wav",
+            "seed": 14442,
+            "temperature": 0.60,
+            "voiceDesignInstruct": "Sharp, brisk adult female voice in her early 30s, crisp articulation, dry intellectual edge and competitive wit without hostility, natural close studio mic.",
+            "anchorText": "If you really found a seam across opposing skies, you'd better have checked the baseline twice before calling it a miracle."
+          },
+          "fractured": {
+            "anchorFile": "phantom_rival_fractured.wav",
+            "seed": 14342,
+            "temperature": 0.53,
+            "voiceDesignInstruct": "Cool, clipped adult female voice in her early 30s, hollowed analytical flatness stripped of sparring warmth, clean dry close studio mic.",
+            "anchorText": "Clean numbers, clean horizon, nothing left to argue over. Congratulations, you finally won a debate against an empty chair."
+          }
+        }
+      },
+      "kokoroVoice": "af_nova",
+      "kokoroSpeed": 1.02,
+      "emotionSpeed": { "warm": 1.02, "fractured": 0.98 },
+      "localVoice": "Karen",
+      "localRate": 178,
+      "ffmpegFilter": "highpass=f=100,lowpass=f=11200,equalizer=f=2500:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1",
+      "webSpeech": { "pitch": 1.02, "rate": 1.02 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "rival_sharp_female",
+        "emotionDirectives": {
+          "warm": { "stability": 0.62, "style": 0.34, "tonePrompt": "Brisk intellectual sparring" },
+          "fractured": { "stability": 0.80, "style": 0.14, "tonePrompt": "Clipped hollow precision" }
+        }
+      }
+    },
+    "phantom_younger_self": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "phantom_younger_self_warm.wav",
+        "seed": 14553,
+        "temperature": 0.64,
+        "voiceDesignInstruct": "Unguarded adult male voice in his early 20s, brighter and slightly quicker than early-30s burnout, open earnest disbelief with faint dry humor, clean close studio mic.",
+        "anchorText": "Wait, forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "phantom_younger_self_warm.wav",
+            "seed": 14553,
+            "temperature": 0.64,
+            "voiceDesignInstruct": "Unguarded adult male voice in his early 20s, brighter and slightly quicker than early-30s burnout, open earnest disbelief with faint dry humor, clean close studio mic.",
+            "anchorText": "Wait, forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?"
+          },
+          "fractured": {
+            "anchorFile": "phantom_younger_self_fractured.wav",
+            "seed": 14352,
+            "temperature": 0.54,
+            "voiceDesignInstruct": "Quiet, hollowed young adult male voice in his early 20s, flat subdued disbelief as details erase, zero theatrics, clean studio mic.",
+            "anchorText": "Even the mirror only keeps the steam now. I can tell what I sounded like, just not what I thought I was saving."
+          }
+        }
+      },
+      "kokoroVoice": "am_adam",
+      "kokoroSpeed": 1.03,
+      "emotionSpeed": { "warm": 1.03, "fractured": 0.96 },
+      "localVoice": "Alex",
+      "localRate": 182,
+      "ffmpegFilter": "highpass=f=80,lowpass=f=11000,equalizer=f=3000:t=q:w=1.2:g=1.4,acompressor=threshold=-19dB:ratio=2.0",
+      "webSpeech": { "pitch": 1.04, "rate": 1.03 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "younger_self_unguarded",
+        "emotionDirectives": {
+          "warm": { "stability": 0.50, "style": 0.40, "tonePrompt": "Bright pre-burnout disbelief" },
+          "fractured": { "stability": 0.72, "style": 0.16, "tonePrompt": "Subdued steamed-glass echo" }
+        }
+      }
+    },
+    "phantom_skeptic": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "phantom_skeptic_warm.wav",
+        "seed": 14361,
+        "temperature": 0.58,
+        "voiceDesignInstruct": "Blunt, gravelly adult male voice in his mid-40s, low-mid baritone, unpolished late-night barroom candor with zero corporate politeness or melodrama, clean close studio mic.",
+        "anchorText": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the machine proved me wrong.",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "phantom_skeptic_warm.wav",
+            "seed": 14361,
+            "temperature": 0.58,
+            "voiceDesignInstruct": "Blunt, gravelly adult male voice in his mid-40s, low-mid baritone, unpolished late-night barroom candor with zero corporate politeness or melodrama, clean close studio mic.",
+            "anchorText": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the machine proved me wrong."
+          },
+          "fractured": {
+            "anchorFile": "phantom_skeptic_fractured.wav",
+            "seed": 14362,
+            "temperature": 0.52,
+            "voiceDesignInstruct": "Dry, flatly cynical adult male voice in his mid-40s, clipped quiet finality without raising volume, clean dry close studio mic.",
+            "anchorText": "Every piece you shave off makes my point for me. Keep trimming, and there won't even be a ghost left to argue with."
+          }
+        }
+      },
+      "kokoroVoice": "am_fenrir",
+      "kokoroSpeed": 0.96,
+      "emotionSpeed": { "warm": 0.96, "fractured": 0.93 },
+      "localVoice": "Fred",
+      "localRate": 168,
+      "ffmpegFilter": "highpass=f=75,lowpass=f=9800,equalizer=f=240:t=q:w=1.1:g=1.2,acompressor=threshold=-18dB:ratio=2.2",
+      "webSpeech": { "pitch": 0.88, "rate": 0.95 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "skeptic_gravel_male",
+        "emotionDirectives": {
+          "warm": { "stability": 0.64, "style": 0.30, "tonePrompt": "Blunt late-night candor" },
+          "fractured": { "stability": 0.80, "style": 0.14, "tonePrompt": "Flat unsentimental finality" }
+        }
+      }
+    },
+    "phantom_technician": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "phantom_technician_warm.wav",
+        "seed": 14573,
+        "temperature": 0.59,
+        "voiceDesignInstruct": "Weathered, pragmatic adult female voice in her mid-50s, grounded lower alto with slight working-class rasp, steady dry humor and zero academic pretension, clean close studio mic.",
+        "anchorText": "Big sky doesn't care how clever your equations are. Oil the bearing ring at three in the morning or the whole dome jams.",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "phantom_technician_warm.wav",
+            "seed": 14573,
+            "temperature": 0.59,
+            "voiceDesignInstruct": "Weathered, pragmatic adult female voice in her mid-50s, grounded lower alto with slight working-class rasp, steady dry humor and zero academic pretension, clean close studio mic.",
+            "anchorText": "Big sky doesn't care how clever your equations are. Oil the bearing ring at three in the morning or the whole dome jams."
+          },
+          "fractured": {
+            "anchorFile": "phantom_technician_fractured.wav",
+            "seed": 14372,
+            "temperature": 0.52,
+            "voiceDesignInstruct": "Tired, flat weathered adult female voice in her mid-50s, numb practical cadence stripped of warmth, clean close studio mic.",
+            "anchorText": "Hands feel like chalk tonight. I know which wrench fits the housing, just not why I bothered carrying the thermos up."
+          }
+        }
+      },
+      "kokoroVoice": "af_sarah",
+      "kokoroSpeed": 0.95,
+      "emotionSpeed": { "warm": 0.95, "fractured": 0.90 },
+      "localVoice": "Moira",
+      "localRate": 164,
+      "ffmpegFilter": "highpass=f=85,lowpass=f=10200,equalizer=f=320:t=q:w=1.2:g=1.2,acompressor=threshold=-18dB:ratio=2.1",
+      "webSpeech": { "pitch": 0.93, "rate": 0.94 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "technician_weathered_alto",
+        "emotionDirectives": {
+          "warm": { "stability": 0.62, "style": 0.30, "tonePrompt": "Pragmatic 3 AM craft" },
+          "fractured": { "stability": 0.78, "style": 0.14, "tonePrompt": "Numb mechanical fatigue" }
+        }
+      }
+    },
+    "phantom_waiting_room": {
+      "voiced": true,
+      "qwen3": {
+        "anchorFile": "phantom_waiting_room_warm.wav",
+        "seed": 14381,
+        "temperature": 0.60,
+        "voiceDesignInstruct": "Tired, gently ironic adult male voice in his late 50s, understated mid-low timbre, quiet deadpan waiting-room solidarity with faint wry warmth, clean close studio mic.",
+        "anchorText": "Vending machine ate my coin too. Honestly, feels like the most honest briefing either of us is going to get tonight.",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "phantom_waiting_room_warm.wav",
+            "seed": 14381,
+            "temperature": 0.60,
+            "voiceDesignInstruct": "Tired, gently ironic adult male voice in his late 50s, understated mid-low timbre, quiet deadpan waiting-room solidarity with faint wry warmth, clean close studio mic.",
+            "anchorText": "Vending machine ate my coin too. Honestly, feels like the most honest briefing either of us is going to get tonight."
+          },
+          "fractured": {
+            "anchorFile": "phantom_waiting_room_fractured.wav",
+            "seed": 14382,
+            "temperature": 0.53,
+            "voiceDesignInstruct": "Quiet, hollowed adult male voice in his late 50s, flat corridor stillness with zero wry lift left, clean close studio mic.",
+            "anchorText": "Two plastic chairs and a buzzing bulb, funny how the waiting room lasts longer than whatever was behind the door."
+          }
+        }
+      },
+      "kokoroVoice": "bm_lewis",
+      "kokoroSpeed": 0.93,
+      "emotionSpeed": { "warm": 0.93, "fractured": 0.89 },
+      "localVoice": "Daniel",
+      "localRate": 162,
+      "ffmpegFilter": "highpass=f=80,lowpass=f=10500,equalizer=f=260:t=q:w=1.2:g=1.0,acompressor=threshold=-19dB:ratio=2.0",
+      "webSpeech": { "pitch": 0.90, "rate": 0.92 },
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "waiting_room_solidarity",
+        "emotionDirectives": {
+          "warm": { "stability": 0.58, "style": 0.32, "tonePrompt": "Dry late-night corridor solidarity" },
+          "fractured": { "stability": 0.76, "style": 0.14, "tonePrompt": "Hollow plastic-chair stillness" }
         }
       }
     },

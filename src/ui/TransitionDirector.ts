@@ -175,7 +175,7 @@ export class TransitionDirector {
 
   playOverlayPulse(
     kind: 'overseer_slice',
-    label = 'OVERSEER-1419 // LIVE AUDIT',
+    label = 'OVERSEER // LIVE AUDIT',
     onMidpoint?: () => void,
     opts?: OverlayPulseOptions
   ): void {

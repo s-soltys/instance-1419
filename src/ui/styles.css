@@ -1555,23 +1555,7 @@ body,
 }
 
 .comms-choices {
-  border-top-color: rgba(122, 212, 182, 0.2);
-}
-
-.comms-choices .choice-line.is-tier-consequential {
-  border-color: rgba(122, 212, 182, 0.34);
-  background: rgba(122, 212, 182, 0.08);
-  color: #ebfaf4;
-}
-
-.comms-choices .choice-line.is-tier-consequential:hover {
-  border-color: rgba(122, 212, 182, 0.65);
-  background: rgba(122, 212, 182, 0.14);
-  color: #ffffff;
-}
-
-.comms-choices .choice-line.is-tier-consequential .choice-num {
-  color: var(--mint);
+  border-top-color: rgba(235, 176, 98, 0.22);
 }
 
 /* ==================== 2D FULL-BLEED OIL IMPASTO DREAMSCAPE ==================== */
@@ -2114,7 +2098,7 @@ body,
 }
 
 .speaker-avatar.is-speaking {
-  filter: drop-shadow(0 0 8px rgba(235, 198, 146, 0.42));
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--speaker-color, #ebb062) 55%, transparent));
 }
 
 .comms-avatar-bay,

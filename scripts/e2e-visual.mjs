@@ -432,7 +432,8 @@ async function run() {
       await mPage.click(`[data-launch-mg="${mobileId}"]`);
       await mPage.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 8000 });
       await ensureQaClosed(mPage);
-      await mPage.waitForTimeout(200);
+      await mPage.waitForSelector('#minigame-overlay:not(.is-entering)', { timeout: 2500 }).catch(() => {});
+      await mPage.waitForTimeout(220);
 
       const mConsoleBox = await mPage.locator('.mg-bottom-console').boundingBox();
       if (!mConsoleBox || mConsoleBox.y + mConsoleBox.height > 394) {

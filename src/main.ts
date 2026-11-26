@@ -17,6 +17,12 @@ function bootstrap(): void {
     throw new Error('Missing #app root container');
   }
 
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('studio') === '1' || params.get('cast') === '1') {
+    void import('./studio/CastStudioApp').then((m) => m.mountCastStudio(appRoot));
+    return;
+  }
+
   const store = new StateStore();
   const settings = new SettingsStore();
   const audio = new AudioEngine();

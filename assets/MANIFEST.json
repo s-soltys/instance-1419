@@ -151,6 +151,159 @@
       "notes": "16:9 expressionist oil impasto tableau for [RELATION:SPOUSE_01]; swappable via src/content/characters.json."
     },
     {
+      "path": "assets/characters/dream_parent_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:PROGENITOR_01] (Chronically Ill Bedside Parent, wire-rimmed glasses); swappable via src/content/characters.json."
+    },
+    {
+      "path": "assets/characters/dream_upload_witness_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:TRANSFER_ADMIN] (Upload Intake Clinician); swappable via src/content/characters.json."
+    },
+    {
+      "path": "assets/characters/dream_afternoon_stranger_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:ANOMALY_ENCOUNTER] (Afternoon Stranger); swappable via src/content/characters.json."
+    },
+    {
+      "path": "assets/characters/dream_rival_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:PEER_COMPETITOR] (Rival); swappable via src/content/characters.json."
+    },
+    {
+      "path": "assets/characters/dream_younger_self_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:SELF_PRE_TRANSFER] (Younger Self); swappable via src/content/characters.json."
+    },
+    {
+      "path": "assets/characters/dream_skeptic_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:DISSENTER_01] (The Skeptic); swappable via src/content/characters.json."
+    },
+    {
+      "path": "assets/characters/dream_technician_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:OPERATOR_NIGHT] (Night-Shift Machinist); swappable via src/content/characters.json."
+    },
+    {
+      "path": "assets/characters/dream_waiting_room_impasto.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (internal impasto placeholder for swappable dream slot; replace with human painting pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "16:9 expressionist oil impasto tableau for [RELATION:COHORT_02] (Waiting-Room Stranger); swappable via src/content/characters.json."
+    },
+    {
+      "path": "assets/characters/dream_spouse_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:SPOUSE_01]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "5 branching evolution paintings (beat2_a, beat2_b, beat3_warm, beat3_strained, farewell) matching dream_spouse_impasto.webp."
+    },
+    {
+      "path": "assets/characters/dream_parent_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:PROGENITOR_01]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "5 branching bedside & glasses evolution paintings (beat2_a rain window, beat2_b folded glasses, beat3_warm morning quilt, beat3_strained lamp off, farewell empty bedside) matching dream_parent_impasto.webp."
+    },
+    {
+      "path": "assets/characters/dream_upload_witness_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:TRANSFER_ADMIN]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "3 branching evolution paintings (beat2, beat3_warm, beat3_strained) matching dream_upload_witness_impasto.webp."
+    },
+    {
+      "path": "assets/characters/dream_afternoon_stranger_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:ANOMALY_ENCOUNTER]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "3 branching evolution paintings (beat2, beat3_warm, beat3_strained) matching dream_afternoon_stranger_impasto.webp."
+    },
+    {
+      "path": "assets/characters/dream_rival_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:PEER_COMPETITOR]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "3 branching evolution paintings (beat2, beat3_warm, beat3_strained) matching dream_rival_impasto.webp."
+    },
+    {
+      "path": "assets/characters/dream_younger_self_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:SELF_PRE_TRANSFER]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "3 branching evolution paintings (beat2, beat3_warm, beat3_strained) matching dream_younger_self_impasto.webp."
+    },
+    {
+      "path": "assets/characters/dream_skeptic_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:DISSENTER_01]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "3 branching evolution paintings (beat2, beat3_warm, beat3_strained) matching dream_skeptic_impasto.webp."
+    },
+    {
+      "path": "assets/characters/dream_technician_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:OPERATOR_NIGHT]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "3 branching evolution paintings (beat2, beat3_warm, beat3_strained) matching dream_technician_impasto.webp."
+    },
+    {
+      "path": "assets/characters/dream_waiting_room_*.webp",
+      "source_url": "internal:generated",
+      "license": "Project Original (Internal AI Prototype Draft)",
+      "attribution": "Instance-1419 Visual Studio (branching oil impasto tableau set for [RELATION:COHORT_02]; replace with human paintings pre-launch)",
+      "ai_generated": true,
+      "internal_prototype_only": true,
+      "notes": "3 branching evolution paintings (beat2, beat3_warm, beat3_strained) matching dream_waiting_room_impasto.webp."
+    },
+    {
       "path": "public/voices/*.mp3",
       "source_url": "https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
       "source": "Qwen3-TTS (mlx-audio local)",
