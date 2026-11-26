@@ -69,6 +69,7 @@ const PROFILES = voiceProfilesData.profiles as Record<
   {
     voiced?: boolean;
     ffmpegFilter?: string;
+    voxcpm2?: { defaultInstruct?: string; anchorText?: string };
     qwen3?: { voiceDesignInstruct?: string; anchorText?: string };
   }
 >;

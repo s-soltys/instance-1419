@@ -63,11 +63,11 @@ All 9 Dream Personas (`phantom_spouse`, `phantom_parent`, `phantom_upload_witnes
 
 ## 3. Local Voice Generation Setup & Reproduction
 
-All character voice lines are synthesized locally using **Qwen3-TTS** (Apache-2.0, quantized 4-bit) running through Apple Silicon / MLX (or Kokoro as a CPU fallback). Everything required to configure, anchor, and generate lines is committed to the repository:
+All character voice lines are synthesized locally using **VoxCPM2** (OpenBMB, Apache-2.0, 8-bit quantized 48 kHz continuous-latent TTS) running through Apple Silicon / MLX, with automated **Parakeet TDT 0.6B v3** STT WER verification (plus Qwen3-TTS and Kokoro-82M as fallbacks). Everything required to configure, anchor, and generate lines is committed to the repository:
 
-* **Configuration:** [`src/content/voice_profiles.json`](../src/content/voice_profiles.json) holds the reserved Cast 2 seeds, prompt directives (`voiceDesignInstruct`), emotion-split `emotionAnchors` (`warm`/`fractured`, `warm`/`clipped`), `repetitionPenalty: 1.1`, `"voiced": false` for Psyche, and post-processing EQ/compression filters.
-* **Orchestration Script:** [`scripts/generate-voices.mjs`](../scripts/generate-voices.mjs) extracts all voiced dialogue lines from Ink stories (skipping `"voiced": false` speakers and stripping `(ARCHIVE · 1406):` prefixes), strips inline emotional markup (`[[warm:...]]`, `[[cold:...]]`), assigns unique deterministic IDs, and invokes the Python batch worker.
-* **MLX Worker:** [`scripts/generate-voices-qwen3.py`](../scripts/generate-voices-qwen3.py) loads models from HuggingFace (`mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-4bit` and `Base-4bit`), synthesizes missing cast/emotion anchors deterministically using cast seeds, batch-clones via ICL with `repetition_penalty=1.1` and SHA-1 batch seeds, applies `agate` + two-pass `loudnorm`, and runs automated duration/loudness sanity checks.
+* **Configuration:** [`src/content/voice_profiles.json`](../src/content/voice_profiles.json) holds the reserved Cast 2 single-anchor biological identities, `emotionInstructs` per emotion state (`warm`/`tender`/`fractured`, `measured`/`blunt`/`audit`, `warm`/`dry`/`joking`/`clipped`), `"voiced": false` for Psyche, and post-processing EQ/compression filters.
+* **Orchestration Script:** [`scripts/generate-voices.mjs`](../scripts/generate-voices.mjs) extracts all voiced dialogue lines from Ink stories (skipping `"voiced": false` speakers and stripping `(ARCHIVE · 1406):` prefixes), strips inline emotional markup (`[[warm:...]]`, `[[cold:...]]`), tracks turn continuation chains and per-line `synthHash` staleness, assigns deterministic IDs, and invokes the Python batch worker.
+* **MLX Worker:** [`scripts/generate-voices-voxcpm2.py`](../scripts/generate-voices-voxcpm2.py) loads `mlx-community/VoxCPM2-8bit` once, clones each speaker from a single canonical biological anchor with per-emotion `instruct` and turn continuation (`prompt_audio` + `prompt_text`), runs automated acoustic + Parakeet TDT v3 STT WER QA retries, and applies gentle edge fades + character EQ + two-pass EBU R128 `-17 LUFS` normalization into 48 kHz mono `128 kbps` MP3 (no `agate`).
 
 ### Running on a New Machine
 
@@ -83,11 +83,12 @@ All character voice lines are synthesized locally using **Qwen3-TTS** (Apache-2.
    ```
 3. **Generate Voices:**
    ```bash
-   # From project root:
+   # From project root (uses VoxCPM2-8bit + Parakeet WER QA by default):
    npm run generate:voices
    ```
    * *Regenerating all anchors:* `npm run generate:voices -- --force-anchors`
    * *Forcing complete regeneration:* `npm run generate:voices -- --force`
-   * *Generating specific lines:* `npm run generate:voices -- --ids=overseer_xxxx,sibling_yyyy`
-   * *Fallback provider (no GPU/MLX):* `npm run generate:voices -- --provider=kokoro`
+   * *Generating specific lines:* `npm run generate:voices -- --ids=wake2_anim_transfer,intro_sib_open`
+   * *Skipping STT QA pass (faster draft):* `npm run generate:voices -- --skip-stt-qa`
+   * *Legacy Qwen3-TTS or CPU Kokoro fallback:* `npm run generate:voices -- --provider=qwen3` or `--provider=kokoro`
 

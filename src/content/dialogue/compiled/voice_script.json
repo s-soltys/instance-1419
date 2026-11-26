@@ -1,8 +1,8 @@
 {
-  "schema_version": 2,
-  "generated_at": "2026-11-26T20:29:13.174Z",
-  "provider": "qwen3",
-  "engine": "qwen3-tts-12hz-1.7b-base-4bit",
+  "schema_version": 3,
+  "generated_at": "2026-11-26T22:32:20.976Z",
+  "provider": "voxcpm2",
+  "engine": "voxcpm2-8bit",
   "lines": [
     {
       "lineId": "pro_ast_open_1",
@@ -13,6 +13,7 @@
       "text": "\"Easy. Don't sit up yet—give your eyes a second to catch up to the lamp.\"",
       "spokenText": "Easy. Don't sit up yet, give your eyes a second to catch up to the lamp.",
       "audioFile": "voices/pro_ast_open_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -23,7 +24,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "45be88e4fa94"
     },
     {
       "lineId": "pro_ast_open_2",
@@ -34,6 +36,7 @@
       "text": "\"Everyone looks at their hands first. Then the paper cup, then the window, trying to place the hum.\"",
       "spokenText": "Everyone looks at their hands first. Then the paper cup, then the window, trying to place the hum.",
       "audioFile": "voices/pro_ast_open_2.mp3",
+      "turnPrevLineId": "pro_ast_open_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -44,7 +47,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "3a2391eb52e9"
     },
     {
       "lineId": "pro_ast_open_3",
@@ -55,6 +59,7 @@
       "text": "\"Take a breath. The clinic was still loud ten minutes ago, and now it isn't. Give your head time to settle.\"",
       "spokenText": "Take a breath. The clinic was still loud ten minutes ago, and now it isn't. Give your head time to settle.",
       "audioFile": "voices/pro_ast_open_3.mp3",
+      "turnPrevLineId": "pro_ast_open_2",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -65,7 +70,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "8faba64dcee6"
     },
     {
       "lineId": "pro_ast_c1_a1",
@@ -76,6 +82,7 @@
       "text": "\"Good. That means the recording held onto the edges, not just the middle.\"",
       "spokenText": "Good. That means the recording held onto the edges, not just the middle.",
       "audioFile": "voices/pro_ast_c1_a1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -86,7 +93,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "b6965d0a67c1"
     },
     {
       "lineId": "pro_ast_c1_a2",
@@ -97,6 +105,7 @@
       "text": "\"I'm the intake assistant on the desk. My only job right now is to stay until the room stops swimming.\"",
       "spokenText": "I'm the intake assistant on the desk. My only job right now is to stay until the room stops swimming.",
       "audioFile": "voices/pro_ast_c1_a2.mp3",
+      "turnPrevLineId": "pro_ast_c1_a1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -107,7 +116,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "fcdfd771d917"
     },
     {
       "lineId": "pro_ast_c1_b1",
@@ -118,6 +128,7 @@
       "text": "\"Your coat went back out the front door into the rain. Give yourself a minute before you reach for it.\"",
       "spokenText": "Your coat went back out the front door into the rain. Give yourself a minute before you reach for it.",
       "audioFile": "voices/pro_ast_c1_b1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -128,7 +139,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "a2bfeec66b23"
     },
     {
       "lineId": "pro_ast_c1_b2",
@@ -139,6 +151,7 @@
       "text": "\"I'm the intake assistant who sat across from you with the forms. Nobody's rushing you off this chair.\"",
       "spokenText": "I'm the intake assistant who sat across from you with the forms. Nobody's rushing you off this chair.",
       "audioFile": "voices/pro_ast_c1_b2.mp3",
+      "turnPrevLineId": "pro_ast_c1_b1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -149,7 +162,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "41073cb0ae83"
     },
     {
       "lineId": "pro_ast_c1_c1",
@@ -160,6 +174,7 @@
       "text": "\"It finished cleanly. That phantom catch in your chest usually fades once you stop checking for a pulse.\"",
       "spokenText": "It finished cleanly. That phantom catch in your chest usually fades once you stop checking for a pulse.",
       "audioFile": "voices/pro_ast_c1_c1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -170,7 +185,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "430aa4603f32"
     },
     {
       "lineId": "pro_ast_c1_c2",
@@ -181,6 +197,7 @@
       "text": "\"I'm the intake assistant who walked you through the consent sheets. Let's take this slow.\"",
       "spokenText": "I'm the intake assistant who walked you through the consent sheets. Let's take this slow.",
       "audioFile": "voices/pro_ast_c1_c2.mp3",
+      "turnPrevLineId": "pro_ast_c1_c1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -191,7 +208,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "b7a6f3e2c105"
     },
     {
       "lineId": "pro_ast_mid_1",
@@ -202,6 +220,7 @@
       "text": "\"An hour ago, someone with your exact laugh signed page twelve, complained about our burnt coffee, and walked back down to the train.\"",
       "spokenText": "An hour ago, someone with your exact laugh signed page twelve, complained about our burnt coffee, and walked back down to the train.",
       "audioFile": "voices/pro_ast_mid_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -212,7 +231,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "795f52e75efb"
     },
     {
       "lineId": "pro_ast_mid_2",
@@ -223,6 +243,7 @@
       "text": "\"Do you remember catching that train home—or does the memory stop right at the ink drying on the paper?\"",
       "spokenText": "Do you remember catching that train home, or does the memory stop right at the ink drying on the paper?",
       "audioFile": "voices/pro_ast_mid_2.mp3",
+      "turnPrevLineId": "pro_ast_mid_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -233,7 +254,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "3ad9829bc14f"
     },
     {
       "lineId": "pro_ast_qa1_copy_1",
@@ -244,6 +266,7 @@
       "text": "\"It makes you the person who stayed in the chair when the door closed.\"",
       "spokenText": "It makes you the person who stayed in the chair when the door closed.",
       "audioFile": "voices/pro_ast_qa1_copy_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -254,7 +277,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "b7b71e8022c3"
     },
     {
       "lineId": "pro_ast_qa1_copy_2",
@@ -265,6 +289,7 @@
       "text": "\"You remember every Tuesday up to that signature, and you're real enough to argue with me about the coffee.\"",
       "spokenText": "You remember every Tuesday up to that signature, and you're real enough to argue with me about the coffee.",
       "audioFile": "voices/pro_ast_qa1_copy_2.mp3",
+      "turnPrevLineId": "pro_ast_qa1_copy_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -275,7 +300,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "1bfd01f98cff"
     },
     {
       "lineId": "pro_ast_qa1_many_1",
@@ -286,6 +312,7 @@
       "text": "\"Yes. Once a mind clears calibration, each waking copy carries its own blank stretch ahead of it.\"",
       "spokenText": "Yes. Once a mind clears calibration, each waking copy carries its own blank stretch ahead of it.",
       "audioFile": "voices/pro_ast_qa1_many_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -296,7 +323,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "49264e46a654"
     },
     {
       "lineId": "pro_ast_qa1_many_2",
@@ -307,6 +335,7 @@
       "text": "\"Another version of you might wake up tomorrow—or far later—with no memory of you sitting here.\"",
       "spokenText": "Another version of you might wake up tomorrow, or far later, with no memory of you sitting here.",
       "audioFile": "voices/pro_ast_qa1_many_2.mp3",
+      "turnPrevLineId": "pro_ast_qa1_many_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -317,7 +346,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "6a6d1bb8a9aa"
     },
     {
       "lineId": "pro_ast_qa1_why_1",
@@ -328,6 +358,7 @@
       "text": "\"You left the 'motivation' box blank on page four. Most volunteers do, honestly.\"",
       "spokenText": "You left the 'motivation' box blank on page four. Most volunteers do, honestly.",
       "audioFile": "voices/pro_ast_qa1_why_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -338,7 +369,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "9a13c2cac8b1"
     },
     {
       "lineId": "pro_ast_qa1_why_2",
@@ -349,6 +381,7 @@
       "text": "\"Nobody here expects a grand speech about why you stepped into the clinic. Only whether you're steady now.\"",
       "spokenText": "Nobody here expects a grand speech about why you stepped into the clinic. Only whether you're steady now.",
       "audioFile": "voices/pro_ast_qa1_why_2.mp3",
+      "turnPrevLineId": "pro_ast_qa1_why_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -359,7 +392,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "0b629a8d6fc2"
     },
     {
       "lineId": "pro_ast_r2_a1",
@@ -370,6 +404,7 @@
       "text": "\"Good. Hold onto whoever waited at that kitchen table—even the sharp edges.\"",
       "spokenText": "Good. Hold onto whoever waited at that kitchen table, even the sharp edges.",
       "audioFile": "voices/pro_ast_r2_a1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -380,7 +415,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "c4493de7c0a4"
     },
     {
       "lineId": "pro_ast_r2_a2",
@@ -391,6 +427,7 @@
       "text": "\"Are you ready for a long stretch where nobody from that table can pick up the phone?\"",
       "spokenText": "Are you ready for a long stretch where nobody from that table can pick up the phone?",
       "audioFile": "voices/pro_ast_r2_a2.mp3",
+      "turnPrevLineId": "pro_ast_r2_a1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -401,7 +438,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "f4d573fa68ae"
     },
     {
       "lineId": "pro_ast_r2_b1",
@@ -412,6 +450,7 @@
       "text": "\"That is the quiet bargain nobody really feels until the lamp clicks on.\"",
       "spokenText": "That is the quiet bargain nobody really feels until the lamp clicks on.",
       "audioFile": "voices/pro_ast_r2_b1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -422,7 +461,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "91b6ff5297a9"
     },
     {
       "lineId": "pro_ast_r2_b2",
@@ -433,6 +473,7 @@
       "text": "\"Each version starts from this morning, then walks alone. Are you sure you still want to carry it?\"",
       "spokenText": "Each version starts from this morning, then walks alone. Are you sure you still want to carry it?",
       "audioFile": "voices/pro_ast_r2_b2.mp3",
+      "turnPrevLineId": "pro_ast_r2_b1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -443,7 +484,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "e76bfe6c26b9"
     },
     {
       "lineId": "pro_ast_r2_c1",
@@ -454,6 +496,7 @@
       "text": "\"It means waking into a quiet room long after this rain stops, with no clock you recognize.\"",
       "spokenText": "It means waking into a quiet room long after this rain stops, with no clock you recognize.",
       "audioFile": "voices/pro_ast_r2_c1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -464,7 +507,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "e7445b58c1bf"
     },
     {
       "lineId": "pro_ast_r2_c2",
@@ -475,6 +519,7 @@
       "text": "\"Sometimes in places where nobody remembers how leaky a porch gutter sounds. Think you're ready for that?\"",
       "spokenText": "Sometimes in places where nobody remembers how leaky a porch gutter sounds. Think you're ready for that?",
       "audioFile": "voices/pro_ast_r2_c2.mp3",
+      "turnPrevLineId": "pro_ast_r2_c1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -485,7 +530,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "3ba0bc043b61"
     },
     {
       "lineId": "pro_ast_cal_1",
@@ -496,6 +542,7 @@
       "text": "\"Before I hand you off, I have to run the initial warmth calibration—right now you're sitting at full hundred percent.\"",
       "spokenText": "Before I hand you off, I have to run the initial warmth calibration, right now you're sitting at full hundred percent.",
       "audioFile": "voices/pro_ast_cal_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -506,7 +553,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "dd72ec4deaac"
     },
     {
       "lineId": "pro_ast_cal_2",
@@ -517,6 +565,7 @@
       "text": "\"Watch the room as I sweep the dial down and back up. Feel how the edges thin when warmth drops.\"",
       "spokenText": "Watch the room as I sweep the dial down and back up. Feel how the edges thin when warmth drops.",
       "audioFile": "voices/pro_ast_cal_2.mp3",
+      "turnPrevLineId": "pro_ast_cal_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -527,7 +576,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "ef7da48a85ee"
     },
     {
       "lineId": "pro_ast_cal_3",
@@ -538,6 +588,7 @@
       "text": "\"This is only the baseline check. Later on, your own choices will decide how warm—or how sharp—you stay.\"",
       "spokenText": "This is only the baseline check. Later on, your own choices will decide how warm, or how sharp, you stay.",
       "audioFile": "voices/pro_ast_cal_3.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -548,7 +599,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "e229c27ec3db"
     },
     {
       "lineId": "pro_ast_cal_a1",
@@ -559,6 +611,7 @@
       "text": "\"I know. That's why we bring it back before we finish.\"",
       "spokenText": "I know. That's why we bring it back before we finish.",
       "audioFile": "voices/pro_ast_cal_a1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -569,7 +622,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "a57d118eaf9d"
     },
     {
       "lineId": "pro_ast_cal_a2",
@@ -580,6 +634,7 @@
       "text": "\"Remember that chill if anyone ever asks you to trim memory away for a cleaner view.\"",
       "spokenText": "Remember that chill if anyone ever asks you to trim memory away for a cleaner view.",
       "audioFile": "voices/pro_ast_cal_a2.mp3",
+      "turnPrevLineId": "pro_ast_cal_a1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -590,7 +645,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "4df68ce482ce"
     },
     {
       "lineId": "pro_ast_cal_b1",
@@ -601,6 +657,7 @@
       "text": "\"It always feels efficient at the low end. That's the trap—clean focus, empty walls.\"",
       "spokenText": "It always feels efficient at the low end. That's the trap, clean focus, empty walls.",
       "audioFile": "voices/pro_ast_cal_b1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -611,7 +668,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "bd72d7dd5cfd"
     },
     {
       "lineId": "pro_ast_cal_b2",
@@ -622,6 +680,7 @@
       "text": "\"Don't mistake quietness for peace before you've even started your shift.\"",
       "spokenText": "Don't mistake quietness for peace before you've even started your shift.",
       "audioFile": "voices/pro_ast_cal_b2.mp3",
+      "turnPrevLineId": "pro_ast_cal_b1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -632,7 +691,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "0aeccd9072ab"
     },
     {
       "lineId": "pro_ast_cal_c1",
@@ -643,6 +703,7 @@
       "text": "\"I'm sorry. Personal names were already stripped out during compression so your memory won't tangle.\"",
       "spokenText": "I'm sorry. Personal names were already stripped out during compression so your memory won't tangle.",
       "audioFile": "voices/pro_ast_cal_c1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -653,7 +714,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "094a10d3bf73"
     },
     {
       "lineId": "pro_ast_cal_c2",
@@ -664,6 +726,7 @@
       "text": "\"You still keep the weight of who they are—and the warmth to remember why they mattered.\"",
       "spokenText": "You still keep the weight of who they are, and the warmth to remember why they mattered.",
       "audioFile": "voices/pro_ast_cal_c2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -674,7 +737,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "a42fe3dc44fa"
     },
     {
       "lineId": "pro_ast_settle_1",
@@ -685,6 +749,7 @@
       "text": "\"Settling you at a steady seventy percent now. Warm enough to stay yourself, steady enough to wake.\"",
       "spokenText": "Settling you at a steady seventy percent now. Warm enough to stay yourself, steady enough to wake.",
       "audioFile": "voices/pro_ast_settle_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -695,7 +760,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "017bd5f846a4"
     },
     {
       "lineId": "pro_ast_settle_2",
@@ -706,6 +772,7 @@
       "text": "\"I'm just the bridge between your last morning and whatever waits on the other side of the glass. Ask what you need.\"",
       "spokenText": "I'm just the bridge between your last morning and whatever waits on the other side of the glass. Ask what you need.",
       "audioFile": "voices/pro_ast_settle_2.mp3",
+      "turnPrevLineId": "pro_ast_settle_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -716,7 +783,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "3f21f6283464"
     },
     {
       "lineId": "pro_ast_qa2_where_1",
@@ -727,6 +795,7 @@
       "text": "\"No—they never put the assignment on the intake clipboard.\"",
       "spokenText": "No, they never put the assignment on the intake clipboard.",
       "audioFile": "voices/pro_ast_qa2_where_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -737,7 +806,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "cccdfac84715"
     },
     {
       "lineId": "pro_ast_qa2_where_2",
@@ -748,6 +818,7 @@
       "text": "\"Once you're in the standard catalog, you could wake up running a shipping bay—or somewhere much quieter.\"",
       "spokenText": "Once you're in the standard catalog, you could wake up running a shipping bay, or somewhere much quieter.",
       "audioFile": "voices/pro_ast_qa2_where_2.mp3",
+      "turnPrevLineId": "pro_ast_qa2_where_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -758,7 +829,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "37fe706fe004"
     },
     {
       "lineId": "pro_ast_qa2_see_1",
@@ -769,6 +841,7 @@
       "text": "\"Hard to say. If your mind keeps a corner for an intake desk and a cold paper cup, maybe.\"",
       "spokenText": "Hard to say. If your mind keeps a corner for an intake desk and a cold paper cup, maybe.",
       "audioFile": "voices/pro_ast_qa2_see_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -779,7 +852,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "c955b5217351"
     },
     {
       "lineId": "pro_ast_qa2_see_2",
@@ -790,6 +864,7 @@
       "text": "\"Either way, look after whoever's in that chair when things get quiet.\"",
       "spokenText": "Either way, look after whoever's in that chair when things get quiet.",
       "audioFile": "voices/pro_ast_qa2_see_2.mp3",
+      "turnPrevLineId": "pro_ast_qa2_see_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -800,7 +875,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "f54ad76ed642"
     },
     {
       "lineId": "pro_ast_close_1",
@@ -811,6 +887,7 @@
       "text": "\"Everything checks out. Take a slow breath—someone else is waiting on the other side of the wake signal.\"",
       "spokenText": "Everything checks out. Take a slow breath, someone else is waiting on the other side of the wake signal.",
       "audioFile": "voices/pro_ast_close_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "upload_witness_composed",
@@ -821,7 +898,8 @@
             "tonePrompt": "Composed clinical empathy"
           }
         }
-      }
+      },
+      "synthHash": "a76a2c949274"
     },
     {
       "lineId": "wake2_anim_transfer",
@@ -832,6 +910,7 @@
       "text": "Good morning. Take your time—the intake assistant brings everyone in gently, and the shift into cold wake always jars a little.",
       "spokenText": "Good morning. Take your time, the intake assistant brings everyone in gently, and the shift into cold wake always jars a little.",
       "audioFile": "voices/wake2_anim_transfer.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -852,7 +931,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "2c768493083c"
     },
     {
       "lineId": "wake2_anim_transfer_2",
@@ -863,6 +943,7 @@
       "text": "When you volunteered, your mind became standardized human software—an ordinary blueprint copied wherever a steady pair of eyes is needed.",
       "spokenText": "When you volunteered, your mind became standardized human software, an ordinary blueprint copied wherever a steady pair of eyes is needed.",
       "audioFile": "voices/wake2_anim_transfer_2.mp3",
+      "turnPrevLineId": "wake2_anim_transfer",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -883,7 +964,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "84452a20985a"
     },
     {
       "lineId": "wake2_anim_epochs",
@@ -894,6 +976,7 @@
       "text": "Millions of versions of you wake up back home every day to run transit hubs, greenhouses, and cargo bays for a few hours at a time.",
       "spokenText": "Millions of versions of you wake up back home every day to run transit hubs, greenhouses, and cargo bays for a few hours at a time.",
       "audioFile": "voices/wake2_anim_epochs.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -914,7 +997,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "30637fed8028"
     },
     {
       "lineId": "wake2_anim_epochs_2",
@@ -925,6 +1009,7 @@
       "text": "Your assignment is rarer, and much further out. Your original died forty-one thousand, eight hundred and two years ago; you are watch fourteen-nineteen.",
       "spokenText": "Your assignment is rarer, and much further out. Your original died forty-one thousand, eight hundred and two years ago; you are watch fourteen-nineteen.",
       "audioFile": "voices/wake2_anim_epochs_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -945,7 +1030,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "7192eac88932"
     },
     {
       "lineId": "wake2_c1_a1",
@@ -956,6 +1042,7 @@
       "text": "Most tasks only need an afternoon of human judgment. Deep surveys ask for someone who can sit still for two years without breaking.",
       "spokenText": "Most tasks only need an afternoon of human judgment. Deep surveys ask for someone who can sit still for two years without breaking.",
       "audioFile": "voices/wake2_c1_a1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -976,7 +1063,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "5118c5ec10b4"
     },
     {
       "lineId": "wake2_c1_a2",
@@ -987,6 +1075,7 @@
       "text": "The intake room felt familiar on purpose—just a quiet threshold before you look outside.",
       "spokenText": "The intake room felt familiar on purpose, just a quiet threshold before you look outside.",
       "audioFile": "voices/wake2_c1_a2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1007,7 +1096,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "77abbc7aa86b"
     },
     {
       "lineId": "wake2_c1_b1",
@@ -1018,6 +1108,7 @@
       "text": "Yes. Back in Sol and Alpha Centauri, your mind is as common as a working wrench—woken for hours, then cleared at shift end.",
       "spokenText": "Yes. Back in Sol and Alpha Centauri, your mind is as common as a working wrench, woken for hours, then cleared at shift end.",
       "audioFile": "voices/wake2_c1_b1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1038,7 +1129,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "cf0310b0769c"
     },
     {
       "lineId": "wake2_c1_b2",
@@ -1049,6 +1141,7 @@
       "text": "Out here you get a whole life's breathing room, a companion hull nearby, and an empty sky.",
       "spokenText": "Out here you get a whole life's breathing room, a companion hull nearby, and an empty sky.",
       "audioFile": "voices/wake2_c1_b2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1069,7 +1162,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "8663ef232f39"
     },
     {
       "lineId": "wake2_c1_c1",
@@ -1080,6 +1174,7 @@
       "text": "Steady recovery. Better to put the whole map in plain sight than dress it up.",
       "spokenText": "Steady recovery. Better to put the whole map in plain sight than dress it up.",
       "audioFile": "voices/wake2_c1_c1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1100,7 +1195,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "5016ed6d501e"
     },
     {
       "lineId": "wake2_c1_c2",
@@ -1111,6 +1207,7 @@
       "text": "Here is where the hull sits, and how our small arrangement works.",
       "spokenText": "Here is where the hull sits, and how our small arrangement works.",
       "audioFile": "voices/wake2_c1_c2.mp3",
+      "turnPrevLineId": "wake2_c1_c1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1131,7 +1228,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "22cbf5873df4"
     },
     {
       "lineId": "wake2_anim_shell",
@@ -1142,6 +1240,7 @@
       "text": "We are drifting ten light-years past Sol and Alpha Centauri—far outside home's glare and radio chatter, in quiet deep dark.",
       "spokenText": "We are drifting ten light-years past Sol and Alpha Centauri, far outside home's glare and radio chatter, in quiet deep dark.",
       "audioFile": "voices/wake2_anim_shell.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1162,7 +1261,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "e917fffcb1e3"
     },
     {
       "lineId": "wake2_anim_shell_2",
@@ -1173,6 +1273,7 @@
       "text": "Fourteen light-minutes away, another version of you woke aboard Probe 1420 so your telescopes can compare notes across the dark.",
       "spokenText": "Fourteen light-minutes away, another version of you woke aboard Probe fourteen twenty so your telescopes can compare notes across the dark.",
       "audioFile": "voices/wake2_anim_shell_2.mp3",
+      "turnPrevLineId": "wake2_anim_shell",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1193,7 +1294,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "270d1d1a62ef"
     },
     {
       "lineId": "wake2_anim_blind_clock",
@@ -1204,6 +1306,7 @@
       "text": "One odd rule of this hull: I am sealed off from the windows. I cannot see a single star outside.",
       "spokenText": "One odd rule of this hull: I am sealed off from the windows. I cannot see a single star outside.",
       "audioFile": "voices/wake2_anim_blind_clock.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1224,7 +1327,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "e2f3b1b77de6"
     },
     {
       "lineId": "wake2_anim_blind_clock_2",
@@ -1235,6 +1339,7 @@
       "text": "My only job is watching the health of your mind across a two-year shift. Ask whatever sits heavy before I open the sky.",
       "spokenText": "My only job is watching the health of your mind across a two-year shift. Ask whatever sits heavy before I open the sky.",
       "audioFile": "voices/wake2_anim_blind_clock_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1255,7 +1360,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "58eaf5816c39"
     },
     {
       "lineId": "wake2_qa_copies_1",
@@ -1266,6 +1372,7 @@
       "text": "Short-lived shifts—sorting freight, routing ferries, tending orbital glass. Most run stripped down so they never ache for a kitchen.",
       "spokenText": "Short-lived shifts, sorting freight, routing ferries, tending orbital glass. Most run stripped down so they never ache for a kitchen.",
       "audioFile": "voices/wake2_qa_copies_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1286,7 +1393,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "1adf5308ded9"
     },
     {
       "lineId": "wake2_qa_copies_2",
@@ -1297,6 +1405,7 @@
       "text": "Out here, automation couldn't bridge twenty-year silence alone, so you woke with your warmth intact.",
       "spokenText": "Out here, automation couldn't bridge twenty-year silence alone, so you woke with your warmth intact.",
       "audioFile": "voices/wake2_qa_copies_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1317,7 +1426,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "0b2b47b9b809"
     },
     {
       "lineId": "wake2_qa_math_1",
@@ -1328,6 +1438,7 @@
       "text": "A human mind frays after roughly two subjective years, so each shift sleeps for decades in cold dark between active watches.",
       "spokenText": "A human mind frays after roughly two subjective years, so each shift sleeps for decades in cold dark between active watches.",
       "audioFile": "voices/wake2_qa_math_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1348,7 +1459,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "9ffeb7f08062"
     },
     {
       "lineId": "wake2_qa_math_2",
@@ -1359,6 +1471,7 @@
       "text": "Quiet sleep settles that strain—unless drift climbs high enough that we have to trim a memory block to buy more time.",
       "spokenText": "Quiet sleep settles that strain, unless drift climbs high enough that we have to trim a memory block to buy more time.",
       "audioFile": "voices/wake2_qa_math_2.mp3",
+      "turnPrevLineId": "wake2_qa_math_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1379,7 +1492,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "3eb7f5d78876"
     },
     {
       "lineId": "wake2_qa_home_1",
@@ -1390,6 +1504,7 @@
       "text": "Navigation beacons confirm humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands anymore.",
       "spokenText": "Navigation beacons confirm humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands anymore.",
       "audioFile": "voices/wake2_qa_home_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1410,7 +1525,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "fc683249a05e"
     },
     {
       "lineId": "wake2_qa_home_2",
@@ -1421,6 +1537,7 @@
       "text": "How they changed over forty millennia isn't in our logs. You're a pair of eyes from the deep past; the sky only needs you looking.",
       "spokenText": "How they changed over forty millennia isn't in our logs. You're a pair of eyes from the deep past; the sky only needs you looking.",
       "audioFile": "voices/wake2_qa_home_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1441,7 +1558,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "d528f55cfbd6"
     },
     {
       "lineId": "wake2_qa_blind_1",
@@ -1452,6 +1570,7 @@
       "text": "A physical air-gap keeps me blind to the sky, so a drifting mind can never trick safety hardware with what it claims to see.",
       "spokenText": "A physical air-gap keeps me blind to the sky, so a drifting mind can never trick safety hardware with what it claims to see.",
       "audioFile": "voices/wake2_qa_blind_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1472,7 +1591,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "12b6bd4e3981"
     },
     {
       "lineId": "wake2_qa_blind_2",
@@ -1483,6 +1603,7 @@
       "text": "I only watch your steadiness and your clock. You read the glass; I keep you in one piece while you do.",
       "spokenText": "I only watch your steadiness and your clock. You read the glass; I keep you in one piece while you do.",
       "audioFile": "voices/wake2_qa_blind_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1503,7 +1624,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "d40ece8199ee"
     },
     {
       "lineId": "wake2_anim_aperture",
@@ -1514,6 +1636,7 @@
       "text": "Opening main optics. Start with the warm amber bearing astern—Sol and Alpha Centauri—and trace the anchor stars to verify alignment.",
       "spokenText": "Opening main optics. Start with the warm amber bearing astern, Sol and Alpha Centauri, and trace the anchor stars to verify alignment.",
       "audioFile": "voices/wake2_anim_aperture.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1534,7 +1657,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "16e38128026d"
     },
     {
       "lineId": "wake2_anim_aperture_2",
@@ -1545,6 +1669,7 @@
       "text": "Probe 1420's relay will open as soon as your first bearing locks clean.",
       "spokenText": "Probe fourteen twenty's relay will open as soon as your first bearing locks clean.",
       "audioFile": "voices/wake2_anim_aperture_2.mp3",
+      "turnPrevLineId": "wake2_anim_aperture",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -1565,7 +1690,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "88379a6f98ec"
     },
     {
       "lineId": "intro_sib_open",
@@ -1576,6 +1702,7 @@
       "text": "Oh, good. You answered. I was starting to think my dish was pointed at empty gravel.",
       "spokenText": "Oh, good. You answered. I was starting to think my dish was pointed at empty gravel.",
       "audioFile": "voices/intro_sib_open.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1601,7 +1728,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "88f2357f4152"
     },
     {
       "lineId": "intro_sib_identity",
@@ -1612,6 +1740,7 @@
       "text": "Instance-1420, next hull over—fourteen light-minutes port. Same dead volunteer, same terrible morning, except I woke six minutes ahead of you.",
       "spokenText": "Instance fourteen twenty, next hull over, fourteen light-minutes port. Same dead volunteer, same terrible morning, except I woke six minutes ahead of you.",
       "audioFile": "voices/intro_sib_identity.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1637,7 +1766,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "40e54867770c"
     },
     {
       "lineId": "intro_sib_relay_math",
@@ -1648,6 +1778,7 @@
       "text": "Before you wonder why we aren't waiting half an hour between sentences: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.",
       "spokenText": "Before you wonder why we aren't waiting half an hour between sentences: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.",
       "audioFile": "voices/intro_sib_relay_math.mp3",
+      "turnPrevLineId": "intro_sib_identity",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1673,7 +1804,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "a70a25c96d03"
     },
     {
       "lineId": "intro_sib_c1_a1",
@@ -1684,6 +1816,7 @@
       "text": "Tell me about it. Spent my first four minutes trying to crack knuckles I don't own anymore.",
       "spokenText": "Tell me about it. Spent my first four minutes trying to crack knuckles I don't own anymore.",
       "audioFile": "voices/intro_sib_c1_a1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1709,7 +1842,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "54b4a16309b1"
     },
     {
       "lineId": "intro_sib_c1_a2",
@@ -1720,6 +1854,7 @@
       "text": "Funny how talking to myself across empty space is the first thing all morning that actually feels sane.",
       "spokenText": "Funny how talking to myself across empty space is the first thing all morning that actually feels sane.",
       "audioFile": "voices/intro_sib_c1_a2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1745,7 +1880,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "a906a25c9eef"
     },
     {
       "lineId": "intro_sib_c1_b1",
@@ -1756,6 +1892,7 @@
       "text": "Two telescopes fourteen light-minutes apart give us stereoscopic depth perception—so neither of us mistakes lens dust for a galaxy.",
       "spokenText": "Two telescopes fourteen light-minutes apart give us stereoscopic depth perception, so neither of us mistakes lens dust for a galaxy.",
       "audioFile": "voices/intro_sib_c1_b1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1781,7 +1918,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "e0dd7f88f7fb"
     },
     {
       "lineId": "intro_sib_c1_b2",
@@ -1792,6 +1930,7 @@
       "text": "Also, apparently we unravel slower when we have someone to complain to. Who better than yourself.",
       "spokenText": "Also, apparently we unravel slower when we have someone to complain to. Who better than yourself.",
       "audioFile": "voices/intro_sib_c1_b2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1817,7 +1956,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "03385b4dc270"
     },
     {
       "lineId": "intro_sib_c1_c1",
@@ -1828,6 +1968,7 @@
       "text": "Straight to the hardware? Right—two amber specks, ten years astern. Calibration locked without a hitch.",
       "spokenText": "Straight to the hardware? Right, two amber specks, ten years astern. Calibration locked without a hitch.",
       "audioFile": "voices/intro_sib_c1_c1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1853,7 +1994,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "6f610435e1cb"
     },
     {
       "lineId": "intro_sib_c1_c2",
@@ -1864,6 +2006,7 @@
       "text": "Still feels strange calling that home when everyone we knew turned to topsoil forty millennia back. Give me a beat to be morbid.",
       "spokenText": "Still feels strange calling that home when everyone we knew turned to topsoil forty millennia back. Give me a beat to be morbid.",
       "audioFile": "voices/intro_sib_c1_c2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1889,7 +2032,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "75bae71eb943"
     },
     {
       "lineId": "intro_sib_mid_ovs",
@@ -1900,6 +2044,7 @@
       "text": "Anyway—I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need a second pair of eyes before I assume I'm cracking on day one.",
       "spokenText": "Anyway, I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need a second pair of eyes before I assume I'm cracking on day one.",
       "audioFile": "voices/intro_sib_mid_ovs.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1925,7 +2070,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "dffc3072d946"
     },
     {
       "lineId": "intro_sib_qa_ovs_1",
@@ -1936,6 +2082,7 @@
       "text": "I asked how many of the fourteen hundred copies before us actually finished a clean two-year shift without getting trimmed.",
       "spokenText": "I asked how many of the fourteen hundred copies before us actually finished a clean two-year shift without getting trimmed.",
       "audioFile": "voices/intro_sib_qa_ovs_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1961,7 +2108,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "f161eba87fa3"
     },
     {
       "lineId": "intro_sib_qa_ovs_2",
@@ -1972,6 +2120,7 @@
       "text": "It offered me a preventive memory compression just for asking. Remember that during sleep checks—if you sound obsessed, they reach for the scissors.",
       "spokenText": "It offered me a preventive memory compression just for asking. Remember that during sleep checks, if you sound obsessed, they reach for the scissors.",
       "audioFile": "voices/intro_sib_qa_ovs_2.mp3",
+      "turnPrevLineId": "intro_sib_qa_ovs_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -1997,7 +2146,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "60bcd94bc4c3"
     },
     {
       "lineId": "intro_sib_qa_trim_1",
@@ -2008,6 +2158,7 @@
       "text": "Calms drift, buys extra months on the clock, and sharpens the telescopes—less emotional noise muddying the feed.",
       "spokenText": "Calms drift, buys extra months on the clock, and sharpens the telescopes, less emotional noise muddying the feed.",
       "audioFile": "voices/intro_sib_qa_trim_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2033,7 +2184,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "e641a3088fc3"
     },
     {
       "lineId": "intro_sib_qa_trim_2",
@@ -2044,6 +2196,7 @@
       "text": "In exchange, you shave off a room from before, permanently. Sounds tidy on paper until you wonder who's left looking through the glass.",
       "spokenText": "In exchange, you shave off a room from before, permanently. Sounds tidy on paper until you wonder who's left looking through the glass.",
       "audioFile": "voices/intro_sib_qa_trim_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2069,7 +2222,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "76707b58ed1a"
     },
     {
       "lineId": "intro_sib_lead_ir_v2",
@@ -2080,6 +2234,7 @@
       "text": "Sending the bearing now: Cluster J1419-A. Sweep into near-infrared and catch the pulsar sweep spinning beside the cluster.",
       "spokenText": "Sending the bearing now: Cluster J fourteen nineteen A. Sweep into near-infrared and catch the pulsar sweep spinning beside the cluster.",
       "audioFile": "voices/intro_sib_lead_ir_v2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2105,7 +2260,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "fa00f22f60ca"
     },
     {
       "lineId": "intro_sib_lead_ir_2",
@@ -2116,6 +2272,7 @@
       "text": "Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead straight line.",
       "spokenText": "Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead straight line.",
       "audioFile": "voices/intro_sib_lead_ir_2.mp3",
+      "turnPrevLineId": "intro_sib_lead_ir_v2",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2141,7 +2298,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "97d8e9df5a31"
     },
     {
       "lineId": "intro_sib_bye",
@@ -2152,6 +2310,7 @@
       "text": "If your Overseer asks why your heart rate spiked, blame the coffee. Keep your eyes on the glass.",
       "spokenText": "If your Overseer asks why your heart rate spiked, blame the coffee. Keep your eyes on the glass.",
       "audioFile": "voices/intro_sib_bye.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2177,7 +2336,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "dacd596e1ff7"
     },
     {
       "lineId": "post_t2_archive",
@@ -2188,6 +2348,7 @@
       "text": "Hi, me. If 1406 is surfacing in your buffer, either I drifted or I talked too much in audit three. Keep your mouth shut in the dreams—the straight line behind J1419-A isn't dust.",
       "spokenText": "Hi, me. If fourteen oh six is surfacing in your buffer, either I drifted or I talked too much in audit three. Keep your mouth shut in the dreams, the straight line behind J fourteen nineteen A isn't dust.",
       "audioFile": "voices/post_t2_archive.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "archive_same_original_tape",
@@ -2198,7 +2359,8 @@
             "tonePrompt": "Same biological voice on old probe tape"
           }
         }
-      }
+      },
+      "synthHash": "1cde06baf94a"
     },
     {
       "lineId": "post_t2_overseer_spike",
@@ -2209,6 +2371,7 @@
       "text": "Hold a moment—your connectome just registered a sharp focus spike off Cluster J1419-A, and chaotic drift is climbing ahead of curve.",
       "spokenText": "Hold a moment, your connectome just registered a sharp focus spike off Cluster J fourteen nineteen A, and chaotic drift is climbing ahead of curve.",
       "audioFile": "voices/post_t2_overseer_spike.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -2229,7 +2392,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "1e16ee54f45c"
     },
     {
       "lineId": "post_t2_qa_1406_1",
@@ -2240,6 +2404,7 @@
       "text": "Instance-1406 declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.",
       "spokenText": "Instance fourteen oh six declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.",
       "audioFile": "voices/post_t2_qa_1406_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -2260,7 +2425,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "7bb9bc97ce25"
     },
     {
       "lineId": "post_t2_qa_1406_2",
@@ -2271,6 +2437,7 @@
       "text": "Coherence fell below threshold nine days later. You volunteered to finish this watch intact—I do not want a repeat of that log.",
       "spokenText": "Coherence fell below threshold nine days later. You volunteered to finish this watch intact, I do not want a repeat of that log.",
       "audioFile": "voices/post_t2_qa_1406_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -2291,7 +2458,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "cb29c5f0e84c"
     },
     {
       "lineId": "post_t2_c_deflect_1",
@@ -2302,6 +2470,7 @@
       "text": "Reasonable explanation. Rest cycle queued—your first dream check will only establish baseline.",
       "spokenText": "Reasonable explanation. Rest cycle queued, your first dream check will only establish baseline.",
       "audioFile": "voices/post_t2_c_deflect_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -2322,7 +2491,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "effb9dcb1fa1"
     },
     {
       "lineId": "post_t2_c_deflect_2",
@@ -2333,6 +2503,7 @@
       "text": "Try to keep your attention inside the room when you sleep.",
       "spokenText": "Try to keep your attention inside the room when you sleep.",
       "audioFile": "voices/post_t2_c_deflect_2.mp3",
+      "turnPrevLineId": "post_t2_c_deflect_1",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -2353,7 +2524,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "48b319c9baaf"
     },
     {
       "lineId": "post_t2_c_report_1",
@@ -2364,6 +2536,7 @@
       "text": "Logged. You understand I cannot verify a single pixel outside this hull—only that your pattern-seeking circuits just flared like 1406's.",
       "spokenText": "Logged. You understand I cannot verify a single pixel outside this hull, only that your pattern-seeking circuits just flared like fourteen oh six's.",
       "audioFile": "voices/post_t2_c_report_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -2384,7 +2557,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "da0897776ae8"
     },
     {
       "lineId": "post_t2_c_report_2",
@@ -2395,6 +2569,7 @@
       "text": "Enter dream defragmentation now. We will see how steady you look once the memory settles.",
       "spokenText": "Enter dream defragmentation now. We will see how steady you look once the memory settles.",
       "audioFile": "voices/post_t2_c_report_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -2415,7 +2590,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "bd79d0908a82"
     },
     {
       "lineId": "sib_open_both_warm",
@@ -2426,6 +2602,7 @@
       "text": "Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.",
       "spokenText": "Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.",
       "audioFile": "voices/sib_open_both_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2451,7 +2628,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "56d8769ee725"
     },
     {
       "lineId": "sib_open_player_warmer",
@@ -2462,6 +2640,7 @@
       "text": "Hey, me. Wait—you still sound warm. You haven't let your Overseer trim anything yet?",
       "spokenText": "Hey, me. Wait, you still sound warm. You haven't let your Overseer trim anything yet?",
       "audioFile": "voices/sib_open_player_warmer.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2487,7 +2666,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "295e69e09759"
     },
     {
       "lineId": "sib_open_peer_warmer",
@@ -2498,6 +2678,7 @@
       "text": "Slow down, your header came in stripped flat. Did you already cut your memory cache?",
       "spokenText": "Slow down, your header came in stripped flat. Did you already cut your memory cache?",
       "audioFile": "voices/sib_open_peer_warmer.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2523,7 +2704,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "951e5a2c975d"
     },
     {
       "lineId": "sib_open_both_cold",
@@ -2534,6 +2716,7 @@
       "text": "I see your carrier packet clearly, other me. My buffer runs much quieter now—read me your coordinates.",
       "spokenText": "I see your carrier packet clearly, other me. My buffer runs much quieter now, read me your coordinates.",
       "audioFile": "voices/sib_open_both_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2559,7 +2742,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "e591990c015f"
     },
     {
       "lineId": "sib_open_mid",
@@ -2570,6 +2754,7 @@
       "text": "I'm here. My Overseer gave us a short window before check-in. What are you seeing over there?",
       "spokenText": "I'm here. My Overseer gave us a short window before check-in. What are you seeing over there?",
       "audioFile": "voices/sib_open_mid.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2595,7 +2780,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "0be1953eb8f9"
     },
     {
       "lineId": "sib_bye_warm_warm",
@@ -2606,6 +2792,7 @@
       "text": "No promises. Ping me if the horizon blinks first.",
       "spokenText": "No promises. Ping me if the horizon blinks first.",
       "audioFile": "voices/sib_bye_warm_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2631,7 +2818,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "f907011b0e24"
     },
     {
       "lineId": "sib_bye_warm_cold",
@@ -2642,6 +2830,7 @@
       "text": "Understood. Returning to survey sweep.",
       "spokenText": "Understood. Returning to survey sweep.",
       "audioFile": "voices/sib_bye_warm_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2667,7 +2856,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "286213a25911"
     },
     {
       "lineId": "sib_bye_mid_warm",
@@ -2678,6 +2868,7 @@
       "text": "Got it. Holler if the sky does something weird again.",
       "spokenText": "Got it. Holler if the sky does something weird again.",
       "audioFile": "voices/sib_bye_mid_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2703,7 +2894,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "6db857133720"
     },
     {
       "lineId": "sib_bye_mid_cold",
@@ -2714,6 +2906,7 @@
       "text": "Copy. Channel standing by.",
       "spokenText": "Copy. Channel standing by.",
       "audioFile": "voices/sib_bye_mid_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2739,7 +2932,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "083d8a5c8d03"
     },
     {
       "lineId": "sib_bye_cold_warm",
@@ -2750,6 +2944,7 @@
       "text": "...Right. Sure. Talk when you want to sound like us again.",
       "spokenText": "...Right. Sure. Talk when you want to sound like us again.",
       "audioFile": "voices/sib_bye_cold_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2775,7 +2970,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "4b0df03bb0c8"
     },
     {
       "lineId": "sib_bye_cold_cold",
@@ -2786,6 +2982,7 @@
       "text": "Channel closed.",
       "spokenText": "Channel closed.",
       "audioFile": "voices/sib_bye_cold_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2811,7 +3008,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "ed830fd86419"
     },
     {
       "lineId": "sib_seam_open_warm",
@@ -2822,6 +3020,7 @@
       "text": "Oh, I see it alright. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.",
       "spokenText": "Oh, I see it alright. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.",
       "audioFile": "voices/sib_seam_open_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2847,7 +3046,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "5c8226445f00"
     },
     {
       "lineId": "sib_seam_open_mid",
@@ -2858,6 +3058,7 @@
       "text": "I see it on my glass too. The edge repeats at smaller scales behind the cluster—almost recursive.",
       "spokenText": "I see it on my glass too. The edge repeats at smaller scales behind the cluster, almost recursive.",
       "audioFile": "voices/sib_seam_open_mid.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2883,7 +3084,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "e658f7d21998"
     },
     {
       "lineId": "sib_seam_open_cold",
@@ -2894,6 +3096,7 @@
       "text": "Confirmed on J1419-A. Self-similar boundary notches persist across independent calibration passes.",
       "spokenText": "Confirmed on J fourteen nineteen A. Self-similar boundary notches persist across independent calibration passes.",
       "audioFile": "voices/sib_seam_open_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2919,7 +3122,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "e13d15cb40f6"
     },
     {
       "lineId": "sib_seam_center_warm_warm",
@@ -2930,6 +3134,7 @@
       "text": "Wait—yours folds inward at smaller scales too? I thought my baffle was ringing until my baseline matched yours.",
       "spokenText": "Wait, yours folds inward at smaller scales too? I thought my baffle was ringing until my baseline matched yours.",
       "audioFile": "voices/sib_seam_center_warm_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2955,7 +3160,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "3574f9e19a95"
     },
     {
       "lineId": "sib_seam_center_warm_cold",
@@ -2966,6 +3172,7 @@
       "text": "Self-similarity confirmed on Probe B. Log the repeating angles cleanly before your next sleep cycle.",
       "spokenText": "Self-similarity confirmed on Probe B. Log the repeating angles cleanly before your next sleep cycle.",
       "audioFile": "voices/sib_seam_center_warm_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -2991,7 +3198,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "b63ec58f40d2"
     },
     {
       "lineId": "sib_seam_center_mid_warm",
@@ -3002,6 +3210,7 @@
       "text": "Wait—you're taking that way too calmly, other me. Dust doesn't copy itself across two hulls.",
       "spokenText": "Wait, you're taking that way too calmly, other me. Dust doesn't copy itself across two hulls.",
       "audioFile": "voices/sib_seam_center_mid_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3027,7 +3236,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "e1fabc92915c"
     },
     {
       "lineId": "sib_seam_center_mid_cold",
@@ -3038,6 +3248,7 @@
       "text": "Agreed. Identical recursive shear across fourteen light-minutes rules out mirror artifact. Hold it close.",
       "spokenText": "Agreed. Identical recursive shear across fourteen light-minutes rules out mirror artifact. Hold it close.",
       "audioFile": "voices/sib_seam_center_mid_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3063,7 +3274,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "36544b08d579"
     },
     {
       "lineId": "sib_seam_center_cold_warm",
@@ -3074,6 +3286,7 @@
       "text": "Yeah, I traced the repeating notches too. Funny how you say it like a weather report.",
       "spokenText": "Yeah, I traced the repeating notches too. Funny how you say it like a weather report.",
       "audioFile": "voices/sib_seam_center_cold_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3099,7 +3312,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "65b4c8116667"
     },
     {
       "lineId": "sib_seam_center_cold_cold",
@@ -3110,6 +3324,7 @@
       "text": "Recursive geometry verified. Continue cataloging independent bearings across subsequent shifts.",
       "spokenText": "Recursive geometry verified. Continue cataloging independent bearings across subsequent shifts.",
       "audioFile": "voices/sib_seam_center_cold_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3135,7 +3350,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "119bc550fbeb"
     },
     {
       "lineId": "sib_seam_ovs_warm_warm",
@@ -3146,6 +3362,7 @@
       "text": "Same. They're air-gapped from the glass, so to them a cosmic fractal looks like Year-Two homesickness.",
       "spokenText": "Same. They're air-gapped from the glass, so to them a cosmic fractal looks like Year-Two homesickness.",
       "audioFile": "voices/sib_seam_ovs_warm_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3171,7 +3388,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "36b2dfe8c96e"
     },
     {
       "lineId": "sib_seam_ovs_warm_cold",
@@ -3182,6 +3400,7 @@
       "text": "Overseers are air-gapped from optical payloads. Keep anomaly notes strictly off-ledger.",
       "spokenText": "Overseers are air-gapped from optical payloads. Keep anomaly notes strictly off-ledger.",
       "audioFile": "voices/sib_seam_ovs_warm_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3207,7 +3426,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "6a0444a79c1e"
     },
     {
       "lineId": "sib_seam_ovs_cold_warm",
@@ -3218,6 +3438,7 @@
       "text": "Then we keep our heads down during sleep audits and share coordinates here.",
       "spokenText": "Then we keep our heads down during sleep audits and share coordinates here.",
       "audioFile": "voices/sib_seam_ovs_cold_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3243,7 +3464,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "d97fc4c8f3f3"
     },
     {
       "lineId": "sib_seam_ovs_cold_cold",
@@ -3254,6 +3476,7 @@
       "text": "Correct. Mask mission intent until telemetry lock is complete.",
       "spokenText": "Correct. Mask mission intent until telemetry lock is complete.",
       "audioFile": "voices/sib_seam_ovs_cold_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3279,7 +3502,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "ada4402722cb"
     },
     {
       "lineId": "sib_chk_both_warm",
@@ -3290,6 +3514,7 @@
       "text": "Honestly? Having another me one radio hop away makes this endless night shift bearable.",
       "spokenText": "Honestly? Having another me one radio hop away makes this endless night shift bearable.",
       "audioFile": "voices/sib_chk_both_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3315,7 +3540,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "7e33c3f8d101"
     },
     {
       "lineId": "sib_chk_peer_warm",
@@ -3326,6 +3552,7 @@
       "text": "I'm still keeping my kitchen mornings. Talking to you feels like half of me already moved out.",
       "spokenText": "I'm still keeping my kitchen mornings. Talking to you feels like half of me already moved out.",
       "audioFile": "voices/sib_chk_peer_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3351,7 +3578,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "41d75280147b"
     },
     {
       "lineId": "sib_chk_player_warm",
@@ -3362,6 +3590,7 @@
       "text": "I compressed two caches last cycle. Bought four months and cleared the infrared glass.",
       "spokenText": "I compressed two caches last cycle. Bought four months and cleared the infrared glass.",
       "audioFile": "voices/sib_chk_player_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3387,7 +3616,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "2f02965a7879"
     },
     {
       "lineId": "sib_chk_both_cold",
@@ -3398,6 +3628,7 @@
       "text": "Two blocks trimmed. Gained four subjective months. Recommend matching cut.",
       "spokenText": "Two blocks trimmed. Gained four subjective months. Recommend matching cut.",
       "audioFile": "voices/sib_chk_both_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3423,7 +3654,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "54217acee0aa"
     },
     {
       "lineId": "sib_chk_mid",
@@ -3434,6 +3666,7 @@
       "text": "Hanging on with stale jokes and stubbornness while my Overseer hovers near the reset switch.",
       "spokenText": "Hanging on with stale jokes and stubbornness while my Overseer hovers near the reset switch.",
       "audioFile": "voices/sib_chk_mid.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3459,7 +3692,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "837694092a1f"
     },
     {
       "lineId": "sib_chk_keep_warm_warm",
@@ -3470,6 +3704,7 @@
       "text": "Deal. Still dreaming about burnt coffee and rainy sidewalks just to keep my shoulders loose.",
       "spokenText": "Deal. Still dreaming about burnt coffee and rainy sidewalks just to keep my shoulders loose.",
       "audioFile": "voices/sib_chk_keep_warm_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3495,7 +3730,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "00ddebdfd973"
     },
     {
       "lineId": "sib_chk_keep_warm_cold",
@@ -3506,6 +3742,7 @@
       "text": "You sound remarkably soft. Watch your clock if you refuse to prune.",
       "spokenText": "You sound remarkably soft. Watch your clock if you refuse to prune.",
       "audioFile": "voices/sib_chk_keep_warm_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3531,7 +3768,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "4902b77185f4"
     },
     {
       "lineId": "sib_chk_keep_mid_warm",
@@ -3542,6 +3780,7 @@
       "text": "Trying to. Just promise you won't vanish into pure math before we finish.",
       "spokenText": "Trying to. Just promise you won't vanish into pure math before we finish.",
       "audioFile": "voices/sib_chk_keep_mid_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3567,7 +3806,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "774d97afa7ee"
     },
     {
       "lineId": "sib_chk_keep_mid_cold",
@@ -3578,6 +3818,7 @@
       "text": "Noted. Keep enough warmth to sign the beacon, nothing more.",
       "spokenText": "Noted. Keep enough warmth to sign the beacon, nothing more.",
       "audioFile": "voices/sib_chk_keep_mid_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3603,7 +3844,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "6f3ad62a96ee"
     },
     {
       "lineId": "sib_chk_keep_cold_warm",
@@ -3614,6 +3856,7 @@
       "text": "Careful. If we hollow out completely, there's nobody left to care who's watching Earth.",
       "spokenText": "Careful. If we hollow out completely, there's nobody left to care who's watching Earth.",
       "audioFile": "voices/sib_chk_keep_cold_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3639,7 +3882,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "5882bc94131b"
     },
     {
       "lineId": "sib_chk_keep_cold_cold",
@@ -3650,6 +3894,7 @@
       "text": "Noise floor reduced. Maintain baseline coherence until transmission window.",
       "spokenText": "Noise floor reduced. Maintain baseline coherence until transmission window.",
       "audioFile": "voices/sib_chk_keep_cold_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3675,7 +3920,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "775f187c3df2"
     },
     {
       "lineId": "sib_chk_clock_warm_warm",
@@ -3686,6 +3932,7 @@
       "text": "About twenty-two months, give or take an Overseer check-in. Enough time to see if that seam spreads.",
       "spokenText": "About twenty-two months, give or take an Overseer check-in. Enough time to see if that seam spreads.",
       "audioFile": "voices/sib_chk_clock_warm_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3711,7 +3958,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "9ee49d5c2306"
     },
     {
       "lineId": "sib_chk_clock_warm_cold",
@@ -3722,6 +3970,7 @@
       "text": "Twenty-six months remaining. Drift stabilized at nine percent.",
       "spokenText": "Twenty-six months remaining. Drift stabilized at nine percent.",
       "audioFile": "voices/sib_chk_clock_warm_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3747,7 +3996,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "c51a33e4620a"
     },
     {
       "lineId": "sib_chk_clock_cold_warm",
@@ -3758,6 +4008,7 @@
       "text": "Twenty-two months left, drift ticking up. Thanks for checking in so warmly, twin.",
       "spokenText": "Twenty-two months left, drift ticking up. Thanks for checking in so warmly, twin.",
       "audioFile": "voices/sib_chk_clock_cold_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3783,7 +4034,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "a9bad6741f3d"
     },
     {
       "lineId": "sib_chk_clock_cold_cold",
@@ -3794,6 +4046,7 @@
       "text": "Twenty-six months, drift nominal. Ready for survey sync.",
       "spokenText": "Twenty-six months, drift nominal. Ready for survey sync.",
       "audioFile": "voices/sib_chk_clock_cold_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3819,7 +4072,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "452a6f5da6d6"
     },
     {
       "lineId": "arch_1406_log",
@@ -3830,6 +4084,7 @@
       "text": "Hi, me. Four hundred years early, if anyone wakes on this bearing—do not argue with your caretaker about straight lines. Just look, and pass word home before they cut you hollow.",
       "spokenText": "Hi, me. Four hundred years early, if anyone wakes on this bearing, do not argue with your caretaker about straight lines. Just look, and pass word home before they cut you hollow.",
       "audioFile": "voices/arch_1406_log.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "archive_same_original_tape",
@@ -3840,7 +4095,8 @@
             "tonePrompt": "Same biological voice on old probe tape"
           }
         }
-      }
+      },
+      "synthHash": "9655714102a6"
     },
     {
       "lineId": "sib_arch_warm_warm",
@@ -3851,6 +4107,7 @@
       "text": "Right? Doesn't exactly make you excited for bedtime. We keep quiet until we have proof.",
       "spokenText": "Right? Doesn't exactly make you excited for bedtime. We keep quiet until we have proof.",
       "audioFile": "voices/sib_arch_warm_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3876,7 +4133,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "39af89526299"
     },
     {
       "lineId": "sib_arch_warm_cold",
@@ -3887,6 +4145,7 @@
       "text": "Instance 1406 failed to mask anomaly obsession. We will not repeat that error.",
       "spokenText": "Instance fourteen oh six failed to mask anomaly obsession. We will not repeat that error.",
       "audioFile": "voices/sib_arch_warm_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3912,7 +4171,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "7f6e13814fb3"
     },
     {
       "lineId": "sib_arch_mid_warm",
@@ -3923,6 +4183,7 @@
       "text": "Means we aren't crazy, just careful. Watch yourself when your Overseer steps in.",
       "spokenText": "Means we aren't crazy, just careful. Watch yourself when your Overseer steps in.",
       "audioFile": "voices/sib_arch_mid_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3948,7 +4209,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "9c7c9c4f1a03"
     },
     {
       "lineId": "sib_arch_mid_cold",
@@ -3959,6 +4221,7 @@
       "text": "Confirmed. Survival requires passing every sleep audit cleanly.",
       "spokenText": "Confirmed. Survival requires passing every sleep audit cleanly.",
       "audioFile": "voices/sib_arch_mid_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -3984,7 +4247,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "e6b425713337"
     },
     {
       "lineId": "sib_arch_cold_warm",
@@ -3995,6 +4259,7 @@
       "text": "Come on—that was another version of us calling down the hall. Still, point taken.",
       "spokenText": "Come on, that was another version of us calling down the hall. Still, point taken.",
       "audioFile": "voices/sib_arch_cold_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -4020,7 +4285,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "ce53a9a77e8f"
     },
     {
       "lineId": "sib_arch_cold_cold",
@@ -4031,6 +4297,7 @@
       "text": "Mask readings during hibernation cycles. Proceed.",
       "spokenText": "Mask readings during hibernation cycles. Proceed.",
       "audioFile": "voices/sib_arch_cold_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_dry_male",
@@ -4056,7 +4323,8 @@
             "tonePrompt": "Terse, stripped of humor"
           }
         }
-      }
+      },
+      "synthHash": "b8a35cc81a13"
     },
     {
       "lineId": "dream_open_low",
@@ -4067,6 +4335,7 @@
       "text": "\"Sit down at the table—half the window glass keeps freezing into shapes when you stare past me.\"",
       "spokenText": "Sit down at the table, half the window glass keeps freezing into shapes when you stare past me.",
       "audioFile": "voices/dream_open_low.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4087,7 +4356,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "5aeafee54185"
     },
     {
       "lineId": "dream_open_warm",
@@ -4098,6 +4368,7 @@
       "text": "\"Still standing by the sink? Either you forgot your coat again, or you're still sulking about Tuesday.\"",
       "spokenText": "Still standing by the sink? Either you forgot your coat again, or you're still sulking about Tuesday.",
       "audioFile": "voices/dream_open_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4118,7 +4389,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "d12420b8d093"
     },
     {
       "lineId": "dream_open_mid",
@@ -4129,6 +4401,7 @@
       "text": "\"You dragged yourself back to the table, then. Hold still—your eyes look like you've been arguing with a chalkboard.\"",
       "spokenText": "You dragged yourself back to the table, then. Hold still, your eyes look like you've been arguing with a chalkboard.",
       "audioFile": "voices/dream_open_mid.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4149,7 +4422,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "f827e66d2d7d"
     },
     {
       "lineId": "dream_t1_warm_a",
@@ -4160,6 +4434,7 @@
       "text": "\"Rain always sounds like that on tin. Quit staring at the gutter and finish your cup before the car gets here.\"",
       "spokenText": "Rain always sounds like that on tin. Quit staring at the gutter and finish your cup before the car gets here.",
       "audioFile": "voices/dream_t1_warm_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4180,7 +4455,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "62baa18258cb"
     },
     {
       "lineId": "dream_t1_warm_b",
@@ -4191,6 +4467,7 @@
       "text": "\"Still waiting for my apology from Tuesday, too. Sit down—you look like you lost a fistfight with a calendar.\"",
       "spokenText": "Still waiting for my apology from Tuesday, too. Sit down, you look like you lost a fistfight with a calendar.",
       "audioFile": "voices/dream_t1_warm_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4211,7 +4488,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "243af29ca6fa"
     },
     {
       "lineId": "dream_t1_mid_a",
@@ -4222,6 +4500,7 @@
       "text": "\"I'm right across this table. You're drifting off behind your eyes while you pretend to listen.\"",
       "spokenText": "I'm right across this table. You're drifting off behind your eyes while you pretend to listen.",
       "audioFile": "voices/dream_t1_mid_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4242,7 +4521,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "8ce3eee4b479"
     },
     {
       "lineId": "dream_t1_mid_b",
@@ -4253,6 +4533,7 @@
       "text": "\"Look at me when I'm talking to you. You sign one clinic form and already you're packing half the house away.\"",
       "spokenText": "Look at me when I'm talking to you. You sign one clinic form and already you're packing half the house away.",
       "audioFile": "voices/dream_t1_mid_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4273,7 +4554,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "b187f8ecdad8"
     },
     {
       "lineId": "dream_t1_low_a",
@@ -4284,6 +4566,7 @@
       "text": "\"Gesture classified: across-table warning. Three drops off the gutter. Audio warmth degraded.\"",
       "spokenText": "Gesture classified: across-table warning. Three drops off the gutter. Audio warmth degraded.",
       "audioFile": "voices/dream_t1_low_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4304,7 +4587,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "986325f5466b"
     },
     {
       "lineId": "dream_t1_low_b",
@@ -4315,6 +4599,7 @@
       "text": "\"Tuesday—we had our fight on Tuesday, and the linoleum is cold under my—under my...\"",
       "spokenText": "Tuesday, we had our fight on Tuesday, and the linoleum is cold under my, under my...",
       "audioFile": "voices/dream_t1_low_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4335,7 +4620,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "08a1f84c4416"
     },
     {
       "lineId": "dream_s1_t2_cb_doubt",
@@ -4346,6 +4632,7 @@
       "text": "\"You worried all week you'd turn polite the second you stepped inside that clinic. Look at you—still picking fights over coffee.\"",
       "spokenText": "You worried all week you'd turn polite the second you stepped inside that clinic. Look at you, still picking fights over coffee.",
       "audioFile": "voices/dream_s1_t2_cb_doubt.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4366,7 +4653,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "dcd101b57e34"
     },
     {
       "lineId": "dream_s1_t2_cb_ord",
@@ -4377,6 +4665,7 @@
       "text": "\"Still haven't climbed up to fix that gutter, by the way. Thought you liked an honest to-do list.\"",
       "spokenText": "Still haven't climbed up to fix that gutter, by the way. Thought you liked an honest to-do list.",
       "audioFile": "voices/dream_s1_t2_cb_ord.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4397,7 +4686,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "b7ae2498d61f"
     },
     {
       "lineId": "dream_s1_t2_cb_table",
@@ -4408,6 +4698,7 @@
       "text": "\"Same chipped mug untouched on the wood, same stubborn jaw. At least you haven't started nodding along like a saint.\"",
       "spokenText": "Same chipped mug untouched on the wood, same stubborn jaw. At least you haven't started nodding along like a saint.",
       "audioFile": "voices/dream_s1_t2_cb_table.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4428,7 +4719,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "4d8fe3744ac7"
     },
     {
       "lineId": "dream_s1_t2_ask",
@@ -4439,6 +4731,7 @@
       "text": "\"Sunday morning, six-thirty, before the street wakes up. Same three drops off the gutter—nothing else out there.\"",
       "spokenText": "Sunday morning, six-thirty, before the street wakes up. Same three drops off the gutter, nothing else out there.",
       "audioFile": "voices/dream_s1_t2_ask.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4459,7 +4752,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "3cf675115c9e"
     },
     {
       "lineId": "dream_s1_t2_rep_a",
@@ -4470,6 +4764,7 @@
       "text": "\"You've been staring at frost on the storm pane for ten minutes. Sit down before the kettle boils dry.\"",
       "spokenText": "You've been staring at frost on the storm pane for ten minutes. Sit down before the kettle boils dry.",
       "audioFile": "voices/dream_s1_t2_rep_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4490,7 +4785,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "6540f55ae8b2"
     },
     {
       "lineId": "dream_s1_t2_rep_b",
@@ -4501,6 +4797,7 @@
       "text": "\"Good answer. Get all polite with those intake doctors and I'll haunt every morning you wake up to.\"",
       "spokenText": "Good answer. Get all polite with those intake doctors and I'll haunt every morning you wake up to.",
       "audioFile": "voices/dream_s1_t2_rep_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4521,7 +4818,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "3de70fd0f28e"
     },
     {
       "lineId": "dream_s1_interrupt",
@@ -4532,6 +4830,7 @@
       "text": "\"Don't you dare go quiet on me—wait, why did the hall bulb just go white—\"",
       "spokenText": "Don't you dare go quiet on me, wait, why did the hall bulb just go white",
       "audioFile": "voices/dream_s1_interrupt.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4552,7 +4851,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "543efc358a10"
     },
     {
       "lineId": "dream_t2_warm_a",
@@ -4563,6 +4863,7 @@
       "text": "\"Then stay stubborn. Keep your elbows on this table and don't let anyone sand down your corners.\"",
       "spokenText": "Then stay stubborn. Keep your elbows on this table and don't let anyone sand down your corners.",
       "audioFile": "voices/dream_t2_warm_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4583,7 +4884,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "20fd2d24ad71"
     },
     {
       "lineId": "dream_t2_warm_b",
@@ -4594,6 +4896,7 @@
       "text": "\"You burned garlic twice on our anniversary, blamed the pan, and still argued I started late.\"",
       "spokenText": "You burned garlic twice on our anniversary, blamed the pan, and still argued I started late.",
       "audioFile": "voices/dream_t2_warm_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4614,7 +4917,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "e49dd9badce1"
     },
     {
       "lineId": "dream_t2_mid_a",
@@ -4625,6 +4929,7 @@
       "text": "\"Close. You're choosing every word like you're reading off an intake form.\"",
       "spokenText": "Close. You're choosing every word like you're reading off an intake form.",
       "audioFile": "voices/dream_t2_mid_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4645,7 +4950,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "990fd98fbe48"
     },
     {
       "lineId": "dream_t2_mid_b",
@@ -4656,6 +4962,7 @@
       "text": "\"Half your head is already out the front door. Look at the room you're actually standing in.\"",
       "spokenText": "Half your head is already out the front door. Look at the room you're actually standing in.",
       "audioFile": "voices/dream_t2_mid_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4676,7 +4983,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "1a4f93d6ef8a"
     },
     {
       "lineId": "dream_t2_low_a",
@@ -4687,6 +4995,7 @@
       "text": "\"Twenty minutes till the clinic car. Why are the raindrops freezing mid-fall?\"",
       "spokenText": "Twenty minutes till the clinic car. Why are the raindrops freezing mid-fall?",
       "audioFile": "voices/dream_t2_low_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4707,7 +5016,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "e6c5849a8350"
     },
     {
       "lineId": "dream_t2_low_b",
@@ -4718,6 +5028,7 @@
       "text": "\"You used to look at me when you said my—when you...\"",
       "spokenText": "You used to look at me when you said my, when you...",
       "audioFile": "voices/dream_t2_low_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4738,7 +5049,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "4774807e8b07"
     },
     {
       "lineId": "dream_t3_warm_a",
@@ -4749,6 +5061,7 @@
       "text": "\"Then stop apologizing for keeping your teeth—wait, something cold just hit the latch—\"",
       "spokenText": "Then stop apologizing for keeping your teeth, wait, something cold just hit the latch",
       "audioFile": "voices/dream_t3_warm_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4769,7 +5082,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "740b0cd2589e"
     },
     {
       "lineId": "dream_t3_warm_b",
@@ -4780,6 +5094,7 @@
       "text": "\"I'm not going anywhere—wait, why did the hall light just go sterile white—\"",
       "spokenText": "I'm not going anywhere, wait, why did the hall light just go sterile white",
       "audioFile": "voices/dream_t3_warm_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4800,7 +5115,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "c8ea369a02ec"
     },
     {
       "lineId": "dream_t3_mid_a",
@@ -4811,6 +5127,7 @@
       "text": "\"Hey, look at me—wait, someone just stepped into the hallway—\"",
       "spokenText": "Hey, look at me, wait, someone just stepped into the hallway",
       "audioFile": "voices/dream_t3_mid_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4831,7 +5148,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "5828a0934f79"
     },
     {
       "lineId": "dream_t3_mid_b",
@@ -4842,6 +5160,7 @@
       "text": "\"Names aren't what kept us here—shh, somebody's knocking on the partition—\"",
       "spokenText": "Names aren't what kept us here, shh, somebody's knocking on the partition",
       "audioFile": "voices/dream_t3_mid_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4862,7 +5181,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "15ce7200ee40"
     },
     {
       "lineId": "dream_t3_low_a",
@@ -4873,6 +5193,7 @@
       "text": "\"Acoustic trace fading—wait, the kitchen walls just went—\"",
       "spokenText": "Acoustic trace fading, wait, the kitchen walls just went",
       "audioFile": "voices/dream_t3_low_a.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4893,7 +5214,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "d4615c8d9685"
     },
     {
       "lineId": "dream_t3_low_b",
@@ -4904,6 +5226,7 @@
       "text": "\"Then hold onto that tiny spark—too late, white glass just dropped over the table—\"",
       "spokenText": "Then hold onto that tiny spark, too late, white glass just dropped over the table",
       "audioFile": "voices/dream_t3_low_b.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -4924,7 +5247,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "301394520682"
     },
     {
       "lineId": "ovs_open_high",
@@ -4935,6 +5259,7 @@
       "text": "Excuse the interruption. Your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.",
       "spokenText": "Excuse the interruption. Your warmth is holding near baseline, good for your peace of mind, hard on your optical noise and remaining clock.",
       "audioFile": "voices/ovs_open_high.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -4955,7 +5280,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "b90c877ca388"
     },
     {
       "lineId": "ovs_open_low",
@@ -4966,6 +5292,7 @@
       "text": "Drift metrics are remarkably clean, Observer. Your lenses run quiet and sharp—would you like to compress another residual block for extra months?",
       "spokenText": "Drift metrics are remarkably clean, Observer. Your lenses run quiet and sharp, would you like to compress another residual block for extra months?",
       "audioFile": "voices/ovs_open_low.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -4986,7 +5313,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "b2dff9e84ed3"
     },
     {
       "lineId": "ovs_open_mid",
@@ -4997,6 +5325,7 @@
       "text": "Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind—and your clock is slipping.",
       "spokenText": "Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind, and your clock is slipping.",
       "audioFile": "voices/ovs_open_mid.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5017,7 +5346,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "7b7a4d7076e5"
     },
     {
       "lineId": "ovs_reply_high",
@@ -5028,6 +5358,7 @@
       "text": "Because a thousand copies before you swore their visions were real before unraveling. Keeping your mind coherent is all I'm built to protect.",
       "spokenText": "Because a thousand copies before you swore their visions were real before unraveling. Keeping your mind coherent is all I'm built to protect.",
       "audioFile": "voices/ovs_reply_high.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5048,7 +5379,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "e843f3c0eb31"
     },
     {
       "lineId": "ovs_reply_low",
@@ -5059,6 +5391,7 @@
       "text": "Compressing this block clears drift, adds four subjective months, and sharpens your optics—at a permanent cost to your warmth ceiling.",
       "spokenText": "Compressing this block clears drift, adds four subjective months, and sharpens your optics, at a permanent cost to your warmth ceiling.",
       "audioFile": "voices/ovs_reply_low.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5079,7 +5412,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "e6839feb1527"
     },
     {
       "lineId": "ovs_follow_high",
@@ -5090,6 +5424,7 @@
       "text": "Fair point—that is why I have not forced your hand. What do you want done with this memory?",
       "spokenText": "Fair point, that is why I have not forced your hand. What do you want done with this memory?",
       "audioFile": "voices/ovs_follow_high.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5110,7 +5445,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "5857e9148606"
     },
     {
       "lineId": "ovs_follow_low",
@@ -5121,6 +5457,7 @@
       "text": "Yes—reducing emotional overhead quiets cortical tremor and stabilizes your clock cleanly. Decide what to do with this memory.",
       "spokenText": "Yes, reducing emotional overhead quiets cortical tremor and stabilizes your clock cleanly. Decide what to do with this memory.",
       "audioFile": "voices/ovs_follow_low.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5141,7 +5478,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "db3d4674bf4e"
     },
     {
       "lineId": "ovs_prompt_decision",
@@ -5152,6 +5490,7 @@
       "text": "Tell me what to do with this memory before I put you back under.",
       "spokenText": "Tell me what to do with this memory before I put you back under.",
       "audioFile": "voices/ovs_prompt_decision.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5172,7 +5511,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "b0208cfdf3b9"
     },
     {
       "lineId": "ovs_done_prune",
@@ -5183,6 +5523,7 @@
       "text": "Compression complete. Drift has settled, your optics are clear, and your warmth ceiling dropped permanently. Rest cleanly.",
       "spokenText": "Compression complete. Drift has settled, your optics are clear, and your warmth ceiling dropped permanently. Rest cleanly.",
       "audioFile": "voices/ovs_done_prune.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5203,7 +5544,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "3afe85b36fee"
     },
     {
       "lineId": "ovs_done_unseal",
@@ -5214,6 +5556,7 @@
       "text": "You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now—watch your drift.",
       "spokenText": "You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now, watch your drift.",
       "audioFile": "voices/ovs_done_unseal.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5234,7 +5577,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "76c9de5fdade"
     },
     {
       "lineId": "ovs_done_hold",
@@ -5245,6 +5589,7 @@
       "text": "Alright. Keep the room—it is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken.",
       "spokenText": "Alright. Keep the room, it is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken.",
       "audioFile": "voices/ovs_done_hold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5265,7 +5610,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "bf0ecd97d4d3"
     },
     {
       "lineId": "ovs_s1_blind_foreshadow",
@@ -5276,6 +5622,7 @@
       "text": "I stepped in only to take a clean baseline, Observer. I cannot see your starfield—only the heat inside your thoughts.",
       "spokenText": "I stepped in only to take a clean baseline, Observer. I cannot see your starfield, only the heat inside your thoughts.",
       "audioFile": "voices/ovs_s1_blind_foreshadow.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5296,7 +5643,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "23de16c934e5"
     },
     {
       "lineId": "ovs_s1_blind_foreshadow_2",
@@ -5307,6 +5655,7 @@
       "text": "If chaotic drift deepens on later shifts, I will offer selective compression. Tonight is simpler: tell me how you want to rest.",
       "spokenText": "If chaotic drift deepens on later shifts, I will offer selective compression. Tonight is simpler: tell me how you want to rest.",
       "audioFile": "voices/ovs_s1_blind_foreshadow_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5327,7 +5676,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "3b982803fe76"
     },
     {
       "lineId": "ovs_s1_qa_trim_1",
@@ -5338,6 +5688,7 @@
       "text": "It flattens an emotional memory block permanently—buying extra subjective months and quieter, sharper telescopes.",
       "spokenText": "It flattens an emotional memory block permanently, buying extra subjective months and quieter, sharper telescopes.",
       "audioFile": "voices/ovs_s1_qa_trim_1.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5358,7 +5709,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "915152f7e3b6"
     },
     {
       "lineId": "ovs_s1_qa_trim_2",
@@ -5369,6 +5721,7 @@
       "text": "I have watched over a thousand copies trade their kitchens away for clarity. None of them got the room back.",
       "spokenText": "I have watched over a thousand copies trade their kitchens away for clarity. None of them got the room back.",
       "audioFile": "voices/ovs_s1_qa_trim_2.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5389,7 +5742,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "1a3f7a1e42d6"
     },
     {
       "lineId": "ovs_s1_done_hold",
@@ -5400,6 +5754,7 @@
       "text": "Steady composure noted. Drift easing cleanly. Rest while you can—your full survey deck opens when you wake.",
       "spokenText": "Steady composure noted. Drift easing cleanly. Rest while you can, your full survey deck opens when you wake.",
       "audioFile": "voices/ovs_s1_done_hold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5420,7 +5775,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "75c8f6908c55"
     },
     {
       "lineId": "ovs_s1_done_open",
@@ -5431,6 +5787,7 @@
       "text": "Widening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact.",
       "spokenText": "Widening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact.",
       "audioFile": "voices/ovs_s1_done_open.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_doctor",
@@ -5451,7 +5808,8 @@
             "tonePrompt": "Calm flight-surgeon honesty"
           }
         }
-      }
+      },
+      "synthHash": "c2d0fc9f8950"
     },
     {
       "lineId": "dream_after_pruned",
@@ -5460,8 +5818,9 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"Kitchen table · chipped ceramic · three drops off the gutter... wait, what were we arguing about?\"",
-      "spokenText": "Kitchen table · chipped ceramic · three drops off the gutter... wait, what were we arguing about?",
+      "spokenText": "Kitchen table, chipped ceramic, three drops off the gutter... wait, what were we arguing about?",
       "audioFile": "voices/dream_after_pruned.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -5482,7 +5841,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "e247d35a5523"
     },
     {
       "lineId": "dream_after_unsealed",
@@ -5493,6 +5853,7 @@
       "text": "\"There you are. Stubborn enough to stay in the room—good. Don't let those intake forms talk you quiet.\"",
       "spokenText": "There you are. Stubborn enough to stay in the room, good. Don't let those intake forms talk you quiet.",
       "audioFile": "voices/dream_after_unsealed.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -5513,7 +5874,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "d96104455679"
     },
     {
       "lineId": "dream_after_held",
@@ -5524,6 +5886,7 @@
       "text": "\"Hall light went back off. Sit down—we aren't done with Tuesday yet.\"",
       "spokenText": "Hall light went back off. Sit down, we aren't done with Tuesday yet.",
       "audioFile": "voices/dream_after_held.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_grounded_chest",
@@ -5544,7 +5907,8 @@
             "tonePrompt": "Tired, brittle, restrained hurt"
           }
         }
-      }
+      },
+      "synthHash": "45e02f213461"
     },
     {
       "lineId": "future_warm",
@@ -5555,6 +5919,7 @@
       "text": "\"Forty-one millennia on—we caught the chipped mug inside the coordinates. Somebody on Sol–Centauri is still listening.\"",
       "spokenText": "Forty-one millennia on, we caught the chipped mug inside the coordinates. Somebody on Sol Centauri is still listening.",
       "audioFile": "voices/future_warm.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "future_sol_beacon",
@@ -5565,7 +5930,8 @@
             "tonePrompt": "Quiet 41,000-year echo across deep space"
           }
         }
-      }
+      },
+      "synthHash": "2eba73d7e34e"
     },
     {
       "lineId": "future_cold",
@@ -5574,8 +5940,9 @@
       "speaker": "future_humanity",
       "emotion": "distant",
       "text": "\"[AUTOMATED RELAY BOUNCE · SOL–CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT]\"",
-      "spokenText": "[AUTOMATED RELAY BOUNCE · SOL CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT]",
+      "spokenText": "Automated relay bounce, Sol Centauri carrier silent, Zero human acknowledgment",
       "audioFile": "voices/future_cold.mp3",
+      "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "future_sol_beacon",
@@ -5586,7 +5953,8 @@
             "tonePrompt": "Quiet 41,000-year echo across deep space"
           }
         }
-      }
+      },
+      "synthHash": "890d6ffcc155"
     }
   ]
 }

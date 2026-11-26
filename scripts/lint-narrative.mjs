@@ -329,9 +329,29 @@ if (fs.existsSync(VOICE_PROFILES_PATH)) {
     console.error('[lint-narrative] voice_profiles.json missing sibling_primary or archive_echo');
     errors++;
   } else {
+    const sec = profiles.sibling_secondary;
+    if (
+      sib.voxcpm2?.anchorFile !== arch.voxcpm2?.anchorFile ||
+      sib.voxcpm2?.seed !== arch.voxcpm2?.seed
+    ) {
+      console.error(
+        `[lint-narrative] Biological-original VoxCPM2 voice parity broken: sibling_primary (${sib.voxcpm2?.anchorFile}/${sib.voxcpm2?.seed}) != archive_echo (${arch.voxcpm2?.anchorFile}/${arch.voxcpm2?.seed})`
+      );
+      errors++;
+    }
+    if (
+      sec &&
+      (sib.voxcpm2?.anchorFile !== sec.voxcpm2?.anchorFile ||
+        sib.voxcpm2?.seed !== sec.voxcpm2?.seed)
+    ) {
+      console.error(
+        `[lint-narrative] Biological-original VoxCPM2 voice parity broken: sibling_primary (${sib.voxcpm2?.anchorFile}/${sib.voxcpm2?.seed}) != sibling_secondary (${sec.voxcpm2?.anchorFile}/${sec.voxcpm2?.seed})`
+      );
+      errors++;
+    }
     if (sib.qwen3?.anchorFile !== arch.qwen3?.anchorFile || sib.qwen3?.seed !== arch.qwen3?.seed) {
       console.error(
-        `[lint-narrative] Biological-original voice parity broken: sibling_primary (${sib.qwen3?.anchorFile}/${sib.qwen3?.seed}) != archive_echo (${arch.qwen3?.anchorFile}/${arch.qwen3?.seed})`
+        `[lint-narrative] Biological-original Qwen3 voice parity broken: sibling_primary (${sib.qwen3?.anchorFile}/${sib.qwen3?.seed}) != archive_echo (${arch.qwen3?.anchorFile}/${arch.qwen3?.seed})`
       );
       errors++;
     }

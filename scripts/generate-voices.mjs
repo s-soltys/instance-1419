@@ -6,9 +6,11 @@ import path from 'node:path';
 const ROOT = path.resolve(process.cwd());
 const DIALOGUE_DIR = path.join(ROOT, 'src', 'content', 'dialogue');
 const COMPILED_DIR = path.join(DIALOGUE_DIR, 'compiled');
+const VOICE_SCRIPT_PATH = path.join(COMPILED_DIR, 'voice_script.json');
 const PROFILES_PATH = path.join(ROOT, 'src', 'content', 'voice_profiles.json');
 const VOICES_OUT_DIR = path.join(ROOT, 'public', 'voices');
 const ANCHORS_DIR = path.join(ROOT, '.voice-anchors');
+const VOXCPM2_WORKER = path.join(ROOT, 'scripts', 'generate-voices-voxcpm2.py');
 const QWEN3_WORKER = path.join(ROOT, 'scripts', 'generate-voices-qwen3.py');
 
 fs.mkdirSync(COMPILED_DIR, { recursive: true });
@@ -21,9 +23,11 @@ const args = process.argv.slice(2);
 const providerArg =
   args.find((a) => a.startsWith('--provider='))?.split('=')[1] ??
   profilesJson.defaultProvider ??
-  'qwen3';
+  'voxcpm2';
 const forceRegen = args.includes('--force');
 const forceAnchors = args.includes('--force-anchors');
+const skipSttQa = args.includes('--skip-stt-qa');
+const noContinuation = args.includes('--no-continuation');
 const batchSizeArg = args.find((a) => a.startsWith('--batch-size='))?.split('=')[1];
 const idsArg = args.find((a) => a.startsWith('--ids='))?.split('=')[1];
 const onlyIds = idsArg ? new Set(idsArg.split(',').map((s) => s.trim()).filter(Boolean)) : null;
@@ -48,28 +52,43 @@ function makeLineId(speaker, text) {
   return `${speaker}_${hash}`;
 }
 
-export function prepareSpokenText(rawText) {
+export function prepareSpokenText(rawText, lineId = '') {
   let out = stripInlineMarkup(rawText)
     .replace(/\[RELATION:SPOUSE_01\]'s/g, 'their')
     .replace(/\[RELATION:SPOUSE_01\]/g, 'your partner')
     .replace(/\{humanity\}/g, 'seventy')
     .replace(/\{max_humanity\}/g, 'seventy eight')
     .replace(/\{chaos_drift\}/g, 'fourteen')
-    .replace(/\{subjective_months\}/g, 'twenty four')
-    .replace(/\{[^}]+\}/g, '')
+    .replace(/\{subjective_months\}/g, 'twenty four');
+
+  if (/\{[^}]+\}/.test(out)) {
+    const unresolved = out.match(/\{[^}]+\}/g);
+    console.warn(
+      `[generate-voices] WARN unresolved Ink interpolation in ${lineId || 'line'}: ${unresolved?.join(', ')}`
+    );
+    out = out.replace(/\{[^}]+\}/g, '');
+  }
+
+  out = out
     .replace(/^\(ARCHIVE\s*[·•-]\s*\d+\):\s*/i, '')
     .replace(/\bInstance[-\s]1419\b/g, 'Instance fourteen nineteen')
     .replace(/\bInstance[-\s]1420\b/g, 'Instance fourteen twenty')
+    .replace(/\bInstance[-\s]1418\b/g, 'Instance fourteen eighteen')
+    .replace(/\bInstance[-\s]1411\b/g, 'Instance fourteen eleven')
     .replace(/\bInstance[-\s]1406\b/g, 'Instance fourteen oh six')
     .replace(/\bProbe\s+1419\b/g, 'Probe fourteen nineteen')
     .replace(/\bProbe\s+1420\b/g, 'Probe fourteen twenty')
+    .replace(/\bProbe\s+1418\b/g, 'Probe fourteen eighteen')
     .replace(/\bCluster\s+J1419-A\b/g, 'Cluster J fourteen nineteen A')
     .replace(/\bJ1419-A\b/g, 'J fourteen nineteen A')
     .replace(/\bS-04\b/g, 'S zero four')
     .replace(/\bSol[–—-]Centauri\b/g, 'Sol Centauri')
     .replace(/\b1419\b/g, 'fourteen nineteen')
     .replace(/\b1420\b/g, 'fourteen twenty')
+    .replace(/\b1418\b/g, 'fourteen eighteen')
+    .replace(/\b1411\b/g, 'fourteen eleven')
     .replace(/\b1406\b/g, 'fourteen oh six')
+    .replace(/\b0812\b/g, 'oh eight twelve')
     .replace(/—(["']?)$/g, '$1')
     .replace(/—/g, ', ')
     .replace(/–/g, ' ')
@@ -83,7 +102,6 @@ export function prepareSpokenText(rawText) {
   ) {
     out = out.slice(1, -1).trim();
   }
-  // Remove leading ellipses on archive fragments while preserving natural trailing fade
   out = out.replace(/^(Archive fourteen oh six\.\.\.\s*)"\.\.\./i, '$1');
   out = out.replace(/^"\.\.\./, '');
   if (out.endsWith('..."')) {
@@ -92,7 +110,64 @@ export function prepareSpokenText(rawText) {
     out = out.slice(0, -1).trim();
   }
 
+  // Unwrap bracketed relay/telemetry notices and normalize ALL-CAPS telemetry blocks for natural TTS
+  if (out.startsWith('[') && out.endsWith(']')) {
+    out = out.slice(1, -1).trim();
+  }
+  out = out.replace(/\s*[·•]\s*/g, ', ');
+  if (out.length > 12 && out === out.toUpperCase() && /[A-Z]/.test(out)) {
+    out = out
+      .toLowerCase()
+      .replace(/(^\s*|[.!?]\s+|,\s+)([a-z])/g, (_, p, c) => p + c.toUpperCase())
+      .replace(/\b(sol|centauri|overseer)\b/g, (w) => w[0].toUpperCase() + w.slice(1));
+  }
+
   return out.replace(/\s+/g, ' ').trim();
+}
+
+function computeSynthHash(entry) {
+  const prof = profiles[entry.speaker] ?? profiles.narrator ?? {};
+  const voxCfg = profilesJson.voxcpm2 ?? {};
+  const qwenCfg = profilesJson.qwen3 ?? {};
+  const v = prof.voxcpm2 ?? {};
+  const q = prof.qwen3 ?? {};
+
+  let payload;
+  if (providerArg === 'voxcpm2') {
+    const instruct =
+      v.emotionInstructs?.[entry.emotion] ?? v.defaultInstruct ?? q.voiceDesignInstruct ?? '';
+    payload = [
+      'voxcpm2',
+      voxCfg.model ?? 'mlx-community/VoxCPM2-8bit',
+      String(voxCfg.inferenceTimesteps ?? 10),
+      String(voxCfg.cfgValue ?? 2.0),
+      String(voxCfg.bitrate ?? '128k'),
+      String(voxCfg.sampleRate ?? 48000),
+      String(Boolean(voxCfg.enableContinuation) && !noContinuation),
+      v.anchorFile ?? q.anchorFile ?? '',
+      entry.emotion,
+      instruct,
+      entry.spokenText,
+      prof.ffmpegFilter ?? '',
+      entry.turnPrevLineId ?? '',
+    ].join('|');
+  } else if (providerArg === 'qwen3') {
+    const emoSpec = q.emotionAnchors?.[entry.emotion];
+    const resolvedSpec = typeof emoSpec === 'string' ? q.emotionAnchors?.[emoSpec] : emoSpec;
+    const anchorFile = resolvedSpec?.anchorFile ?? q.anchorFile ?? '';
+    payload = [
+      'qwen3',
+      qwenCfg.baseModel ?? '',
+      anchorFile,
+      entry.emotion,
+      entry.spokenText,
+      prof.ffmpegFilter ?? '',
+    ].join('|');
+  } else {
+    payload = [providerArg, entry.speaker, entry.emotion, entry.spokenText].join('|');
+  }
+
+  return crypto.createHash('sha1').update(payload).digest('hex').slice(0, 12);
 }
 
 function extractLinesFromInk(filePath) {
@@ -104,6 +179,7 @@ function extractLinesFromInk(filePath) {
   let currentEmotion = 'neutral';
   let currentExplicitId = null;
   let inFunction = false;
+  let prevTurnLine = null;
   const scopeStack = [];
   const collected = [];
 
@@ -119,6 +195,7 @@ function extractLinesFromInk(filePath) {
         currentSpeaker = 'narrator';
         currentEmotion = 'neutral';
         currentExplicitId = null;
+        prevTurnLine = null;
         scopeStack.length = 0;
       }
       continue;
@@ -129,6 +206,7 @@ function extractLinesFromInk(filePath) {
     if (trimmed === '{') {
       scopeStack.push({ speaker: currentSpeaker, emotion: currentEmotion });
       currentExplicitId = null;
+      prevTurnLine = null;
       continue;
     }
 
@@ -139,6 +217,7 @@ function extractLinesFromInk(filePath) {
         currentEmotion = prev.emotion;
       }
       currentExplicitId = null;
+      prevTurnLine = null;
       continue;
     }
 
@@ -149,6 +228,7 @@ function extractLinesFromInk(filePath) {
         currentEmotion = top.emotion;
       }
       currentExplicitId = null;
+      prevTurnLine = null;
       continue;
     }
 
@@ -161,6 +241,7 @@ function extractLinesFromInk(filePath) {
       trimmed.startsWith('+')
     ) {
       currentExplicitId = null;
+      prevTurnLine = null;
       continue;
     }
 
@@ -191,27 +272,59 @@ function extractLinesFromInk(filePath) {
     // Skip bracketed stage directions like [STATIC] but NEVER skip [[warm:...]] inline highlights
     if (text.startsWith('[') && !text.startsWith('[[') && text.endsWith(']')) {
       currentExplicitId = null;
+      prevTurnLine = null;
       continue;
     }
 
     const lineId = currentExplicitId ?? makeLineId(currentSpeaker, text);
     currentExplicitId = null;
     const profile = profiles[currentSpeaker] ?? profiles.narrator;
-    if (profile?.voiced === false) continue;
+    if (profile?.voiced === false) {
+      prevTurnLine = null;
+      continue;
+    }
 
+    const spokenText = prepareSpokenText(text, lineId);
     const matchKey = normalizeMatchKey(currentSpeaker, text);
 
-    collected.push({
+    let turnPrevLineId = null;
+    let turnPrevSpokenText = null;
+    let chainLen = 1;
+    if (
+      prevTurnLine &&
+      prevTurnLine.speaker === currentSpeaker &&
+      prevTurnLine.emotion === currentEmotion &&
+      prevTurnLine.chainLen < 3
+    ) {
+      turnPrevLineId = prevTurnLine.lineId;
+      turnPrevSpokenText = prevTurnLine.spokenText;
+      chainLen = prevTurnLine.chainLen + 1;
+    }
+
+    const entry = {
       lineId,
       matchKey,
       knot: currentKnot,
       speaker: currentSpeaker,
       emotion: currentEmotion,
       text: stripInlineMarkup(text),
-      spokenText: prepareSpokenText(text),
+      spokenText,
       audioFile: `voices/${lineId}.mp3`,
+      turnPrevLineId,
+      turnPrevSpokenText,
       remoteConfig: profile?.remoteConfig ?? null,
-    });
+    };
+    entry.synthHash = computeSynthHash(entry);
+
+    prevTurnLine = {
+      lineId,
+      spokenText,
+      speaker: currentSpeaker,
+      emotion: currentEmotion,
+      chainLen,
+    };
+
+    collected.push(entry);
   }
 
   return collected;
@@ -227,21 +340,42 @@ function dedupeEntries(entries) {
   return [...byId.values()];
 }
 
+function loadPreviousHashes() {
+  const map = new Map();
+  if (!fs.existsSync(VOICE_SCRIPT_PATH)) return map;
+  try {
+    const prev = JSON.parse(fs.readFileSync(VOICE_SCRIPT_PATH, 'utf8'));
+    if (prev.provider === providerArg) {
+      for (const l of prev.lines ?? []) {
+        if (l.lineId && l.synthHash) {
+          map.set(l.lineId, l.synthHash);
+        }
+      }
+    }
+  } catch {
+    // Ignore corrupt previous manifest
+  }
+  return map;
+}
+
 function writeScriptArtifacts(entries) {
   const engineName =
-    providerArg === 'qwen3'
-      ? 'qwen3-tts-12hz-1.7b-base-4bit'
-      : providerArg === 'kokoro'
-        ? 'kokoro-82m-q8'
-        : providerArg;
+    providerArg === 'voxcpm2'
+      ? 'voxcpm2-8bit'
+      : providerArg === 'qwen3'
+        ? 'qwen3-tts-12hz-1.7b-base-4bit'
+        : providerArg === 'kokoro'
+          ? 'kokoro-82m-q8'
+          : providerArg;
+  const serializedLines = entries.map(({ turnPrevSpokenText: _omit, ...rest }) => rest);
   const jsonOut = {
-    schema_version: 2,
+    schema_version: 3,
     generated_at: new Date().toISOString(),
     provider: providerArg,
     engine: engineName,
-    lines: entries,
+    lines: serializedLines,
   };
-  fs.writeFileSync(path.join(COMPILED_DIR, 'voice_script.json'), JSON.stringify(jsonOut, null, 2));
+  fs.writeFileSync(VOICE_SCRIPT_PATH, JSON.stringify(jsonOut, null, 2));
 
   const txtLines = [
     '# INSTANCE-1419 — GENERATED VOICE SCRIPT',
@@ -276,13 +410,67 @@ function resolveVoicePython() {
   return 'python3';
 }
 
-function synthesizeQwen3(entries) {
+function getPendingEntries(entries, prevHashById) {
   const filtered = onlyIds ? entries.filter((e) => onlyIds.has(e.lineId)) : entries;
   const pending = filtered.filter((entry) => {
     const outPath = path.join(ROOT, 'public', entry.audioFile);
-    return forceRegen || !fs.existsSync(outPath) || fs.statSync(outPath).size <= 512;
+    const missingOrTiny = !fs.existsSync(outPath) || fs.statSync(outPath).size <= 512;
+    const hashChanged = prevHashById.get(entry.lineId) !== entry.synthHash;
+    return forceRegen || missingOrTiny || hashChanged;
   });
+  return { filtered, pending };
+}
 
+function synthesizeVoxcpm2(entries, prevHashById) {
+  const { filtered, pending } = getPendingEntries(entries, prevHashById);
+  if (pending.length === 0) {
+    console.log(`[generate-voices] VoxCPM2-8bit: 0 generated, ${filtered.length} cached.`);
+    return;
+  }
+
+  const pythonBin = resolveVoicePython();
+  const voxcpm2Config = { ...(profilesJson.voxcpm2 ?? {}) };
+  const jobPath = `/tmp/i1419_voxcpm2_job_${Date.now()}.json`;
+  const reportPath = `/tmp/i1419_voxcpm2_report_${Date.now()}.json`;
+  const jobPayload = {
+    voxcpm2Config,
+    anchorsDir: ANCHORS_DIR,
+    profiles,
+    reportPath,
+    tasks: pending.map((entry) => ({
+      lineId: entry.lineId,
+      speaker: entry.speaker,
+      emotion: entry.emotion,
+      spokenText: entry.spokenText,
+      turnPrevLineId: entry.turnPrevLineId,
+      turnPrevSpokenText: entry.turnPrevSpokenText,
+      outPath: path.join(ROOT, 'public', entry.audioFile),
+    })),
+  };
+
+  fs.writeFileSync(jobPath, JSON.stringify(jobPayload, null, 2));
+  console.log(
+    `[generate-voices] Launching VoxCPM2 worker (${pythonBin}) for ${pending.length} pending line(s)...`
+  );
+
+  try {
+    const workerArgs = [VOXCPM2_WORKER, '--jobs', jobPath];
+    if (forceAnchors) workerArgs.push('--force-anchors');
+    if (skipSttQa) workerArgs.push('--skip-stt-qa');
+    if (noContinuation) workerArgs.push('--no-continuation');
+    execFileSync(pythonBin, workerArgs, { stdio: 'inherit', cwd: ROOT });
+  } finally {
+    if (fs.existsSync(jobPath)) fs.unlinkSync(jobPath);
+  }
+
+  const cached = filtered.length - pending.length;
+  console.log(
+    `[generate-voices] VoxCPM2-8bit complete: ${pending.length} generated, ${cached} cached.`
+  );
+}
+
+function synthesizeQwen3(entries, prevHashById) {
+  const { filtered, pending } = getPendingEntries(entries, prevHashById);
   if (pending.length === 0) {
     console.log(`[generate-voices] Qwen3-TTS: 0 generated, ${filtered.length} cached.`);
     return;
@@ -329,13 +517,8 @@ function synthesizeQwen3(entries) {
   );
 }
 
-async function synthesizeKokoro(entries) {
-  const filtered = onlyIds ? entries.filter((e) => onlyIds.has(e.lineId)) : entries;
-  const pending = filtered.filter((entry) => {
-    const outPath = path.join(ROOT, 'public', entry.audioFile);
-    return forceRegen || !fs.existsSync(outPath) || fs.statSync(outPath).size <= 512;
-  });
-
+async function synthesizeKokoro(entries, prevHashById) {
+  const { filtered, pending } = getPendingEntries(entries, prevHashById);
   if (pending.length === 0) {
     console.log(`[generate-voices] Kokoro-82M: 0 generated, ${filtered.length} cached.`);
     return;
@@ -420,6 +603,7 @@ function synthesizeSay(entries) {
 }
 
 async function main() {
+  const prevHashById = loadPreviousHashes();
   const inkFiles = fs
     .readdirSync(DIALOGUE_DIR)
     .filter((f) => f.endsWith('.ink'))
@@ -427,12 +611,13 @@ async function main() {
 
   const rawEntries = inkFiles.flatMap(extractLinesFromInk);
   const entries = dedupeEntries(rawEntries);
-  writeScriptArtifacts(entries);
 
-  if (providerArg === 'qwen3') {
-    synthesizeQwen3(entries);
+  if (providerArg === 'voxcpm2') {
+    synthesizeVoxcpm2(entries, prevHashById);
+  } else if (providerArg === 'qwen3') {
+    synthesizeQwen3(entries, prevHashById);
   } else if (providerArg === 'kokoro') {
-    await synthesizeKokoro(entries);
+    await synthesizeKokoro(entries, prevHashById);
   } else if (providerArg === 'say') {
     synthesizeSay(entries);
   } else if (providerArg === 'remote') {
@@ -448,7 +633,16 @@ async function main() {
     console.log(`[generate-voices] Manifest-only mode: exported ${entries.length} lines.`);
   }
 
-  if (!onlyIds && (providerArg === 'qwen3' || providerArg === 'kokoro' || providerArg === 'say')) {
+  // Write manifest only after synthesis succeeds so interrupted runs don't mark stale lines current
+  writeScriptArtifacts(entries);
+
+  if (
+    !onlyIds &&
+    (providerArg === 'voxcpm2' ||
+      providerArg === 'qwen3' ||
+      providerArg === 'kokoro' ||
+      providerArg === 'say')
+  ) {
     const activeFiles = new Set(entries.map((e) => path.basename(e.audioFile)));
     let pruned = 0;
     for (const file of fs.readdirSync(VOICES_OUT_DIR)) {

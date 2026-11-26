@@ -10,7 +10,7 @@ Read this first every session. Keep this file `<80` lines; deeper specs live in 
 ## 2. System of Record (Single Source of Truth — Load On Demand)
 * [`docs/CANON.md`](docs/CANON.md) — Locked lore, physics, persona-pool & scan rules, and **Do Not Violate** boundaries.
 * [`docs/BEAT_SHEET.md`](docs/BEAT_SHEET.md) — 2-hour pacing spine (Prologue + 6 Shifts + 3 Endings + Dream Persona pool).
-* [`docs/VOICE_GUIDE.md`](docs/VOICE_GUIDE.md) — 5-role prose bible, choice-tag contract, and Cast 2 Qwen3-TTS pipeline.
+* [`docs/VOICE_GUIDE.md`](docs/VOICE_GUIDE.md) — 5-role prose bible, choice-tag contract, and Cast 2 VoxCPM2-8bit TTS pipeline.
 * [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md) — 3D/2D lookdev, Zeiss-glass optics, Layout A dialogue & choice-plate UI rules.
 * [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Engine vs. Content isolation, 3-Axis contract, `VoiceEngine`, & `?dev=1` spec.
 * [`docs/HARNESS.md`](docs/HARNESS.md) — Taste Compass, 1-by-1 calibration protocol, SSOT map, personas, & skills.

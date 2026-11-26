@@ -68,7 +68,7 @@ Every rule has **exactly one canonical owner document**. Personas and `.agents/s
 | :--- | :--- |
 | **Lore, physics, hard boundaries, scan & persona-pool counts** | [`docs/CANON.md`](CANON.md) |
 | **2-hour pacing spine, shift beat sheet, persona roster** | [`docs/BEAT_SHEET.md`](BEAT_SHEET.md) |
-| **5-role prose tone bible, choice-tag contract, Qwen3-TTS settings** | [`docs/VOICE_GUIDE.md`](VOICE_GUIDE.md) |
+| **5-role prose tone bible, choice-tag contract, VoxCPM2-8bit TTS settings** | [`docs/VOICE_GUIDE.md`](VOICE_GUIDE.md) |
 | **3D/2D lookdev, Zeiss-glass optics, Layout A & choice-plate UI** | [`docs/ART_DIRECTION.md`](ART_DIRECTION.md) |
 | **Engine/Content isolation, 3-Axis contract, VoiceEngine & PlatformAdapter** | [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) |
 | **Taste Compass, 1-by-1 calibration, personas, skills, verify gates** | [`docs/HARNESS.md`](HARNESS.md) |
@@ -116,7 +116,7 @@ instance-1419/
 2. **`ink-dialogue-writer`** — Non-abrupt `.ink` authoring per `docs/VOICE_GUIDE.md`, `◇` Q&A hubs, choice tags (`# kind:`, `# weight:`, `# hint:`), `<=160`-char voiced target (`<=190` hard lint ceiling), `inkjs` compilation.
 3. **`visual-shader-studio`** — 3D optics GLSL, 2D `H%` impasto-to-shard decay, Zeiss-glass instrument polish, swappable `characters.json` portraits verified at `H = 90/70/45/20%`.
 4. **`astro-asset-curator`** — Commercial-safe NASA/STScI & ESA imagery/catalogs + `assets/MANIFEST.json` hygiene (zero `CC BY-SA` or `NC`).
-5. **`audio-atmosphere-designer`** — Procedural Web Audio, Lyria 3.5 hybrid music stems, and Cast 2 Qwen3-TTS pipeline per `docs/VOICE_GUIDE.md` & `docs/ARCHITECTURE.md`.
+5. **`audio-atmosphere-designer`** — Procedural Web Audio, Lyria 3.5 hybrid music stems, and Cast 2 VoxCPM2-8bit TTS pipeline per `docs/VOICE_GUIDE.md` & `docs/ARCHITECTURE.md`.
 6. **`engine-builder`** — Pure-HTML TypeScript architecture, Lean 3-Axis `BaseCosmicMinigame`, Layout A & choice-plate UI per `docs/ART_DIRECTION.md`, `PlatformAdapter`, and `?dev=1`.
 7. **`consistency-auditor`** — Runs `npm run verify:fast` (Gates 1–8) + targeted Playwright visual checks during dev (relying on `ci.yml` / `npm run verify` for full milestone sweeps) + qualitative SSOT audit.
 8. **`playtest-verifier`** — Headless Playwright verification (`npm run test:visual:smoke` / `--flows=` for dev; full `1280x720` & `844x390` suite in CI) + 1-click blind playtest telemetry synthesis.

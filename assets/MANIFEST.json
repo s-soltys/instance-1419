@@ -305,13 +305,13 @@
     },
     {
       "path": "public/voices/*.mp3",
-      "source_url": "https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
-      "source": "Qwen3-TTS (mlx-audio local)",
+      "source_url": "https://huggingface.co/mlx-community/VoxCPM2-8bit",
+      "source": "VoxCPM2 (OpenBMB / mlx-audio local)",
       "license": "Apache-2.0",
-      "attribution": "Qwen3-TTS 12Hz 1.7B (Apache-2.0) local neural voice synthesis via mlx-audio (VoiceDesign cast anchors + Base ICL cloning)",
+      "attribution": "VoxCPM2 8-bit (OpenBMB, Apache-2.0) local 48 kHz continuous-latent voice synthesis via mlx-audio with Parakeet TDT v3 STT WER verification",
       "ai_generated": true,
       "internal_prototype_only": false,
-      "notes": "Expressive character dialogue audio synthesized locally via scripts/generate-voices.mjs (--provider=qwen3) with per-character EQ and EBU R128 loudness normalization (96 kbps MP3)."
+      "notes": "Expressive character dialogue audio synthesized locally via scripts/generate-voices.mjs (--provider=voxcpm2) with single-anchor emotional steering, turn continuation, per-character EQ, EBU R128 -17 LUFS normalization (48 kHz mono 128 kbps MP3), and automated Parakeet TDT 0.6B v3 WER QA."
     },
     {
       "path": "public/music/*.mp3",

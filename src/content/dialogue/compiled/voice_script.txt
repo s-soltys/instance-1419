@@ -1,6 +1,6 @@
 # INSTANCE-1419 — GENERATED VOICE SCRIPT
-# Engine: qwen3-tts-12hz-1.7b-base-4bit
-# Generated: 2026-11-26T20:29:13.174Z
+# Engine: voxcpm2-8bit
+# Generated: 2026-11-26T22:32:20.976Z
 # Total spoken lines: 184
 
 
