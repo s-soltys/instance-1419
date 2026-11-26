@@ -6,7 +6,7 @@
       "subtitle": "Home System · Twin Golden Reference",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
-      "minigameId": "light_dispersion",
+      "minigameId": "multiband_loupe",
       "raDeg": 46.0,
       "decDeg": -16.0,
       "optimalWavelengthNm": 560,
@@ -15,7 +15,7 @@
       "anomalyGain": 3,
       "kind": "home_reference",
       "accentHex": "#ffd88a",
-      "description": "Ten light-years astern, Sol and Alpha Centauri burn steady in visible light. Calibrate the home-star reference to anchor your astrometric baseline across the quiet dark."
+      "description": "Ten light-years astern, Sol and Alpha Centauri burn steady in visible light. Sweep the multi-band loupe across your home stars to calibrate the probe's optical baseline."
     },
     {
       "id": "carina_rift_nebula",
@@ -49,7 +49,7 @@
       "anomalyGain": 3,
       "kind": "einstein_ring",
       "accentHex": "#f4b96a",
-      "description": "A massive foreground galaxy cluster bends ancient starlight in near-infrared. Resolve the deep-field optics to strip away glare and uncover the impossibly straight edge behind it."
+      "description": "A massive foreground galaxy cluster bends ancient starlight into bright arcs in near-infrared. Align the concentric lens rings to pull the warped galaxies sharp and expose the impossibly straight edge behind them."
     },
     {
       "id": "sector_s04_seam",

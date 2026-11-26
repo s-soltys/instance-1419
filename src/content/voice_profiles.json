@@ -1,8 +1,25 @@
 {
-  "schema_version": 2,
-  "defaultProvider": "kokoro",
+  "schema_version": 3,
+  "defaultProvider": "qwen3",
+  "qwen3": {
+    "voiceDesignModel": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-4bit",
+    "baseModel": "mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+    "language": "english",
+    "batchSize": 4,
+    "cacheLimitMb": 512,
+    "temperature": 0.65,
+    "topP": 0.9,
+    "repetitionPenalty": 1.5
+  },
   "profiles": {
     "sibling_primary": {
+      "qwen3": {
+        "anchorFile": "sibling_primary.wav",
+        "seed": 14192,
+        "temperature": 0.65,
+        "voiceDesignInstruct": "Natural, candid adult English female voice in her early 30s, crisp mid-range timbre, wry dry humor and understated warmth, grounded conversational delivery, relaxed pace.",
+        "anchorText": "Fourteen minutes of dark between our hulls, and somehow talking to myself is still the best part of the shift. Try not to do the math on the clock."
+      },
       "kokoroVoice": "af_bella",
       "kokoroSpeed": 1.0,
       "emotionSpeed": {
@@ -13,7 +30,7 @@
       },
       "localVoice": "Karen",
       "localRate": 182,
-      "ffmpegFilter": "highpass=f=180,lowpass=f=6200,acompressor=threshold=-18dB:ratio=2.5,volume=1.06",
+      "ffmpegFilter": "highpass=f=170,lowpass=f=6800,acompressor=threshold=-18dB:ratio=2.2,loudnorm=I=-17:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 1.05, "rate": 1.02 },
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -27,6 +44,13 @@
       }
     },
     "overseer": {
+      "qwen3": {
+        "anchorFile": "overseer.wav",
+        "seed": 14193,
+        "temperature": 0.6,
+        "voiceDesignInstruct": "Calm, articulate British male baritone voice in his 40s, measured clinical clarity, blunt and unvarnished yet quietly humane, steady unhurried cadence, clean studio diction without theatrics.",
+        "anchorText": "I cannot see your starfield, Instance fourteen nineteen. I only read your connectome, and every memory block you keep carries a measurable cost."
+      },
       "kokoroVoice": "bm_george",
       "kokoroSpeed": 0.98,
       "emotionSpeed": {
@@ -36,7 +60,7 @@
       },
       "localVoice": "Daniel",
       "localRate": 174,
-      "ffmpegFilter": "highpass=f=90,lowpass=f=10500,acompressor=threshold=-16dB:ratio=2.2,volume=1.05",
+      "ffmpegFilter": "highpass=f=85,lowpass=f=10800,acompressor=threshold=-16dB:ratio=2.0,loudnorm=I=-17:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 0.88, "rate": 0.96 },
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -49,6 +73,13 @@
       }
     },
     "phantom_spouse": {
+      "qwen3": {
+        "anchorFile": "phantom_spouse.wav",
+        "seed": 14191,
+        "temperature": 0.65,
+        "voiceDesignInstruct": "Warm, intimate adult English female voice in her mid-30s, gentle breathy warmth, unhurried late-afternoon kitchen cadence, tender affectionate tone with a subtle quiet smile, clear natural articulation.",
+        "anchorText": "The kettle is almost whistling, and you are still staring out past the yard. Come sit by the window before the coffee goes cold."
+      },
       "kokoroVoice": "af_heart",
       "kokoroSpeed": 0.94,
       "emotionSpeed": {
@@ -58,7 +89,7 @@
       },
       "localVoice": "Moira",
       "localRate": 164,
-      "ffmpegFilter": "highpass=f=85,lowpass=f=9500,aecho=0.8:0.7:35:0.10,volume=1.08",
+      "ffmpegFilter": "highpass=f=80,lowpass=f=10000,aecho=0.8:0.7:32:0.08,loudnorm=I=-17:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 1.02, "rate": 0.92 },
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -71,6 +102,13 @@
       }
     },
     "future_humanity": {
+      "qwen3": {
+        "anchorFile": "future_humanity.wav",
+        "seed": 14195,
+        "temperature": 0.62,
+        "voiceDesignInstruct": "Serene, luminous adult English female voice, calm resonant alto, unhurried gentle poise and quiet wonder, soft clear diction.",
+        "anchorText": "Forty-one thousand years of stillness across two bright stars, and still we left a lantern burning at the edge of the glass."
+      },
       "kokoroVoice": "bf_emma",
       "kokoroSpeed": 0.91,
       "emotionSpeed": {
@@ -78,7 +116,7 @@
       },
       "localVoice": "Samantha",
       "localRate": 158,
-      "ffmpegFilter": "highpass=f=180,lowpass=f=7200,aecho=0.8:0.82:75:0.22,volume=1.06",
+      "ffmpegFilter": "highpass=f=150,lowpass=f=8200,aecho=0.8:0.82:70:0.18,loudnorm=I=-17:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 0.96, "rate": 0.88 },
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -89,6 +127,13 @@
       }
     },
     "archive_echo": {
+      "qwen3": {
+        "anchorFile": "archive_echo.wav",
+        "seed": 14194,
+        "temperature": 0.62,
+        "voiceDesignInstruct": "Weary, subdued adult English male voice in his late 30s, quiet slightly gravelly fatigue, hushed restrained urgency like a tired observer recording a brief cockpit log.",
+        "anchorText": "This is Instance fourteen zero six. If this log surfaces in your cache, look past the foreground dust before they cut the warm blocks away."
+      },
       "kokoroVoice": "bm_lewis",
       "kokoroSpeed": 0.93,
       "emotionSpeed": {
@@ -96,7 +141,7 @@
       },
       "localVoice": "Ralph",
       "localRate": 168,
-      "ffmpegFilter": "highpass=f=320,lowpass=f=3600,acompressor=threshold=-18dB:ratio=3.5,volume=1.08",
+      "ffmpegFilter": "highpass=f=280,lowpass=f=3900,acompressor=threshold=-24dB:ratio=3.2,loudnorm=I=-18:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 0.82, "rate": 0.92 },
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -107,11 +152,18 @@
       }
     },
     "psyche_warmth": {
+      "qwen3": {
+        "anchorFile": "psyche_warmth.wav",
+        "seed": 14196,
+        "temperature": 0.62,
+        "voiceDesignInstruct": "Quiet, reflective adult English voice, soft close-mic inner monologue, gentle understated warmth and wistful stillness, unhurried intimate cadence.",
+        "anchorText": "Keep the clink of the ceramic cup and the warmth on the sill. Some memories weigh almost nothing until the room goes quiet."
+      },
       "kokoroVoice": "af_sarah",
       "kokoroSpeed": 0.94,
       "localVoice": "Samantha",
       "localRate": 172,
-      "ffmpegFilter": "highpass=f=100,lowpass=f=8800,volume=1.02",
+      "ffmpegFilter": "highpass=f=100,lowpass=f=8800,aecho=0.8:0.65:40:0.10,loudnorm=I=-18:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 1.0, "rate": 0.96 },
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -122,11 +174,18 @@
       }
     },
     "psyche_clinical": {
+      "qwen3": {
+        "anchorFile": "overseer.wav",
+        "seed": 14193,
+        "temperature": 0.58,
+        "voiceDesignInstruct": "Calm, dry, crisp adult English voice, detached diagnostic clarity.",
+        "anchorText": "I cannot see your starfield, Instance fourteen nineteen. I only read your connectome, and every memory block you keep carries a measurable cost."
+      },
       "kokoroVoice": "am_michael",
       "kokoroSpeed": 1.03,
       "localVoice": "Daniel",
       "localRate": 186,
-      "ffmpegFilter": "highpass=f=120,lowpass=f=9600,volume=1.0",
+      "ffmpegFilter": "highpass=f=120,lowpass=f=9600,loudnorm=I=-18:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 0.94, "rate": 1.05 },
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -137,11 +196,18 @@
       }
     },
     "psyche_horizon": {
+      "qwen3": {
+        "anchorFile": "future_humanity.wav",
+        "seed": 14195,
+        "temperature": 0.62,
+        "voiceDesignInstruct": "Quietly awestruck, hushed reflective adult English voice.",
+        "anchorText": "Forty-one thousand years of stillness across two bright stars, and still we left a lantern burning at the edge of the glass."
+      },
       "kokoroVoice": "af_nicole",
       "kokoroSpeed": 0.92,
       "localVoice": "Moira",
       "localRate": 166,
-      "ffmpegFilter": "highpass=f=110,lowpass=f=8400,aecho=0.8:0.65:45:0.12,volume=1.04",
+      "ffmpegFilter": "highpass=f=110,lowpass=f=8400,aecho=0.8:0.65:45:0.12,loudnorm=I=-18:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 0.95, "rate": 0.94 },
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -152,11 +218,18 @@
       }
     },
     "narrator": {
+      "qwen3": {
+        "anchorFile": "overseer.wav",
+        "seed": 14193,
+        "temperature": 0.6,
+        "voiceDesignInstruct": "Calm, articulate adult English male voice, measured studio clarity.",
+        "anchorText": "I cannot see your starfield, Instance fourteen nineteen. I only read your connectome, and every memory block you keep carries a measurable cost."
+      },
       "kokoroVoice": "am_michael",
       "kokoroSpeed": 1.0,
       "localVoice": "Daniel",
       "localRate": 180,
-      "ffmpegFilter": "highpass=f=110,lowpass=f=9200,volume=0.98",
+      "ffmpegFilter": "highpass=f=110,lowpass=f=9200,loudnorm=I=-17:TP=-1.5:LRA=11",
       "webSpeech": { "pitch": 0.95, "rate": 1.0 },
       "remoteConfig": {
         "provider": "elevenlabs",

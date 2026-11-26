@@ -53,14 +53,6 @@ body,
   background-repeat: repeat;
 }
 
-.stage[data-mode='target_inspect'] .film-grain {
-  opacity: 0;
-}
-
-.stage[data-mode='target_inspect'][data-minigame='1'] .film-grain {
-  opacity: 0.036;
-}
-
 /* ==================== SEAMLESS TWO-LAYER CROSS-MORPH (GPU COMPOSITOR-ONLY) ==================== */
 .sr-only {
   position: absolute;
@@ -107,14 +99,14 @@ body,
 }
 
 .stage > section.is-leaving[data-leave-kind='aperture_boot'] {
-  animation: leaveApertureBoot 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: leaveApertureBoot 1.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .stage > section.is-arriving[data-arrive-kind='aperture_boot'] {
-  animation: arriveApertureBoot 0.88s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arriveApertureBoot 1.95s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* --- 2. 3D Sky -> 3D Target World (optical_dive) --- */
+/* --- 2. 3D Sky -> Direct Minigame (optical_dive) --- */
 @keyframes leaveOpticalDive {
   0% { opacity: 1; transform: scale(1); }
   45% { opacity: 0.88; transform: scale(1.14); }
@@ -124,9 +116,9 @@ body,
 @keyframes arriveOpticalDive {
   0% {
     opacity: 0;
-    transform: scale(0.84);
+    transform: scale(0.86);
   }
-  55% {
+  58% {
     opacity: 0.96;
     transform: scale(1.01);
   }
@@ -137,23 +129,23 @@ body,
 }
 
 .stage > section.is-leaving[data-leave-kind='optical_dive'] {
-  animation: leaveOpticalDive 0.82s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: leaveOpticalDive 1.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .stage > section.is-arriving[data-arrive-kind='optical_dive'] {
-  animation: arriveOpticalDive 0.72s cubic-bezier(0.18, 0.9, 0.28, 1) both;
+  animation: arriveOpticalDive 1.45s cubic-bezier(0.18, 0.9, 0.28, 1) both;
 }
 
-/* --- 3. 3D Target World -> 3D Sky (optical_pullback) --- */
+/* --- 3. Direct Minigame -> 3D Sky (optical_pullback) --- */
 @keyframes leaveOpticalPullback {
   0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(0.84); }
+  100% { opacity: 0; transform: scale(0.86); }
 }
 
 @keyframes arriveOpticalPullback {
   0% {
     opacity: 0;
-    transform: scale(1.16);
+    transform: scale(1.14);
   }
   100% {
     opacity: 1;
@@ -162,14 +154,14 @@ body,
 }
 
 .stage > section.is-leaving[data-leave-kind='optical_pullback'] {
-  animation: leaveOpticalPullback 0.76s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: leaveOpticalPullback 1.48s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .stage > section.is-arriving[data-arrive-kind='optical_pullback'] {
-  animation: arriveOpticalPullback 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arriveOpticalPullback 1.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* --- 4. 3D Sky / Boot -> 2D Dream Cache (dream_submerge: smooth organic fade + GPU uReveal) --- */
+/* --- 4. 3D Sky / Boot -> 2D Dream Cache (dream_submerge: slow painterly fade + GPU uReveal) --- */
 @keyframes leaveDreamSubmergeWarm {
   0% { opacity: 1; transform: scale(1); }
   45% { opacity: 0.72; transform: scale(1.04); }
@@ -184,7 +176,7 @@ body,
 @keyframes arriveDreamSubmerge {
   0% {
     opacity: 0;
-    transform: scale(1.06);
+    transform: scale(1.05);
   }
   60% {
     opacity: 0.96;
@@ -197,18 +189,18 @@ body,
 }
 
 .stage > section.is-leaving[data-leave-kind='dream_submerge'][data-leave-tone='warm'] {
-  animation: leaveDreamSubmergeWarm 1.04s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: leaveDreamSubmergeWarm 2.05s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .stage > section.is-leaving[data-leave-kind='dream_submerge'][data-leave-tone='cold'] {
-  animation: leaveDreamSubmergeCold 1.04s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: leaveDreamSubmergeCold 2.05s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .stage > section.is-arriving[data-arrive-kind='dream_submerge'] {
-  animation: arriveDreamSubmerge 1.02s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arriveDreamSubmerge 2.05s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* --- 5. 2D Dream -> 3D Sky (dream_wake: cold cryo shutter split) --- */
+/* --- 5. 2D Dream -> 3D Sky (dream_wake: slow cold cryo shutter split) --- */
 @keyframes leaveDreamWake {
   0% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.05); }
@@ -230,11 +222,11 @@ body,
 }
 
 .stage > section.is-leaving[data-leave-kind='dream_wake'] {
-  animation: leaveDreamWake 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: leaveDreamWake 1.95s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .stage > section.is-arriving[data-arrive-kind='dream_wake'] {
-  animation: arriveDreamWake 0.84s cubic-bezier(0.18, 0.92, 0.25, 1) both;
+  animation: arriveDreamWake 2.05s cubic-bezier(0.18, 0.92, 0.25, 1) both;
 }
 
 /* --- Pure Additive Optical Light-Leak / Lens-Flare Stage (Zero Opaque Backdrop!) --- */
@@ -280,15 +272,16 @@ body,
 }
 
 .transition-stage.is-active .ts-bloom {
-  animation: fxBloomPulse 0.88s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxBloomPulse 1.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.transition-stage[data-kind='dream_submerge'].is-active .ts-bloom {
-  animation-duration: 1.06s;
+.transition-stage[data-kind='dream_submerge'].is-active .ts-bloom,
+.transition-stage[data-kind='dream_wake'].is-active .ts-bloom {
+  animation-duration: 2.15s;
 }
 
 .transition-stage[data-kind='overseer_slice'].is-active .ts-bloom {
-  animation-duration: 0.62s;
+  animation-duration: 1.15s;
 }
 
 @keyframes fxFlareStreak {
@@ -322,11 +315,11 @@ body,
 }
 
 .transition-stage.is-active .ts-flare {
-  animation: fxFlareStreak 0.78s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxFlareStreak 1.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .transition-stage[data-kind='overseer_slice'].is-active .ts-flare {
-  animation-duration: 0.54s;
+  animation-duration: 1.05s;
 }
 
 @keyframes fxIrisBoot {
@@ -376,15 +369,15 @@ body,
 }
 
 .transition-stage[data-kind='aperture_boot'].is-active .ts-iris-ring {
-  animation: fxIrisBoot 0.88s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxIrisBoot 1.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .transition-stage[data-kind='optical_dive'].is-active .ts-iris-ring {
-  animation: fxIrisDive 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxIrisDive 1.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .transition-stage[data-kind='optical_pullback'].is-active .ts-iris-ring {
-  animation: fxIrisPullback 0.86s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxIrisPullback 1.65s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @keyframes fxScanTop {
@@ -413,12 +406,12 @@ body,
 
 .transition-stage[data-kind='overseer_slice'].is-active .ts-scan-top,
 .transition-stage[data-kind='dream_wake'].is-active .ts-scan-top {
-  animation: fxScanTop 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxScanTop 1.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .transition-stage[data-kind='overseer_slice'].is-active .ts-scan-bottom,
 .transition-stage[data-kind='dream_wake'].is-active .ts-scan-bottom {
-  animation: fxScanBottom 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxScanBottom 1.28s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Layer Arrival Choreography */
@@ -653,29 +646,16 @@ body,
 }
 
 .boot-screen[data-boot-visual='breath'] {
-  background: radial-gradient(circle at 48% 50%, rgba(16, 11, 7, 0.34) 0%, rgba(4, 6, 10, 0.78) 100%);
+  background: radial-gradient(circle at 48% 50%, rgba(16, 11, 7, 0.42) 0%, rgba(4, 6, 10, 0.84) 100%);
   cursor: pointer;
 }
 
-.boot-screen[data-boot-visual='prologue_kitchen'] {
-  background: linear-gradient(180deg, rgba(8, 7, 10, 0.08) 0%, rgba(8, 7, 10, 0.16) 54%, rgba(6, 7, 12, 0.84) 100%);
-  justify-content: flex-end;
-  padding-bottom: max(46px, calc(env(safe-area-inset-bottom) + 34px));
-  cursor: pointer;
-}
-
-.boot-screen[data-boot-visual='prologue_fracture'] {
-  background: radial-gradient(circle at 50% 48%, rgba(4, 9, 16, 0.56) 0%, rgba(2, 5, 10, 0.84) 100%);
-  justify-content: flex-end;
-  padding-bottom: max(46px, calc(env(safe-area-inset-bottom) + 34px));
-  cursor: pointer;
-}
-
-.boot-screen[data-boot-visual='prologue_starfield'] {
-  background: linear-gradient(180deg, rgba(3, 6, 12, 0.05) 0%, rgba(3, 6, 12, 0.18) 58%, rgba(3, 6, 12, 0.76) 100%);
-  justify-content: flex-end;
-  padding-bottom: max(46px, calc(env(safe-area-inset-bottom) + 34px));
-  cursor: pointer;
+.boot-screen[data-boot-visual='prologue_kitchen'],
+.boot-screen[data-boot-visual='prologue_wakeup'] {
+  background: transparent;
+  padding: 0;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .boot-screen[data-boot-visual='title'] {
@@ -683,16 +663,17 @@ body,
   cursor: pointer;
 }
 
+/* Pure GPU-composited breath framing (zero live-canvas filter: blur!) */
 .stage[data-boot-visual='breath'] #dream-layer .dream-visual-pane {
-  filter: blur(7px) brightness(0.76) saturate(1.06);
-  transform: scale(1.04);
-  transition: filter 0.9s ease, transform 1.2s ease;
+  opacity: 0.72;
+  transform: scale(1.035);
+  transition: opacity 1.1s ease, transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stage[data-boot-visual='prologue_kitchen'] #dream-layer .dream-visual-pane {
-  filter: none;
+  opacity: 1;
   transform: scale(1);
-  transition: filter 0.9s ease, transform 1.2s ease;
+  transition: opacity 1.1s ease, transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stage[data-mode='boot'] #dream-layer .dream-ribbon,
@@ -700,15 +681,37 @@ body,
   display: none;
 }
 
+/* 5-Phase Zeiss-Glass Wake-Up Briefing Schematic Canvas */
+.wakeup-canvas-mount {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 1.2s ease;
+}
+
+.wakeup-canvas-mount.hidden {
+  display: none;
+}
+
+.wakeup-briefing-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 /* Frame 0 Sensory Breath (Audio Unlock) */
 .prologue-breath-panel {
+  position: relative;
+  z-index: 4;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 18px;
   max-width: 620px;
-  animation: arriveGlideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arriveGlideUp 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .prologue-breath-panel.hidden {
@@ -739,93 +742,159 @@ body,
   50% { opacity: 0.92; }
 }
 
-/* Prologue 3-Beat Narrative Caption Stage */
-.prologue-dialogue-stage {
-  width: min(680px, 88vw);
+/* Interactive Prologue Editorial Conversation Ribbon (Kitchen & Overseer Wake-Up) */
+.prologue-convo-ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(510px, 45vw);
+  z-index: 5;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px 26px;
-  background: linear-gradient(90deg, rgba(6, 8, 14, 0.72) 0%, rgba(6, 8, 14, 0.54) 76%, rgba(6, 8, 14, 0) 100%);
-  border-left: 2px solid rgba(235, 176, 98, 0.65);
-  backdrop-filter: blur(8px);
-  animation: arriveGlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  background: linear-gradient(
+    90deg,
+    rgba(6, 8, 14, 0) 0%,
+    rgba(8, 10, 16, 0.74) 13%,
+    rgba(8, 10, 16, 0.91) 36%,
+    rgba(7, 9, 15, 0.96) 100%
+  );
+  padding: max(46px, calc(env(safe-area-inset-top) + 34px)) max(28px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) 54px;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1), transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: arriveFadeSlideRight 0.95s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.prologue-dialogue-stage.hidden {
+.prologue-convo-ribbon.hidden {
   display: none;
 }
 
-.boot-screen[data-boot-visual='prologue_fracture'] .prologue-dialogue-stage {
-  border-left-color: rgba(168, 218, 246, 0.85);
-  background: rgba(5, 10, 17, 0.84);
+.prologue-convo-ribbon.is-dissolving {
+  opacity: 0;
+  transform: translateX(22px);
+  pointer-events: none;
 }
 
-.prologue-speaker-row {
+.boot-screen[data-boot-visual='prologue_wakeup'] .prologue-convo-ribbon {
+  background: linear-gradient(
+    90deg,
+    rgba(4, 9, 16, 0) 0%,
+    rgba(5, 11, 19, 0.8) 12%,
+    rgba(5, 10, 18, 0.92) 38%,
+    rgba(4, 9, 16, 0.96) 100%
+  );
+}
+
+.prologue-speaker-bay {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.boot-screen[data-boot-visual='prologue_wakeup'] .prologue-scroll .dialogue-text {
+  font-family: var(--font-sans);
+  font-size: clamp(13.5px, 1.16vw, 15px);
+  line-height: 1.58;
+  color: rgba(226, 240, 252, 0.94);
+}
+
+.prologue-continue-btn {
   display: flex;
   align-items: center;
   gap: 10px;
+  color: rgba(235, 212, 178, 0.9) !important;
 }
 
-.prologue-speaker-name {
+.prologue-key-hint {
+  margin-left: auto;
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  color: rgba(186, 206, 224, 0.45);
 }
 
-.prologue-beat-text {
-  font-family: var(--font-serif);
-  font-size: clamp(16.5px, 1.7vw, 21px);
-  line-height: 1.58;
-  color: rgba(244, 240, 234, 0.95);
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.92);
+/* Subtle Literary Inline Temperature Highlights ([[warm:...]] & [[cold:...]]) */
+.hl-warm {
+  color: #f6cfa0;
+  background: linear-gradient(180deg, transparent 58%, rgba(235, 176, 98, 0.22) 100%);
+  border-bottom: 1px solid rgba(235, 176, 98, 0.36);
+  padding: 0 1px;
+  text-shadow: 0 0 14px rgba(235, 176, 98, 0.24);
 }
 
-.boot-screen[data-boot-visual='prologue_fracture'] .prologue-beat-text {
-  font-family: var(--font-mono);
-  font-size: clamp(12.5px, 1.25vw, 14.5px);
-  letter-spacing: 0.06em;
-  line-height: 1.72;
-  color: rgba(224, 240, 252, 0.94);
+.hl-cold {
+  color: #bde6f8;
+  background: linear-gradient(180deg, transparent 58%, rgba(126, 200, 232, 0.18) 100%);
+  border-bottom: 1px solid rgba(126, 200, 232, 0.34);
+  padding: 0 1px;
+  text-shadow: 0 0 14px rgba(126, 200, 232, 0.22);
 }
 
-.prologue-beat-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 2px;
+/* Whisper-Quiet Choice Affinity Accents (No % numbers, no stat labels) */
+.choice-line {
+  position: relative;
 }
 
-.prologue-beat-dots {
-  display: flex;
-  gap: 6px;
+.choice-line .choice-body {
+  flex: 1;
 }
 
-.prologue-beat-dots i {
-  width: 16px;
-  height: 1.5px;
-  background: rgba(255, 255, 255, 0.18);
-  transition: background 0.35s ease;
+.choice-affinity-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: 10px;
+  opacity: 0.34;
+  transition: opacity 0.24s ease, transform 0.24s ease, box-shadow 0.24s ease;
 }
 
-.prologue-beat-dots i.done {
-  background: rgba(235, 176, 98, 0.48);
-}
-
-.prologue-beat-dots i.active {
+.choice-line.is-affinity-warm .choice-affinity-dot {
   background: var(--amber);
+  box-shadow: 0 0 6px rgba(235, 176, 98, 0.55);
+}
+
+.choice-line.is-affinity-cold .choice-affinity-dot {
+  background: var(--cyan);
+  box-shadow: 0 0 6px rgba(126, 200, 232, 0.55);
+}
+
+.choice-line.is-affinity-warm:hover {
+  border-left-color: rgba(235, 176, 98, 0.85) !important;
+  color: #ffefd6;
+}
+
+.choice-line.is-affinity-warm:hover .choice-affinity-dot {
+  opacity: 0.95;
+  transform: scale(1.25);
+  box-shadow: 0 0 12px rgba(235, 176, 98, 0.85);
+}
+
+.choice-line.is-affinity-cold:hover {
+  border-left-color: rgba(126, 200, 232, 0.85) !important;
+  color: #e4f7ff;
+}
+
+.choice-line.is-affinity-cold:hover .choice-affinity-dot {
+  opacity: 0.95;
+  transform: scale(1.25);
+  box-shadow: 0 0 12px rgba(126, 200, 232, 0.85);
 }
 
 /* Integrated Live-Cosmos Title Overlay */
 .title-overlay {
+  position: relative;
+  z-index: 4;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   max-width: 720px;
   gap: 14px;
-  animation: arriveGlideUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arriveGlideUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .title-overlay.hidden {
@@ -4521,7 +4590,6 @@ body,
 .stage[data-mode='boot'] .optics-layer .vernier-dock,
 .stage[data-mode='boot'] .optics-layer .bearing-index,
 .stage[data-mode='boot'] .optics-layer .optics-commands,
-.stage[data-mode='boot'] .optics-layer .psyche-whisper,
 .stage[data-intro-stage='title'] .top-telemetry .telemetry-readout,
 .stage[data-intro-stage='title'] .optics-layer .reticle,
 .stage[data-intro-stage='title'] .optics-layer .reticle-readout,
@@ -4530,8 +4598,7 @@ body,
 .stage[data-intro-stage='title'] .optics-layer .sky-markers,
 .stage[data-intro-stage='title'] .optics-layer .vernier-dock,
 .stage[data-intro-stage='title'] .optics-layer .bearing-index,
-.stage[data-intro-stage='title'] .optics-layer .optics-commands,
-.stage[data-intro-stage='title'] .optics-layer .psyche-whisper {
+.stage[data-intro-stage='title'] .optics-layer .optics-commands {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -4627,73 +4694,10 @@ body,
   animation: gentleBreathPulse 2.2s ease-in-out infinite;
 }
 
-/* Floating Diegetic Psyche Whisper on 3D Sky */
-.psyche-whisper {
-  position: absolute;
-  left: 50%;
-  bottom: max(112px, calc(env(safe-area-inset-bottom) + 104px));
-  transform: translateX(-50%) translateY(0);
-  z-index: 20;
-  max-width: min(560px, 76vw);
-  padding: 10px 18px;
-  background: radial-gradient(ellipse at center, rgba(4, 9, 16, 0.76) 0%, rgba(4, 9, 16, 0.48) 72%, rgba(4, 9, 16, 0) 100%);
-  text-align: center;
-  pointer-events: none;
-  opacity: 1;
-  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.psyche-whisper.hidden {
-  opacity: 0;
-  transform: translateX(-50%) translateY(8px);
-  pointer-events: none;
-}
-
-.stage[data-intro-stage='scan_target_1'] .psyche-whisper,
-.stage[data-intro-stage='mg_1_done'] .psyche-whisper {
-  bottom: max(46px, calc(env(safe-area-inset-bottom) + 38px));
-}
-
-.psyche-whisper-speaker {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.96);
-}
-
-.psyche-whisper-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: currentColor;
-  box-shadow: 0 0 8px currentColor;
-}
-
-.psyche-whisper-text {
-  font-family: var(--font-serif);
-  font-size: clamp(14px, 1.35vw, 17px);
-  line-height: 1.5;
-  color: rgba(242, 238, 232, 0.94);
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.98), 0 0 20px rgba(0, 0, 0, 0.85);
-}
-
-.psyche-whisper[data-speaker='overseer'] .psyche-whisper-text,
-.psyche-whisper[data-speaker='archive_echo'] .psyche-whisper-text {
-  font-family: var(--font-mono);
-  font-size: clamp(11.5px, 1.05vw, 13px);
-  letter-spacing: 0.06em;
-}
-
 /* ==================== LIVE PLAYTEST FIXES (#9) ==================== */
 /* Fix #2: Never clip Light Spectrum vernier or leave reticle CTA behind open Comms drawer */
 .stage.is-comms-open .vernier-dock,
 .stage.is-comms-open .reticle-readout,
-.stage.is-comms-open .psyche-whisper,
 .stage.is-comms-open .optics-commands {
   opacity: 0 !important;
   pointer-events: none !important;
@@ -4745,28 +4749,14 @@ body,
 }
 
 @media (max-height: 480px) {
-  .prologue-dialogue-stage {
-    padding: 12px 16px;
-    gap: 8px;
-  }
-
-  .prologue-beat-text {
-    font-size: 14px;
-    line-height: 1.44;
+  .prologue-convo-ribbon {
+    width: 54vw;
+    padding: 36px 18px 14px 36px;
   }
 
   .boot-title {
     font-size: 30px;
     margin: 2px 0 12px;
-  }
-
-  .psyche-whisper {
-    bottom: 76px;
-    padding: 6px 12px;
-  }
-
-  .psyche-whisper-text {
-    font-size: 13px;
   }
 }
 

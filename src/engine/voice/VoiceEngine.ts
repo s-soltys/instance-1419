@@ -36,8 +36,12 @@ const SCRIPT_BY_ID = new Map<string, VoiceLineRecord>(SCRIPT_LINES.map((l) => [l
 const SCRIPT_VERSION = encodeURIComponent(voiceScriptJson.generated_at ?? '1');
 const MAX_BUFFER_CACHE = 24;
 
+function stripInlineMarkup(text: string): string {
+  return text.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
+}
+
 export function normalizeVoiceMatchKey(speaker: string, text: string): string {
-  const cleaned = text
+  const cleaned = stripInlineMarkup(text)
     .replace(/\{[^}]+\}/g, '#')
     .replace(/\d+/g, '#')
     .replace(/\s+/g, ' ')
@@ -59,7 +63,7 @@ function findScriptRecord(req: VoiceRequest): VoiceLineRecord | undefined {
 }
 
 function sanitizeForSpeech(text: string): string {
-  return text
+  return stripInlineMarkup(text)
     .replace(/\[RELATION:SPOUSE_01\]'s/g, 'their')
     .replace(/\[RELATION:SPOUSE_01\]/g, 'your partner')
     .replace(/—(["']?)$/g, '...$1')
@@ -340,7 +344,7 @@ export class VoiceEngine {
     if (!this.enabled) return;
 
     const filtered = requests.filter((r) => {
-      const t = r.text.trim();
+      const t = stripInlineMarkup(r.text).trim();
       return t.length > 0 && !(t.startsWith('[') && t.endsWith(']'));
     });
     if (filtered.length === 0) return;

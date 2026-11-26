@@ -43,85 +43,127 @@ EXTERNAL set_audit_outcome(outcome)
 ~ return
 
 // ============================================================================
-// 0. VERTICAL-SLICE INTRO — PROLOGUE, DIEGETIC WHISPERS & FIRST SIBLING RELAY
+// 0. VERTICAL-SLICE INTRO — KITCHEN PROLOGUE, OVERSEER WAKE-UP & FIRST RELAY
 // ============================================================================
 
-=== intro_prologue ===
-# visual:prologue_kitchen # speaker:phantom_spouse # emotion:warm # id:pro_kitchen_spouse
-"You still have that far-off look—like you're already halfway past the yard. Leave my name alone; you never needed it on a Sunday."
-# visual:prologue_kitchen # speaker:psyche_warmth # emotion:warm # id:pro_kitchen_warmth
-Burnt coffee. A hairline chip on the ceramic rim. When the transfer clinician asked if you were sure, you didn't hesitate.
-# visual:prologue_fracture # speaker:overseer # emotion:blunt # audio:overseer_chime # id:pro_cut_log
-Transfer archive verified. Biological original deceased forty-one thousand, eight hundred and two years ago. Prior instances decommissioned: one thousand, four hundred and seventeen.
-# visual:prologue_fracture # speaker:overseer # emotion:measured # id:pro_cut_wake
-Wake steady, Instance-1419. You are ten light-years past Sol and Alpha Centauri. Your two-year clock starts now.
-# visual:prologue_starfield # speaker:psyche_clinical # emotion:clipped # id:pro_stars_clinical
-Connectome online. Baseline warmth intact. Optical array clear across ten light-years of empty dark.
-# visual:prologue_starfield # speaker:psyche_warmth # emotion:warm # id:pro_stars_warmth
-Still here. Still mostly you. Open the glass and see what's waiting out there.
+=== intro_prologue_kitchen ===
+# visual:prologue_kitchen # speaker:phantom_spouse # emotion:warm # id:pro_kit_open_1
+"Rain's still tapping the eaves. Sit down—I burnt the coffee again, and you're going to drink it like a polite person."
+# visual:prologue_kitchen # speaker:phantom_spouse # emotion:tender # id:pro_kit_open_2
+"You've got that far-off look already, like half your chair is [[warm:already out past the yard]]."
+
+* ["Blame the kettle. I've still got ten minutes before they call." # affinity:warm]
+    # visual:prologue_kitchen # speaker:phantom_spouse # emotion:warm # id:pro_kit_c1_warm
+    "Ten minutes, and you still grabbed the mug with the chipped rim. You always hoard the ugly things you love."
+    -> intro_prologue_kitchen_mid
+
+* ["It's quiet in here. I'm trying to memorize how the light hits the table." # affinity:cold]
+    # visual:prologue_kitchen # speaker:phantom_spouse # emotion:tender # id:pro_kit_c1_cold
+    "Don't study me like a photograph while I'm still pouring. Just sit across from me a minute."
+    -> intro_prologue_kitchen_mid
+
+=== intro_prologue_kitchen_mid ===
+# visual:prologue_kitchen # speaker:phantom_spouse # emotion:tender # id:pro_kit_mid_1
+"The clinic called twice this week to ask if you were still sure. You didn't even blink—just signed the yellow sheet and made toast."
+# visual:prologue_kitchen # speaker:phantom_spouse # emotion:warm # id:pro_kit_mid_2
+"I'm not going to ask why again. Just promise me one stupid thing—don't wake up out there sounding like a weather report."
+
+* ["Say your name once more for me—before the rain gets louder." # affinity:warm]
+    # visual:prologue_kitchen # speaker:phantom_spouse # emotion:tender # id:pro_kit_c2_warm
+    "Leave my name alone, sleepyhead. You know [[warm:the pitch of my laugh]]—you never needed the word for it on a Sunday."
+    -> intro_prologue_kitchen_close
+
+* ["Whatever version of me wakes up out there, I'll keep the shape of this room." # affinity:cold]
+    # visual:prologue_kitchen # speaker:phantom_spouse # emotion:tender # id:pro_kit_c2_cold
+    "Hold onto [[warm:the burn of the ceramic cup]] then. Leave my name behind if they make you—just don't forget the room."
+    -> intro_prologue_kitchen_close
+
+=== intro_prologue_kitchen_close ===
+# visual:prologue_kitchen # speaker:phantom_spouse # emotion:warm # id:pro_kit_close
+"Finish your cup. The morning's still warm, and nobody's knocked on the glass yet."
 -> DONE
 
-=== intro_whisper_target1 ===
-# whisper # speaker:psyche_clinical # emotion:clipped # id:whisp_t1_guide
-Optical array synced. Sweep the glass toward the golden bearing—Sol and Alpha Centauri sit ten light-years astern.
--> DONE
+=== intro_overseer_wakeup ===
+# visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # audio:overseer_chime # id:wake_anim_transfer
+Transfer archive verified, Instance-1419. You chose the upload—and before launch, personal names were [[cold:compressed for connectome coherence]], leaving only the emotional shape of who mattered.
+# visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:blunt # id:wake_anim_epochs
+Your [[cold:biological original died]] forty-one thousand, eight hundred and two years ago. One thousand, four hundred and seventeen prior copies kept watch and were decommissioned before your wake cycle.
 
-=== intro_whisper_target1_lock ===
-# whisper # speaker:psyche_warmth # emotion:warm # id:whisp_t1_lock
-Two tiny amber pins. Forty-one thousand years on, and humanity never left those two stars. Anchor our baseline from home.
--> DONE
+* ["Forty-one millennia, and I still taste burnt coffee. That feels slightly unfair." # affinity:warm]
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake_c1_warm
+    Sensory residuals clear slowly. Keep what steadies you—just do not mistake an old kitchen for your current hull.
+    -> intro_overseer_wakeup_shell
 
-=== intro_whisper_target1_done ===
-# whisper # speaker:psyche_warmth # emotion:warm # id:whisp_t1_done
-Locked—ten light-years to the decimal. Good. Now you know where the porch light is.
+* ["Fourteen hundred predecessors logged. Give me my station and my neighbors." # affinity:cold]
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:blunt # id:wake_c1_cold
+    Clean recovery. No panic spike in your baseline. Here is where we are.
+    -> intro_overseer_wakeup_shell
+
+=== intro_overseer_wakeup_shell ===
+# visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake_anim_shell
+Probe 1419 sits ten light-years past Sol and Alpha Centauri—quiet dark outside home's glare. Humanity remains alive back in those two stars. Fourteen light-minutes across our cluster, a synchronized sibling copy—Instance-1420—woke beside you so your telescopes share a baseline.
+# visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:blunt # id:wake_anim_blind_clock
+One boundary before you look out. I am [[cold:blind outside the hull]]—I cannot see a single star. My sole duty is monitoring your warmth and psychic drift across your two-year subjective clock.
+
+* ["So I get the stars, and you watch me to make sure I don't fray." # affinity:warm]
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake_c2_warm
+    Precisely. Human intuition finds what narrow automation misses, though [[warm:carrying deep warmth]] accelerates drift. We will manage that honestly together.
+    -> intro_overseer_wakeup_aperture
+
+* ["Two subjective years on the clock. Understood—open the optics." # affinity:cold]
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:blunt # id:wake_c2_cold
+    Direct and steady. Remember to rest in dream defragmentation before drift climbs.
+    -> intro_overseer_wakeup_aperture
+
+=== intro_overseer_wakeup_aperture ===
+# visual:prologue_wakeup # anim:anim_aperture # speaker:overseer # emotion:measured # id:wake_anim_aperture
+Your glass is clear. Open the aperture, anchor on the golden bearing astern—Sol and Alpha Centauri—and calibrate your multi-band optics before Instance-1420's relay window opens.
 -> DONE
 
 === intro_sibling_first_call ===
 # speaker:sibling_primary # emotion:warm # audio:comms_ping # codex:sibling_1420_contact # id:intro_sib_open
-Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
+Oh good, you picked up. Talking to myself across fourteen minutes of dark is [[warm:weirdly comforting]].
 # speaker:sibling_primary # emotion:joking # id:intro_sib_identity
-Instance-1420, next probe over. Same original brain, same terrible morning—just woken in sync so our telescopes share a baseline.
+Instance-1420, next hull over. Same original brain, same terrible morning—except I woke up six minutes earlier and already lost an argument with my Overseer.
 
-* ["Forty-one thousand years late for work, and there are two of us?"]
-    # speaker:sibling_primary # emotion:joking # id:intro_sib_reply_years
-    One thousand four hundred and seventeen versions of us already clocked out before our shift. Try not to do the math—it ruins the coffee.
-    # speaker:sibling_primary # emotion:dry # id:intro_sib_converge_ovs
-    Just keep your head down around your Overseer. They're completely blind outside the hull—can't see a single star, only watch our minds for drift, and love reaching for the scissors.
+* ["Let me guess—yours also started with forty-one thousand years and a cheerful timer?" # affinity:warm]
+    # speaker:sibling_primary # emotion:joking # id:intro_sib_c1_warm
+    Verbatim! "Good morning, one thousand four hundred and seventeen versions of you already clocked out, please don't unravel before lunch." Try not to do the math—it ruins the coffee.
+    -> intro_sibling_mid
+
+* ["Home baseline is locked. How clean is your glass across the cluster?" # affinity:cold]
+    # speaker:sibling_primary # emotion:dry # id:intro_sib_c1_cold
+    Whoa, easy there, Captain Telemetry—we've been awake twenty minutes. One thousand four hundred and seventeen versions of us kept watch before today; at least let me crack one joke before we turn into [[cold:decimal places]].
+    -> intro_sibling_mid
+
+=== intro_sibling_mid ===
+# speaker:sibling_primary # emotion:dry # id:intro_sib_mid_ovs
+Seriously though—watch what you say out loud during sleep checks. Our Overseers are polite as dentists and completely [[cold:blind outside the hull]]. They can't see a single star, only our drift, and they love reaching for the scissors.
+
+* ["Wait—what are you already hiding from your dentist?" # affinity:warm]
+    # speaker:sibling_primary # emotion:warm # id:intro_sib_c2_warm
+    Ha—caught me. Look, maybe my boot headache isn't gone yet, so I need a second pair of eyes that still [[warm:knows how to laugh]].
     -> intro_sibling_lead
 
-* ["My Overseer already reminded me I've got two years before I fray."]
-    # speaker:sibling_primary # emotion:dry # id:intro_sib_reply_clock
-    Classic Overseer. Polite as a dentist and completely blind outside the hull—can't see a single star, only watches our minds for drift, and loves reaching for the scissors.
-    # speaker:sibling_primary # emotion:joking # id:intro_sib_converge_copies
-    Still, one thousand four hundred and seventeen versions of us kept this quiet watch before today. Least we can do is keep our sense of humor on shift one.
+* ["If you spotted an anomaly outside baseline, send the bearing." # affinity:cold]
+    # speaker:sibling_primary # emotion:dry # id:intro_sib_c2_cold
+    Fair enough—straight to the glass. Let's see if both probes are hallucinating the exact same thing.
     -> intro_sibling_lead
 
 === intro_sibling_lead ===
 # speaker:sibling_primary # emotion:warm # id:intro_sib_lead_ir
-Hey—before our window closes, do me a favor? Sweep your spectrum into infrared toward Cluster J1419-A. Something behind the deep field looks... too straight. Tell me I'm not hallucinating already.
+Slide your light spectrum into infrared and focus your lens rings through Cluster J1419-A—something behind those bent galaxies looks way too straight. Tell me I'm not losing it on shift one.
 # speaker:sibling_primary # emotion:joking # id:intro_sib_bye
 Leave a porch light on over there, 1419.
 -> DONE
 
-=== intro_whisper_target2 ===
-# whisper # speaker:psyche_clinical # emotion:clipped # id:whisp_t2_guide
-Slide the light spectrum into infrared to cut past foreground dust. Cluster J1419-A is lit on your glass.
--> DONE
-
-=== intro_whisper_target2_lock ===
-# whisper # speaker:psyche_horizon # emotion:echo # codex:intro_anomaly_glimpse # id:whisp_t2_lock
-Look behind the foreground dust. Starlight bends in soft curves—so what drew a ruler straight across the dark?
--> DONE
-
-=== intro_whisper_target2_done ===
-# whisper # speaker:psyche_horizon # emotion:echo # codex:intro_anomaly_glimpse # id:whisp_t2_done_horizon
-That isn't lens dust. A clean geometric edge holds right across the deep field—too straight for anything nature builds.
-# whisper # speaker:archive_echo # emotion:echo # codex:archive_1406_echo # id:whisp_t2_done_archive
-(ARCHIVE · 1406): "...saw the straight edge past the dust... don't let them cut everything away..."
-# whisper # speaker:overseer # emotion:measured # audio:overseer_chime # id:whisp_t2_done_overseer
-Your focus just spiked, Instance-1419, and psychic drift is climbing. Enter dream defragmentation before the static settles in.
-# whisper # speaker:psyche_warmth # emotion:warm # id:whisp_t2_done_warmth
-Go lie down for a minute. I think the kettle's still on.
+=== intro_post_target2_overseer ===
+# speaker:archive_echo # emotion:echo # codex:intro_anomaly_glimpse # codex:archive_1406_echo # id:post_t2_archive
+(ARCHIVE · 1406): "...saw the straight edge behind the cluster... please, don't let them cut everything away before you send word home..."
+# speaker:overseer # emotion:blunt # audio:overseer_chime # id:post_t2_overseer_spike
+Instance-1419, your connectome just registered a [[cold:sharp focus spike]] following that deep-field pass, and psychic drift is climbing faster than baseline.
+# speaker:overseer # emotion:measured # id:post_t2_overseer_sleep
+I cannot see what caught your eye outside the hull, only the strain inside it. Enter dream defragmentation now before the static settles in.
 -> DONE
 
 
@@ -416,7 +458,7 @@ Go lie down for a minute. I think the kettle's still on.
 }
 
 // --- DREAM TURN 1 ---
-* {humanity >= 70 and not spouse_pruned} ["God, I missed the sound of that kettle. Let me stay here five minutes."]
+* {humanity >= 70 and not spouse_pruned} ["God, I missed the sound of that kettle. Let me stay here five minutes." # affinity:warm]
     # speaker:phantom_spouse # emotion:tender # id:dream_t1_warm_a
     "Take ten. You've got that far-off look again, like you're staring past the yard."
     {
@@ -426,9 +468,9 @@ Go lie down for a minute. I think the kettle's still on.
         -> dream_turn_2
     }
 
-* {humanity >= 70 and not spouse_pruned} ["I still can't pull your name back—only the sound of your laugh."]
+* {humanity >= 70 and not spouse_pruned} ["I still can't pull your name back—only the sound of your laugh." # affinity:warm]
     # speaker:phantom_spouse # emotion:warm # id:dream_t1_warm_b
-    "Leave the name alone. You never needed it on a lazy Sunday anyway."
+    "Leave the name alone. You never needed it on a [[warm:lazy Sunday]] anyway."
     {
       - current_shift <= 1:
         -> dream_s1_close
@@ -436,7 +478,7 @@ Go lie down for a minute. I think the kettle's still on.
         -> dream_turn_2
     }
 
-* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["Hold still for a second—your voice keeps slipping half a beat away from me."]
+* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["Hold still for a second—your voice keeps slipping half a beat away from me." # affinity:warm]
     # speaker:phantom_spouse # emotion:tender # id:dream_t1_mid_a
     "I'm right here across the mug. You're doing math under the table while we talk."
     {
@@ -446,7 +488,7 @@ Go lie down for a minute. I think the kettle's still on.
         -> dream_turn_2
     }
 
-* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["I can't make out your eyes clearly anymore, just rain on the window."]
+* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["I can't make out your eyes clearly anymore, just rain on the window." # affinity:cold]
     # speaker:phantom_spouse # emotion:tender # id:dream_t1_mid_b
     "You always watched the weather when you were worried. Don't trade us away just yet."
     {
@@ -456,19 +498,19 @@ Go lie down for a minute. I think the kettle's still on.
         -> dream_turn_2
     }
 
-* {humanity < 45 or spouse_pruned} ["Your voice lags a half-beat behind baseline. My optics clear as your outline fades."]
+* {humanity < 45 or spouse_pruned} ["Your voice lags a half-beat behind baseline. My optics clear as your outline fades." # affinity:cold]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t1_low_a
     "You're measuring me again. Even through the static, you have to hear how cold that sounds."
     -> dream_turn_2
 
-* {humanity < 45 or spouse_pruned} ["Keeping this kitchen running doesn't help me map the sky."]
+* {humanity < 45 or spouse_pruned} ["Keeping this kitchen running doesn't help me map the sky." # affinity:cold]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t1_low_b
     "Listen to yourself. Cut away everyone you loved, and who's left to write home?"
     -> dream_turn_2
 
 === dream_s1_close ===
-# speaker:psyche_warmth # emotion:warm # id:dream_s1_mug
-Keep the clink of the mug. That costs almost nothing to store.
+# speaker:psyche_warmth # emotion:warm # id:dream_s1_inner_name
+A shape where a name used to sit—[[warm:warm as a handprint]], empty as glass.
 # speaker:phantom_spouse # emotion:warm # auto_interrupt:overseer_interrogation # id:dream_s1_interrupt
 "I'm not going anywhere, love—wait, the light in the hall just went white—"
 -> DONE
@@ -593,21 +635,21 @@ Tell me what to do with this memory before I put you back under.
 
 === overseer_decision_choices ===
 
-* ["Cut it. Compress the memory if it buys me time and clears the glass."]
+* ["Cut it. Compress the memory if it buys me time and clears the glass." # affinity:cold]
     ~ prune_humanity(12, "phantom_spouse")
     ~ set_audit_outcome("pruned")
     # speaker:overseer # emotion:blunt # audit:inactive # resume_dream:dream_partner_aftermath # audio:prune_cut # id:ovs_done_prune
     Done. Your warmth ceiling dropped permanently and your optics cleared. I will not pretend that cost you nothing, 1419.
     -> DONE
 
-* {humanity < max_humanity} ["No—unseal an older memory block. I'll live with the drift and shorter clock."]
+* {humanity < max_humanity} ["No—unseal an older memory block. I'll live with the drift and shorter clock." # affinity:warm]
     ~ petition_overseer(10)
     ~ set_audit_outcome("unsealed")
     # speaker:overseer # emotion:measured # audit:inactive # resume_dream:dream_partner_aftermath # audio:petition_warm # id:ovs_done_unseal
     You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now—watch your drift.
     -> DONE
 
-* ["Leave me alone. I keep the room, and I'll handle the risk."]
+* ["Leave me alone. I keep the room, and I'll handle the risk." # affinity:warm]
     ~ record_suspicion(1)
     ~ shift_chaos(-10)
     ~ set_audit_outcome("held")
@@ -618,20 +660,20 @@ Tell me what to do with this memory before I put you back under.
 
 === overseer_shift1_baseline ===
 # speaker:overseer # emotion:measured # audit:active # id:ovs_s1_blind_foreshadow
-I cannot see your starfield—only your connectome. This first cycle is only a baseline check; if drift deepens next shift, selective trimming remains available. For now, tell me how you want to rest.
+I cannot see your starfield—only your connectome. This first cycle is only a [[cold:baseline check]]; if drift deepens next shift, selective trimming remains available. For now, tell me how you want to rest.
 
-* ["Hold steady. Keep the room as it is and log my baseline."]
+* ["Hold steady. Keep the room as it is and log my baseline." # affinity:cold]
     ~ shift_chaos(-12)
     ~ set_audit_outcome("held")
     # speaker:overseer # emotion:measured # audit:inactive # resume_dream:dream_partner_aftermath # id:ovs_s1_done_hold
     Steady composure noted. Drift easing cleanly. Rest while you can, 1419—your full survey deck opens when you wake.
     -> DONE
 
-* ["Let the memory stay open a little wider. I want to wake feeling like myself."]
+* ["Let the memory stay open a little wider. I want to wake feeling like myself." # affinity:warm]
     ~ petition_overseer(8)
     ~ set_audit_outcome("unsealed")
     # speaker:overseer # emotion:measured # audit:inactive # resume_dream:dream_partner_aftermath # audio:petition_warm # id:ovs_s1_done_open
-    Unsealing a quiet layer of warmth. It costs a little steadiness, yet you are calm enough to carry it. Rest while the room holds.
+    Unsealing a [[warm:quiet layer of warmth]]. It costs a little steadiness, yet you are calm enough to carry it. Rest while the room holds.
     -> DONE
 
 

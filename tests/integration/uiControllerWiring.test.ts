@@ -189,27 +189,47 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     const stageEl = appRoot.querySelector<HTMLElement>('#transition-stage')!;
     const bootEl = appRoot.querySelector<HTMLElement>('#boot-screen')!;
     expect(stageEl).not.toBeNull();
+    expect(appRoot.querySelector('#psyche-whisper')).toBeNull();
     expect(store.getState().introStage).toBe('prologue');
     expect(bootEl.dataset.bootVisual).toBe('breath');
 
-    // 1. Click through Prologue breath + 6 voiced beats into Integrated Title over live drifting 3D sky
+    // 1. Step through interactive Prologue (Kitchen w/ choices -> Overseer 5-phase Wakeup -> Live Title)
     const seenVisuals = new Set<string>();
-    for (let i = 0; i < 8; i++) {
-      bootEl.click();
-      await vi.advanceTimersByTimeAsync(120);
+    // Unlock audio breath
+    bootEl.click();
+    await vi.advanceTimersByTimeAsync(700);
+    if (bootEl.dataset.bootVisual) seenVisuals.add(bootEl.dataset.bootVisual);
+
+    let sawAffinityClass = false;
+    for (let step = 0; step < 30; step++) {
       if (bootEl.dataset.bootVisual) seenVisuals.add(bootEl.dataset.bootVisual);
       if (store.getState().introStage === 'title') break;
+
+      const choiceBtn = appRoot.querySelector<HTMLButtonElement>('#prologue-choices .choice-line');
+      if (choiceBtn) {
+        if (
+          appRoot.querySelector('#prologue-choices .is-affinity-warm') ||
+          appRoot.querySelector('#prologue-choices .is-affinity-cold')
+        ) {
+          sawAffinityClass = true;
+        }
+        choiceBtn.click();
+      } else {
+        bootEl.click();
+      }
+      await vi.advanceTimersByTimeAsync(2600);
     }
+
     expect(seenVisuals.has('prologue_kitchen')).toBe(true);
-    expect(seenVisuals.has('prologue_fracture')).toBe(true);
-    expect(seenVisuals.has('prologue_starfield')).toBe(true);
+    expect(seenVisuals.has('prologue_wakeup')).toBe(true);
+    expect(sawAffinityClass).toBe(true);
     expect(store.getState().introStage).toBe('title');
     expect(optics.setAmbientDrift).toHaveBeenCalledWith(true);
     expect(appRoot.querySelector('#title-overlay')?.classList.contains('hidden')).toBe(false);
 
     // 2. Single primary CTA (`OPEN APERTURE`) pulls cleanly into scan_target_1 (Target #1 only + magnetic detent)
     appRoot.querySelector<HTMLButtonElement>('#btn-title-primary')!.click();
-    await vi.advanceTimersByTimeAsync(600);
+    await vi.advanceTimersByTimeAsync(2400);
     expect(store.getState().mode).toBe('waking_3d');
     expect(store.getState().introStage).toBe('scan_target_1');
     expect(optics.pullInToTarget1).toHaveBeenCalled();
@@ -238,7 +258,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     calibrateBtn.click();
     expect(stageEl.dataset.kind).toBe('optical_dive');
     expect(optics.triggerTransitionDive).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
-    await vi.advanceTimersByTimeAsync(1050);
+    await vi.advanceTimersByTimeAsync(2100);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });
@@ -253,7 +273,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     store.recordMinigameCompletion(INTRO_TARGET_1_ID, target1Spec.label, { grade: 'clean' });
     appRoot.querySelector<HTMLButtonElement>('#mg-btn-close')!.click();
     expect(stageEl.dataset.kind).toBe('optical_pullback');
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(2100);
     expect(optics.triggerPullbackArrival).toHaveBeenCalled();
     expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(false);
@@ -262,10 +282,10 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     // 5. Entering 2D Dream uses dream_submerge + DreamCanvas entrance reveal + soft Shift-1 audit
     document.querySelector<HTMLButtonElement>('[data-intro-jump="complete"]')!.click();
-    await vi.advanceTimersByTimeAsync(300);
+    await vi.advanceTimersByTimeAsync(400);
     appRoot.querySelector<HTMLButtonElement>('#btn-enter-dream')!.click();
     expect(stageEl.dataset.kind).toBe('dream_submerge');
-    await vi.advanceTimersByTimeAsync(1200);
+    await vi.advanceTimersByTimeAsync(2700);
     expect(dream.triggerEntranceReveal).toHaveBeenCalled();
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#dream-scroll .dialogue-entry')?.getAttribute('data-channel')).toBe('dream');
@@ -275,15 +295,15 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     firstChoice.click();
     expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(true);
     expect(firstChoice.classList.contains('is-selected')).toBe(true);
-    await vi.advanceTimersByTimeAsync(320);
+    await vi.advanceTimersByTimeAsync(500);
     expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(false);
 
     // 6. Overseer interrogation triggers overseer_slice pulse + overseer channel
     document.querySelector<HTMLButtonElement>('[data-overseer-h="84"]')!.click();
     expect(stageEl.dataset.kind).toBe('overseer_slice');
+    await vi.advanceTimersByTimeAsync(1400);
     expect(appRoot.querySelector('#overseer-panel')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#overseer-scroll .dialogue-entry')?.getAttribute('data-channel')).toBe('overseer');
-    await vi.advanceTimersByTimeAsync(700);
     store.dispose();
   });
 });

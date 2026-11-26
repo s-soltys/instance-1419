@@ -14,4 +14,7 @@ artifacts/e2e-visual/
 Thumbs.db
 *.log
 .tmp-music-gen/
+.venv-voice/
+.voice-anchors/
+__pycache__/
 

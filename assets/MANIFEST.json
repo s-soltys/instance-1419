@@ -152,12 +152,13 @@
     },
     {
       "path": "public/voices/*.mp3",
-      "source_url": "https://huggingface.co/onnx-community/Kokoro-82M-v1.0-ONNX",
-      "license": "Apache-2.0 (Kokoro-82M Internal Prototype TTS)",
-      "attribution": "Kokoro-82M internal prototype neural TTS (replace with human voice actors pre-launch)",
+      "source_url": "https://huggingface.co/mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit",
+      "source": "Qwen3-TTS (mlx-audio local)",
+      "license": "Apache-2.0",
+      "attribution": "Qwen3-TTS 12Hz 1.7B (Apache-2.0) local neural voice synthesis via mlx-audio (VoiceDesign cast anchors + Base ICL cloning)",
       "ai_generated": true,
-      "internal_prototype_only": true,
-      "notes": "Internal prototyping dialogue audio synthesized via scripts/generate-voices.mjs."
+      "internal_prototype_only": false,
+      "notes": "Expressive character dialogue audio synthesized locally via scripts/generate-voices.mjs (--provider=qwen3) with per-character EQ and EBU R128 loudness normalization (96 kbps MP3)."
     },
     {
       "path": "public/music/*.mp3",

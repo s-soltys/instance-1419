@@ -8,19 +8,32 @@ const DIALOGUE_DIR = path.join(ROOT, 'src', 'content', 'dialogue');
 const COMPILED_DIR = path.join(DIALOGUE_DIR, 'compiled');
 const PROFILES_PATH = path.join(ROOT, 'src', 'content', 'voice_profiles.json');
 const VOICES_OUT_DIR = path.join(ROOT, 'public', 'voices');
+const ANCHORS_DIR = path.join(ROOT, '.voice-anchors');
+const QWEN3_WORKER = path.join(ROOT, 'scripts', 'generate-voices-qwen3.py');
 
 fs.mkdirSync(COMPILED_DIR, { recursive: true });
 fs.mkdirSync(VOICES_OUT_DIR, { recursive: true });
 
-const args = process.argv.slice(2);
-const providerArg = args.find((a) => a.startsWith('--provider='))?.split('=')[1] ?? 'kokoro';
-const forceRegen = args.includes('--force');
-
 const profilesJson = JSON.parse(fs.readFileSync(PROFILES_PATH, 'utf8'));
 const profiles = profilesJson.profiles ?? {};
 
+const args = process.argv.slice(2);
+const providerArg =
+  args.find((a) => a.startsWith('--provider='))?.split('=')[1] ??
+  profilesJson.defaultProvider ??
+  'qwen3';
+const forceRegen = args.includes('--force');
+const forceAnchors = args.includes('--force-anchors');
+const batchSizeArg = args.find((a) => a.startsWith('--batch-size='))?.split('=')[1];
+const idsArg = args.find((a) => a.startsWith('--ids='))?.split('=')[1];
+const onlyIds = idsArg ? new Set(idsArg.split(',').map((s) => s.trim()).filter(Boolean)) : null;
+
+export function stripInlineMarkup(text) {
+  return text.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
+}
+
 export function normalizeMatchKey(speaker, text) {
-  const cleaned = text
+  const cleaned = stripInlineMarkup(text)
     .replace(/\{[^}]+\}/g, '#')
     .replace(/\d+/g, '#')
     .replace(/\s+/g, ' ')
@@ -35,8 +48,8 @@ function makeLineId(speaker, text) {
   return `${speaker}_${hash}`;
 }
 
-function prepareSpokenText(rawText) {
-  return rawText
+export function prepareSpokenText(rawText) {
+  let out = stripInlineMarkup(rawText)
     .replace(/\[RELATION:SPOUSE_01\]'s/g, 'their')
     .replace(/\[RELATION:SPOUSE_01\]/g, 'your partner')
     .replace(/\{humanity\}/g, 'seventy')
@@ -44,10 +57,43 @@ function prepareSpokenText(rawText) {
     .replace(/\{chaos_drift\}/g, 'fourteen')
     .replace(/\{subjective_months\}/g, 'twenty four')
     .replace(/\{[^}]+\}/g, '')
+    .replace(/^\(ARCHIVE\s*[·•-]\s*1406\):\s*/i, 'Archive fourteen oh six... ')
+    .replace(/^\(ARCHIVE\s*[·•-]\s*(\d+)\):\s*/i, 'Archive $1... ')
+    .replace(/\bInstance[-\s]1419\b/g, 'Instance fourteen nineteen')
+    .replace(/\bInstance[-\s]1420\b/g, 'Instance fourteen twenty')
+    .replace(/\bInstance[-\s]1406\b/g, 'Instance fourteen oh six')
+    .replace(/\bProbe\s+1419\b/g, 'Probe fourteen nineteen')
+    .replace(/\bProbe\s+1420\b/g, 'Probe fourteen twenty')
+    .replace(/\bCluster\s+J1419-A\b/g, 'Cluster J fourteen nineteen A')
+    .replace(/\bJ1419-A\b/g, 'J fourteen nineteen A')
+    .replace(/\bS-04\b/g, 'S zero four')
+    .replace(/\bSol[–—-]Centauri\b/g, 'Sol Centauri')
+    .replace(/\b1419\b/g, 'fourteen nineteen')
+    .replace(/\b1420\b/g, 'fourteen twenty')
+    .replace(/\b1406\b/g, 'fourteen oh six')
     .replace(/—(["']?)$/g, '...$1')
     .replace(/—/g, ', ')
+    .replace(/–/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+
+  // Strip outer quotation marks around full spoken lines so TTS doesn't insert odd quote pauses
+  if (
+    (out.startsWith('"') && out.endsWith('"')) ||
+    (out.startsWith('“') && out.endsWith('”'))
+  ) {
+    out = out.slice(1, -1).trim();
+  }
+  // Remove leading ellipses on archive fragments while preserving natural trailing fade
+  out = out.replace(/^(Archive fourteen oh six\.\.\.\s*)"\.\.\./i, '$1');
+  out = out.replace(/^"\.\.\./, '');
+  if (out.endsWith('..."')) {
+    out = out.slice(0, -1);
+  } else if (out.endsWith('"') && (out.match(/"/g) ?? []).length % 2 === 1) {
+    out = out.slice(0, -1).trim();
+  }
+
+  return out.replace(/\s+/g, ' ').trim();
 }
 
 function extractLinesFromInk(filePath) {
@@ -143,7 +189,8 @@ function extractLinesFromInk(filePath) {
     }
 
     if (!text) continue;
-    if (text.startsWith('[') && text.endsWith(']')) {
+    // Skip bracketed stage directions like [STATIC] but NEVER skip [[warm:...]] inline highlights
+    if (text.startsWith('[') && !text.startsWith('[[') && text.endsWith(']')) {
       currentExplicitId = null;
       continue;
     }
@@ -159,7 +206,7 @@ function extractLinesFromInk(filePath) {
       knot: currentKnot,
       speaker: currentSpeaker,
       emotion: currentEmotion,
-      text,
+      text: stripInlineMarkup(text),
       spokenText: prepareSpokenText(text),
       audioFile: `voices/${lineId}.mp3`,
       remoteConfig: profile?.remoteConfig ?? null,
@@ -180,7 +227,12 @@ function dedupeEntries(entries) {
 }
 
 function writeScriptArtifacts(entries) {
-  const engineName = providerArg === 'kokoro' ? 'kokoro-82m-q8' : providerArg;
+  const engineName =
+    providerArg === 'qwen3'
+      ? 'qwen3-tts-12hz-1.7b-base-4bit'
+      : providerArg === 'kokoro'
+        ? 'kokoro-82m-q8'
+        : providerArg;
   const jsonOut = {
     schema_version: 2,
     generated_at: new Date().toISOString(),
@@ -208,14 +260,83 @@ function writeScriptArtifacts(entries) {
   fs.writeFileSync(path.join(COMPILED_DIR, 'voice_script.txt'), txtLines.join('\n') + '\n');
 }
 
-async function synthesizeKokoro(entries) {
-  const pending = entries.filter((entry) => {
+function resolveVoicePython() {
+  const candidates = [
+    process.env.VOICE_PYTHON,
+    path.join(ROOT, '.venv-voice', 'bin', 'python'),
+    '/tmp/venv-voice/bin/python',
+    'python3',
+  ].filter(Boolean);
+  for (const candidate of candidates) {
+    if (candidate === 'python3' || fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+  return 'python3';
+}
+
+function synthesizeQwen3(entries) {
+  const filtered = onlyIds ? entries.filter((e) => onlyIds.has(e.lineId)) : entries;
+  const pending = filtered.filter((entry) => {
     const outPath = path.join(ROOT, 'public', entry.audioFile);
     return forceRegen || !fs.existsSync(outPath) || fs.statSync(outPath).size <= 512;
   });
 
   if (pending.length === 0) {
-    console.log(`[generate-voices] Kokoro-82M: 0 generated, ${entries.length} cached.`);
+    console.log(`[generate-voices] Qwen3-TTS: 0 generated, ${filtered.length} cached.`);
+    return;
+  }
+
+  const pythonBin = resolveVoicePython();
+  const qwen3Config = { ...(profilesJson.qwen3 ?? {}) };
+  if (batchSizeArg) {
+    qwen3Config.batchSize = Math.max(1, Number.parseInt(batchSizeArg, 10) || 4);
+  }
+
+  const jobPath = `/tmp/i1419_qwen3_job_${Date.now()}.json`;
+  const reportPath = `/tmp/i1419_qwen3_report_${Date.now()}.json`;
+  const jobPayload = {
+    qwen3Config,
+    anchorsDir: ANCHORS_DIR,
+    profiles,
+    reportPath,
+    tasks: pending.map((entry) => ({
+      lineId: entry.lineId,
+      speaker: entry.speaker,
+      emotion: entry.emotion,
+      spokenText: entry.spokenText,
+      outPath: path.join(ROOT, 'public', entry.audioFile),
+    })),
+  };
+
+  fs.writeFileSync(jobPath, JSON.stringify(jobPayload, null, 2));
+  console.log(
+    `[generate-voices] Launching Qwen3-TTS worker (${pythonBin}) for ${pending.length} pending line(s)...`
+  );
+
+  try {
+    const workerArgs = [QWEN3_WORKER, '--jobs', jobPath];
+    if (forceAnchors) workerArgs.push('--force-anchors');
+    execFileSync(pythonBin, workerArgs, { stdio: 'inherit', cwd: ROOT });
+  } finally {
+    if (fs.existsSync(jobPath)) fs.unlinkSync(jobPath);
+  }
+
+  const cached = filtered.length - pending.length;
+  console.log(
+    `[generate-voices] Qwen3-TTS complete: ${pending.length} generated, ${cached} cached.`
+  );
+}
+
+async function synthesizeKokoro(entries) {
+  const filtered = onlyIds ? entries.filter((e) => onlyIds.has(e.lineId)) : entries;
+  const pending = filtered.filter((entry) => {
+    const outPath = path.join(ROOT, 'public', entry.audioFile);
+    return forceRegen || !fs.existsSync(outPath) || fs.statSync(outPath).size <= 512;
+  });
+
+  if (pending.length === 0) {
+    console.log(`[generate-voices] Kokoro-82M: 0 generated, ${filtered.length} cached.`);
     return;
   }
 
@@ -255,15 +376,16 @@ async function synthesizeKokoro(entries) {
     }
   }
 
-  const cached = entries.length - pending.length;
+  const cached = filtered.length - pending.length;
   console.log(`[generate-voices] Kokoro-82M complete: ${generated} generated, ${cached} cached.`);
 }
 
 function synthesizeSay(entries) {
+  const filtered = onlyIds ? entries.filter((e) => onlyIds.has(e.lineId)) : entries;
   let generated = 0;
   let skipped = 0;
 
-  for (const entry of entries) {
+  for (const entry of filtered) {
     const outPath = path.join(ROOT, 'public', entry.audioFile);
     if (!forceRegen && fs.existsSync(outPath) && fs.statSync(outPath).size > 512) {
       skipped++;
@@ -306,7 +428,9 @@ async function main() {
   const entries = dedupeEntries(rawEntries);
   writeScriptArtifacts(entries);
 
-  if (providerArg === 'kokoro') {
+  if (providerArg === 'qwen3') {
+    synthesizeQwen3(entries);
+  } else if (providerArg === 'kokoro') {
     await synthesizeKokoro(entries);
   } else if (providerArg === 'say') {
     synthesizeSay(entries);
@@ -323,7 +447,7 @@ async function main() {
     console.log(`[generate-voices] Manifest-only mode: exported ${entries.length} lines.`);
   }
 
-  if (providerArg === 'kokoro' || providerArg === 'say') {
+  if (!onlyIds && (providerArg === 'qwen3' || providerArg === 'kokoro' || providerArg === 'say')) {
     const activeFiles = new Set(entries.map((e) => path.basename(e.audioFile)));
     let pruned = 0;
     for (const file of fs.readdirSync(VOICES_OUT_DIR)) {

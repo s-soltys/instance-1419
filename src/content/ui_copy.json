@@ -1,8 +1,16 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "prologue": {
     "breathPrompt": "Rain on glass. Before the quiet.",
-    "advanceHint": "CLICK OR PRESS SPACE"
+    "advanceHint": "CLICK OR PRESS SPACE",
+    "fractureCaption": "WAKE LOG // INSTANCE-1419"
+  },
+  "wakeupAnim": {
+    "anim_transfer": "CONNECTOME TRANSFER · NAMES COMPRESSED",
+    "anim_epochs": "41,802 YEARS · 1,417 PRIOR INSTANCES",
+    "anim_shell": "10.0 LY PAST SOL–CENTAURI · CLUSTER 1419 / 1420",
+    "anim_blind_clock": "OVERSEER BLIND OUTSIDE HULL · 24-MONTH CLOCK",
+    "anim_aperture": "OPTICAL ARRAY CLEAR · APERTURE READY"
   },
   "title": {
     "eyebrow": "TEN LIGHT-YEARS PAST HOME",
@@ -14,7 +22,8 @@
   },
   "sky": {
     "idleDragCue": "drag sky",
-    "zoomCue": "scroll or pinch closer",
+    "zoomCue": "scroll to focus",
+    "irCue": "sweep to near-ir",
     "calibrateCtaTemplate": "CALIBRATE · {label} ▸",
     "calibrateCtaFallback": "CALIBRATE INSTRUMENT ▸"
   },
@@ -23,10 +32,6 @@
     "tooltipWarm": "Memory warmth holding steady",
     "tooltipMid": "Memory warmth thinning",
     "tooltipCold": "Connectome running cool and sharp"
-  },
-  "whispers": {
-    "target1": "Sweep the glass toward the golden bearing—Sol and Alpha Centauri sit ten light-years astern.",
-    "target2": "Slide the light spectrum into infrared to cut past foreground dust."
   },
   "boot": {
     "eyebrow": "TEN LIGHT-YEARS PAST HOME",

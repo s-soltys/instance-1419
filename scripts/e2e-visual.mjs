@@ -144,7 +144,7 @@ async function run() {
       if (res.status() >= 400) errors.push(`[http ${res.status()}] ${res.url()}`);
     });
 
-    // Flow 1: Integrated Prologue -> Live-Cosmos Title Beat & QA Harness
+    // Flow 1: Interactive Prologue (Kitchen -> 5-Phase Wakeup Briefing -> Live-Cosmos Title Beat)
     await page.goto(url, { waitUntil: 'networkidle' });
     await page.waitForSelector('#boot-screen:not(.hidden)');
     await page.waitForSelector('#qa-drawer');
@@ -154,16 +154,25 @@ async function run() {
     if (inspectLayerCount !== 0) {
       throw new Error(`Expected removed #inspect-layer count to be 0, found ${inspectLayerCount}`);
     }
+    const whisperCount = await page.locator('#psyche-whisper').count();
+    if (whisperCount !== 0) {
+      throw new Error(`Expected removed #psyche-whisper count to be 0, found ${whisperCount}`);
+    }
 
-    // Step through Prologue (warm kitchen -> optical fracture -> live starfield -> Title)
-    for (let i = 0; i < 8; i++) {
+    // Step through interactive Prologue into live-cosmos Title (Kitchen + 5-phase Wakeup Briefing)
+    for (let i = 0; i < 28; i++) {
       const visual = await page.evaluate(() => document.querySelector('#boot-screen')?.dataset.bootVisual ?? '');
       if (visual === 'title') break;
-      await page.mouse.click(640, 360);
-      await page.waitForTimeout(160);
+      const choiceBtn = page.locator('#prologue-choices .choice-line').first();
+      if ((await choiceBtn.count()) > 0 && (await choiceBtn.isVisible())) {
+        await choiceBtn.click({ force: true });
+      } else {
+        await page.mouse.click(640, 360);
+      }
+      await page.waitForTimeout(320);
     }
-    await page.waitForSelector('#title-overlay:not(.hidden)', { timeout: 4000 });
-    await page.waitForTimeout(220);
+    await page.waitForSelector('#title-overlay:not(.hidden)', { timeout: 6000 });
+    await page.waitForTimeout(260);
     await saveCheckedScreenshot(page, '01_boot.png');
 
     // Flow 2: Single-CTA Open Aperture -> Scan Target #1 -> Full Sandbox Sky Aperture
@@ -345,7 +354,7 @@ async function run() {
     await page.click('[data-qa-tab="scenes"]');
     await page.click('[data-scene-mode="dream_2d"]');
     await page.waitForSelector('#dream-layer:not(.hidden)', { timeout: 6000 });
-    await page.waitForSelector('#optics-layer', { state: 'hidden', timeout: 4000 });
+    await page.waitForSelector('#optics-layer', { state: 'hidden', timeout: 5000 });
     await ensureQaClosed(page);
     await page.waitForTimeout(200);
     const codexVisibleInDream = await page.locator('#btn-codex').isVisible();

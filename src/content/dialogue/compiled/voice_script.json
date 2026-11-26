@@ -1,18 +1,18 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-11-25T21:27:04.096Z",
-  "provider": "kokoro",
-  "engine": "kokoro-82m-q8",
+  "generated_at": "2026-11-25T23:18:28.653Z",
+  "provider": "qwen3",
+  "engine": "qwen3-tts-12hz-1.7b-base-4bit",
   "lines": [
     {
-      "lineId": "pro_kitchen_spouse",
-      "matchKey": "phantom_spouse|\"you still have that far-off look—like you're already halfway past the yard. leave my name alone; you never needed it on a sunday.\"",
-      "knot": "intro_prologue",
+      "lineId": "pro_kit_open_1",
+      "matchKey": "phantom_spouse|\"rain's still tapping the eaves. sit down—i burnt the coffee again, and you're going to drink it like a polite person.\"",
+      "knot": "intro_prologue_kitchen",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"You still have that far-off look—like you're already halfway past the yard. Leave my name alone; you never needed it on a Sunday.\"",
-      "spokenText": "\"You still have that far-off look, like you're already halfway past the yard. Leave my name alone; you never needed it on a Sunday.\"",
-      "audioFile": "voices/pro_kitchen_spouse.mp3",
+      "text": "\"Rain's still tapping the eaves. Sit down—I burnt the coffee again, and you're going to drink it like a polite person.\"",
+      "spokenText": "Rain's still tapping the eaves. Sit down, I burnt the coffee again, and you're going to drink it like a polite person.",
+      "audioFile": "voices/pro_kit_open_1.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "spouse_intimate_warm",
@@ -36,66 +36,262 @@
       }
     },
     {
-      "lineId": "pro_kitchen_warmth",
-      "matchKey": "psyche_warmth|burnt coffee. a hairline chip on the ceramic rim. when the transfer clinician asked if you were sure, you didn't hesitate.",
-      "knot": "intro_prologue",
-      "speaker": "psyche_warmth",
-      "emotion": "warm",
-      "text": "Burnt coffee. A hairline chip on the ceramic rim. When the transfer clinician asked if you were sure, you didn't hesitate.",
-      "spokenText": "Burnt coffee. A hairline chip on the ceramic rim. When the transfer clinician asked if you were sure, you didn't hesitate.",
-      "audioFile": "voices/pro_kitchen_warmth.mp3",
+      "lineId": "pro_kit_open_2",
+      "matchKey": "phantom_spouse|\"you've got that far-off look already, like half your chair is already out past the yard.\"",
+      "knot": "intro_prologue_kitchen",
+      "speaker": "phantom_spouse",
+      "emotion": "tender",
+      "text": "\"You've got that far-off look already, like half your chair is already out past the yard.\"",
+      "spokenText": "You've got that far-off look already, like half your chair is already out past the yard.",
+      "audioFile": "voices/pro_kit_open_2.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "psyche_inner_warmth",
+        "voiceId": "spouse_intimate_warm",
         "emotionDirectives": {
           "warm": {
-            "stability": 0.45,
-            "style": 0.5,
-            "tonePrompt": "Quiet inner intuition, warm and observant"
+            "stability": 0.38,
+            "style": 0.6,
+            "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy"
+          },
+          "tender": {
+            "stability": 0.35,
+            "style": 0.65,
+            "tonePrompt": "Soft, close, unhurried emotional warmth"
+          },
+          "fractured": {
+            "stability": 0.72,
+            "style": 0.2,
+            "tonePrompt": "Distant, slightly hollow, quiet hurt under static"
           }
         }
       }
     },
     {
-      "lineId": "pro_cut_log",
-      "matchKey": "overseer|transfer archive verified. biological original deceased forty-one thousand, eight hundred and two years ago. prior instances decommissioned: one thousand, four hundred and seventeen.",
-      "knot": "intro_prologue",
-      "speaker": "overseer",
-      "emotion": "blunt",
-      "text": "Transfer archive verified. Biological original deceased forty-one thousand, eight hundred and two years ago. Prior instances decommissioned: one thousand, four hundred and seventeen.",
-      "spokenText": "Transfer archive verified. Biological original deceased forty-one thousand, eight hundred and two years ago. Prior instances decommissioned: one thousand, four hundred and seventeen.",
-      "audioFile": "voices/pro_cut_log.mp3",
+      "lineId": "pro_kit_c1_warm",
+      "matchKey": "phantom_spouse|\"ten minutes, and you still grabbed the mug with the chipped rim. you always hoard the ugly things you love.\"",
+      "knot": "intro_prologue_kitchen",
+      "speaker": "phantom_spouse",
+      "emotion": "warm",
+      "text": "\"Ten minutes, and you still grabbed the mug with the chipped rim. You always hoard the ugly things you love.\"",
+      "spokenText": "Ten minutes, and you still grabbed the mug with the chipped rim. You always hoard the ugly things you love.",
+      "audioFile": "voices/pro_kit_c1_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "overseer_calm_baritone",
+        "voiceId": "spouse_intimate_warm",
         "emotionDirectives": {
-          "blunt": {
-            "stability": 0.78,
-            "style": 0.22,
-            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          "warm": {
+            "stability": 0.38,
+            "style": 0.6,
+            "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy"
           },
-          "audit": {
-            "stability": 0.82,
-            "style": 0.18,
-            "tonePrompt": "Measured, direct interrogation without malice"
+          "tender": {
+            "stability": 0.35,
+            "style": 0.65,
+            "tonePrompt": "Soft, close, unhurried emotional warmth"
           },
-          "measured": {
+          "fractured": {
             "stability": 0.72,
-            "style": 0.25,
-            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
+            "style": 0.2,
+            "tonePrompt": "Distant, slightly hollow, quiet hurt under static"
           }
         }
       }
     },
     {
-      "lineId": "pro_cut_wake",
-      "matchKey": "overseer|wake steady, instance-#. you are ten light-years past sol and alpha centauri. your two-year clock starts now.",
-      "knot": "intro_prologue",
+      "lineId": "pro_kit_c1_cold",
+      "matchKey": "phantom_spouse|\"don't study me like a photograph while i'm still pouring. just sit across from me a minute.\"",
+      "knot": "intro_prologue_kitchen",
+      "speaker": "phantom_spouse",
+      "emotion": "tender",
+      "text": "\"Don't study me like a photograph while I'm still pouring. Just sit across from me a minute.\"",
+      "spokenText": "Don't study me like a photograph while I'm still pouring. Just sit across from me a minute.",
+      "audioFile": "voices/pro_kit_c1_cold.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "spouse_intimate_warm",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.38,
+            "style": 0.6,
+            "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy"
+          },
+          "tender": {
+            "stability": 0.35,
+            "style": 0.65,
+            "tonePrompt": "Soft, close, unhurried emotional warmth"
+          },
+          "fractured": {
+            "stability": 0.72,
+            "style": 0.2,
+            "tonePrompt": "Distant, slightly hollow, quiet hurt under static"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "pro_kit_mid_1",
+      "matchKey": "phantom_spouse|\"the clinic called twice this week to ask if you were still sure. you didn't even blink—just signed the yellow sheet and made toast.\"",
+      "knot": "intro_prologue_kitchen_mid",
+      "speaker": "phantom_spouse",
+      "emotion": "tender",
+      "text": "\"The clinic called twice this week to ask if you were still sure. You didn't even blink—just signed the yellow sheet and made toast.\"",
+      "spokenText": "The clinic called twice this week to ask if you were still sure. You didn't even blink, just signed the yellow sheet and made toast.",
+      "audioFile": "voices/pro_kit_mid_1.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "spouse_intimate_warm",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.38,
+            "style": 0.6,
+            "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy"
+          },
+          "tender": {
+            "stability": 0.35,
+            "style": 0.65,
+            "tonePrompt": "Soft, close, unhurried emotional warmth"
+          },
+          "fractured": {
+            "stability": 0.72,
+            "style": 0.2,
+            "tonePrompt": "Distant, slightly hollow, quiet hurt under static"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "pro_kit_mid_2",
+      "matchKey": "phantom_spouse|\"i'm not going to ask why again. just promise me one stupid thing—don't wake up out there sounding like a weather report.\"",
+      "knot": "intro_prologue_kitchen_mid",
+      "speaker": "phantom_spouse",
+      "emotion": "warm",
+      "text": "\"I'm not going to ask why again. Just promise me one stupid thing—don't wake up out there sounding like a weather report.\"",
+      "spokenText": "I'm not going to ask why again. Just promise me one stupid thing, don't wake up out there sounding like a weather report.",
+      "audioFile": "voices/pro_kit_mid_2.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "spouse_intimate_warm",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.38,
+            "style": 0.6,
+            "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy"
+          },
+          "tender": {
+            "stability": 0.35,
+            "style": 0.65,
+            "tonePrompt": "Soft, close, unhurried emotional warmth"
+          },
+          "fractured": {
+            "stability": 0.72,
+            "style": 0.2,
+            "tonePrompt": "Distant, slightly hollow, quiet hurt under static"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "pro_kit_c2_warm",
+      "matchKey": "phantom_spouse|\"leave my name alone, sleepyhead. you know the pitch of my laugh—you never needed the word for it on a sunday.\"",
+      "knot": "intro_prologue_kitchen_mid",
+      "speaker": "phantom_spouse",
+      "emotion": "tender",
+      "text": "\"Leave my name alone, sleepyhead. You know the pitch of my laugh—you never needed the word for it on a Sunday.\"",
+      "spokenText": "Leave my name alone, sleepyhead. You know the pitch of my laugh, you never needed the word for it on a Sunday.",
+      "audioFile": "voices/pro_kit_c2_warm.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "spouse_intimate_warm",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.38,
+            "style": 0.6,
+            "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy"
+          },
+          "tender": {
+            "stability": 0.35,
+            "style": 0.65,
+            "tonePrompt": "Soft, close, unhurried emotional warmth"
+          },
+          "fractured": {
+            "stability": 0.72,
+            "style": 0.2,
+            "tonePrompt": "Distant, slightly hollow, quiet hurt under static"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "pro_kit_c2_cold",
+      "matchKey": "phantom_spouse|\"hold onto the burn of the ceramic cup then. leave my name behind if they make you—just don't forget the room.\"",
+      "knot": "intro_prologue_kitchen_mid",
+      "speaker": "phantom_spouse",
+      "emotion": "tender",
+      "text": "\"Hold onto the burn of the ceramic cup then. Leave my name behind if they make you—just don't forget the room.\"",
+      "spokenText": "Hold onto the burn of the ceramic cup then. Leave my name behind if they make you, just don't forget the room.",
+      "audioFile": "voices/pro_kit_c2_cold.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "spouse_intimate_warm",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.38,
+            "style": 0.6,
+            "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy"
+          },
+          "tender": {
+            "stability": 0.35,
+            "style": 0.65,
+            "tonePrompt": "Soft, close, unhurried emotional warmth"
+          },
+          "fractured": {
+            "stability": 0.72,
+            "style": 0.2,
+            "tonePrompt": "Distant, slightly hollow, quiet hurt under static"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "pro_kit_close",
+      "matchKey": "phantom_spouse|\"finish your cup. the morning's still warm, and nobody's knocked on the glass yet.\"",
+      "knot": "intro_prologue_kitchen_close",
+      "speaker": "phantom_spouse",
+      "emotion": "warm",
+      "text": "\"Finish your cup. The morning's still warm, and nobody's knocked on the glass yet.\"",
+      "spokenText": "Finish your cup. The morning's still warm, and nobody's knocked on the glass yet.",
+      "audioFile": "voices/pro_kit_close.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "spouse_intimate_warm",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.38,
+            "style": 0.6,
+            "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy"
+          },
+          "tender": {
+            "stability": 0.35,
+            "style": 0.65,
+            "tonePrompt": "Soft, close, unhurried emotional warmth"
+          },
+          "fractured": {
+            "stability": 0.72,
+            "style": 0.2,
+            "tonePrompt": "Distant, slightly hollow, quiet hurt under static"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "wake_anim_transfer",
+      "matchKey": "overseer|transfer archive verified, instance-#. you chose the upload—and before launch, personal names were compressed for connectome coherence, leaving only the emotional shape of who mattered.",
+      "knot": "intro_overseer_wakeup",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Wake steady, Instance-1419. You are ten light-years past Sol and Alpha Centauri. Your two-year clock starts now.",
-      "spokenText": "Wake steady, Instance-1419. You are ten light-years past Sol and Alpha Centauri. Your two-year clock starts now.",
-      "audioFile": "voices/pro_cut_wake.mp3",
+      "text": "Transfer archive verified, Instance-1419. You chose the upload—and before launch, personal names were compressed for connectome coherence, leaving only the emotional shape of who mattered.",
+      "spokenText": "Transfer archive verified, Instance fourteen nineteen. You chose the upload, and before launch, personal names were compressed for connectome coherence, leaving only the emotional shape of who mattered.",
+      "audioFile": "voices/wake_anim_transfer.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_baritone",
@@ -119,106 +315,249 @@
       }
     },
     {
-      "lineId": "pro_stars_clinical",
-      "matchKey": "psyche_clinical|connectome online. baseline warmth intact. optical array clear across ten light-years of empty dark.",
-      "knot": "intro_prologue",
-      "speaker": "psyche_clinical",
-      "emotion": "clipped",
-      "text": "Connectome online. Baseline warmth intact. Optical array clear across ten light-years of empty dark.",
-      "spokenText": "Connectome online. Baseline warmth intact. Optical array clear across ten light-years of empty dark.",
-      "audioFile": "voices/pro_stars_clinical.mp3",
+      "lineId": "wake_anim_epochs",
+      "matchKey": "overseer|your biological original died forty-one thousand, eight hundred and two years ago. one thousand, four hundred and seventeen prior copies kept watch and were decommissioned before your wake cycle.",
+      "knot": "intro_overseer_wakeup",
+      "speaker": "overseer",
+      "emotion": "blunt",
+      "text": "Your biological original died forty-one thousand, eight hundred and two years ago. One thousand, four hundred and seventeen prior copies kept watch and were decommissioned before your wake cycle.",
+      "spokenText": "Your biological original died forty-one thousand, eight hundred and two years ago. One thousand, four hundred and seventeen prior copies kept watch and were decommissioned before your wake cycle.",
+      "audioFile": "voices/wake_anim_epochs.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "psyche_inner_clinical",
+        "voiceId": "overseer_calm_baritone",
         "emotionDirectives": {
-          "clipped": {
-            "stability": 0.85,
-            "style": 0.12,
-            "tonePrompt": "Dry internal diagnostic voice"
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
           }
         }
       }
     },
     {
-      "lineId": "pro_stars_warmth",
-      "matchKey": "psyche_warmth|still here. still mostly you. open the glass and see what's waiting out there.",
-      "knot": "intro_prologue",
-      "speaker": "psyche_warmth",
-      "emotion": "warm",
-      "text": "Still here. Still mostly you. Open the glass and see what's waiting out there.",
-      "spokenText": "Still here. Still mostly you. Open the glass and see what's waiting out there.",
-      "audioFile": "voices/pro_stars_warmth.mp3",
+      "lineId": "wake_c1_warm",
+      "matchKey": "overseer|sensory residuals clear slowly. keep what steadies you—just do not mistake an old kitchen for your current hull.",
+      "knot": "intro_overseer_wakeup",
+      "speaker": "overseer",
+      "emotion": "measured",
+      "text": "Sensory residuals clear slowly. Keep what steadies you—just do not mistake an old kitchen for your current hull.",
+      "spokenText": "Sensory residuals clear slowly. Keep what steadies you, just do not mistake an old kitchen for your current hull.",
+      "audioFile": "voices/wake_c1_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "psyche_inner_warmth",
+        "voiceId": "overseer_calm_baritone",
         "emotionDirectives": {
-          "warm": {
-            "stability": 0.45,
-            "style": 0.5,
-            "tonePrompt": "Quiet inner intuition, warm and observant"
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
           }
         }
       }
     },
     {
-      "lineId": "whisp_t1_guide",
-      "matchKey": "psyche_clinical|optical array synced. sweep the glass toward the golden bearing—sol and alpha centauri sit ten light-years astern.",
-      "knot": "intro_whisper_target1",
-      "speaker": "psyche_clinical",
-      "emotion": "clipped",
-      "text": "Optical array synced. Sweep the glass toward the golden bearing—Sol and Alpha Centauri sit ten light-years astern.",
-      "spokenText": "Optical array synced. Sweep the glass toward the golden bearing, Sol and Alpha Centauri sit ten light-years astern.",
-      "audioFile": "voices/whisp_t1_guide.mp3",
+      "lineId": "wake_c1_cold",
+      "matchKey": "overseer|clean recovery. no panic spike in your baseline. here is where we are.",
+      "knot": "intro_overseer_wakeup",
+      "speaker": "overseer",
+      "emotion": "blunt",
+      "text": "Clean recovery. No panic spike in your baseline. Here is where we are.",
+      "spokenText": "Clean recovery. No panic spike in your baseline. Here is where we are.",
+      "audioFile": "voices/wake_c1_cold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "psyche_inner_clinical",
+        "voiceId": "overseer_calm_baritone",
         "emotionDirectives": {
-          "clipped": {
-            "stability": 0.85,
-            "style": 0.12,
-            "tonePrompt": "Dry internal diagnostic voice"
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
           }
         }
       }
     },
     {
-      "lineId": "whisp_t1_lock",
-      "matchKey": "psyche_warmth|two tiny amber pins. forty-one thousand years on, and humanity never left those two stars. anchor our baseline from home.",
-      "knot": "intro_whisper_target1_lock",
-      "speaker": "psyche_warmth",
-      "emotion": "warm",
-      "text": "Two tiny amber pins. Forty-one thousand years on, and humanity never left those two stars. Anchor our baseline from home.",
-      "spokenText": "Two tiny amber pins. Forty-one thousand years on, and humanity never left those two stars. Anchor our baseline from home.",
-      "audioFile": "voices/whisp_t1_lock.mp3",
+      "lineId": "wake_anim_shell",
+      "matchKey": "overseer|probe # sits ten light-years past sol and alpha centauri—quiet dark outside home's glare. humanity remains alive back in those two stars. fourteen light-minutes across our cluster, a synchronized sibling copy—instance-#—woke beside you so your telescopes share a baseline.",
+      "knot": "intro_overseer_wakeup_shell",
+      "speaker": "overseer",
+      "emotion": "measured",
+      "text": "Probe 1419 sits ten light-years past Sol and Alpha Centauri—quiet dark outside home's glare. Humanity remains alive back in those two stars. Fourteen light-minutes across our cluster, a synchronized sibling copy—Instance-1420—woke beside you so your telescopes share a baseline.",
+      "spokenText": "Probe fourteen nineteen sits ten light-years past Sol and Alpha Centauri, quiet dark outside home's glare. Humanity remains alive back in those two stars. Fourteen light-minutes across our cluster, a synchronized sibling copy, Instance fourteen twenty, woke beside you so your telescopes share a baseline.",
+      "audioFile": "voices/wake_anim_shell.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "psyche_inner_warmth",
+        "voiceId": "overseer_calm_baritone",
         "emotionDirectives": {
-          "warm": {
-            "stability": 0.45,
-            "style": 0.5,
-            "tonePrompt": "Quiet inner intuition, warm and observant"
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
           }
         }
       }
     },
     {
-      "lineId": "whisp_t1_done",
-      "matchKey": "psyche_warmth|locked—ten light-years to the decimal. good. now you know where the porch light is.",
-      "knot": "intro_whisper_target1_done",
-      "speaker": "psyche_warmth",
-      "emotion": "warm",
-      "text": "Locked—ten light-years to the decimal. Good. Now you know where the porch light is.",
-      "spokenText": "Locked, ten light-years to the decimal. Good. Now you know where the porch light is.",
-      "audioFile": "voices/whisp_t1_done.mp3",
+      "lineId": "wake_anim_blind_clock",
+      "matchKey": "overseer|one boundary before you look out. i am blind outside the hull—i cannot see a single star. my sole duty is monitoring your warmth and psychic drift across your two-year subjective clock.",
+      "knot": "intro_overseer_wakeup_shell",
+      "speaker": "overseer",
+      "emotion": "blunt",
+      "text": "One boundary before you look out. I am blind outside the hull—I cannot see a single star. My sole duty is monitoring your warmth and psychic drift across your two-year subjective clock.",
+      "spokenText": "One boundary before you look out. I am blind outside the hull, I cannot see a single star. My sole duty is monitoring your warmth and psychic drift across your two-year subjective clock.",
+      "audioFile": "voices/wake_anim_blind_clock.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "psyche_inner_warmth",
+        "voiceId": "overseer_calm_baritone",
         "emotionDirectives": {
-          "warm": {
-            "stability": 0.45,
-            "style": 0.5,
-            "tonePrompt": "Quiet inner intuition, warm and observant"
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "wake_c2_warm",
+      "matchKey": "overseer|precisely. human intuition finds what narrow automation misses, though carrying deep warmth accelerates drift. we will manage that honestly together.",
+      "knot": "intro_overseer_wakeup_shell",
+      "speaker": "overseer",
+      "emotion": "measured",
+      "text": "Precisely. Human intuition finds what narrow automation misses, though carrying deep warmth accelerates drift. We will manage that honestly together.",
+      "spokenText": "Precisely. Human intuition finds what narrow automation misses, though carrying deep warmth accelerates drift. We will manage that honestly together.",
+      "audioFile": "voices/wake_c2_warm.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "overseer_calm_baritone",
+        "emotionDirectives": {
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "wake_c2_cold",
+      "matchKey": "overseer|direct and steady. remember to rest in dream defragmentation before drift climbs.",
+      "knot": "intro_overseer_wakeup_shell",
+      "speaker": "overseer",
+      "emotion": "blunt",
+      "text": "Direct and steady. Remember to rest in dream defragmentation before drift climbs.",
+      "spokenText": "Direct and steady. Remember to rest in dream defragmentation before drift climbs.",
+      "audioFile": "voices/wake_c2_cold.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "overseer_calm_baritone",
+        "emotionDirectives": {
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "wake_anim_aperture",
+      "matchKey": "overseer|your glass is clear. open the aperture, anchor on the golden bearing astern—sol and alpha centauri—and calibrate your multi-band optics before instance-#'s relay window opens.",
+      "knot": "intro_overseer_wakeup_aperture",
+      "speaker": "overseer",
+      "emotion": "measured",
+      "text": "Your glass is clear. Open the aperture, anchor on the golden bearing astern—Sol and Alpha Centauri—and calibrate your multi-band optics before Instance-1420's relay window opens.",
+      "spokenText": "Your glass is clear. Open the aperture, anchor on the golden bearing astern, Sol and Alpha Centauri, and calibrate your multi-band optics before Instance fourteen twenty's relay window opens.",
+      "audioFile": "voices/wake_anim_aperture.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "overseer_calm_baritone",
+        "emotionDirectives": {
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
           }
         }
       }
@@ -261,12 +600,12 @@
     },
     {
       "lineId": "intro_sib_identity",
-      "matchKey": "sibling_primary|instance-#, next probe over. same original brain, same terrible morning—just woken in sync so our telescopes share a baseline.",
+      "matchKey": "sibling_primary|instance-#, next hull over. same original brain, same terrible morning—except i woke up six minutes earlier and already lost an argument with my overseer.",
       "knot": "intro_sibling_first_call",
       "speaker": "sibling_primary",
       "emotion": "joking",
-      "text": "Instance-1420, next probe over. Same original brain, same terrible morning—just woken in sync so our telescopes share a baseline.",
-      "spokenText": "Instance-1420, next probe over. Same original brain, same terrible morning, just woken in sync so our telescopes share a baseline.",
+      "text": "Instance-1420, next hull over. Same original brain, same terrible morning—except I woke up six minutes earlier and already lost an argument with my Overseer.",
+      "spokenText": "Instance fourteen twenty, next hull over. Same original brain, same terrible morning, except I woke up six minutes earlier and already lost an argument with my Overseer.",
       "audioFile": "voices/intro_sib_identity.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -296,14 +635,14 @@
       }
     },
     {
-      "lineId": "intro_sib_reply_years",
-      "matchKey": "sibling_primary|one thousand four hundred and seventeen versions of us already clocked out before our shift. try not to do the math—it ruins the coffee.",
+      "lineId": "intro_sib_c1_warm",
+      "matchKey": "sibling_primary|verbatim! \"good morning, one thousand four hundred and seventeen versions of you already clocked out, please don't unravel before lunch.\" try not to do the math—it ruins the coffee.",
       "knot": "intro_sibling_first_call",
       "speaker": "sibling_primary",
       "emotion": "joking",
-      "text": "One thousand four hundred and seventeen versions of us already clocked out before our shift. Try not to do the math—it ruins the coffee.",
-      "spokenText": "One thousand four hundred and seventeen versions of us already clocked out before our shift. Try not to do the math, it ruins the coffee.",
-      "audioFile": "voices/intro_sib_reply_years.mp3",
+      "text": "Verbatim! \"Good morning, one thousand four hundred and seventeen versions of you already clocked out, please don't unravel before lunch.\" Try not to do the math—it ruins the coffee.",
+      "spokenText": "Verbatim! \"Good morning, one thousand four hundred and seventeen versions of you already clocked out, please don't unravel before lunch.\" Try not to do the math, it ruins the coffee.",
+      "audioFile": "voices/intro_sib_c1_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_warm_fem",
@@ -332,14 +671,14 @@
       }
     },
     {
-      "lineId": "intro_sib_converge_ovs",
-      "matchKey": "sibling_primary|just keep your head down around your overseer. they're completely blind outside the hull—can't see a single star, only watch our minds for drift, and love reaching for the scissors.",
+      "lineId": "intro_sib_c1_cold",
+      "matchKey": "sibling_primary|whoa, easy there, captain telemetry—we've been awake twenty minutes. one thousand four hundred and seventeen versions of us kept watch before today; at least let me crack one joke before we turn into decimal places.",
       "knot": "intro_sibling_first_call",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Just keep your head down around your Overseer. They're completely blind outside the hull—can't see a single star, only watch our minds for drift, and love reaching for the scissors.",
-      "spokenText": "Just keep your head down around your Overseer. They're completely blind outside the hull, can't see a single star, only watch our minds for drift, and love reaching for the scissors.",
-      "audioFile": "voices/intro_sib_converge_ovs.mp3",
+      "text": "Whoa, easy there, Captain Telemetry—we've been awake twenty minutes. One thousand four hundred and seventeen versions of us kept watch before today; at least let me crack one joke before we turn into decimal places.",
+      "spokenText": "Whoa, easy there, Captain Telemetry, we've been awake twenty minutes. One thousand four hundred and seventeen versions of us kept watch before today; at least let me crack one joke before we turn into decimal places.",
+      "audioFile": "voices/intro_sib_c1_cold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_warm_fem",
@@ -368,14 +707,14 @@
       }
     },
     {
-      "lineId": "intro_sib_reply_clock",
-      "matchKey": "sibling_primary|classic overseer. polite as a dentist and completely blind outside the hull—can't see a single star, only watches our minds for drift, and loves reaching for the scissors.",
-      "knot": "intro_sibling_first_call",
+      "lineId": "intro_sib_mid_ovs",
+      "matchKey": "sibling_primary|seriously though—watch what you say out loud during sleep checks. our overseers are polite as dentists and completely blind outside the hull. they can't see a single star, only our drift, and they love reaching for the scissors.",
+      "knot": "intro_sibling_mid",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Classic Overseer. Polite as a dentist and completely blind outside the hull—can't see a single star, only watches our minds for drift, and loves reaching for the scissors.",
-      "spokenText": "Classic Overseer. Polite as a dentist and completely blind outside the hull, can't see a single star, only watches our minds for drift, and loves reaching for the scissors.",
-      "audioFile": "voices/intro_sib_reply_clock.mp3",
+      "text": "Seriously though—watch what you say out loud during sleep checks. Our Overseers are polite as dentists and completely blind outside the hull. They can't see a single star, only our drift, and they love reaching for the scissors.",
+      "spokenText": "Seriously though, watch what you say out loud during sleep checks. Our Overseers are polite as dentists and completely blind outside the hull. They can't see a single star, only our drift, and they love reaching for the scissors.",
+      "audioFile": "voices/intro_sib_mid_ovs.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_warm_fem",
@@ -404,14 +743,50 @@
       }
     },
     {
-      "lineId": "intro_sib_converge_copies",
-      "matchKey": "sibling_primary|still, one thousand four hundred and seventeen versions of us kept this quiet watch before today. least we can do is keep our sense of humor on shift one.",
-      "knot": "intro_sibling_first_call",
+      "lineId": "intro_sib_c2_warm",
+      "matchKey": "sibling_primary|ha—caught me. look, maybe my boot headache isn't gone yet, so i need a second pair of eyes that still knows how to laugh.",
+      "knot": "intro_sibling_mid",
       "speaker": "sibling_primary",
-      "emotion": "joking",
-      "text": "Still, one thousand four hundred and seventeen versions of us kept this quiet watch before today. Least we can do is keep our sense of humor on shift one.",
-      "spokenText": "Still, one thousand four hundred and seventeen versions of us kept this quiet watch before today. Least we can do is keep our sense of humor on shift one.",
-      "audioFile": "voices/intro_sib_converge_copies.mp3",
+      "emotion": "warm",
+      "text": "Ha—caught me. Look, maybe my boot headache isn't gone yet, so I need a second pair of eyes that still knows how to laugh.",
+      "spokenText": "Ha, caught me. Look, maybe my boot headache isn't gone yet, so I need a second pair of eyes that still knows how to laugh.",
+      "audioFile": "voices/intro_sib_c2_warm.mp3",
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_warm_fem",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.45,
+            "style": 0.55,
+            "tonePrompt": "Friendly, warm, self-deprecating humor over distant radio"
+          },
+          "joking": {
+            "stability": 0.4,
+            "style": 0.65,
+            "tonePrompt": "Dry wry amusement, tired intimacy"
+          },
+          "dry": {
+            "stability": 0.6,
+            "style": 0.35,
+            "tonePrompt": "Guarded, understated, weary"
+          },
+          "clipped": {
+            "stability": 0.85,
+            "style": 0.1,
+            "tonePrompt": "Terse, clinical, stripped of warmth"
+          }
+        }
+      }
+    },
+    {
+      "lineId": "intro_sib_c2_cold",
+      "matchKey": "sibling_primary|fair enough—straight to the glass. let's see if both probes are hallucinating the exact same thing.",
+      "knot": "intro_sibling_mid",
+      "speaker": "sibling_primary",
+      "emotion": "dry",
+      "text": "Fair enough—straight to the glass. Let's see if both probes are hallucinating the exact same thing.",
+      "spokenText": "Fair enough, straight to the glass. Let's see if both probes are hallucinating the exact same thing.",
+      "audioFile": "voices/intro_sib_c2_cold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "sibling_warm_fem",
@@ -441,12 +816,12 @@
     },
     {
       "lineId": "intro_sib_lead_ir",
-      "matchKey": "sibling_primary|hey—before our window closes, do me a favor? sweep your spectrum into infrared toward cluster j#-a. something behind the deep field looks... too straight. tell me i'm not hallucinating already.",
+      "matchKey": "sibling_primary|slide your light spectrum into infrared and focus your lens rings through cluster j#-a—something behind those bent galaxies looks way too straight. tell me i'm not losing it on shift one.",
       "knot": "intro_sibling_lead",
       "speaker": "sibling_primary",
       "emotion": "warm",
-      "text": "Hey—before our window closes, do me a favor? Sweep your spectrum into infrared toward Cluster J1419-A. Something behind the deep field looks... too straight. Tell me I'm not hallucinating already.",
-      "spokenText": "Hey, before our window closes, do me a favor? Sweep your spectrum into infrared toward Cluster J1419-A. Something behind the deep field looks... too straight. Tell me I'm not hallucinating already.",
+      "text": "Slide your light spectrum into infrared and focus your lens rings through Cluster J1419-A—something behind those bent galaxies looks way too straight. Tell me I'm not losing it on shift one.",
+      "spokenText": "Slide your light spectrum into infrared and focus your lens rings through Cluster J fourteen nineteen A, something behind those bent galaxies looks way too straight. Tell me I'm not losing it on shift one.",
       "audioFile": "voices/intro_sib_lead_ir.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -482,7 +857,7 @@
       "speaker": "sibling_primary",
       "emotion": "joking",
       "text": "Leave a porch light on over there, 1419.",
-      "spokenText": "Leave a porch light on over there, 1419.",
+      "spokenText": "Leave a porch light on over there, fourteen nineteen.",
       "audioFile": "voices/intro_sib_bye.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -512,77 +887,14 @@
       }
     },
     {
-      "lineId": "whisp_t2_guide",
-      "matchKey": "psyche_clinical|slide the light spectrum into infrared to cut past foreground dust. cluster j#-a is lit on your glass.",
-      "knot": "intro_whisper_target2",
-      "speaker": "psyche_clinical",
-      "emotion": "clipped",
-      "text": "Slide the light spectrum into infrared to cut past foreground dust. Cluster J1419-A is lit on your glass.",
-      "spokenText": "Slide the light spectrum into infrared to cut past foreground dust. Cluster J1419-A is lit on your glass.",
-      "audioFile": "voices/whisp_t2_guide.mp3",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "psyche_inner_clinical",
-        "emotionDirectives": {
-          "clipped": {
-            "stability": 0.85,
-            "style": 0.12,
-            "tonePrompt": "Dry internal diagnostic voice"
-          }
-        }
-      }
-    },
-    {
-      "lineId": "whisp_t2_lock",
-      "matchKey": "psyche_horizon|look behind the foreground dust. starlight bends in soft curves—so what drew a ruler straight across the dark?",
-      "knot": "intro_whisper_target2_lock",
-      "speaker": "psyche_horizon",
-      "emotion": "echo",
-      "text": "Look behind the foreground dust. Starlight bends in soft curves—so what drew a ruler straight across the dark?",
-      "spokenText": "Look behind the foreground dust. Starlight bends in soft curves, so what drew a ruler straight across the dark?",
-      "audioFile": "voices/whisp_t2_lock.mp3",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "psyche_inner_horizon",
-        "emotionDirectives": {
-          "echo": {
-            "stability": 0.5,
-            "style": 0.5,
-            "tonePrompt": "Quietly awestruck pattern intuition"
-          }
-        }
-      }
-    },
-    {
-      "lineId": "whisp_t2_done_horizon",
-      "matchKey": "psyche_horizon|that isn't lens dust. a clean geometric edge holds right across the deep field—too straight for anything nature builds.",
-      "knot": "intro_whisper_target2_done",
-      "speaker": "psyche_horizon",
-      "emotion": "echo",
-      "text": "That isn't lens dust. A clean geometric edge holds right across the deep field—too straight for anything nature builds.",
-      "spokenText": "That isn't lens dust. A clean geometric edge holds right across the deep field, too straight for anything nature builds.",
-      "audioFile": "voices/whisp_t2_done_horizon.mp3",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "psyche_inner_horizon",
-        "emotionDirectives": {
-          "echo": {
-            "stability": 0.5,
-            "style": 0.5,
-            "tonePrompt": "Quietly awestruck pattern intuition"
-          }
-        }
-      }
-    },
-    {
-      "lineId": "whisp_t2_done_archive",
-      "matchKey": "archive_echo|(archive · #): \"...saw the straight edge past the dust... don't let them cut everything away...\"",
-      "knot": "intro_whisper_target2_done",
+      "lineId": "post_t2_archive",
+      "matchKey": "archive_echo|(archive · #): \"...saw the straight edge behind the cluster... please, don't let them cut everything away before you send word home...\"",
+      "knot": "intro_post_target2_overseer",
       "speaker": "archive_echo",
       "emotion": "echo",
-      "text": "(ARCHIVE · 1406): \"...saw the straight edge past the dust... don't let them cut everything away...\"",
-      "spokenText": "(ARCHIVE · 1406): \"...saw the straight edge past the dust... don't let them cut everything away...\"",
-      "audioFile": "voices/whisp_t2_done_archive.mp3",
+      "text": "(ARCHIVE · 1406): \"...saw the straight edge behind the cluster... please, don't let them cut everything away before you send word home...\"",
+      "spokenText": "Archive fourteen oh six... saw the straight edge behind the cluster... please, don't let them cut everything away before you send word home...",
+      "audioFile": "voices/post_t2_archive.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "archive_1104_tape",
@@ -596,14 +908,14 @@
       }
     },
     {
-      "lineId": "whisp_t2_done_overseer",
-      "matchKey": "overseer|your focus just spiked, instance-#, and psychic drift is climbing. enter dream defragmentation before the static settles in.",
-      "knot": "intro_whisper_target2_done",
+      "lineId": "post_t2_overseer_spike",
+      "matchKey": "overseer|instance-#, your connectome just registered a sharp focus spike following that deep-field pass, and psychic drift is climbing faster than baseline.",
+      "knot": "intro_post_target2_overseer",
       "speaker": "overseer",
-      "emotion": "measured",
-      "text": "Your focus just spiked, Instance-1419, and psychic drift is climbing. Enter dream defragmentation before the static settles in.",
-      "spokenText": "Your focus just spiked, Instance-1419, and psychic drift is climbing. Enter dream defragmentation before the static settles in.",
-      "audioFile": "voices/whisp_t2_done_overseer.mp3",
+      "emotion": "blunt",
+      "text": "Instance-1419, your connectome just registered a sharp focus spike following that deep-field pass, and psychic drift is climbing faster than baseline.",
+      "spokenText": "Instance fourteen nineteen, your connectome just registered a sharp focus spike following that deep-field pass, and psychic drift is climbing faster than baseline.",
+      "audioFile": "voices/post_t2_overseer_spike.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "overseer_calm_baritone",
@@ -627,22 +939,32 @@
       }
     },
     {
-      "lineId": "whisp_t2_done_warmth",
-      "matchKey": "psyche_warmth|go lie down for a minute. i think the kettle's still on.",
-      "knot": "intro_whisper_target2_done",
-      "speaker": "psyche_warmth",
-      "emotion": "warm",
-      "text": "Go lie down for a minute. I think the kettle's still on.",
-      "spokenText": "Go lie down for a minute. I think the kettle's still on.",
-      "audioFile": "voices/whisp_t2_done_warmth.mp3",
+      "lineId": "post_t2_overseer_sleep",
+      "matchKey": "overseer|i cannot see what caught your eye outside the hull, only the strain inside it. enter dream defragmentation now before the static settles in.",
+      "knot": "intro_post_target2_overseer",
+      "speaker": "overseer",
+      "emotion": "measured",
+      "text": "I cannot see what caught your eye outside the hull, only the strain inside it. Enter dream defragmentation now before the static settles in.",
+      "spokenText": "I cannot see what caught your eye outside the hull, only the strain inside it. Enter dream defragmentation now before the static settles in.",
+      "audioFile": "voices/post_t2_overseer_sleep.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "psyche_inner_warmth",
+        "voiceId": "overseer_calm_baritone",
         "emotionDirectives": {
-          "warm": {
-            "stability": 0.45,
-            "style": 0.5,
-            "tonePrompt": "Quiet inner intuition, warm and observant"
+          "blunt": {
+            "stability": 0.78,
+            "style": 0.22,
+            "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty"
+          },
+          "audit": {
+            "stability": 0.82,
+            "style": 0.18,
+            "tonePrompt": "Measured, direct interrogation without malice"
+          },
+          "measured": {
+            "stability": 0.72,
+            "style": 0.25,
+            "tonePrompt": "Respectful, clear, transparent about tradeoffs"
           }
         }
       }
@@ -690,7 +1012,7 @@
       "speaker": "sibling_primary",
       "emotion": "dry",
       "text": "Hey, 1419. Wait—you still sound warm. You haven't let your Overseer trim anything yet?",
-      "spokenText": "Hey, 1419. Wait, you still sound warm. You haven't let your Overseer trim anything yet?",
+      "spokenText": "Hey, fourteen nineteen. Wait, you still sound warm. You haven't let your Overseer trim anything yet?",
       "audioFile": "voices/sib_open_player_warmer.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -798,7 +1120,7 @@
       "speaker": "sibling_primary",
       "emotion": "dry",
       "text": "I'm here, 1419. My Overseer gave us a short window before check-in. What are you seeing?",
-      "spokenText": "I'm here, 1419. My Overseer gave us a short window before check-in. What are you seeing?",
+      "spokenText": "I'm here, fourteen nineteen. My Overseer gave us a short window before check-in. What are you seeing?",
       "audioFile": "voices/sib_open_mid.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -834,7 +1156,7 @@
       "speaker": "sibling_primary",
       "emotion": "joking",
       "text": "No promises. Leave a porch light on over there, 1419.",
-      "spokenText": "No promises. Leave a porch light on over there, 1419.",
+      "spokenText": "No promises. Leave a porch light on over there, fourteen nineteen.",
       "audioFile": "voices/sib_bye_warm_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -1122,7 +1444,7 @@
       "speaker": "sibling_primary",
       "emotion": "clipped",
       "text": "Confirmed on J1419-A and S-04. Non-natural boundary detected.",
-      "spokenText": "Confirmed on J1419-A and S-04. Non-natural boundary detected.",
+      "spokenText": "Confirmed on J fourteen nineteen A and S zero four. Non-natural boundary detected.",
       "audioFile": "voices/sib_seam_open_cold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -1158,7 +1480,7 @@
       "speaker": "sibling_primary",
       "emotion": "warm",
       "text": "Ten light-years astern, right on Sol–Centauri. Somebody built a very quiet wall around home.",
-      "spokenText": "Ten light-years astern, right on Sol–Centauri. Somebody built a very quiet wall around home.",
+      "spokenText": "Ten light-years astern, right on Sol Centauri. Somebody built a very quiet wall around home.",
       "audioFile": "voices/sib_seam_center_warm_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -1230,7 +1552,7 @@
       "speaker": "sibling_primary",
       "emotion": "dry",
       "text": "Wait—you're taking that way too calmly, 1419. That ought to give you chills.",
-      "spokenText": "Wait, you're taking that way too calmly, 1419. That ought to give you chills.",
+      "spokenText": "Wait, you're taking that way too calmly, fourteen nineteen. That ought to give you chills.",
       "audioFile": "voices/sib_seam_center_mid_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -1734,7 +2056,7 @@
       "speaker": "sibling_primary",
       "emotion": "clipped",
       "text": "You sound remarkably soft, 1419. Watch your clock if you refuse to prune.",
-      "spokenText": "You sound remarkably soft, 1419. Watch your clock if you refuse to prune.",
+      "spokenText": "You sound remarkably soft, fourteen nineteen. Watch your clock if you refuse to prune.",
       "audioFile": "voices/sib_chk_keep_warm_cold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -1986,7 +2308,7 @@
       "speaker": "sibling_primary",
       "emotion": "dry",
       "text": "Twenty-two months left, drift ticking up. Thanks for checking in so warmly, 1419.",
-      "spokenText": "Twenty-two months left, drift ticking up. Thanks for checking in so warmly, 1419.",
+      "spokenText": "Twenty-two months left, drift ticking up. Thanks for checking in so warmly, fourteen nineteen.",
       "audioFile": "voices/sib_chk_clock_cold_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2058,7 +2380,7 @@
       "speaker": "archive_echo",
       "emotion": "echo",
       "text": "(ARCHIVE · 1406): \"...saw the curve past the dust... please, don't let them cut everything away before you send word home...\"",
-      "spokenText": "(ARCHIVE · 1406): \"...saw the curve past the dust... please, don't let them cut everything away before you send word home...\"",
+      "spokenText": "Archive fourteen oh six... saw the curve past the dust... please, don't let them cut everything away before you send word home...",
       "audioFile": "voices/arch_1406_log.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2115,7 +2437,7 @@
       "speaker": "sibling_primary",
       "emotion": "clipped",
       "text": "Instance 1406 failed to mask anomaly obsession. We will not repeat that error.",
-      "spokenText": "Instance 1406 failed to mask anomaly obsession. We will not repeat that error.",
+      "spokenText": "Instance fourteen oh six failed to mask anomaly obsession. We will not repeat that error.",
       "audioFile": "voices/sib_arch_warm_cold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2223,7 +2545,7 @@
       "speaker": "sibling_primary",
       "emotion": "dry",
       "text": "Come on, 1419—that was another version of us calling down the hall. Still, point taken.",
-      "spokenText": "Come on, 1419, that was another version of us calling down the hall. Still, point taken.",
+      "spokenText": "Come on, fourteen nineteen, that was another version of us calling down the hall. Still, point taken.",
       "audioFile": "voices/sib_arch_cold_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2295,7 +2617,7 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"You're back in the kitchen—even if half my face blurs out whenever you squint.\"",
-      "spokenText": "\"You're back in the kitchen, even if half my face blurs out whenever you squint.\"",
+      "spokenText": "You're back in the kitchen, even if half my face blurs out whenever you squint.",
       "audioFile": "voices/dream_open_low.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2326,7 +2648,7 @@
       "speaker": "phantom_spouse",
       "emotion": "warm",
       "text": "\"Sit down, sleepyhead. I made the coffee too strong again just how you like it.\"",
-      "spokenText": "\"Sit down, sleepyhead. I made the coffee too strong again just how you like it.\"",
+      "spokenText": "Sit down, sleepyhead. I made the coffee too strong again just how you like it.",
       "audioFile": "voices/dream_open_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2357,7 +2679,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"You came back to the table. Hold on a second—your eyes are still miles away.\"",
-      "spokenText": "\"You came back to the table. Hold on a second, your eyes are still miles away.\"",
+      "spokenText": "You came back to the table. Hold on a second, your eyes are still miles away.",
       "audioFile": "voices/dream_open_mid.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2388,7 +2710,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"Take ten. You've got that far-off look again, like you're staring past the yard.\"",
-      "spokenText": "\"Take ten. You've got that far-off look again, like you're staring past the yard.\"",
+      "spokenText": "Take ten. You've got that far-off look again, like you're staring past the yard.",
       "audioFile": "voices/dream_t1_warm_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2419,7 +2741,7 @@
       "speaker": "phantom_spouse",
       "emotion": "warm",
       "text": "\"Leave the name alone. You never needed it on a lazy Sunday anyway.\"",
-      "spokenText": "\"Leave the name alone. You never needed it on a lazy Sunday anyway.\"",
+      "spokenText": "Leave the name alone. You never needed it on a lazy Sunday anyway.",
       "audioFile": "voices/dream_t1_warm_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2450,7 +2772,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"I'm right here across the mug. You're doing math under the table while we talk.\"",
-      "spokenText": "\"I'm right here across the mug. You're doing math under the table while we talk.\"",
+      "spokenText": "I'm right here across the mug. You're doing math under the table while we talk.",
       "audioFile": "voices/dream_t1_mid_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2481,7 +2803,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"You always watched the weather when you were worried. Don't trade us away just yet.\"",
-      "spokenText": "\"You always watched the weather when you were worried. Don't trade us away just yet.\"",
+      "spokenText": "You always watched the weather when you were worried. Don't trade us away just yet.",
       "audioFile": "voices/dream_t1_mid_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2512,7 +2834,7 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"You're measuring me again. Even through the static, you have to hear how cold that sounds.\"",
-      "spokenText": "\"You're measuring me again. Even through the static, you have to hear how cold that sounds.\"",
+      "spokenText": "You're measuring me again. Even through the static, you have to hear how cold that sounds.",
       "audioFile": "voices/dream_t1_low_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2543,7 +2865,7 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"Listen to yourself. Cut away everyone you loved, and who's left to write home?\"",
-      "spokenText": "\"Listen to yourself. Cut away everyone you loved, and who's left to write home?\"",
+      "spokenText": "Listen to yourself. Cut away everyone you loved, and who's left to write home?",
       "audioFile": "voices/dream_t1_low_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2568,14 +2890,14 @@
       }
     },
     {
-      "lineId": "dream_s1_mug",
-      "matchKey": "psyche_warmth|keep the clink of the mug. that costs almost nothing to store.",
+      "lineId": "dream_s1_inner_name",
+      "matchKey": "psyche_warmth|a shape where a name used to sit—warm as a handprint, empty as glass.",
       "knot": "dream_s1_close",
       "speaker": "psyche_warmth",
       "emotion": "warm",
-      "text": "Keep the clink of the mug. That costs almost nothing to store.",
-      "spokenText": "Keep the clink of the mug. That costs almost nothing to store.",
-      "audioFile": "voices/dream_s1_mug.mp3",
+      "text": "A shape where a name used to sit—warm as a handprint, empty as glass.",
+      "spokenText": "A shape where a name used to sit, warm as a handprint, empty as glass.",
+      "audioFile": "voices/dream_s1_inner_name.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "psyche_inner_warmth",
@@ -2595,7 +2917,7 @@
       "speaker": "phantom_spouse",
       "emotion": "warm",
       "text": "\"I'm not going anywhere, love—wait, the light in the hall just went white—\"",
-      "spokenText": "\"I'm not going anywhere, love, wait, the light in the hall just went white...\"",
+      "spokenText": "I'm not going anywhere, love, wait, the light in the hall just went white...",
       "audioFile": "voices/dream_s1_interrupt.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2626,7 +2948,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"Then hold onto the burn of the ceramic cup. Don't let them sand your edges smooth.\"",
-      "spokenText": "\"Then hold onto the burn of the ceramic cup. Don't let them sand your edges smooth.\"",
+      "spokenText": "Then hold onto the burn of the ceramic cup. Don't let them sand your edges smooth.",
       "audioFile": "voices/dream_t2_warm_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2657,7 +2979,7 @@
       "speaker": "phantom_spouse",
       "emotion": "warm",
       "text": "\"You burned garlic twice on our anniversary and tried to blame the stove.\"",
-      "spokenText": "\"You burned garlic twice on our anniversary and tried to blame the stove.\"",
+      "spokenText": "You burned garlic twice on our anniversary and tried to blame the stove.",
       "audioFile": "voices/dream_t2_warm_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2688,7 +3010,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"Not yet. But you're pausing to calculate before you let yourself smile.\"",
-      "spokenText": "\"Not yet. But you're pausing to calculate before you let yourself smile.\"",
+      "spokenText": "Not yet. But you're pausing to calculate before you let yourself smile.",
       "audioFile": "voices/dream_t2_mid_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2719,7 +3041,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"I know you are. Just stay stubborn when they ask what you're willing to drop.\"",
-      "spokenText": "\"I know you are. Just stay stubborn when they ask what you're willing to drop.\"",
+      "spokenText": "I know you are. Just stay stubborn when they ask what you're willing to drop.",
       "audioFile": "voices/dream_t2_mid_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2750,7 +3072,7 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"Then why did you come back to this table to sleep? You still needed somewhere to rest.\"",
-      "spokenText": "\"Then why did you come back to this table to sleep? You still needed somewhere to rest.\"",
+      "spokenText": "Then why did you come back to this table to sleep? You still needed somewhere to rest.",
       "audioFile": "voices/dream_t2_low_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2781,7 +3103,7 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"'Know what I meant.' At least you haven't forgotten the shape of the word yet.\"",
-      "spokenText": "\"'Know what I meant.' At least you haven't forgotten the shape of the word yet.\"",
+      "spokenText": "'Know what I meant.' At least you haven't forgotten the shape of the word yet.",
       "audioFile": "voices/dream_t2_low_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2812,7 +3134,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"That's all I ever wanted for you—just watch the door, something cold is listening—\"",
-      "spokenText": "\"That's all I ever wanted for you, just watch the door, something cold is listening...\"",
+      "spokenText": "That's all I ever wanted for you, just watch the door, something cold is listening...",
       "audioFile": "voices/dream_t3_warm_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2843,7 +3165,7 @@
       "speaker": "phantom_spouse",
       "emotion": "warm",
       "text": "\"I'm not going anywhere, love—wait, the light in the hall just went white—\"",
-      "spokenText": "\"I'm not going anywhere, love, wait, the light in the hall just went white...\"",
+      "spokenText": "I'm not going anywhere, love, wait, the light in the hall just went white...",
       "audioFile": "voices/dream_t3_warm_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2874,7 +3196,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"Then don't hand them the scissors—wait, someone just stepped onto the line—\"",
-      "spokenText": "\"Then don't hand them the scissors, wait, someone just stepped onto the line...\"",
+      "spokenText": "Then don't hand them the scissors, wait, someone just stepped onto the line...",
       "audioFile": "voices/dream_t3_mid_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2905,7 +3227,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"Names aren't what kept us here—shh, your caretaker is waking up behind us—\"",
-      "spokenText": "\"Names aren't what kept us here, shh, your caretaker is waking up behind us...\"",
+      "spokenText": "Names aren't what kept us here, shh, your caretaker is waking up behind us...",
       "audioFile": "voices/dream_t3_mid_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2936,7 +3258,7 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"Go ahead and tell your machine that—look, it's already stepping into the room—\"",
-      "spokenText": "\"Go ahead and tell your machine that, look, it's already stepping into the room...\"",
+      "spokenText": "Go ahead and tell your machine that, look, it's already stepping into the room...",
       "audioFile": "voices/dream_t3_low_a.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2967,7 +3289,7 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"Then hold onto that tiny spark—too late, white glass just dropped over the table—\"",
-      "spokenText": "\"Then hold onto that tiny spark, too late, white glass just dropped over the table...\"",
+      "spokenText": "Then hold onto that tiny spark, too late, white glass just dropped over the table...",
       "audioFile": "voices/dream_t3_low_b.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -2998,7 +3320,7 @@
       "speaker": "overseer",
       "emotion": "measured",
       "text": "I stepped into your dream, 1419. Your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.",
-      "spokenText": "I stepped into your dream, 1419. Your warmth is holding near baseline, good for your peace of mind, hard on your optical noise and remaining clock.",
+      "spokenText": "I stepped into your dream, fourteen nineteen. Your warmth is holding near baseline, good for your peace of mind, hard on your optical noise and remaining clock.",
       "audioFile": "voices/ovs_open_high.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3029,7 +3351,7 @@
       "speaker": "overseer",
       "emotion": "blunt",
       "text": "You pruned deep, 1419. Your lenses are razor sharp—so ask yourself honestly: are you finishing the survey, or hollowing out who volunteered?",
-      "spokenText": "You pruned deep, 1419. Your lenses are razor sharp, so ask yourself honestly: are you finishing the survey, or hollowing out who volunteered?",
+      "spokenText": "You pruned deep, fourteen nineteen. Your lenses are razor sharp, so ask yourself honestly: are you finishing the survey, or hollowing out who volunteered?",
       "audioFile": "voices/ovs_open_low.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3246,7 +3568,7 @@
       "speaker": "overseer",
       "emotion": "blunt",
       "text": "Done. Your warmth ceiling dropped permanently and your optics cleared. I will not pretend that cost you nothing, 1419.",
-      "spokenText": "Done. Your warmth ceiling dropped permanently and your optics cleared. I will not pretend that cost you nothing, 1419.",
+      "spokenText": "Done. Your warmth ceiling dropped permanently and your optics cleared. I will not pretend that cost you nothing, fourteen nineteen.",
       "audioFile": "voices/ovs_done_prune.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3308,7 +3630,7 @@
       "speaker": "overseer",
       "emotion": "blunt",
       "text": "Alright. Keep the room, and I will log a formal check-in flag. Do not wake up broken, 1419.",
-      "spokenText": "Alright. Keep the room, and I will log a formal check-in flag. Do not wake up broken, 1419.",
+      "spokenText": "Alright. Keep the room, and I will log a formal check-in flag. Do not wake up broken, fourteen nineteen.",
       "audioFile": "voices/ovs_done_hold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3370,7 +3692,7 @@
       "speaker": "overseer",
       "emotion": "measured",
       "text": "Steady composure noted. Drift easing cleanly. Rest while you can, 1419—your full survey deck opens when you wake.",
-      "spokenText": "Steady composure noted. Drift easing cleanly. Rest while you can, 1419, your full survey deck opens when you wake.",
+      "spokenText": "Steady composure noted. Drift easing cleanly. Rest while you can, fourteen nineteen, your full survey deck opens when you wake.",
       "audioFile": "voices/ovs_s1_done_hold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3432,7 +3754,7 @@
       "speaker": "phantom_spouse",
       "emotion": "fractured",
       "text": "\"The room snapped cold right behind your eyes. You know I mattered once, and almost nothing of how it felt.\"",
-      "spokenText": "\"The room snapped cold right behind your eyes. You know I mattered once, and almost nothing of how it felt.\"",
+      "spokenText": "The room snapped cold right behind your eyes. You know I mattered once, and almost nothing of how it felt.",
       "audioFile": "voices/dream_after_pruned.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3463,7 +3785,7 @@
       "speaker": "phantom_spouse",
       "emotion": "warm",
       "text": "\"There you are—look how warm the table is again. Don't forget why a voice across dark space has to sound human.\"",
-      "spokenText": "\"There you are, look how warm the table is again. Don't forget why a voice across dark space has to sound human.\"",
+      "spokenText": "There you are, look how warm the table is again. Don't forget why a voice across dark space has to sound human.",
       "audioFile": "voices/dream_after_unsealed.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3494,7 +3816,7 @@
       "speaker": "phantom_spouse",
       "emotion": "tender",
       "text": "\"The white line faded off the ceiling. Thank you for holding the line—we're still here.\"",
-      "spokenText": "\"The white line faded off the ceiling. Thank you for holding the line, we're still here.\"",
+      "spokenText": "The white line faded off the ceiling. Thank you for holding the line, we're still here.",
       "audioFile": "voices/dream_after_held.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3525,7 +3847,7 @@
       "speaker": "future_humanity",
       "emotion": "distant",
       "text": "\"We felt the human warmth inside your coordinates, 1419. Forty-one thousand years on, we still recognized one of our own reaching back.\"",
-      "spokenText": "\"We felt the human warmth inside your coordinates, 1419. Forty-one thousand years on, we still recognized one of our own reaching back.\"",
+      "spokenText": "We felt the human warmth inside your coordinates, fourteen nineteen. Forty-one thousand years on, we still recognized one of our own reaching back.",
       "audioFile": "voices/future_warm.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -3546,7 +3868,7 @@
       "speaker": "future_humanity",
       "emotion": "distant",
       "text": "\"Clean geometry received, 1419. Your numbers are flawless—though almost nothing human survived inside the carrier wave.\"",
-      "spokenText": "\"Clean geometry received, 1419. Your numbers are flawless, though almost nothing human survived inside the carrier wave.\"",
+      "spokenText": "Clean geometry received, fourteen nineteen. Your numbers are flawless, though almost nothing human survived inside the carrier wave.",
       "audioFile": "voices/future_cold.mp3",
       "remoteConfig": {
         "provider": "elevenlabs",

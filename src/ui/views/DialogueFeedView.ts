@@ -16,6 +16,33 @@ const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
 
 export type DialogueChannel = 'dream' | 'comms' | 'overseer' | 'future' | 'prologue';
 
+export function escapeHtml(raw: string): string {
+  return raw
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Safely converts inline [[warm:...]] and [[cold:...]] literary temperature cues
+ * into styled spans while HTML-escaping all surrounding text.
+ */
+export function formatInlineHighlights(raw: string): string {
+  return escapeHtml(raw).replace(
+    /\[\[(warm|cold):([^\]]+)\]\]/g,
+    (_match, tone: string, inner: string) => `<span class="hl-${tone}">${inner}</span>`
+  );
+}
+
+/**
+ * Strips inline [[warm:...]] / [[cold:...]] markers to plain prose for TTS playback.
+ */
+export function stripInlineHighlights(raw: string): string {
+  return raw.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/g, '$1');
+}
+
 function inferChannel(scrollSel: string): DialogueChannel {
   if (scrollSel.includes('comms')) return 'comms';
   if (scrollSel.includes('overseer')) return 'overseer';
@@ -56,9 +83,9 @@ function prefixMatches(prev: DialogueEntry[], next: DialogueEntry[], count: numb
 }
 
 /**
- * Modular editorial dialogue renderer supporting live 220ms reply pacing,
- * non-blinking history vs. voice-matched kinetic entrances, staggered choices
- * with selection pulse, voice replay via stable lineId, and telemetry logging.
+ * Modular editorial dialogue renderer supporting append-only DOM updates (PR #1 perf),
+ * subtle inline [[warm:...]] / [[cold:...]] highlights, choice affinity accents,
+ * live reply pacing, voice replay via stable lineId, and telemetry logging.
  */
 export class DialogueFeedView {
   private replyBeatTimer: number | null = null;
@@ -88,7 +115,7 @@ export class DialogueFeedView {
     if (!entries.length) return;
     const reqs: VoiceRequest[] = entries.map((e) => ({
       lineId: e.lineId,
-      text: e.text,
+      text: stripInlineHighlights(e.text),
       speaker: e.speaker,
       emotion: e.emotion,
     }));
@@ -135,7 +162,7 @@ export class DialogueFeedView {
         this.replyBeatTimer = null;
         this.speakEntries(snap.lastAddedEntries);
         onSettled(snap);
-      }, 280);
+      }, 320);
       return;
     }
 
@@ -157,8 +184,8 @@ export class DialogueFeedView {
     const animClass = isNew ? 'is-new' : 'is-history';
     const delayMs = isNew ? Math.min(4, Math.max(0, idx - animateFrom)) * 70 : 0;
     const avH = entry.speaker === 'sibling_primary' ? siblingH : humanity;
-    const canSpeak =
-      !entry.isPlayerChoice && !(entry.text.startsWith('[') && entry.text.endsWith(']'));
+    const plain = stripInlineHighlights(entry.text);
+    const canSpeak = !entry.isPlayerChoice && !(plain.startsWith('[') && plain.endsWith(']'));
     return `
       <div class="dialogue-entry role-${ch.role} ${playerClass} ${animClass}" data-channel="${channel}" style="border-left-color:${ch.accentColor};--entry-delay:${delayMs}ms;">
         <div class="dialogue-entry-head">
@@ -170,7 +197,7 @@ export class DialogueFeedView {
               : ''
           }
         </div>
-        <div class="dialogue-text">${entry.text}</div>
+        <div class="dialogue-text">${formatInlineHighlights(entry.text)}</div>
       </div>
     `;
   }
@@ -221,7 +248,12 @@ export class DialogueFeedView {
         const current = this.feedCache.get(scrollEl);
         const entry = current?.entries[Number(btn.dataset.replayIdx)];
         if (entry) {
-          this.voice.speakSingle(entry.text, entry.speaker, entry.emotion, entry.lineId);
+          this.voice.speakSingle(
+            stripInlineHighlights(entry.text),
+            entry.speaker,
+            entry.emotion,
+            entry.lineId
+          );
         }
       });
     }
@@ -302,6 +334,7 @@ export class DialogueFeedView {
       onResumeDream?: (nextKnot: string) => void;
       onWakeToSky?: () => void;
       onCloseComms?: () => void;
+      closeCommsLabel?: string;
     }
   ): void {
     const scrollEl = this.root.querySelector<HTMLElement>(scrollSel)!;
@@ -315,14 +348,22 @@ export class DialogueFeedView {
 
     if (snap.choices.length > 0) {
       choicesEl.innerHTML = snap.choices
-        .map(
-          (c, i) => `
-          <button class="choice-line choice-enter" data-choice-index="${c.index}" style="--choice-idx:${i}" type="button">
+        .map((c, i) => {
+          const affCls =
+            c.affinity === 'warm'
+              ? 'is-affinity-warm'
+              : c.affinity === 'cold'
+                ? 'is-affinity-cold'
+                : '';
+          const dot = affCls ? '<i class="choice-affinity-dot" aria-hidden="true"></i>' : '';
+          return `
+          <button class="choice-line choice-enter ${affCls}" data-choice-index="${c.index}" style="--choice-idx:${i}" type="button">
             <span class="choice-num">${i + 1}.</span>
-            <span>${c.text}</span>
+            <span class="choice-body">${formatInlineHighlights(c.text)}</span>
+            ${dot}
           </button>
-        `
-        )
+        `;
+        })
         .join('');
       choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line').forEach((btn) => {
         btn.addEventListener('mouseenter', () => this.audio.playHoverTick());
@@ -359,7 +400,8 @@ export class DialogueFeedView {
         handlers.onWakeToSky!();
       });
     } else if (scrollSel === '#comms-scroll' && handlers.onCloseComms) {
-      choicesEl.innerHTML = `<button class="choice-line choice-enter" id="btn-comms-done" style="--choice-idx:0" type="button"><span class="choice-num">→</span><span>Close relay</span></button>`;
+      const label = handlers.closeCommsLabel ?? 'Close relay';
+      choicesEl.innerHTML = `<button class="choice-line choice-enter" id="btn-comms-done" style="--choice-idx:0" type="button"><span class="choice-num">→</span><span>${escapeHtml(label)}</span></button>`;
       choicesEl.querySelector('#btn-comms-done')?.addEventListener('click', () => {
         this.audio.playCue('tick');
         handlers.onCloseComms!();

@@ -1,44 +1,110 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { DialogueRunner } from '../../src/engine/DialogueRunner';
 import { StateStore } from '../../src/engine/StateStore';
+import { formatInlineHighlights, stripInlineHighlights } from '../../src/ui/views/DialogueFeedView';
 
 describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it('parses # visual:<key>, # audio:<key>, and speaker transitions on intro_prologue with 0 choices', () => {
+  it('runs interactive intro_prologue_kitchen strictly with phantom_spouse and # affinity warm/cold choices', () => {
+    const store = new StateStore();
+    const runner = new DialogueRunner(store, () => {});
+
+    let snap = runner.startKnot('intro_prologue_kitchen');
+    expect(snap.entries.length).toBeGreaterThan(0);
+    expect(snap.entries.some((e) => e.visualCue === 'prologue_kitchen')).toBe(true);
+
+    let choiceTurns = 0;
+    const allSpeakers = new Set<string>(snap.entries.map((e) => e.speaker));
+    const seenAffinities = new Set<string>();
+
+    while (!snap.ended && snap.choices.length > 0 && choiceTurns < 5) {
+      choiceTurns++;
+      for (const ch of snap.choices) {
+        if (ch.affinity) seenAffinities.add(ch.affinity);
+      }
+      snap = runner.choose(snap.choices[0].index);
+      for (const e of snap.lastAddedEntries) allSpeakers.add(e.speaker);
+    }
+
+    expect(snap.ended).toBe(true);
+    expect(choiceTurns).toBeGreaterThanOrEqual(2);
+    expect(seenAffinities.has('warm')).toBe(true);
+    expect(seenAffinities.has('cold')).toBe(true);
+    for (const sp of allSpeakers) {
+      expect(sp.startsWith('psyche_')).toBe(false);
+    }
+    store.dispose();
+  });
+
+  it('drives all 5 # anim: phases on intro_overseer_wakeup with interactive warm/cold choices', () => {
     const store = new StateStore();
     const cues: string[] = [];
     const runner = new DialogueRunner(store, (cue) => cues.push(cue));
 
-    const snap = runner.startKnot('intro_prologue');
-    expect(snap.choices).toHaveLength(0);
-    expect(snap.ended).toBe(true);
-    expect(snap.entries.length).toBeGreaterThanOrEqual(4);
+    let snap = runner.startKnot('intro_overseer_wakeup');
+    const seenAnims = new Set<string>();
+    const seenAffinities = new Set<string>();
+    const collectAnims = () => {
+      for (const e of snap.entries) {
+        if (e.animCue) seenAnims.add(e.animCue);
+        expect(e.speaker.startsWith('psyche_')).toBe(false);
+      }
+    };
 
-    const visuals = snap.entries.map((e) => e.visualCue).filter(Boolean);
-    expect(visuals).toContain('prologue_kitchen');
-    expect(visuals).toContain('prologue_fracture');
-    expect(visuals).toContain('prologue_starfield');
+    collectAnims();
+    let turns = 0;
+    while (!snap.ended && snap.choices.length > 0 && turns < 5) {
+      turns++;
+      for (const ch of snap.choices) {
+        if (ch.affinity) seenAffinities.add(ch.affinity);
+      }
+      snap = runner.choose(snap.choices[0].index);
+      collectAnims();
+    }
+
+    expect(snap.ended).toBe(true);
+    expect(turns).toBeGreaterThanOrEqual(2);
     expect(cues).toContain('overseer_chime');
+    expect(seenAffinities.has('warm')).toBe(true);
+    expect(seenAffinities.has('cold')).toBe(true);
+    expect([...seenAnims]).toEqual(
+      expect.arrayContaining([
+        'anim_transfer',
+        'anim_epochs',
+        'anim_shell',
+        'anim_blind_clock',
+        'anim_aperture',
+      ])
+    );
+    store.dispose();
   });
 
-  it('parses # whisper tags on intro diegetic sky whispers and unlocks codex keys', () => {
+  it('runs intro_sibling_first_call and intro_post_target2_overseer with zero Psyche chatter and codex unlocks', () => {
     const store = new StateStore();
     const runner = new DialogueRunner(store, () => {});
 
-    const t1 = runner.startKnot('intro_whisper_target1');
-    expect(t1.entries.length).toBeGreaterThanOrEqual(1);
-    expect(t1.entries[0].whisper).toBe(true);
+    let sib = runner.startKnot('intro_sibling_first_call');
+    let sibTurns = 0;
+    while (!sib.ended && sib.choices.length > 0 && sibTurns < 5) {
+      sibTurns++;
+      sib = runner.choose(sib.choices[0].index);
+    }
+    expect(sib.ended).toBe(true);
+    expect(sibTurns).toBeGreaterThanOrEqual(2);
+    expect(store.getState().codexUnlocks).toContain('sibling_1420_contact');
+    expect(sib.entries.every((e) => !e.speaker.startsWith('psyche_'))).toBe(true);
 
-    const t2Lock = runner.startKnot('intro_whisper_target2_lock');
-    expect(t2Lock.entries.some((e) => e.speaker === 'psyche_horizon')).toBe(true);
+    const postT2 = runner.startKnot('intro_post_target2_overseer');
+    expect(postT2.choices).toHaveLength(0);
+    expect(postT2.entries.some((e) => e.speaker === 'archive_echo')).toBe(true);
+    expect(postT2.entries.some((e) => e.speaker === 'overseer')).toBe(true);
+    expect(postT2.entries.every((e) => !e.speaker.startsWith('psyche_'))).toBe(true);
     expect(store.getState().codexUnlocks).toContain('intro_anomaly_glimpse');
-
-    const t2Done = runner.startKnot('intro_whisper_target2_done');
-    expect(t2Done.entries.some((e) => e.speaker === 'archive_echo')).toBe(true);
     expect(store.getState().codexUnlocks).toContain('archive_1406_echo');
+    store.dispose();
   });
 
   it('keeps Shift 1 Dream Audit soft (no permanent prune choice) and unlocks permanent Prune on Shift 2+', () => {
@@ -54,12 +120,14 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
 
     const s1Audit = runner.startKnot('overseer_interrogation');
     expect(s1Audit.choices.length).toBe(2);
-    // Neither choice should prune humanity below 70%
     const maxBefore = store.getState().maxHumanity;
     for (const choice of s1Audit.choices) {
       expect(choice.text.toLowerCase()).not.toContain('prune');
       expect(choice.text).not.toMatch(/\d+%/);
     }
+    expect(s1Audit.choices.some((c) => c.affinity === 'warm')).toBe(true);
+    expect(s1Audit.choices.some((c) => c.affinity === 'cold')).toBe(true);
+
     const s1Resolved = runner.choose(s1Audit.choices[0].index);
     expect(s1Resolved.resumeDreamKnot).toBe('dream_partner_aftermath');
     expect(store.getState().maxHumanity).toBe(maxBefore);
@@ -80,48 +148,14 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
     expect(afterPruneSnap.resumeDreamKnot).toBe('dream_partner_aftermath');
     expect(store.getState().maxHumanity).toBeLessThan(maxBeforePrune);
     expect(store.getState().lastAuditOutcome).toBe('pruned');
+    store.dispose();
   });
 
-  it('parses # anim:<phase> on entries and # affinity:warm|cold choice tags through DialogueRunner', async () => {
-    const { Compiler } = await import('inkjs/compiler/Compiler');
-    const inkSource = `
-VAR humanity = 70
-VAR max_humanity = 90
-VAR chaos_drift = 14
-VAR anomaly_progress = 0
-VAR primary_sibling_h = 68
-VAR overseer_suspicion = 0
-VAR subjective_months = 24
-VAR spouse_pruned = false
-VAR last_audit_outcome = "none"
-VAR current_shift = 1
-
-=== test_tags ===
-# speaker:overseer # visual:prologue_fracture # anim:phase_fracture # sound:overseer_slice
-Telemetry check.
-* [Hold onto the cup # affinity:warm]
-  Warm branch.
-  -> DONE
-* [Log the drift # affinity:cold]
-  Cold branch.
-  -> DONE
-`;
-    const compiled = new Compiler(inkSource).Compile();
-    const storyJson = JSON.parse(compiled.ToJson()) as Record<string, unknown>;
-    const store = new StateStore();
-    const cues: string[] = [];
-    const runner = new DialogueRunner(store, (cue) => cues.push(cue), storyJson);
-
-    const snap = runner.startKnot('test_tags');
-    expect(snap.entries).toHaveLength(1);
-    expect(snap.entries[0].text).toBe('Telemetry check.');
-    expect(snap.entries[0].visualCue).toBe('prologue_fracture');
-    expect(snap.entries[0].animCue).toBe('phase_fracture');
-    expect(cues).toContain('overseer_slice');
-
-    expect(snap.choices).toHaveLength(2);
-    expect(snap.choices[0].affinity).toBe('warm');
-    expect(snap.choices[1].affinity).toBe('cold');
-    store.dispose();
+  it('safely formats and strips inline [[warm:...]] / [[cold:...]] highlights without XSS', () => {
+    const raw = 'Remember [[warm:your laugh]] vs [[cold:<b>archive</b> zero]].';
+    const html = formatInlineHighlights(raw);
+    expect(html).toContain('<span class="hl-warm">your laugh</span>');
+    expect(html).toContain('<span class="hl-cold">&lt;b&gt;archive&lt;/b&gt; zero</span>');
+    expect(stripInlineHighlights(raw)).toBe('Remember your laugh vs <b>archive</b> zero.');
   });
 });

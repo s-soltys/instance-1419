@@ -17,22 +17,32 @@ export interface TransitionPlayOptions {
   onComplete?: () => void;
 }
 
+export interface OverlayPulseOptions {
+  midpointMs?: number;
+  durationMs?: number;
+  onComplete?: () => void;
+}
+
 interface TransitionTimings {
   switchMs: number;
   durationMs: number;
 }
 
+/**
+ * Unhurried, meditative GPU-composited timings across major scene seams.
+ * Preserves 100% of PR #1 compositor-only performance (zero SVG filters / live-canvas blur).
+ */
 const TIMINGS: Record<TransitionKind, TransitionTimings> = {
-  aperture_boot: { switchMs: 40, durationMs: 920 },
-  optical_dive: { switchMs: 260, durationMs: 980 },
-  optical_pullback: { switchMs: 120, durationMs: 920 },
-  dream_submerge: { switchMs: 60, durationMs: 1120 },
-  dream_wake: { switchMs: 60, durationMs: 920 },
-  overseer_slice: { switchMs: 90, durationMs: 680 },
+  aperture_boot: { switchMs: 320, durationMs: 2100 },
+  optical_dive: { switchMs: 480, durationMs: 1850 },
+  optical_pullback: { switchMs: 360, durationMs: 1850 },
+  dream_submerge: { switchMs: 420, durationMs: 2350 },
+  dream_wake: { switchMs: 380, durationMs: 2350 },
+  overseer_slice: { switchMs: 280, durationMs: 1950 },
 };
 
 /**
- * Coordinates seamless, live two-layer optical/painterly cross-morphing
+ * Coordinates seamless, slow, meditative two-layer optical/painterly cross-morphing
  * across every major screen seam—zero opaque interstitial HTML curtains.
  */
 export class TransitionDirector {
@@ -163,12 +173,18 @@ export class TransitionDirector {
     this.timers.push(tSwitch, tDone);
   }
 
-  playOverlayPulse(kind: 'overseer_slice', label = 'OVERSEER-1419 // LIVE AUDIT', onMidpoint?: () => void): void {
+  playOverlayPulse(
+    kind: 'overseer_slice',
+    label = 'OVERSEER-1419 // LIVE AUDIT',
+    onMidpoint?: () => void,
+    opts?: OverlayPulseOptions
+  ): void {
     this.clearTimers();
 
     const stageEl = this.getStageEl();
     if (!stageEl) {
       onMidpoint?.();
+      opts?.onComplete?.();
       return;
     }
 
@@ -185,14 +201,18 @@ export class TransitionDirector {
     }
     stageEl.classList.add('is-pulse', 'is-active');
 
+    const midpointMs = opts?.midpointMs ?? 240;
+    const durationMs = opts?.durationMs ?? 1150;
+
     const tMid = window.setTimeout(() => {
       onMidpoint?.();
-    }, 200);
+    }, midpointMs);
 
     const tDone = window.setTimeout(() => {
       stageEl.classList.remove('is-active', 'is-pulse');
       delete stageEl.dataset.phase;
-    }, 640);
+      opts?.onComplete?.();
+    }, durationMs);
 
     this.timers.push(tMid, tDone);
   }
@@ -212,7 +232,7 @@ export class TransitionDirector {
     this.arrivalTimer = window.setTimeout(() => {
       layer.classList.remove('is-entering');
       this.arrivalTimer = null;
-    }, 900);
+    }, 1500);
   }
 
   dispose(): void {
