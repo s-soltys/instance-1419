@@ -121,7 +121,7 @@ export class TelescopeLensFocusGame extends BaseCosmicMinigame {
   private readonly bokehRadiusFrac = new Float32Array(12);
 
   protected override onMount(): void {
-    this.lockHoldTargetSec = 0.6;
+    this.lockHoldTargetSec = 0.9;
     this.variantCfg = VARIANT_PROFILES[this.iterationIndex % VARIANT_PROFILES.length];
     this.accSum = 0;
     this.accCount = 0;

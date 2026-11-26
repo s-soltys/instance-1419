@@ -3,7 +3,12 @@ import uiCopy from '../../content/ui_copy.json';
 import type { DialogueChoice } from '../../engine/DialogueRunner';
 import type { GameState } from '../../engine/StateStore';
 import { renderSpeakerAvatar } from '../SpeakerAvatar';
-import { escapeHtml, formatInlineHighlights } from './DialogueFeedView';
+import {
+  bindChoicePlates,
+  escapeHtml,
+  handleChoiceKeyboardNav,
+  renderChoicePlatesHtml,
+} from './DialogueFeedView';
 
 interface CharacterInfo {
   displayName: string;
@@ -117,14 +122,7 @@ export class BootView {
       if (this.root.querySelector('#settings-overlay:not(.hidden)')) return;
 
       if (this.hasActiveChoices) {
-        const num = Number(e.key);
-        if (num >= 1 && num <= 4) {
-          const btn = this.root.querySelectorAll<HTMLButtonElement>('#prologue-choices .choice-line')[num - 1];
-          if (btn) {
-            e.preventDefault();
-            btn.click();
-          }
-        }
+        handleChoiceKeyboardNav(e, this.root.querySelector('#prologue-choices'));
         return;
       }
 
@@ -156,7 +154,9 @@ export class BootView {
     mode: 'prologue_kitchen' | 'prologue_wakeup',
     headerSpeakerId: string,
     headerSubtitle: string,
-    humanity: number
+    humanity: number,
+    displayNameOverride?: string,
+    hideAvatar = false
   ): void {
     this.setVisualMode(mode);
     this.root.querySelector('#prologue-breath-panel')?.classList.add('hidden');
@@ -169,11 +169,13 @@ export class BootView {
     const bayEl = this.root.querySelector<HTMLElement>('#prologue-speaker-bay');
     if (bayEl) {
       const ch = CHAR_MAP[headerSpeakerId] ?? CHAR_MAP.narrator;
+      const titleText = displayNameOverride ?? ch.displayName;
+      const avatarHtml = hideAvatar ? '' : renderSpeakerAvatar(headerSpeakerId, humanity, 42);
       bayEl.innerHTML = `
-        <div class="avatar-card compact">
-          ${renderSpeakerAvatar(headerSpeakerId, humanity, 42)}
+        <div class="avatar-card compact ${hideAvatar ? 'no-avatar' : ''}">
+          ${avatarHtml}
           <div class="avatar-meta">
-            <strong>${escapeHtml(ch.displayName)}</strong>
+            <strong>${escapeHtml(titleText)}</strong>
             <span>${escapeHtml(headerSubtitle)}</span>
           </div>
         </div>
@@ -195,40 +197,20 @@ export class BootView {
 
     if (choices.length > 0) {
       this.hasActiveChoices = true;
-      choicesEl.innerHTML = choices
-        .map((c, i) => {
-          const affCls =
-            c.affinity === 'warm'
-              ? 'is-affinity-warm'
-              : c.affinity === 'cold'
-                ? 'is-affinity-cold'
-                : '';
-          const dot = affCls ? '<i class="choice-affinity-dot" aria-hidden="true"></i>' : '';
-          return `
-            <button class="choice-line choice-enter ${affCls}" data-choice-index="${c.index}" style="--choice-idx:${i}" type="button">
-              <span class="choice-num">${i + 1}.</span>
-              <span class="choice-body">${formatInlineHighlights(c.text)}</span>
-              ${dot}
-            </button>
-          `;
-        })
-        .join('');
-
-      choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line').forEach((btn) => {
-        btn.addEventListener('mouseenter', () => opts.onHover?.());
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
+      choicesEl.innerHTML = renderChoicePlatesHtml(choices);
+      bindChoicePlates(choicesEl, {
+        onHover: opts.onHover,
+        onSelect: (idx, btn) => {
           if (this.inputLocked) return;
-          const idx = Number(btn.dataset.choiceIndex);
           choicesEl.classList.add('is-locked');
           choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line').forEach((b) => {
-            const picked = Number(b.dataset.choiceIndex) === idx;
+            const picked = b === btn;
             b.classList.toggle('is-selected', picked);
             b.classList.toggle('is-dismissed', !picked);
           });
           this.hasActiveChoices = false;
           this.callbacks?.onChoosePrologue(idx);
-        });
+        },
       });
       return;
     }
@@ -236,9 +218,9 @@ export class BootView {
     this.hasActiveChoices = false;
     const label = opts.continueLabel ?? 'Continue';
     choicesEl.innerHTML = `
-      <button class="choice-line choice-enter prologue-continue-btn" id="btn-prologue-continue" style="--choice-idx:0" type="button">
-        <span class="choice-num">▸</span>
-        <span>${escapeHtml(label)}</span>
+      <button class="prologue-continue-bar choice-enter" id="btn-prologue-continue" style="--choice-idx:0" type="button">
+        <span class="prologue-continue-glyph">▾</span>
+        <span class="prologue-continue-label">${escapeHtml(label)}</span>
         <span class="prologue-key-hint">${escapeHtml(uiCopy.prologue.advanceHint)}</span>
       </button>
     `;
@@ -247,6 +229,7 @@ export class BootView {
     btn?.addEventListener('click', (e) => {
       e.stopPropagation();
       if (this.inputLocked) return;
+      btn.blur();
       (opts.onAdvance ?? this.callbacks?.onAdvancePrologue)?.();
     });
   }

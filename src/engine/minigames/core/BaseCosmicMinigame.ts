@@ -1,5 +1,5 @@
 import { platform } from '../../../platform/PlatformAdapter';
-import { computeOpticalClarity, setupRetinaCanvas } from '../canvasUtils';
+import { setupRetinaCanvas } from '../canvasUtils';
 import {
   drawCachedCosmicBackdrop,
   type BackdropDrawOpts,
@@ -18,12 +18,7 @@ import {
   generateDepthStarfield,
   type DepthStarSpec,
 } from '../render/StarPSFAtlas';
-import {
-  clamp,
-  computeInstrumentProfile,
-  createSeededRng,
-  resolveInstrumentPayout,
-} from '../tactilePhysics';
+import { clamp, computeInstrumentProfile, createSeededRng, lerp, resolveInstrumentPayout } from '../tactilePhysics';
 import type {
   CognitiveInstrumentProfile,
   CosmicPlateId,
@@ -34,6 +29,7 @@ import type {
   Minigame3DConfig,
   MinigameContext,
   MinigameGrade,
+  MinigameStateVector,
   MinigameVariantSpec,
   SolvabilityHarness,
 } from '../types';
@@ -105,12 +101,33 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   protected elapsedSec = 0;
   protected startedAt = 0;
   protected completed = false;
+  protected postCompleteAmbient = false;
   protected stage: 1 | 2 | 3 = 1;
+  protected stageEnterT = 1;
   protected stageFlash = 0;
   protected stageFlashText = '';
   protected stageClearTimer = 0;
   protected lockHoldSec = 0;
-  protected lockHoldTargetSec = 0.5;
+  protected lockHoldTargetSec = 0.92;
+
+  private stageTransitionPhase: 'idle' | 'holding' | 'closing' | 'opening' = 'idle';
+  private stageTransitionElapsed = 0;
+  private stageTransitionDuration = 0;
+  private stageVeilAlpha = 0;
+  private stageFocusX = 0;
+  private stageFocusY = 0;
+
+  private lockRingAlpha = 0;
+  private lockRingDisplayProgress = 0;
+  private lockRingRequestedThisFrame = false;
+  private lockRingSpec: {
+    cx: number;
+    cy: number;
+    radius: number;
+    targetProgress: number;
+    colorHex: string;
+    label?: string;
+  } | null = null;
 
   protected iterationIndex = 0;
   protected variantSeed = '';
@@ -135,12 +152,22 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     this.ctx = ctx;
     this.startedAt = performance.now();
     this.completed = false;
+    this.postCompleteAmbient = false;
     this.elapsedSec = 0;
     this.stage = 1;
+    this.stageEnterT = 1;
     this.stageFlash = 0;
     this.stageFlashText = '';
     this.stageClearTimer = 0;
     this.lockHoldSec = 0;
+    this.stageTransitionPhase = 'idle';
+    this.stageTransitionElapsed = 0;
+    this.stageTransitionDuration = 0;
+    this.stageVeilAlpha = 0;
+    this.lockRingAlpha = 0;
+    this.lockRingDisplayProgress = 0;
+    this.lockRingRequestedThisFrame = false;
+    this.lockRingSpec = null;
     this.pointerNormX = 0;
     this.pointerNormY = 0;
     this.lastHudSig = '';
@@ -148,7 +175,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
 
     this.palette = getCosmicPalette(ctx.state.humanity);
     this.profile = computeInstrumentProfile(ctx.state);
-    this.clarity01 = computeOpticalClarity(ctx.state.humanity, ctx.state.opticalFidelity);
+    this.clarity01 = this.profile.clarity01;
 
     // Resolve curated iteration / variant + plate pool
     const variants = this.variants ?? [];
@@ -184,7 +211,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     // Configure lightweight 3D backdrop coupling (or clean WebGL pause for pure-plate games)
     const cfg3D = this.getBackdrop3DConfig();
     this.bridge3D = new Minigame3DBridge(ctx.showcase);
-    this.bridge3D.enter(cfg3D);
+    this.bridge3D.enter(cfg3D, ctx.state.humanity);
 
     this.onMount();
     this.setupStage(1);
@@ -194,18 +221,43 @@ export abstract class BaseCosmicMinigame implements IMinigame {
 
     this.lastTs = performance.now();
     const tick = (now: number) => {
-      if (this.completed) return;
+      if (this.completed && !this.postCompleteAmbient) return;
       const dt = Math.min(0.05, Math.max(0.001, (now - this.lastTs) / 1000));
       this.lastTs = now;
-      this.stepFrame(dt);
-      this.renderFrame();
-      if (!this.completed) {
+      if (this.postCompleteAmbient) {
+        this.elapsedSec += dt * 0.45;
+        this.stageFlash = Math.max(0, this.stageFlash - dt * 0.85);
+        this.lockRingAlpha = Math.max(0, this.lockRingAlpha - dt * 2.2);
+        this.particles.update(dt * 0.55, this.width, this.height);
+        this.renderFrame();
+        this.bridge3D?.updateParallax(this.pointerNormX * 0.35, this.pointerNormY * 0.35, 1);
+      } else {
+        this.stepFrame(dt);
+        this.renderFrame();
+      }
+      if (!this.completed || this.postCompleteAmbient) {
         this.rafId = requestAnimationFrame(tick);
       }
     };
     if (typeof requestAnimationFrame !== 'undefined') {
       this.rafId = requestAnimationFrame(tick);
     }
+  }
+
+  /**
+   * Live in-place 3-Axis state update (Warmth, Optical Clarity, Horizon Drift) without
+   * tearing down the canvas or resetting the player's current Stage progress.
+   */
+  updateState(nextState: MinigameStateVector): void {
+    if (!this.ctx || this.completed) return;
+    this.ctx.state = nextState;
+    this.palette = getCosmicPalette(nextState.humanity);
+    this.profile = computeInstrumentProfile(nextState);
+    this.clarity01 = this.profile.clarity01;
+    this.particles.configureVibe(this.palette.mode);
+    this.bridge3D?.setVibe(nextState.humanity);
+    this.onProfileUpdated();
+    this.emitHud(true);
   }
 
   getBackdrop3DConfig(): Minigame3DConfig {
@@ -375,10 +427,78 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   private stepFrame(dt: number): void {
     if (this.completed) return;
     this.elapsedSec += dt;
-    this.stageFlash = Math.max(0, this.stageFlash - dt * 1.4);
+    this.stageFlash = Math.max(0, this.stageFlash - dt * 0.78);
+    if (this.stageEnterT < 1) {
+      this.stageEnterT = Math.min(1, this.stageEnterT + dt / 0.56);
+    }
     this.particles.update(dt, this.width, this.height);
 
-    if (this.stageClearTimer > 0) {
+    // Inertial smoothing on the lock resonance ring (gentle appear, damped progress, unhurried fade-out)
+    const wantRing =
+      this.lockRingRequestedThisFrame ||
+      (this.stageTransitionPhase === 'holding' && this.lockRingSpec !== null);
+    const targetAlpha = this.stageTransitionPhase === 'closing' ? 0 : wantRing ? 1 : 0;
+    const alphaRate = targetAlpha > this.lockRingAlpha ? 5.2 : 2.8;
+    this.lockRingAlpha = lerp(this.lockRingAlpha, targetAlpha, 1 - Math.exp(-alphaRate * dt));
+
+    const targetProg = this.lockRingSpec
+      ? this.stageTransitionPhase === 'holding'
+        ? 1
+        : this.lockRingSpec.targetProgress
+      : 0;
+    const progRate = targetProg >= this.lockRingDisplayProgress ? 4.8 : 2.6;
+    this.lockRingDisplayProgress = lerp(
+      this.lockRingDisplayProgress,
+      targetProg,
+      1 - Math.exp(-progRate * dt)
+    );
+
+    if (!wantRing && this.lockRingAlpha < 0.015) {
+      this.lockRingAlpha = 0;
+      this.lockRingDisplayProgress = 0;
+      this.lockRingSpec = null;
+    }
+
+    // Two-phase optical aperture cross-dissolve between Stage 1 -> 2 -> 3
+    if (this.stageTransitionPhase === 'holding') {
+      this.stageClearTimer -= dt;
+      if (this.stageClearTimer <= 0) {
+        if (this.stage < 3) {
+          this.stageTransitionPhase = 'closing';
+          this.stageTransitionElapsed = 0;
+          this.stageTransitionDuration = 0.3;
+          this.stageClearTimer = 0.3;
+        } else {
+          this.stageClearTimer = 0;
+          this.stageTransitionPhase = 'idle';
+          this.onAllStagesCleared();
+          return;
+        }
+      }
+    } else if (this.stageTransitionPhase === 'closing') {
+      this.stageTransitionElapsed += dt;
+      const u = clamp(this.stageTransitionElapsed / Math.max(0.01, this.stageTransitionDuration), 0, 1);
+      this.stageVeilAlpha = u * u * 0.86;
+      this.stageClearTimer = Math.max(0.001, this.stageTransitionDuration - this.stageTransitionElapsed);
+      if (u >= 1) {
+        this.setupStage((this.stage + 1) as 2 | 3);
+        this.stageTransitionPhase = 'opening';
+        this.stageTransitionElapsed = 0;
+        this.stageTransitionDuration = 0.56;
+        this.stageVeilAlpha = 0.86;
+        this.stageClearTimer = 0;
+        this.emitHud(true);
+      }
+    } else if (this.stageTransitionPhase === 'opening') {
+      this.stageTransitionElapsed += dt;
+      const u = clamp(this.stageTransitionElapsed / Math.max(0.01, this.stageTransitionDuration), 0, 1);
+      const easeOut = 1 - Math.pow(1 - u, 3);
+      this.stageVeilAlpha = (1 - easeOut) * 0.86;
+      if (u >= 1) {
+        this.stageTransitionPhase = 'idle';
+        this.stageVeilAlpha = 0;
+      }
+    } else if (this.stageClearTimer > 0) {
       this.stageClearTimer -= dt;
       if (this.stageClearTimer <= 0) {
         this.stageClearTimer = 0;
@@ -398,11 +518,41 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   }
 
   private renderFrame(): void {
+    this.lockRingRequestedThisFrame = false;
     this.onRender(this.c2d, this.width, this.height);
+    const veilAlpha = Math.max(
+      this.stageVeilAlpha,
+      this.stageEnterT < 0.995
+        ? (1 - (1 - Math.pow(1 - clamp(this.stageEnterT, 0, 1), 3))) * 0.28
+        : 0
+    );
+    if (veilAlpha > 0.005) {
+      this.c2d.save();
+      this.c2d.fillStyle = this.palette.voidBg;
+      this.c2d.globalAlpha = veilAlpha;
+      this.c2d.fillRect(0, 0, this.width, this.height);
+
+      // Subtle expanding/contracting optical iris hairline centered on stage lock focus
+      if (this.stageTransitionPhase === 'closing' || this.stageTransitionPhase === 'opening') {
+        const fx = this.stageFocusX || this.width * 0.5;
+        const fy = this.stageFocusY || this.height * 0.46;
+        const maxR = Math.min(this.width, this.height) * 0.42;
+        const irisR = maxR * (1 - clamp(veilAlpha / 0.86, 0, 1) * 0.62);
+        this.c2d.strokeStyle = this.palette.accentHex;
+        this.c2d.globalAlpha = veilAlpha * 0.45;
+        this.c2d.lineWidth = 1.25;
+        this.c2d.beginPath();
+        this.c2d.arc(fx, fy, Math.max(12, irisR), 0, Math.PI * 2);
+        this.c2d.stroke();
+      }
+      this.c2d.restore();
+    }
   }
 
   /**
    * Shared cached astronomy backdrop + 3-depth starfield + pooled ambient cosmic motes helper.
+   * Applies the 3-Axis contract (Warmth cooling tint, Optical Clarity blur/grain, Horizon Drift edge ticks)
+   * cleanly at the base level without square graph-paper overlays.
    */
   protected drawBackdropAndAmbient(
     c2d: CanvasRenderingContext2D,
@@ -413,23 +563,35 @@ export abstract class BaseCosmicMinigame implements IMinigame {
       reticleDuck?: ReticleDuckZone;
     }
   ): void {
+    const requestedBlur = opts?.blurPx ?? 4;
+    const clarityScale = 0.28 + 0.42 * clamp(requestedBlur / 10, 0, 1);
+    const effectiveBlur = requestedBlur + this.profile.plateBlurPenaltyPx * clarityScale;
+
+    const baseTintHex =
+      this.palette.mode === 'cold' ? '#041828' : this.palette.mode === 'warm' ? '#100804' : '#040812';
+    const baseTintAlpha = opts?.tintAlpha ?? 0.44;
+    const effectiveTintAlpha =
+      this.palette.mode === 'cold' ? clamp(baseTintAlpha + 0.09, 0, 0.72) : baseTintAlpha;
+
     drawCachedCosmicBackdrop(c2d, w, h, {
       plateId: opts?.plateId ?? this.activePlateId,
-      blurPx: opts?.blurPx ?? 4,
+      blurPx: effectiveBlur,
       alpha: opts?.alpha ?? 0.48,
       brightness: opts?.brightness ?? 0.82,
       scale: opts?.scale ?? 1.04,
-      tintHex: opts?.tintHex ?? '#040812',
-      tintAlpha: opts?.tintAlpha ?? 0.44,
+      tintHex: opts?.tintHex ?? baseTintHex,
+      tintAlpha: effectiveTintAlpha,
       vignetteAlpha: opts?.vignetteAlpha ?? 0.78,
-      gridAlpha: opts?.gridAlpha ?? (this.palette.mode === 'cold' ? 0.14 : 0.05),
+      gridAlpha: opts?.gridAlpha ?? 0,
+      grainAlpha: opts?.grainAlpha ?? this.profile.ccdNoiseAlpha,
+      horizonDriftAlpha: opts?.horizonDriftAlpha ?? this.profile.seamBleedAlpha,
       compositeOver3D: opts?.compositeOver3D ?? this.is3DBackdropActive,
       parallaxX: opts?.parallaxX ?? this.pointerNormX,
       parallaxY: opts?.parallaxY ?? this.pointerNormY,
     });
 
     drawAmbientStarfield3Depth(c2d, w, h, this.depthStars, this.elapsedSec, {
-      opacityMul: opts?.starOpacity ?? 0.78,
+      opacityMul: (opts?.starOpacity ?? 0.78) * lerp(0.84, 1.08, this.profile.clarity01),
       vibeMode: this.palette.mode,
       parallaxX: this.pointerNormX,
       parallaxY: this.pointerNormY,
@@ -448,42 +610,77 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     h: number,
     lockRing?: { cx: number; cy: number; radius: number; progress01: number; label?: string; colorHex?: string }
   ): void {
-    if (lockRing && lockRing.progress01 > 0.01) {
+    if (lockRing && lockRing.progress01 > 0.008) {
+      this.lockRingRequestedThisFrame = true;
+      this.lockRingSpec = {
+        cx: lockRing.cx,
+        cy: lockRing.cy,
+        radius: lockRing.radius,
+        targetProgress: clamp(lockRing.progress01, 0, 1),
+        colorHex: lockRing.colorHex ?? this.palette.lockHex,
+        label: lockRing.label,
+      };
+    } else if (this.lockRingSpec) {
+      this.lockRingSpec.targetProgress = this.stageTransitionPhase === 'holding' ? 1 : 0;
+    }
+
+    if (this.lockRingSpec && this.lockRingAlpha > 0.015 && this.lockRingDisplayProgress > 0.005) {
+      const spec = this.lockRingSpec;
       drawLockResonanceRing(
         c2d,
-        lockRing.cx,
-        lockRing.cy,
-        lockRing.radius,
-        lockRing.progress01,
-        lockRing.colorHex ?? this.palette.lockHex,
-        lockRing.label
+        spec.cx,
+        spec.cy,
+        spec.radius,
+        this.lockRingDisplayProgress,
+        spec.colorHex,
+        spec.label,
+        this.lockRingAlpha
       );
     }
     if (this.stageFlash > 0.01) {
-      drawStageUnlockPulse(c2d, w, h, this.stageFlash, this.stageFlashText, this.palette.lockHex);
+      drawStageUnlockPulse(
+        c2d,
+        w,
+        h,
+        this.stageFlash,
+        this.stageFlashText,
+        this.palette.lockHex,
+        this.palette.secondaryHex
+      );
     }
   }
 
   protected setupStage(stage: 1 | 2 | 3): void {
     this.stage = stage;
+    this.stageEnterT = stage === 1 ? 1 : 0;
     this.lockHoldSec = 0;
     this.stageClearTimer = 0;
+    this.stageTransitionPhase = 'idle';
+    this.stageTransitionElapsed = 0;
+    this.stageTransitionDuration = 0;
+    this.stageVeilAlpha = 0;
+    this.lockRingAlpha = 0;
+    this.lockRingDisplayProgress = 0;
+    this.lockRingRequestedThisFrame = false;
+    this.lockRingSpec = null;
     this.onSetupStage(stage, this.stageRng(stage));
   }
 
   /**
    * Triggers a clean stage-clear pulse + caustic ring and advances to the next stage
-   * (or completes the instrument after Stage 3) once `delaySec` elapses.
+   * (or completes the instrument after Stage 3) once the calm optical hold & cross-dissolve finish.
    */
-  protected triggerStageClear(flashText: string, delaySec = 0.62, ringCx?: number, ringCy?: number): void {
+  protected triggerStageClear(flashText: string, delaySec = 0.85, ringCx?: number, ringCy?: number): void {
     if (this.completed || this.stageClearTimer > 0) return;
     platform.triggerHaptic('phaseSnapLock', 0.95);
     this.ctx.audio?.playPhaseLock?.(this.stage);
     this.stageFlash = 1;
     this.stageFlashText = flashText;
+    this.stageFocusX = ringCx ?? this.width * 0.5;
+    this.stageFocusY = ringCy ?? this.height * 0.46;
     this.particles.emitLockCausticRing(
-      ringCx ?? this.width * 0.5,
-      ringCy ?? this.height * 0.46,
+      this.stageFocusX,
+      this.stageFocusY,
       this.compact ? 26 : 36,
       this.palette.lockHex
     );
@@ -495,7 +692,11 @@ export abstract class BaseCosmicMinigame implements IMinigame {
         this.onAllStagesCleared();
       }
     } else {
-      this.stageClearTimer = delaySec;
+      const holdDur = this.stage === 3 ? Math.max(0.95, delaySec) : Math.max(0.82, delaySec);
+      this.stageClearTimer = holdDur;
+      this.stageTransitionPhase = 'holding';
+      this.stageTransitionElapsed = 0;
+      this.stageTransitionDuration = holdDur;
     }
     this.emitHud(true);
   }
@@ -532,19 +733,15 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   protected finishSuccess(opts: FinishMinigameOptions): void {
     if (this.completed) return;
     this.completed = true;
-    if (this.rafId !== null) {
-      cancelAnimationFrame(this.rafId);
-      this.rafId = null;
-    }
+    this.postCompleteAmbient = true;
     this.ctx.audio?.stopInstrumentAudio();
-    this.ctx.audio?.playCaptureShutter(opts.grade ?? 'clean');
+    this.ctx.audio?.playCaptureShutter('clean');
     platform.triggerHaptic('shutterCommit', 1.0);
-    this.bridge3D?.exit();
 
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
     this.ctx.onComplete(
       resolveInstrumentPayout(
-        opts.grade ?? 'clean',
+        'clean',
         totalSec,
         clamp(opts.accuracy, 0.5, 1.0),
         `${this.ctx.targetId}_${opts.proofFragmentSuffix}`,
@@ -590,6 +787,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
 
   destroy(): void {
     this.completed = true;
+    this.postCompleteAmbient = false;
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
@@ -609,6 +807,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   // ==================== SUBCLASS HOOKS ====================
 
   protected onMount(): void {}
+  protected onProfileUpdated(): void {}
   protected onResize(_w: number, _h: number): void {}
   protected onDestroy(): void {}
   protected onPointerDown(_ev: PointerLocalEvent): void {}

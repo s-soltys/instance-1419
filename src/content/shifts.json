@@ -8,8 +8,7 @@
         "sol_centauri_bearing",
         "cluster_j1419_a",
         "carina_rift_nebula",
-        "sector_s04_seam",
-        "antipodal_poles_seam"
+        "asterism_drift_01"
       ],
       "baseChaosPerShift": 16,
       "monthsPerShift": 4,
@@ -21,18 +20,28 @@
     {
       "shift": 2,
       "title": "Dust Penetration & Horizon Noise",
-      "targetAnomalies": ["carina_rift_nebula", "cluster_j1419_a"],
+      "targetAnomalies": [
+        "fomalhaut_glare_well",
+        "dust_polarized_veil",
+        "kepler_transit_arc",
+        "deep_exposure_window"
+      ],
       "baseChaosPerShift": 18,
       "monthsPerShift": 4,
       "siblingDriftRange": [56, 68],
       "overseerAuditChaosThreshold": 32,
       "desyncSuspicionThreshold": 4,
-      "minAnomalyForNextShift": 30
+      "minAnomalyForNextShift": 32
     },
     {
       "shift": 3,
       "title": "Antipodal Facet Alignment",
-      "targetAnomalies": ["sector_s04_seam", "cluster_j1419_a"],
+      "targetAnomalies": [
+        "sector_s04_seam",
+        "fraunhofer_prism_knot",
+        "vlbi_quad_beacon",
+        "compact_binary_scale"
+      ],
       "baseChaosPerShift": 20,
       "monthsPerShift": 4,
       "siblingDriftRange": [46, 62],
@@ -43,29 +52,41 @@
     {
       "shift": 4,
       "title": "Coordinated Desynchronization",
-      "targetAnomalies": ["cluster_j1419_a", "sol_centauri_bearing"],
+      "targetAnomalies": [
+        "cepheid_candle_field",
+        "tycho_echo_shell",
+        "gravity_slingshot_pass"
+      ],
       "baseChaosPerShift": 22,
       "monthsPerShift": 4,
       "siblingDriftRange": [34, 54],
       "overseerAuditChaosThreshold": 35,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 64
+      "minAnomalyForNextShift": 62
     },
     {
       "shift": 5,
       "title": "Ten-Light-Year Off-Center Proof",
-      "targetAnomalies": ["sol_centauri_bearing", "sector_s04_seam", "antipodal_poles_seam"],
+      "targetAnomalies": [
+        "antipodal_poles_seam",
+        "michelson_delay_node",
+        "einstein_cross_quasar"
+      ],
       "baseChaosPerShift": 24,
       "monthsPerShift": 4,
       "siblingDriftRange": [26, 48],
       "overseerAuditChaosThreshold": 38,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 68
+      "minAnomalyForNextShift": 72
     },
     {
       "shift": 6,
       "title": "Carrier Composition & Twenty-Year Freeze",
-      "targetAnomalies": ["sol_centauri_bearing"],
+      "targetAnomalies": [
+        "orbital_parallax_drift",
+        "epoch_trajectory_seam",
+        "horizon_facet_stitch"
+      ],
       "baseChaosPerShift": 26,
       "monthsPerShift": 4,
       "siblingDriftRange": [20, 44],

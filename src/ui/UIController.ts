@@ -1,4 +1,5 @@
 import charactersData from '../content/characters.json';
+import shiftsData from '../content/shifts.json';
 import uiCopy from '../content/ui_copy.json';
 import type { AudioEngine } from '../engine/AudioEngine';
 import { CodexEngine } from '../engine/CodexEngine';
@@ -16,7 +17,7 @@ import {
   type StateStore,
 } from '../engine/StateStore';
 import type { StoryletScheduler } from '../engine/StoryletScheduler';
-import type { ShowcaseTelemetry, TargetShowcaseScene } from '../engine/TargetShowcaseScene';
+import type { TargetShowcaseScene } from '../engine/TargetShowcaseScene';
 import { TelemetryLogger } from '../engine/TelemetryLogger';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { platform } from '../platform/PlatformAdapter';
@@ -26,7 +27,11 @@ import { StatusShiftOverlay } from './StatusShiftOverlay';
 import { TransitionDirector, type TransitionKind } from './TransitionDirector';
 import { BootView } from './views/BootView';
 import { CodexView } from './views/CodexView';
-import { DialogueFeedView, stripInlineHighlights } from './views/DialogueFeedView';
+import {
+  DialogueFeedView,
+  handleChoiceKeyboardNav,
+  stripInlineHighlights,
+} from './views/DialogueFeedView';
 import { MinigameHostView } from './views/MinigameHostView';
 import { SettingsView } from './views/SettingsView';
 import { WakeupBriefingCanvas } from './views/WakeupBriefingCanvas';
@@ -161,6 +166,7 @@ export class UIController {
   private lastScannedSig = '';
   private lastDecodedSig = '';
   private lastIntroStageSig = '';
+  private lastShiftGateSig = -1;
   private lastPromptKey = '';
   private lastSurveyDotsSig = '';
   private lastHumanityPct = -1;
@@ -197,6 +203,7 @@ export class UIController {
   private postTarget2Timer: number | null = null;
   private dreamSettleTimer: number | null = null;
   private overseerInterruptTimer: number | null = null;
+  private overseerInterruptToken = 0;
   private overseerSliceTimer: number | null = null;
 
   constructor(
@@ -218,7 +225,7 @@ export class UIController {
     this.dreamDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
     this.overseerDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
     this.futureDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
-    this.prologueDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
+    this.prologueDialogue = new DialogueRunner(store, () => {});
     this.scheduler = scheduler;
     this.minigames = minigames;
     this.codexEngine = new CodexEngine();
@@ -255,20 +262,18 @@ export class UIController {
         this.enterTargetMinigame(INTRO_TARGET_1_ID, 'blink_spotter');
       },
     });
-    this.minigameHost.setBandSwitchCallback((bandIdx) => {
-      const ratios = [0.04, 0.23, 0.61, 0.86];
-      const val = ratios[bandIdx] ?? 0.23;
-      this.showcase?.setWaveBand(val);
-      this.store.patch({ wavelengthNm: Math.round(200 + val * 1600) });
+    this.minigameHost.setExitRequestCallback((preserveDecoded, decodedSpec) => {
+      if (this.activeMinigameTargetId !== null && !this.suppressMinigamePullback) {
+        this.exitTargetMinigame(decodedSpec, preserveDecoded);
+      } else {
+        this.minigameHost.destroy(preserveDecoded);
+      }
     });
     this.minigameHost.setActiveChangeCallback((mgId) => {
       if (this.shellRefs?.stage) {
-        this.shellRefs.stage.dataset.minigame = this.minigameHost.isActive() ? '1' : '0';
+        this.shellRefs.stage.dataset.minigame = mgId !== null ? '1' : '0';
       }
       this.syncAudioMusic(this.store.getState());
-      if (mgId === null && this.activeMinigameTargetId !== null && !this.suppressMinigamePullback) {
-        this.exitTargetMinigame(this.lastMinigameDecodedSpec);
-      }
     });
   }
 
@@ -286,6 +291,7 @@ export class UIController {
     this.store.subscribe((state) => this.syncStateToUI(state));
     this.store.subscribeStatusShift((ev) => {
       if (this.store.getState().introStage !== 'complete' && ev.tone === 'discovery') return;
+      if (ev.tone === 'discovery' && this.minigameHost.isActive()) return;
       this.statusShift.show(ev);
     });
     this.bindAvatarVoiceLoop();
@@ -519,7 +525,7 @@ export class UIController {
                     <span class="mg-pip" data-stage="2"></span>
                     <span class="mg-pip" data-stage="3"></span>
                   </div>
-                  <span class="mg-stage-label" id="mg-stage-label">1/3 · EASY</span>
+                  <span class="mg-stage-label" id="mg-stage-label">PASS I · COARSE</span>
                 </div>
               </div>
               <div class="mg-top-right">
@@ -539,11 +545,13 @@ export class UIController {
             </aside>
             <div id="minigame-mount"></div>
             <div class="mg-capture-finale hidden" id="mg-capture-finale">
-              <div class="mg-finale-grade" id="mg-finale-grade">ANALYSIS LOGGED</div>
-              <div class="mg-finale-gain" id="mg-finale-gain">SURVEY HORIZON ADVANCED</div>
-              <div class="mg-finale-snippet" id="mg-finale-snippet"></div>
-              <div class="mg-finale-principle" id="mg-finale-principle"></div>
-              <button class="etched-action amber" id="mg-btn-log-dossier" type="button">CONTINUE</button>
+              <div class="mg-finale-grade" id="mg-finale-grade">SHIFT 1</div>
+              <div class="mg-finale-gain" id="mg-finale-gain">TARGET CALIBRATED</div>
+              <div class="mg-finale-visual" id="mg-finale-visual" aria-hidden="true"></div>
+              <div class="mg-finale-snippet hidden" id="mg-finale-snippet"></div>
+              <div class="mg-finale-principle hidden" id="mg-finale-principle"></div>
+              <div class="mg-finale-timer" aria-hidden="true"><span class="mg-finale-timer-fill" id="mg-finale-timer-fill"></span></div>
+              <button class="etched-action amber" id="mg-btn-log-dossier" type="button">RETURN TO SKY</button>
             </div>
             <div class="mg-bottom-console">
               <div class="mg-cue-line" id="mg-cue-whisper">Inspect optical field to begin</div>
@@ -703,6 +711,7 @@ export class UIController {
       window.clearTimeout(this.overseerInterruptTimer);
       this.overseerInterruptTimer = null;
     }
+    this.overseerInterruptToken++;
     if (this.overseerSliceTimer !== null) {
       window.clearTimeout(this.overseerSliceTimer);
       this.overseerSliceTimer = null;
@@ -794,12 +803,13 @@ export class UIController {
     this.dream.setState(s.humanity, false, false, 'phantom_spouse');
     this.dream.setActive(true);
 
-    const partnerMeta = CHAR_MAP.phantom_spouse;
     this.bootView.showPrologueConversation(
       'prologue_kitchen',
       'phantom_spouse',
-      partnerMeta?.roomTitle ?? 'BEFORE THE UPLOAD · SUNDAY MORNING',
-      s.humanity
+      uiCopy.prologue.kitchenSubtitle ?? 'SUNDAY MORNING · BEFORE THE CLINIC',
+      s.humanity,
+      uiCopy.prologue.kitchenSpeakerLabel ?? 'ACROSS THE TABLE',
+      true
     );
 
     // Sync warm harmonium dream music bed softly under kitchen conversation
@@ -949,7 +959,9 @@ export class UIController {
 
     if (speakLatest && latestEntry) {
       if (latestEntry.audioCue) this.audio.playCue(latestEntry.audioCue);
-      if (!latestEntry.isPlayerChoice) {
+      if (latestEntry.speaker.startsWith('psyche_')) {
+        this.audio.playCue('tick');
+      } else if (!latestEntry.isPlayerChoice) {
         this.voice.stop();
         this.voice.speakSingle(
           stripInlineHighlights(latestEntry.text),
@@ -1053,6 +1065,24 @@ export class UIController {
     }
   }
 
+  private getUnlockedAnomalyIds(state: GameState): string[] {
+    if (state.introStage === 'prologue' || state.introStage === 'title' || state.introStage === 'scan_target_1' || state.introStage === 'mg_1_done') {
+      return [INTRO_TARGET_1_ID];
+    }
+    if (state.introStage === 'scan_target_2' || state.introStage === 'mg_2_done') {
+      return [INTRO_TARGET_1_ID, INTRO_TARGET_2_ID];
+    }
+    const unlocked = new Set<string>();
+    for (const sh of shiftsData.shifts) {
+      if (sh.shift <= state.shift) {
+        for (const id of sh.targetAnomalies) unlocked.add(id);
+      }
+    }
+    for (const id of state.scannedAnomalyIds) unlocked.add(id);
+    for (const id of state.decodedMinigameTargets) unlocked.add(id);
+    return [...unlocked];
+  }
+
   private applyIntroOpticsConstraints(stage: IntroStage): void {
     if (!this.optics) return;
     if (stage === 'prologue' || stage === 'title' || stage === 'scan_target_1') {
@@ -1065,7 +1095,7 @@ export class UIController {
       this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID, INTRO_TARGET_2_ID]);
       this.optics.setMagneticDetentTarget(null);
     } else {
-      this.optics.setVisibleTargetIds(null);
+      this.optics.setVisibleTargetIds(this.getUnlockedAnomalyIds(this.store.getState()));
       this.optics.setMagneticDetentTarget(null);
     }
   }
@@ -1112,9 +1142,11 @@ export class UIController {
     const s = this.store.getState();
     const scanned = new Set(s.scannedAnomalyIds);
     const decoded = new Set(s.decodedMinigameTargets);
+    const unlockedSet = new Set(this.getUnlockedAnomalyIds(s));
 
     nav.innerHTML = this.optics
       .getAnomalySpecs()
+      .filter((spec) => unlockedSet.has(spec.id))
       .map((spec) => {
         const isDecoded = decoded.has(spec.id);
         const isScanned = scanned.has(spec.id);
@@ -1327,25 +1359,18 @@ export class UIController {
         return;
       }
       if (this.settingsView.isOpen() || this.codexView.isOpen()) return;
-      const num = Number(e.key);
-      if (num >= 1 && num <= 4) {
-        const overseerOpen = !this.root.querySelector('#overseer-panel')?.classList.contains('hidden');
-        const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
-        const dreamOpen = this.store.getState().mode === 'dream_2d' && !overseerOpen;
-        const selector = overseerOpen
-          ? '#overseer-choices .choice-line'
-          : commsOpen
-            ? '#comms-choices .choice-line'
-            : dreamOpen
-              ? '#dream-choices .choice-line'
-              : null;
-        if (selector) {
-          const target = this.root.querySelectorAll<HTMLButtonElement>(selector)[num - 1];
-          if (target) {
-            e.preventDefault();
-            target.click();
-          }
-        }
+      const overseerOpen = !this.root.querySelector('#overseer-panel')?.classList.contains('hidden');
+      const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
+      const dreamOpen = this.store.getState().mode === 'dream_2d' && !overseerOpen;
+      const selector = overseerOpen
+        ? '#overseer-choices'
+        : commsOpen
+          ? '#comms-choices'
+          : dreamOpen
+            ? '#dream-choices'
+            : null;
+      if (selector) {
+        handleChoiceKeyboardNav(e, this.root.querySelector<HTMLElement>(selector));
       }
     });
   }
@@ -1537,7 +1562,7 @@ export class UIController {
   }
 
   // Kept for compatibility with src/main.ts callback signature
-  onShowcaseTelemetry(_t: ShowcaseTelemetry): void {
+  onShowcaseTelemetry(_t: unknown): void {
     // Target inspect HUD removed; TargetShowcaseScene runs purely as selective minigame 3D backdrop.
   }
 
@@ -1558,6 +1583,9 @@ export class UIController {
     const state = this.store.getState();
     const chosenId = overrideMinigameId ?? this.store.getMinigameIdForTarget(spec.id, spec.minigameId);
 
+    // Preload dynamic JS chunk + plate image during optical_dive so frame 1 is live
+    void this.minigameHost.preload(chosenId, iterationIndex);
+
     this.audio.playCue('iris_dive');
     this.optics.triggerTransitionDive?.(spec.id);
 
@@ -1571,10 +1599,6 @@ export class UIController {
         this.activeMinigameTargetId = spec.id;
         this.lastMinigameDecodedSpec = null;
         this.store.patch({ mode: 'waking_3d', activeTargetId: spec.id });
-
-        this.optics.setActive(false);
-        this.root.querySelector('#optics-layer')?.classList.add('hidden');
-        this.root.querySelector('#minigame-layer')?.classList.remove('hidden');
 
         this.showcase.enterTarget(spec, this.store.getState().opticalFidelity);
         this.suppressMinigamePullback = true;
@@ -1591,45 +1615,51 @@ export class UIController {
           this.suppressMinigamePullback = false;
         }
       },
+      onComplete: () => {
+        if (this.activeMinigameTargetId !== null) {
+          this.optics.setActive(false);
+        }
+      },
     });
   }
 
-  private exitTargetMinigame(decodedSpec: AnomalySpec | null): void {
+  private exitTargetMinigame(decodedSpec: AnomalySpec | null, preserveDecoded = true): void {
+    const resolvedDecoded = decodedSpec ?? this.lastMinigameDecodedSpec;
     this.activeMinigameTargetId = null;
     this.lastMinigameDecodedSpec = null;
 
+    const currState = this.store.getState();
     this.audio.playCue('iris_pullback');
     this.transitions.play({
       kind: 'optical_pullback',
       label: 'RETURNING TO SKY APERTURE…',
-      tone: 'cold',
+      tone: currState.humanity >= 45 ? 'warm' : 'cold',
       fromSelector: '#minigame-layer',
       toSelector: '#optics-layer',
       onMidpoint: () => {
-        this.showcase.setMinigameBackdropMode(null);
-        this.showcase.setActive(false);
-        this.root.querySelector('#minigame-layer')?.classList.add('hidden');
-        this.root.querySelector('#optics-layer')?.classList.remove('hidden');
-
         this.optics.setAmbientDrift(false);
         this.optics.triggerPullbackArrival?.();
         this.store.patch({ mode: 'waking_3d', activeTargetId: null });
         this.renderBearingIndex();
 
-        const currState = this.store.getState();
-        const stage = currState.introStage;
-        const decodedTargets = currState.decodedMinigameTargets;
+        const updatedState = this.store.getState();
+        const stage = updatedState.introStage;
+        const decodedTargets = updatedState.decodedMinigameTargets;
         const completedTarget1 =
-          decodedSpec?.id === INTRO_TARGET_1_ID || decodedTargets.includes(INTRO_TARGET_1_ID);
+          resolvedDecoded?.id === INTRO_TARGET_1_ID || decodedTargets.includes(INTRO_TARGET_1_ID);
         const completedTarget2 =
-          decodedSpec?.id === INTRO_TARGET_2_ID || decodedTargets.includes(INTRO_TARGET_2_ID);
+          resolvedDecoded?.id === INTRO_TARGET_2_ID || decodedTargets.includes(INTRO_TARGET_2_ID);
 
         if (completedTarget1 && stage === 'scan_target_1') {
           this.store.setIntroStage('mg_1_done');
           if (this.proactiveCommsTimer !== null) window.clearTimeout(this.proactiveCommsTimer);
           this.proactiveCommsTimer = window.setTimeout(() => {
             this.proactiveCommsTimer = null;
-            if (this.store.getState().mode === 'waking_3d' && this.store.getState().introStage === 'mg_1_done') {
+            if (
+              this.store.getState().mode === 'waking_3d' &&
+              this.store.getState().introStage === 'mg_1_done' &&
+              !this.minigameHost.isActive()
+            ) {
               this.showProactiveCommsToast(uiCopy.commsToast.introTeaser);
             }
           }, 1450);
@@ -1638,13 +1668,22 @@ export class UIController {
           if (this.postTarget2Timer !== null) window.clearTimeout(this.postTarget2Timer);
           this.postTarget2Timer = window.setTimeout(() => {
             this.postTarget2Timer = null;
-            if (this.store.getState().mode === 'waking_3d' && this.store.getState().introStage === 'mg_2_done') {
+            if (
+              this.store.getState().mode === 'waking_3d' &&
+              this.store.getState().introStage === 'mg_2_done' &&
+              !this.minigameHost.isActive()
+            ) {
               this.openPostTarget2Transmission();
             }
           }, 950);
-        } else if (decodedSpec && stage === 'complete') {
-          this.maybeTriggerProactiveComms(decodedSpec);
+        } else if (resolvedDecoded && stage === 'complete') {
+          this.maybeTriggerProactiveComms(resolvedDecoded);
         }
+      },
+      onComplete: () => {
+        this.minigameHost.destroy(preserveDecoded);
+        this.showcase.setMinigameBackdropMode(null);
+        this.showcase.setActive(false);
       },
     });
   }
@@ -1701,7 +1740,7 @@ export class UIController {
 
   private showProactiveCommsToast(customText?: string): void {
     const panelOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
-    if (panelOpen) return;
+    if (panelOpen || this.minigameHost.isActive() || this.activeMinigameTargetId !== null) return;
 
     const s = this.store.getState();
     const preview =
@@ -1851,13 +1890,13 @@ export class UIController {
     bay.innerHTML = `
       <div class="dual-avatar-pair">
         <div class="avatar-chip">
-          ${renderSpeakerAvatar('player', s.humanity, 44)}
+          <span class="voice-live-dot" data-voice-dot-speaker="player" style="background:#ebb062;"></span>
           <div class="avatar-meta"><strong>YOU · 1419</strong><span>${this.warmthDescriptor(s.humanity)}</span></div>
         </div>
         <span class="pair-link">${toneTag}</span>
         <div class="avatar-chip right">
           <div class="avatar-meta"><strong>OTHER ME · 1420</strong><span>${this.warmthDescriptor(s.primarySiblingH)}</span></div>
-          ${renderSpeakerAvatar('sibling_primary', s.primarySiblingH, 44)}
+          ${renderSpeakerAvatar('sibling_primary', s.primarySiblingH, 40)}
         </div>
       </div>
     `;
@@ -1983,14 +2022,16 @@ export class UIController {
   private scheduleOverseerInterrupt(knot: string): void {
     if (this.overseerInterruptTimer !== null) {
       window.clearTimeout(this.overseerInterruptTimer);
+      this.overseerInterruptTimer = null;
     }
+    const token = ++this.overseerInterruptToken;
 
     const choicesEl = this.root.querySelector<HTMLElement>('#dream-choices');
     if (choicesEl) {
       choicesEl.innerHTML = `
-        <button class="choice-line audit-incoming-btn" id="btn-audit-now" type="button">
+        <button class="choice-line audit-incoming-btn is-tier-action" id="btn-audit-now" type="button">
           <span class="choice-num">!</span>
-          <span>OVERSEER-1419 IS STEPPING IN…</span>
+          <span class="choice-body">OVERSEER-1419 IS STEPPING IN…</span>
         </button>
       `;
       choicesEl.querySelector('#btn-audit-now')?.addEventListener('click', () => {
@@ -1998,17 +2039,20 @@ export class UIController {
       });
     }
 
-    this.overseerInterruptTimer = window.setTimeout(() => {
-      this.overseerInterruptTimer = null;
-      this.triggerOverseerInterrogation(knot);
-    }, 1700);
+    void this.voice.waitForQueueNearEnd(260, 2200).then(() => {
+      if (token === this.overseerInterruptToken) {
+        this.triggerOverseerInterrogation(knot);
+      }
+    });
   }
 
   private triggerOverseerInterrogation(knot = 'overseer_interrogation'): void {
+    this.overseerInterruptToken++;
     if (this.overseerInterruptTimer !== null) {
       window.clearTimeout(this.overseerInterruptTimer);
       this.overseerInterruptTimer = null;
     }
+    this.overseerInterruptToken++;
 
     this.audio.playCue('overseer_slice');
     this.dream.triggerSlicePulse?.();
@@ -2115,8 +2159,8 @@ export class UIController {
           ? personaMeta.blurredSubtitle ?? 'FEATURES BLURRED · DISTORTED'
           : personaMeta.roomTitle ?? 'MEMORY CACHE';
       bayEl.innerHTML = `
-        <div class="avatar-card compact">
-          ${renderSpeakerAvatar(personaId, pruned ? 20 : s.humanity, 44)}
+        <div class="avatar-card compact no-avatar">
+          <span class="voice-live-dot" data-voice-dot-speaker="${personaId}" style="background:${personaMeta.accentColor};"></span>
           <div class="avatar-meta">
             <strong>${personaMeta.displayName}</strong>
             <span>${sub}</span>
@@ -2184,17 +2228,12 @@ export class UIController {
     // Only show dots for currently visible/unlocked targets during intro
     const scannedSig = state.scannedAnomalyIds.join('|');
     const decodedSig = state.decodedMinigameTargets.join('|');
-    const surveyDotsSig = `${state.introStage}::${scannedSig}::${decodedSig}`;
+    const surveyDotsSig = `${state.introStage}::${state.shift}::${scannedSig}::${decodedSig}`;
     if (surveyDotsSig !== this.lastSurveyDotsSig) {
       this.lastSurveyDotsSig = surveyDotsSig;
       if (refs.surveyDots) {
-        const allSpecs = this.optics.getAnomalySpecs();
-        const filteredSpecs =
-          state.introStage === 'complete'
-            ? allSpecs
-            : state.introStage === 'scan_target_2' || state.introStage === 'mg_2_done'
-              ? allSpecs.filter((sp) => sp.id === INTRO_TARGET_1_ID || sp.id === INTRO_TARGET_2_ID)
-              : allSpecs.filter((sp) => sp.id === INTRO_TARGET_1_ID);
+        const unlockedSet = new Set(this.getUnlockedAnomalyIds(state));
+        const filteredSpecs = this.optics.getAnomalySpecs().filter((sp) => unlockedSet.has(sp.id));
 
         refs.surveyDots.innerHTML = filteredSpecs
           .map((sp) => {
@@ -2259,9 +2298,11 @@ export class UIController {
       this.wakeupCanvas.setActive(bootUsesWakeup);
     }
 
-    if (state.introStage !== this.lastIntroStageSig) {
+    if (state.introStage !== this.lastIntroStageSig || state.shift !== this.lastShiftGateSig) {
       this.lastIntroStageSig = state.introStage;
+      this.lastShiftGateSig = state.shift;
       this.applyIntroOpticsConstraints(state.introStage);
+      this.renderBearingIndex();
     }
 
     if (state.mode === 'waking_3d' && this.lastMode !== 'waking_3d') {

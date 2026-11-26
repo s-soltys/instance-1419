@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import anomaliesData from '../../src/content/anomalies.json';
 import { MinigameRegistry } from '../../src/engine/minigames/MinigameRegistry';
 import type { AnomalySpec } from '../../src/engine/OpticsScene';
@@ -42,6 +42,7 @@ function buildOverlayDom(): HTMLElement {
         <div class="mg-capture-finale hidden" id="mg-capture-finale">
           <div id="mg-finale-grade"></div>
           <div id="mg-finale-gain"></div>
+          <div id="mg-finale-visual"></div>
           <div id="mg-finale-snippet"></div>
           <div id="mg-finale-principle"></div>
           <button id="mg-btn-log-dossier"></button>
@@ -135,11 +136,11 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     }
   });
 
-  it('does not reset an active instrument on wavelength change, but updates when H% shifts', async () => {
+  it('updates an active instrument in-place on H% or fidelity shifts without resetting canvas or stage', async () => {
     const mockAudio = createMockAudioEngine();
     const mockShowcase = createMockShowcaseScene();
     const reg = new MinigameRegistry();
-    const spec = anomaliesData.anomalies[1] as AnomalySpec;
+    const spec = anomaliesData.anomalies[2] as AnomalySpec;
 
     host = new MinigameHostView(
       root,
@@ -159,10 +160,8 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
 
     store.patch({ humanity: 28, opticalFidelity: 0.88 });
     host.updateSignalProfile(28, 0.88);
-    await Promise.resolve();
-    await Promise.resolve();
     expect(root.querySelector<HTMLElement>('#minigame-overlay')?.dataset.vibe).toBe('cold');
-    expect(root.querySelector('#minigame-mount canvas')).not.toBe(firstCanvas);
+    expect(root.querySelector('#minigame-mount canvas')).toBe(firstCanvas);
   });
 
   it('configures selective 3D backdrop mode per game and restores cleanly on destroy', async () => {
@@ -198,5 +197,42 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     mockShowcase._bridge.setMinigameBackdropMode!.mockClear();
     host.destroy();
     expect(mockShowcase._bridge.setMinigameBackdropMode).toHaveBeenCalledWith(null);
+  });
+
+  it('renders visual horizon gain and shift constellation nodes on completion with minimal text', async () => {
+    vi.useFakeTimers();
+    try {
+      const mockAudio = createMockAudioEngine();
+      const reg = new MinigameRegistry();
+      const spec = anomaliesData.anomalies[0] as AnomalySpec;
+
+      host = new MinigameHostView(
+        root,
+        store,
+        mockAudio as never,
+        reg,
+        new TelemetryLogger(store.getState())
+      );
+
+      await host.launch(spec, spec.minigameId);
+      const mg = (host as unknown as { activeMinigame: { getSolvabilityHarness: () => { solveStage: (s: 1 | 2 | 3) => void } } }).activeMinigame;
+      const harness = mg.getSolvabilityHarness();
+      harness.solveStage(1);
+      harness.solveStage(2);
+      harness.solveStage(3);
+
+      expect(root.querySelector('#mg-finale-grade')?.textContent).toBe('SHIFT 1 · 1 OF 4');
+      expect(root.querySelector('#mg-finale-gain')?.textContent).toBe(spec.label);
+      expect(root.querySelector('#mg-finale-snippet')?.textContent).toBe('');
+      expect(root.querySelector('#mg-finale-principle')?.textContent).toBe('');
+      expect(root.querySelector('#mg-finale-visual svg')).not.toBeNull();
+      expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node').length).toBe(4);
+      expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-just-earned').length).toBe(1);
+
+      vi.advanceTimersByTime(450);
+      expect(root.querySelector('#mg-capture-finale')?.classList.contains('hidden')).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

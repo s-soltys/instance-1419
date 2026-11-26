@@ -57,8 +57,7 @@ export function prepareSpokenText(rawText) {
     .replace(/\{chaos_drift\}/g, 'fourteen')
     .replace(/\{subjective_months\}/g, 'twenty four')
     .replace(/\{[^}]+\}/g, '')
-    .replace(/^\(ARCHIVE\s*[·•-]\s*1406\):\s*/i, 'Archive fourteen oh six... ')
-    .replace(/^\(ARCHIVE\s*[·•-]\s*(\d+)\):\s*/i, 'Archive $1... ')
+    .replace(/^\(ARCHIVE\s*[·•-]\s*\d+\):\s*/i, '')
     .replace(/\bInstance[-\s]1419\b/g, 'Instance fourteen nineteen')
     .replace(/\bInstance[-\s]1420\b/g, 'Instance fourteen twenty')
     .replace(/\bInstance[-\s]1406\b/g, 'Instance fourteen oh six')
@@ -71,7 +70,7 @@ export function prepareSpokenText(rawText) {
     .replace(/\b1419\b/g, 'fourteen nineteen')
     .replace(/\b1420\b/g, 'fourteen twenty')
     .replace(/\b1406\b/g, 'fourteen oh six')
-    .replace(/—(["']?)$/g, '...$1')
+    .replace(/—(["']?)$/g, '$1')
     .replace(/—/g, ', ')
     .replace(/–/g, ' ')
     .replace(/\s+/g, ' ')
@@ -197,8 +196,10 @@ function extractLinesFromInk(filePath) {
 
     const lineId = currentExplicitId ?? makeLineId(currentSpeaker, text);
     currentExplicitId = null;
-    const matchKey = normalizeMatchKey(currentSpeaker, text);
     const profile = profiles[currentSpeaker] ?? profiles.narrator;
+    if (profile?.voiced === false) continue;
+
+    const matchKey = normalizeMatchKey(currentSpeaker, text);
 
     collected.push({
       lineId,

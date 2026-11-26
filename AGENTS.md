@@ -28,6 +28,7 @@ Read this first every session. Keep this file short (<80 lines); deeper knowledg
 4. **IP & Commercial License Hygiene:** 100% original prose/characters/lore (zero overlap with *Lena* or CC BY-SA sources). Every file under `assets/` MUST be logged with commercial-safe license metadata in `assets/MANIFEST.json`.
 5. **Engine vs. Content Isolation:** Never hardcode prose or balance constants inside `src/engine/`. Keep saves/platform calls behind `src/platform/PlatformAdapter.ts`.
 6. **Pure HTML First:** Do not add Electron or Capacitor dependencies until Phase 6.
+7. **Dialogue, Choice & Voice Taste (Locked):** Keep pacing non-abrupt with optional `◇` Q&A hubs, dry gallows wit + cosmic horror, and occasional unvoiced soft italic Psyche marginalia (`docs/VOICE_GUIDE.md`). Use Layout A bottom-anchored feeds with color-coded consequence choice plates (no Warm/Cold spoiler dots; Hold-to-Commit prune; `docs/ART_DIRECTION.md`) and reserved zero-theatrics Cast 2 voices.
 
 ## 5. Session Protocol (Every Run)
 1. Read `PROGRESS.md`, `features.json`, and recent `git log -n 5`.

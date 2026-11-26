@@ -15,7 +15,7 @@ export type IntroStage =
   | 'complete';
 export type AuditOutcome = 'none' | 'pruned' | 'unsealed' | 'held';
 export type EndingId = 'ending_whole_incomplete' | 'ending_cold_complete' | 'ending_sweet_spot';
-export type MinigameGradeTier = 'partial' | 'clean' | 'deep_overclock';
+export type MinigameGradeTier = 'clean';
 
 export const INTRO_TARGET_1_ID = 'sol_centauri_bearing';
 export const INTRO_TARGET_2_ID = 'cluster_j1419_a';
@@ -217,6 +217,12 @@ export function migrateSavedState(raw: Partial<GameState> | null): GameState {
     for (const tid of merged.decodedMinigameTargets ?? []) {
       merged.decodedGrades[tid] = 'clean';
     }
+  } else {
+    const normalizedGrades: Record<string, MinigameGradeTier> = {};
+    for (const [tid, grade] of Object.entries(merged.decodedGrades)) {
+      if (grade) normalizedGrades[tid] = 'clean';
+    }
+    merged.decodedGrades = normalizedGrades;
   }
   if (!Array.isArray(merged.calibratedInstruments)) {
     merged.calibratedInstruments = [];
@@ -503,7 +509,7 @@ export class StateStore {
       | number
       | {
           anomalyGain?: number;
-          grade?: MinigameGradeTier;
+          grade?: 'clean';
           chaosDelta?: number;
           suspicionDelta?: number;
           humanityDelta?: number;
@@ -514,34 +520,14 @@ export class StateStore {
         }
   ): boolean {
     const opts = typeof options === 'number' ? { anomalyGain: options } : options ?? {};
-    const gradeRank: Record<MinigameGradeTier, number> = {
-      partial: 1,
-      clean: 2,
-      deep_overclock: 3,
-    };
-    const gradePayoutMap: Record<MinigameGradeTier, number> = {
-      partial: balance.minigames.payouts.partial.anomalyGain,
-      clean: balance.minigames.payouts.clean.anomalyGain,
-      deep_overclock: balance.minigames.payouts.deep_overclock.anomalyGain,
-    };
-
-    const prevGrade = this.state.decodedGrades[targetId];
-    const nextGrade: MinigameGradeTier = opts.grade ?? 'clean';
+    const nextGrade: MinigameGradeTier = 'clean';
     const already = this.state.decodedMinigameTargets.includes(targetId);
-    const fullGain = opts.anomalyGain ?? gradePayoutMap[nextGrade] ?? balance.minigameCompletion.anomalyGain;
+    const fullGain = opts.anomalyGain ?? balance.minigames.payouts.clean.anomalyGain;
 
-    let awardedGain = 0;
-    let upgraded = false;
-    if (!already) {
-      awardedGain = fullGain;
-    } else if (prevGrade && gradeRank[nextGrade] > gradeRank[prevGrade]) {
-      awardedGain = Math.max(0, fullGain - gradePayoutMap[prevGrade]);
-      upgraded = true;
-    }
-
+    const awardedGain = already ? 0 : fullGain;
     const prevAnom = this.state.anomalyProgress;
     const nextAnom = Math.min(100, prevAnom + awardedGain);
-    const applyRiskDeltas = !already || upgraded;
+    const applyRiskDeltas = !already;
     const nextChaos = applyRiskDeltas
       ? Math.max(0, Math.min(100, this.state.chaosDrift + (opts.chaosDelta ?? 0)))
       : this.state.chaosDrift;
@@ -557,10 +543,7 @@ export class StateStore {
         ? [...this.state.proofFragments, opts.proofFragmentId]
         : this.state.proofFragments;
 
-    const nextGrades = { ...this.state.decodedGrades };
-    if (!prevGrade || gradeRank[nextGrade] > gradeRank[prevGrade]) {
-      nextGrades[targetId] = nextGrade;
-    }
+    const nextGrades = { ...this.state.decodedGrades, [targetId]: nextGrade };
 
     let nextDossier = this.state.proofDossier;
     if (opts.proofFragmentId || opts.physicalPrinciple || opts.dossierSnippet) {
@@ -573,7 +556,7 @@ export class StateStore {
         title: label,
         principle: opts.physicalPrinciple ?? opts.dossierSnippet ?? 'Horizon correlation verified.',
         snippet: opts.dossierSnippet ?? '',
-        grade: nextGrades[targetId] ?? nextGrade,
+        grade: nextGrade,
       };
       if (existingIdx >= 0) {
         nextDossier = nextDossier.map((e, i) => (i === existingIdx ? entry : e));
@@ -584,7 +567,6 @@ export class StateStore {
 
     if (
       !already ||
-      upgraded ||
       opts.proofFragmentId ||
       opts.physicalPrinciple ||
       opts.dossierSnippet
@@ -604,22 +586,16 @@ export class StateStore {
     }
 
     const copy = uiCopy.statusAlerts.targetDecoded;
-    const gradeLabel =
-      nextGrade === 'deep_overclock'
-        ? ' [OVERCLOCK PROOF]'
-        : nextGrade === 'partial'
-        ? ' [PARTIAL LOG]'
-        : '';
     this.emitStatusShift({
       tone: 'discovery',
-      title: `${label} ${copy.titleSuffix}${gradeLabel}`,
-      detail: opts.dossierSnippet || (already && !upgraded ? copy.detailRepeat : copy.detailFirst),
+      title: `${label} ${copy.titleSuffix}`,
+      detail: opts.dossierSnippet || (already ? copy.detailRepeat : copy.detailFirst),
       prevValue: prevAnom,
       nextValue: nextAnom,
       unit: '%',
     });
     platform.triggerHaptic('shutterCommit', 1.0);
-    return !already || upgraded;
+    return !already;
   }
 
   markInstrumentCalibrated(instrumentId: string): void {

@@ -82,7 +82,6 @@ export function createMockAudioEngine() {
     playTumblerClick: vi.fn(),
     playStereoSonarEcho: vi.fn(),
     playSolenoidClack: vi.fn(),
-    setWatchdogBed: vi.fn(),
     playCaptureShutter: vi.fn(),
     playProximityTick: vi.fn(),
     playPhaseLock: vi.fn(),
@@ -117,17 +116,10 @@ export function createMockAudioEngine() {
 export function createMockShowcaseScene() {
   const bridge: ShowcaseInstrumentBridge = {
     applyInstrumentPatch: vi.fn(),
-    trigger3DSonarPulse: vi.fn(),
-    add3DBearingVector: vi.fn(),
     clearInstrumentOverlays: vi.fn(),
     resetInstrumentState: vi.fn(),
-    getInstrumentGroup: vi.fn(() => null),
-    register3DHandle: vi.fn(() => () => {}),
-    setCameraKeyframe: vi.fn(),
-    recenterCamera: vi.fn(),
     setVibeState: vi.fn(),
     commitDecodedState: vi.fn(),
-    projectWorldToScreen: vi.fn(() => ({ x: 640, y: 360, visible: true })),
     setMinigameBackdropMode: vi.fn(),
     setMinigameParallax: vi.fn(),
   };
@@ -184,7 +176,9 @@ export function createMockVoiceEngine() {
     speakSingle: vi.fn(),
     speakQueue: vi.fn(),
     stop: vi.fn(),
+    waitForQueueNearEnd: vi.fn(() => Promise.resolve()),
     getActiveSpeaker: vi.fn(() => null),
+    getActiveLineId: vi.fn(() => null),
     getAmplitude: vi.fn(() => 0),
     subscribe: vi.fn(() => () => {}),
   };

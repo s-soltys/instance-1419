@@ -132,6 +132,8 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
   private hazardCooldown = 1.5;
   private spoilFlash = 0;
   private inspectHintFlash = 0;
+  private inspectEnterT = 1;
+  private readonly wrongCardFlashes = new Float32Array(4);
   private subFrames: SubFrameCard[] = [];
   private photonKnots: PhotonKnot[] = [];
   private noiseSpecks: Float32Array = new Float32Array(0);
@@ -184,6 +186,8 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
     this.hazardCooldown = stage === 1 ? 1.45 : 1.05;
     this.spoilFlash = 0;
     this.inspectHintFlash = 0;
+    this.inspectEnterT = 1;
+    this.wrongCardFlashes.fill(0);
 
     const badIdx = Math.floor(rng() * 4);
     this.subFrames = Array.from({ length: 4 }, (_, id) => ({
@@ -262,9 +266,9 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
       });
       this.ctx.audio?.playProximityTick?.(0.95);
     } else {
-      // Peripheral grazing satellite/meteor track (offset 0.135..0.185 * scale -> dodgeable by shrinking iris!)
+      // Peripheral grazing satellite/meteor track (variable offset 0.105..0.193 * scale -> forces active dodging!)
       const sign = rng() > 0.5 ? 1 : -1;
-      const off = sign * (0.135 + rng() * 0.052);
+      const off = sign * (0.105 + rng() * 0.088);
       this.hazards.push({
         offsetScale: off,
         dirX,
@@ -322,6 +326,9 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
       );
     } else {
       this.inspectHintFlash = 1;
+      if (card.id >= 0 && card.id < this.wrongCardFlashes.length) {
+        this.wrongCardFlashes[card.id] = 1.0;
+      }
       platform.triggerHaptic('rejectThud', 0.65);
       this.ctx.audio?.playSolenoidClack(false);
       this.emitHud(true);
@@ -420,6 +427,12 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
   protected onUpdate(dt: number): void {
     this.spoilFlash = Math.max(0, this.spoilFlash - dt * 1.8);
     this.inspectHintFlash = Math.max(0, this.inspectHintFlash - dt * 1.6);
+    for (let i = 0; i < this.wrongCardFlashes.length; i++) {
+      this.wrongCardFlashes[i] = Math.max(0, this.wrongCardFlashes[i] - dt * 2.2);
+    }
+    if (this.phase === 'inspect' && this.inspectEnterT < 1) {
+      this.inspectEnterT = Math.min(1, this.inspectEnterT + dt / 0.38);
+    }
     this.shutterBlade01 = lerp(this.shutterBlade01, this.shutterOpen ? 1 : 0, clamp(dt * 13, 0, 1));
 
     if (this.stageClearTimer > 0 || this.phase === 'inspect') return;
@@ -473,10 +486,11 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
           this.ctx.audio?.playSolenoidClack(true);
         }
       } else {
-        // Authentic optical gathering rate proportional to APERTURE AREA (r²)!
+        // Authentic optical gathering rate proportional to APERTURE AREA squared (closes narrow-iris exploit!)
         const areaFrac = (apR / Math.max(1, maxR)) * (apR / Math.max(1, maxR));
+        const areaPow = areaFrac * areaFrac;
         const coldBonus = this.palette.mode === 'cold' ? 1.07 : 1.0;
-        const gatherRate = lerp(0.11, 0.39, areaFrac) * coldBonus;
+        const gatherRate = lerp(0.055, 0.44, areaPow) * coldBonus;
         this.exposure01 = clamp(this.exposure01 + dt * gatherRate, 0, 1);
 
         if (this.elapsedSec - this.lastSparkAt > 0.24) {
@@ -490,11 +504,12 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
             platform.triggerHaptic('phaseSnapLock', 0.95);
             this.ctx.audio?.playPhaseLock?.(this.stage);
             this.phase = 'inspect';
+            this.inspectEnterT = 0;
             this.stageFlash = 1;
             this.stageFlashText = '4 SUB-FRAMES CAPTURED · REJECT ARTIFACT';
             this.emitHud(true);
           } else {
-            this.triggerStageClear(`EXPOSURE FRAME ${this.stage}/3 STACKED`, 0.58, cx, cy);
+            this.triggerStageClear(`EXPOSURE FRAME ${this.stage}/3 STACKED`, 0.85, cx, cy);
           }
         }
       }
@@ -520,15 +535,25 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
 
     for (let i = 0; i < this.subFrames.length; i++) {
       const card = this.subFrames[i];
+      const u = clamp((this.inspectEnterT - i * 0.08) / 0.76, 0, 1);
+      const cardEase = 1 - Math.pow(1 - u, 3);
+      const slideY = (1 - cardEase) * 26;
+      const wrongFlash = this.wrongCardFlashes[i] ?? 0;
+
       card.x = startX + i * (cardW + gap);
-      card.y = cardY;
+      card.y = cardY + slideY;
       card.w = cardW;
       card.h = cardH;
 
       c2d.save();
+      c2d.globalAlpha = clamp(cardEase, 0.04, 1);
       c2d.fillStyle = 'rgba(6, 11, 20, 0.92)';
-      c2d.strokeStyle = card.rejected ? this.palette.lockHex : this.palette.secondaryHex;
-      c2d.lineWidth = card.rejected ? 2.2 : 1.4;
+      c2d.strokeStyle = card.rejected
+        ? this.palette.lockHex
+        : wrongFlash > 0.05
+        ? '#ff6b6b'
+        : this.palette.secondaryHex;
+      c2d.lineWidth = card.rejected || wrongFlash > 0.05 ? 2.2 : 1.4;
       c2d.fillRect(card.x, card.y, card.w, card.h);
       c2d.strokeRect(card.x, card.y, card.w, card.h);
 
@@ -681,8 +706,9 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
       c2d.globalAlpha = 1;
     }
 
-    // Subtle CCD dark-frame shot noise that smooths out cleanly as SNR climbs!
-    const noiseAlpha = (1 - this.exposure01) * (this.palette.mode === 'cold' ? 0.32 : 0.2);
+    // Subtle CCD dark-frame shot noise scaled cleanly by optical clarity01
+    const clarityNoiseMul = lerp(1.25, 0.65, this.profile.clarity01);
+    const noiseAlpha = (1 - this.exposure01) * (this.palette.mode === 'cold' ? 0.32 : 0.2) * clarityNoiseMul;
     if (noiseAlpha > 0.02) {
       c2d.fillStyle = this.palette.mode === 'cold' ? '#9ee8ff' : '#ffd8a8';
       for (let i = 0; i < this.noiseSpecks.length; i += 3) {
@@ -713,23 +739,34 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
       }
     }
 
-    // Real 8-Leaf Tangential Curved Camera Iris Diaphragm (closes cleanly to mechanical pinwheel!)
+    // Real 8-Leaf Curved Metallic Zeiss Iris Diaphragm (closes smoothly to curved pinwheel!)
     const bladeCover = 1 - this.shutterBlade01;
     if (bladeCover > 0.02) {
       const openInnerR = apR * this.shutterBlade01 * 0.98;
-      c2d.globalAlpha = clamp(0.45 + bladeCover * 0.52, 0, 0.96);
+      c2d.globalAlpha = clamp(0.48 + bladeCover * 0.5, 0, 0.96);
       c2d.fillStyle = '#070d17';
-      c2d.strokeStyle = 'rgba(186, 216, 244, 0.34)';
-      c2d.lineWidth = 1.1;
+      c2d.strokeStyle = 'rgba(186, 216, 244, 0.38)';
+      c2d.lineWidth = 1.15;
       for (let b = 0; b < 8; b++) {
-        const a0 = (b * Math.PI) / 4 + bladeCover * 0.42;
-        const a1 = a0 + Math.PI / 4 + 0.32;
+        const a0 = (b * Math.PI) / 4 + bladeCover * 0.44;
+        const aNext = a0 + Math.PI / 4;
         const aMid = a0 + Math.PI / 6;
+        const aCtrl = a0 + Math.PI / 8;
+        const p0x = cx + Math.cos(a0) * openInnerR;
+        const p0y = cy + Math.sin(a0) * openInnerR;
+        const p1x = cx + Math.cos(aNext) * openInnerR;
+        const p1y = cy + Math.sin(aNext) * openInnerR;
+        const ctrlR = Math.max(openInnerR + 8, apR * 0.52);
+
         c2d.beginPath();
-        c2d.moveTo(cx + Math.cos(a0) * openInnerR, cy + Math.sin(a0) * openInnerR);
-        c2d.lineTo(cx + Math.cos(aMid) * apR * 1.12, cy + Math.sin(aMid) * apR * 1.12);
-        c2d.lineTo(cx + Math.cos(a1) * apR * 1.16, cy + Math.sin(a1) * apR * 1.16);
-        c2d.lineTo(cx + Math.cos(a0 + Math.PI / 4) * openInnerR, cy + Math.sin(a0 + Math.PI / 4) * openInnerR);
+        c2d.moveTo(p0x, p0y);
+        c2d.lineTo(cx + Math.cos(aMid) * apR * 1.14, cy + Math.sin(aMid) * apR * 1.14);
+        c2d.lineTo(cx + Math.cos(aNext + 0.32) * apR * 1.18, cy + Math.sin(aNext + 0.32) * apR * 1.18);
+        if (typeof c2d.quadraticCurveTo === 'function') {
+          c2d.quadraticCurveTo(cx + Math.cos(aCtrl) * ctrlR, cy + Math.sin(aCtrl) * ctrlR, p1x, p1y);
+        } else {
+          c2d.lineTo(p1x, p1y);
+        }
         c2d.closePath();
         c2d.fill();
         c2d.stroke();

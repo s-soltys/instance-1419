@@ -9,6 +9,7 @@ import {
   type VernierItemInput,
   type VernierStripSpec,
 } from '../core/vernierWidgets';
+import { drawSpectralPrismFan } from '../render/InstrumentSprites';
 import { drawGlowStroke } from '../render/OpticalDrawUtils';
 import { drawOpticalStar, drawSoftDustPuff } from '../render/StarPSFAtlas';
 import { angleDiffRad, clamp, lerp } from '../tactilePhysics';
@@ -133,7 +134,7 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
   private readonly spreadInputs: VernierItemInput[] = [];
 
   protected override onMount(): void {
-    this.lockHoldTargetSec = 0.58;
+    this.lockHoldTargetSec = 0.92;
     this.variantCfg = VARIANT_PROFILES[this.iterationIndex % VARIANT_PROFILES.length];
     this.emitter = { tx: this.variantCfg.emitterTx, ty: this.variantCfg.emitterTy };
     this.prism = { tx: this.variantCfg.prismTx, ty: this.variantCfg.prismTy };
@@ -147,7 +148,10 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
     this.scatterSparkCooldown = 0;
 
     // Keep all detector rings strictly within safe vertical bounds on 844x390
-    this.targetBaseAngle = stage === 1 ? (rng() - 0.5) * 0.14 : (rng() - 0.5) * 0.18;
+    // Offset Stage 3 slightly vs Stage 2 so Stage 3 always poses a distinct tactical aim
+    const baseRand = stage === 1 ? (rng() - 0.5) * 0.14 : (rng() - 0.5) * 0.18;
+    this.targetBaseAngle =
+      stage === 3 ? clamp(baseRand + (rng() > 0.5 ? 0.08 : -0.08), -0.22, 0.22) : baseRand;
     this.targetSpread =
       stage === 1
         ? 0.34
@@ -507,64 +511,48 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
     c2d.setLineDash([]);
     c2d.restore();
 
-    // Faint continuous rainbow caustic fan emerging from prism (layered translucent wedges, ZERO gradients!)
+    // Continuous feathered rainbow spectral fan emerging from prism / grating
     if (this.bands.length >= 2) {
       const a0 = this.baseAngle - this.spread;
       const a1 = this.baseAngle + this.spread;
-      const fanR = this.detRadius * box.scale * 0.92;
-      // Prism: IR (red) sits at -spread (a0) and UV (violet) at +spread (a1).
-      // Diffraction grating (V4): reversed (UV at a0, IR at a1).
-      const fanPalette =
+      drawSpectralPrismFan(
+        c2d,
+        prX,
+        prY,
+        a0,
+        a1,
+        this.detRadius * box.scale * 0.96,
+        0.78,
         this.variantCfg.opticMode === 'grating'
-          ? [
-              'rgba(184, 146, 255, 0.06)',
-              'rgba(120, 198, 255, 0.055)',
-              'rgba(255, 224, 130, 0.055)',
-              'rgba(255, 118, 110, 0.06)',
-            ]
-          : [
-              'rgba(255, 118, 110, 0.06)',
-              'rgba(255, 224, 130, 0.055)',
-              'rgba(120, 198, 255, 0.055)',
-              'rgba(184, 146, 255, 0.06)',
-            ];
-      c2d.save();
-      if ('globalCompositeOperation' in c2d) c2d.globalCompositeOperation = 'lighter';
-      for (let s = 0; s < fanPalette.length; s++) {
-        const sA = lerp(a0, a1, s / fanPalette.length);
-        const eA = lerp(a0, a1, (s + 1) / fanPalette.length);
-        c2d.fillStyle = fanPalette[s];
-        c2d.beginPath();
-        c2d.moveTo(prX, prY);
-        c2d.arc(prX, prY, fanR, sA, eA);
-        c2d.closePath();
-        c2d.fill();
-      }
-      c2d.restore();
+      );
     }
 
-    // Stage 3 Organic Bok Globule Interstellar Dust Clouds (cached drawSoftDustPuff — ZERO gradients!)
+    // Stage 3 Organic Bok Globule Interstellar Dust Clouds (cached drawSoftDustPuff — ZERO dashed circles!)
     for (let d = 0; d < this.dustClouds.length; d++) {
       const cloud = this.dustClouds[d];
       const dx = box.left + cloud.tx * box.scale;
       const dy = box.top + cloud.ty * box.scale;
       const rPx = cloud.radius * box.scale;
 
-      // Multi-lobe organic dark carbonaceous silhouette
-      drawSoftDustPuff(c2d, dx, dy, rPx * 1.25, '#1d100a', 0.95);
-      drawSoftDustPuff(c2d, dx - rPx * 0.28, dy - rPx * 0.16, rPx * 0.85, '#2a160d', 0.82);
-      drawSoftDustPuff(c2d, dx + rPx * 0.24, dy + rPx * 0.2, rPx * 0.78, '#160b07', 0.88);
+      // Multi-lobe organic dark carbonaceous silhouette + faint warm dust scatter motes
+      drawSoftDustPuff(c2d, dx, dy, rPx * 1.32, '#1d100a', 0.95);
+      drawSoftDustPuff(c2d, dx - rPx * 0.28, dy - rPx * 0.16, rPx * 0.9, '#2a160d', 0.84);
+      drawSoftDustPuff(c2d, dx + rPx * 0.24, dy + rPx * 0.2, rPx * 0.82, '#140a06', 0.9);
+      drawSoftDustPuff(c2d, dx + rPx * 0.12, dy - rPx * 0.24, rPx * 0.65, '#4c2614', 0.34);
+
+      for (let m = 0; m < 4; m++) {
+        const ma = d * 1.9 + m * 1.57 + this.elapsedSec * 0.12;
+        drawOpticalStar(c2d, dx + Math.cos(ma) * rPx * 0.82, dy + Math.sin(ma) * rPx * 0.82, 1.5, {
+          spectralClass: 'K',
+          spikes: 0,
+          alpha: 0.34,
+          vibeMode: this.palette.mode,
+        });
+      }
 
       c2d.save();
-      c2d.strokeStyle = 'rgba(255, 168, 108, 0.28)';
-      c2d.lineWidth = 1.1;
-      c2d.setLineDash([4, 4]);
-      c2d.beginPath();
-      c2d.arc(dx, dy, rPx, 0, Math.PI * 2);
-      c2d.stroke();
-      c2d.setLineDash([]);
       c2d.font = '600 8px ui-monospace, SFMono-Regular, Menlo, monospace';
-      c2d.fillStyle = 'rgba(255, 188, 132, 0.72)';
+      c2d.fillStyle = 'rgba(255, 198, 146, 0.72)';
       c2d.textAlign = 'center';
       c2d.fillText(`Av ${cloud.extinctionAv.toFixed(1)}`, dx, dy + 3);
       c2d.restore();
@@ -591,12 +579,12 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
     });
 
     // Dispersed chromatic rays + flowing photon streaks + wavelength detectors
+    // Preserve authentic rainbow colors on lock — illuminate collector halo + crisp white-hot ray core!
     for (let i = 0; i < this.bands.length; i++) {
       const band = this.bands[i];
       const ang = this.baseAngle + band.offsetSign * this.spread;
       const endX = box.left + (this.prism.tx + Math.cos(ang) * band.drawDist) * box.scale;
       const endY = box.top + (this.prism.ty + Math.sin(ang) * band.drawDist) * box.scale;
-      const beamCol = band.hit ? this.palette.lockHex : band.color;
 
       drawGlowStroke(
         c2d,
@@ -604,10 +592,22 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
           ctx.moveTo(prX, prY);
           ctx.lineTo(endX, endY);
         },
-        beamCol,
-        band.hit ? 2.6 : 1.9,
-        { outerWidthMul: band.hit ? 3.4 : 2.6, outerAlpha: band.hit ? 0.32 : 0.2, coreAlpha: 0.96 }
+        band.color,
+        band.hit ? 2.7 : 1.9,
+        { outerWidthMul: band.hit ? 3.5 : 2.6, outerAlpha: band.hit ? 0.34 : 0.2, coreAlpha: 0.96 }
       );
+
+      if (band.hit) {
+        c2d.save();
+        c2d.strokeStyle = '#ffffff';
+        c2d.globalAlpha = 0.72;
+        c2d.lineWidth = 0.9;
+        c2d.beginPath();
+        c2d.moveTo(prX, prY);
+        c2d.lineTo(endX, endY);
+        c2d.stroke();
+        c2d.restore();
+      }
 
       // Scattering glow burst right at dust impact point when short wavelength is blocked
       if (band.blockedByDust) {
@@ -622,10 +622,10 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
       // Flowing wavelength photon wave-packets via PSF sprite
       for (let pkt = 0; pkt < 3; pkt++) {
         const t = (this.elapsedSec * 0.85 + pkt / 3) % 1;
-        drawOpticalStar(c2d, lerp(prX, endX, t), lerp(prY, endY, t), 2.1, {
-          colorHex: band.hit ? this.palette.lockHex : band.color,
+        drawOpticalStar(c2d, lerp(prX, endX, t), lerp(prY, endY, t), 2.3, {
+          colorHex: band.color,
           spikes: 0,
-          alpha: 0.78,
+          alpha: band.hit ? 0.92 : 0.78,
           vibeMode: this.palette.mode,
         });
       }
@@ -635,9 +635,18 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
       const detY = box.top + band.targetTy * box.scale;
       const detR = this.compact ? 14 : 17;
       c2d.save();
+      if (band.hit) {
+        c2d.strokeStyle = this.palette.lockHex;
+        c2d.globalAlpha = 0.42;
+        c2d.lineWidth = 1.4;
+        c2d.beginPath();
+        c2d.arc(detX, detY, detR + 5, 0, Math.PI * 2);
+        c2d.stroke();
+        c2d.globalAlpha = 1;
+      }
       c2d.strokeStyle = band.hit ? this.palette.lockHex : band.color;
-      c2d.fillStyle = band.hit ? `rgba(${this.palette.lockRgb}, 0.26)` : 'rgba(8, 14, 24, 0.72)';
-      c2d.lineWidth = band.hit ? 2.6 : 1.7;
+      c2d.fillStyle = band.hit ? `rgba(${this.palette.lockRgb}, 0.24)` : 'rgba(8, 14, 24, 0.72)';
+      c2d.lineWidth = band.hit ? 2.5 : 1.7;
       c2d.beginPath();
       c2d.arc(detX, detY, detR, 0, Math.PI * 2);
       c2d.fill();
@@ -651,15 +660,29 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
       c2d.restore();
     }
 
-    // Faceted 3D-shaded Equilateral Crown-Glass Prism (or NIRSpec Blazed Grating in V4)
+    // Zeiss Optical Goniometer Gimbal Ring + Crown-Glass Prism / NIRSpec Grating
+    const sz = this.compact ? 22 : 27;
+    const gimbalR = sz * 1.38;
     c2d.save();
     c2d.translate(prX, prY);
-    c2d.rotate(this.baseAngle);
-    const sz = this.compact ? 22 : 27;
+    c2d.strokeStyle = `rgba(${this.palette.secondaryRgb}, 0.28)`;
+    c2d.lineWidth = 1.1;
+    c2d.beginPath();
+    c2d.arc(0, 0, gimbalR, 0, Math.PI * 2);
+    c2d.stroke();
+    c2d.strokeStyle = `rgba(${this.palette.secondaryRgb}, 0.34)`;
+    c2d.beginPath();
+    for (let t = 0; t < 16; t++) {
+      const ta = (t / 16) * Math.PI * 2;
+      const inR = gimbalR - (t % 4 === 0 ? 5 : 2.5);
+      c2d.moveTo(Math.cos(ta) * inR, Math.sin(ta) * inR);
+      c2d.lineTo(Math.cos(ta) * gimbalR, Math.sin(ta) * gimbalR);
+    }
+    c2d.stroke();
 
+    c2d.rotate(this.baseAngle);
     if (this.variantCfg.opticMode === 'grating') {
-      // Blazed optical diffraction grating plate with ruled reflection grooves
-      c2d.fillStyle = 'rgba(148, 214, 255, 0.2)';
+      c2d.fillStyle = 'rgba(148, 214, 255, 0.22)';
       c2d.strokeStyle = '#dff4ff';
       c2d.lineWidth = 1.8;
       c2d.fillRect(-5, -sz, 10, sz * 2);
@@ -673,42 +696,44 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
       }
       c2d.stroke();
     } else {
-      // Equilateral refractive crystal prism (apex pointing UP, wide base DOWN -> UV bends down!)
       c2d.beginPath();
-      c2d.moveTo(0, -sz * 1.05);
-      c2d.lineTo(sz * 0.94, sz * 0.78);
-      c2d.lineTo(-sz * 0.94, sz * 0.78);
+      c2d.moveTo(0, -sz * 1.02);
+      c2d.lineTo(sz * 0.92, sz * 0.74);
+      c2d.lineTo(-sz * 0.92, sz * 0.74);
       c2d.closePath();
       c2d.fillStyle = 'rgba(176, 224, 255, 0.16)';
       c2d.fill();
 
-      // Subtle 3D internal bevel facets
       c2d.beginPath();
-      c2d.moveTo(0, -sz * 1.05);
+      c2d.moveTo(0, -sz * 1.02);
       c2d.lineTo(0, sz * 0.12);
-      c2d.lineTo(sz * 0.94, sz * 0.78);
+      c2d.lineTo(sz * 0.92, sz * 0.74);
       c2d.closePath();
       c2d.fillStyle = 'rgba(220, 244, 255, 0.14)';
       c2d.fill();
 
-      // Specular glass edge outline
       c2d.beginPath();
-      c2d.moveTo(0, -sz * 1.05);
-      c2d.lineTo(sz * 0.94, sz * 0.78);
-      c2d.lineTo(-sz * 0.94, sz * 0.78);
+      c2d.moveTo(0, -sz * 1.02);
+      c2d.lineTo(sz * 0.92, sz * 0.74);
+      c2d.lineTo(-sz * 0.92, sz * 0.74);
       c2d.closePath();
       c2d.strokeStyle = '#e4f6ff';
       c2d.lineWidth = 1.8;
       c2d.stroke();
 
-      // Faint internal spectral split inside crystal
-      c2d.strokeStyle = 'rgba(255, 235, 195, 0.45)';
-      c2d.lineWidth = 1.4;
+      // Internal spectral bend lines showing Cauchy dispersion inside the glass
+      const redY = lerp(-0.14, 0.14, clamp(this.spread / SPREAD_MAX, 0, 1)) * sz;
+      c2d.strokeStyle = 'rgba(255, 168, 148, 0.55)';
+      c2d.lineWidth = 1.25;
       c2d.beginPath();
       c2d.moveTo(-sz * 0.44, -sz * 0.05);
-      c2d.lineTo(sz * 0.45, -sz * 0.12);
+      c2d.lineTo(sz * 0.45, -sz * 0.12 - redY * 0.25);
+      c2d.stroke();
+
+      c2d.strokeStyle = 'rgba(164, 198, 255, 0.55)';
+      c2d.beginPath();
       c2d.moveTo(-sz * 0.44, -sz * 0.05);
-      c2d.lineTo(sz * 0.48, sz * 0.18);
+      c2d.lineTo(sz * 0.48, sz * 0.16 + redY * 0.35);
       c2d.stroke();
     }
     c2d.restore();

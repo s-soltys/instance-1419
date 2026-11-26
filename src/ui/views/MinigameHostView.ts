@@ -1,6 +1,7 @@
+import shiftsData from '../../content/shifts.json';
 import type { AudioEngine } from '../../engine/AudioEngine';
 import type { MinigameRegistry } from '../../engine/minigames/MinigameRegistry';
-import { setGlobal3DBackdropComposite } from '../../engine/minigames/render/BackdropCachePipeline';
+import { preloadCosmicPlateReady, setGlobal3DBackdropComposite } from '../../engine/minigames/render/BackdropCachePipeline';
 import { resolveMinigame3DConfig } from '../../engine/minigames/render/Minigame3DBridge';
 import { getUnifiedVibeTheme } from '../../engine/minigames/tactilePhysics';
 import type {
@@ -16,22 +17,6 @@ import type { StateStore } from '../../engine/StateStore';
 import type { TargetShowcaseScene } from '../../engine/TargetShowcaseScene';
 import type { TelemetryLogger } from '../../engine/TelemetryLogger';
 import { platform } from '../../platform/PlatformAdapter';
-
-const BAND_RATIOS = [0.04, 0.23, 0.61, 0.86];
-
-function bandIndexFromNm(wavelengthNm: number): number {
-  const r = Math.max(0, Math.min(1, (wavelengthNm - 200) / 1600));
-  let best = 1;
-  let bestDiff = 99;
-  BAND_RATIOS.forEach((b, idx) => {
-    const d = Math.abs(b - r);
-    if (d < bestDiff) {
-      bestDiff = d;
-      best = idx;
-    }
-  });
-  return best;
-}
 
 export interface MinigameLaunchOptions {
   iterationIndex?: number;
@@ -53,7 +38,7 @@ interface CachedHudRefs {
 /**
  * Calm, Zeiss-glass Optical Reticle Host bridging live GameState, direct-touch/canvas
  * minigame optics, subtle haptics, Field Guide, Multi-Iteration Variants,
- * Selective 3D Backdrop Mode, and Proof Capture Stamp.
+ * Selective 3D Backdrop Mode, and borderless Proof Capture Stamp.
  */
 export class MinigameHostView {
   private showcase: TargetShowcaseScene | null = null;
@@ -62,14 +47,16 @@ export class MinigameHostView {
   private activeLaunchOpts: MinigameLaunchOptions | undefined = undefined;
   private activeOnDecoded: ((spec: AnomalySpec) => void) | undefined = undefined;
   private activeBackdrop3D: Minigame3DConfig | null = null;
-  private activeBandIdx = 1;
+  private finaleRevealTimerId: number | null = null;
+  private finaleArcTimerId: number | null = null;
   private finaleTimerId: number | null = null;
   private unbindControls: (() => void) | null = null;
-  private onSwitchBandCb: ((bandIdx: number) => void) | null = null;
   private onActiveChangeCb: ((minigameId: string | null) => void) | null = null;
+  private onExitRequestCb: ((preserveDecoded: boolean, decodedSpec: AnomalySpec | null) => void) | null = null;
   private lastProfileSig = '';
   private lastHudSig = '';
   private isFinishing = false;
+  private isExiting = false;
   private currentHelperActionId: string | null = null;
   private hudRefs: CachedHudRefs | null = null;
   private launchSeq = 0;
@@ -90,7 +77,7 @@ export class MinigameHostView {
   }
 
   isActive(): boolean {
-    return this.activeMinigame !== null;
+    return this.activeMinigame !== null && !this.isExiting;
   }
 
   getActiveMinigameId(): string | null {
@@ -101,8 +88,50 @@ export class MinigameHostView {
     this.onActiveChangeCb = cb;
   }
 
+  setExitRequestCallback(cb: (preserveDecoded: boolean, decodedSpec: AnomalySpec | null) => void): void {
+    this.onExitRequestCb = cb;
+  }
+
   getActiveBackdrop3DConfig(): Minigame3DConfig | null {
     return this.activeBackdrop3D;
+  }
+
+  /**
+   * Warms the dynamic module chunk & target NASA/JWST plate before `optical_dive`
+   * reaches midpoint so frame 1 of the minigame renders live optics with zero flash.
+   */
+  async preload(minigameId: string, iterationIndex?: number, plateOverride?: CosmicPlateId): Promise<void> {
+    try {
+      const mg = await this.minigames.createAsync(minigameId);
+      const entry = this.minigames.getEntry(mg.id);
+      const variants = mg.variants ?? entry?.variants ?? [];
+      const idx =
+        iterationIndex !== undefined
+          ? Math.max(0, Math.floor(iterationIndex))
+          : this.store.getNextIterationIndex(mg.id, Math.max(1, variants.length || 4));
+      const plate = plateOverride ?? variants[idx % Math.max(1, variants.length)]?.plateId ?? entry?.platePool?.[0];
+      if (plate) {
+        await preloadCosmicPlateReady(plate, 320);
+      }
+    } catch {
+      // Non-fatal preload warm-up
+    }
+  }
+
+  private buildStateVector(): MinigameStateVector {
+    const s = this.store.getState();
+    return {
+      humanity: s.humanity,
+      opticalFidelity: s.opticalFidelity,
+      chaosDrift: s.chaosDrift,
+      shift: s.shift,
+      maxHumanity: s.maxHumanity,
+      wavelengthNm: s.wavelengthNm,
+      primarySiblingH: s.primarySiblingH,
+      overseerSuspicion: s.overseerSuspicion,
+      prunedPersonas: s.prunedPersonas.length,
+      proofFragments: [...s.proofFragments],
+    };
   }
 
   private getHudRefs(): CachedHudRefs {
@@ -123,15 +152,7 @@ export class MinigameHostView {
 
   private computeProfileSig(): string {
     const s = this.store.getState();
-    return `${Math.round(s.humanity)}:${s.opticalFidelity.toFixed(2)}:${Math.round(s.chaosDrift)}:${s.overseerSuspicion}`;
-  }
-
-  setBandSwitchCallback(cb: (bandIdx: number) => void): void {
-    this.onSwitchBandCb = cb;
-  }
-
-  setWaveBand(bandIdx: number): void {
-    this.activeBandIdx = bandIdx;
+    return `${Math.round(s.humanity)}:${s.opticalFidelity.toFixed(2)}:${Math.round(s.chaosDrift)}:${s.shift}`;
   }
 
   async launch(
@@ -145,7 +166,7 @@ export class MinigameHostView {
 
     this.destroy();
     const token = ++this.launchSeq;
-    this.hudRefs = null; // Re-query cleanly in case host DOM was rebuilt
+    this.hudRefs = null;
     const refs = this.getHudRefs();
     if (!refs.overlay || !refs.mount) return;
 
@@ -155,20 +176,6 @@ export class MinigameHostView {
     const freshRefs = this.getHudRefs();
     if (!freshRefs.overlay || !freshRefs.mount) return;
 
-    this.activeSpec = spec;
-    this.activeLaunchOpts = options;
-    this.activeOnDecoded = onDecoded;
-    this.activeBandIdx = bandIndexFromNm(s.wavelengthNm);
-    this.lastProfileSig = this.computeProfileSig();
-    this.lastHudSig = '';
-    this.isFinishing = false;
-    this.currentHelperActionId = null;
-
-    freshRefs.overlay.classList.remove('hidden');
-    this.applyVibeChrome(s.humanity);
-
-    this.activeMinigame = mg;
-    this.onActiveChangeCb?.(mg.id);
     const catalogEntry = this.minigames.getEntry(mg.id);
 
     const variantList = mg.variants ?? catalogEntry?.variants ?? [];
@@ -183,10 +190,30 @@ export class MinigameHostView {
       options?.variantSeed ?? `${spec.id}:${mg.id}:v${iterationIndex}:s${s.shift}`;
     const plateOverride = options?.plateOverride ?? activeVariant?.plateId;
 
+    if (plateOverride) {
+      await preloadCosmicPlateReady(plateOverride, 260);
+      if (token !== this.launchSeq) return;
+    }
+
+    this.activeSpec = spec;
+    this.activeLaunchOpts = options;
+    this.activeOnDecoded = onDecoded;
+    this.lastProfileSig = this.computeProfileSig();
+    this.lastHudSig = '';
+    this.isFinishing = false;
+    this.isExiting = false;
+    this.currentHelperActionId = null;
+
+    freshRefs.overlay.classList.remove('hidden');
+    this.applyVibeChrome(s.humanity);
+
+    this.activeMinigame = mg;
+    this.onActiveChangeCb?.(mg.id);
+
     if (freshRefs.codeEl) freshRefs.codeEl.textContent = mg.instrumentCode;
     if (freshRefs.titleEl) freshRefs.titleEl.textContent = mg.title;
 
-    this.renderStagePips(1, '1/3 · EASY');
+    this.renderStagePips(1, 'PASS I · COARSE');
     if (freshRefs.helperBtn) {
       freshRefs.helperBtn.classList.add('hidden');
       freshRefs.helperBtn.classList.remove('active');
@@ -196,7 +223,6 @@ export class MinigameHostView {
     this.populateFieldGuide(mg, activeVariant?.label);
     this.bindConsoleEvents();
 
-    // Configure TargetShowcaseScene into lightweight single-pass Backdrop Mode (or pause for pure-plate games)
     const bridge = this.showcase ? this.showcase.getInstrumentBridge() : null;
     const backdropCfg: Minigame3DConfig =
       mg.getBackdrop3DConfig?.() ??
@@ -204,24 +230,9 @@ export class MinigameHostView {
       catalogEntry?.backdrop3D ??
       resolveMinigame3DConfig(mg.id);
     this.activeBackdrop3D = backdropCfg;
-    bridge?.setVibeState?.(s.humanity, false);
-    bridge?.setMinigameBackdropMode?.(backdropCfg);
     const backdrop3DActive = backdropCfg.mode !== 'off' && Boolean(bridge);
-    setGlobal3DBackdropComposite(backdrop3DActive);
 
-    const vector: MinigameStateVector = {
-      humanity: s.humanity,
-      maxHumanity: s.maxHumanity,
-      opticalFidelity: s.opticalFidelity,
-      chaosDrift: s.chaosDrift,
-      wavelengthNm: s.wavelengthNm,
-      primarySiblingH: s.primarySiblingH,
-      overseerSuspicion: s.overseerSuspicion,
-      shift: s.shift,
-      prunedPersonas: s.prunedPersonas.length,
-      proofFragments: [...s.proofFragments],
-    };
-
+    const vector = this.buildStateVector();
     const isFirstRun = !s.calibratedInstruments.includes(mg.id);
 
     mg.mount({
@@ -230,7 +241,6 @@ export class MinigameHostView {
       targetName: spec.label,
       minigameId: mg.id,
       state: vector,
-      bandIdx: this.activeBandIdx,
       isFirstRun,
       iterationIndex,
       variantSeed,
@@ -284,6 +294,44 @@ export class MinigameHostView {
     }
   }
 
+  private requestExit(preserveDecoded: boolean, decodedSpec: AnomalySpec | null = null): void {
+    if (this.isExiting) return;
+    if (this.onExitRequestCb) {
+      this.freezeForExit();
+      this.onExitRequestCb(preserveDecoded, decodedSpec);
+    } else {
+      this.destroy(preserveDecoded);
+    }
+  }
+
+  /**
+   * Stops input & audio while keeping the live 2D canvas and 3D star dome rendered
+   * so `optical_pullback` transitions out smoothly instead of animating an empty black box.
+   */
+  private freezeForExit(): void {
+    this.isExiting = true;
+    if (this.finaleRevealTimerId !== null) {
+      clearTimeout(this.finaleRevealTimerId);
+      this.finaleRevealTimerId = null;
+    }
+    if (this.finaleRevealTimerId !== null) {
+      clearTimeout(this.finaleRevealTimerId);
+      this.finaleRevealTimerId = null;
+    }
+    if (this.finaleArcTimerId !== null) {
+      clearTimeout(this.finaleArcTimerId);
+      this.finaleArcTimerId = null;
+    }
+    if (this.finaleTimerId !== null) {
+      clearTimeout(this.finaleTimerId);
+      this.finaleTimerId = null;
+    }
+    this.unbindControls?.();
+    this.unbindControls = null;
+    this.audio.getInstrumentHandle().stopInstrumentAudio();
+    this.root.querySelector('#mg-field-guide-card')?.classList.add('hidden');
+  }
+
   private handleComplete(
     spec: AnomalySpec,
     mg: IMinigame,
@@ -291,15 +339,19 @@ export class MinigameHostView {
     onDecoded?: (spec: AnomalySpec) => void
   ): void {
     if (!result.success) {
-      this.destroy();
+      this.requestExit(false, null);
       return;
     }
 
     this.isFinishing = true;
 
+    const prevState = this.store.getState();
+    const prevAnomaly = prevState.anomalyProgress;
+    const wasAlreadyDecoded = prevState.decodedMinigameTargets.includes(spec.id);
+
     this.store.recordMinigameCompletion(spec.id, spec.label, {
       anomalyGain: result.anomalyGain,
-      grade: result.grade === 'aborted' ? undefined : result.grade,
+      grade: 'clean',
       chaosDelta: result.chaosDelta,
       suspicionDelta: result.suspicionDelta,
       humanityDelta: result.humanityDelta,
@@ -311,52 +363,107 @@ export class MinigameHostView {
     this.store.markInstrumentCalibrated(mg.id);
     this.store.recordMinigameRun(mg.id);
 
-    this.showcase?.getInstrumentBridge().commitDecodedState?.(spec.id, {
-      progress: 1,
-      dustPeel: 1,
-      slicePlaneZ: 12,
-      unwarpProgress: 1,
-      seamReveal: 1,
-      jetResonance: 0.85,
-      fringeContrast: 1,
-      fringePhase: 0,
-    });
+    const nextState = this.store.getState();
+    const nextAnomaly = nextState.anomalyProgress;
+    const gained = Math.max(0, nextAnomaly - prevAnomaly);
 
-    this.telemetry.record('minigame_complete', this.store.getState(), {
+    this.telemetry.record('minigame_complete', nextState, {
       minigameId: mg.id,
       targetId: spec.id,
       grade: result.grade,
       durationSec: result.elapsedSec,
-      opticalFidelity: Number(this.store.getState().opticalFidelity.toFixed(2)),
+      opticalFidelity: Number(nextState.opticalFidelity.toFixed(2)),
     });
-
-    const mgBtn = this.root.querySelector<HTMLElement>('#btn-start-minigame');
-    if (mgBtn) mgBtn.textContent = 'REPLAY SCAN INSTRUMENT';
 
     const finale = this.root.querySelector<HTMLElement>('#mg-capture-finale');
     const gradeEl = this.root.querySelector<HTMLElement>('#mg-finale-grade');
     const gainEl = this.root.querySelector<HTMLElement>('#mg-finale-gain');
+    const visualEl = this.root.querySelector<HTMLElement>('#mg-finale-visual');
     const snipEl = this.root.querySelector<HTMLElement>('#mg-finale-snippet');
     const prinEl = this.root.querySelector<HTMLElement>('#mg-finale-principle');
     const logBtn = this.root.querySelector<HTMLButtonElement>('#mg-btn-log-dossier');
+    const timerFill = this.root.querySelector<HTMLElement>('#mg-finale-timer-fill');
 
     if (finale && gradeEl && gainEl && snipEl) {
-      gradeEl.textContent = `ANALYSIS LOGGED · ${spec.label.toUpperCase()}`;
-      gainEl.textContent = `+${result.anomalyGain}% HORIZON ANOMALY`;
-      snipEl.textContent = result.dossierSnippet ?? result.telemetrySummary;
+      const shiftEntry =
+        shiftsData.shifts.find((sh) => sh.shift === nextState.shift) ?? shiftsData.shifts[0];
+      const shiftTargets = shiftEntry?.targetAnomalies ?? [];
+      const shiftDoneCount = shiftTargets.filter((id) =>
+        nextState.decodedMinigameTargets.includes(id)
+      ).length;
+      const targetInShift = shiftTargets.includes(spec.id);
+
+      gradeEl.textContent = targetInShift
+        ? `SHIFT ${nextState.shift} · ${shiftDoneCount} OF ${shiftTargets.length}`
+        : `SHIFT ${nextState.shift} · SURVEY LOGGED`;
+      gainEl.textContent = spec.label;
+      snipEl.textContent = '';
+      snipEl.classList.add('hidden');
       if (prinEl) {
-        prinEl.textContent = result.physicalPrinciple ? `PRINCIPLE: ${result.physicalPrinciple}` : '';
+        prinEl.textContent = '';
+        prinEl.classList.add('hidden');
       }
-      finale.classList.remove('hidden');
+
+      const circ = 289.03;
+      const prevDash = (circ * (1 - Math.max(0, Math.min(100, prevAnomaly)) / 100)).toFixed(2);
+      const nextDash = (circ * (1 - Math.max(0, Math.min(100, nextAnomaly)) / 100)).toFixed(2);
+
+      if (visualEl) {
+        const nodesMarkup = shiftTargets
+          .map((id, idx) => {
+            const done = nextState.decodedMinigameTargets.includes(id);
+            const justEarned = id === spec.id && !wasAlreadyDecoded;
+            const cls = [
+              'mg-finale-node',
+              done ? 'is-done' : '',
+              justEarned ? 'is-just-earned' : '',
+            ]
+              .filter(Boolean)
+              .join(' ');
+            const link = idx > 0 ? '<span class="mg-finale-node-link"></span>' : '';
+            return `${link}<span class="${cls}"><i></i></span>`;
+          })
+          .join('');
+
+        const deltaLabel = gained > 0 ? `+${gained}% HORIZON` : 'CALIBRATED';
+        visualEl.innerHTML = `
+          <div class="mg-finale-ring-wrap">
+            <svg class="mg-finale-ring-svg" viewBox="0 0 120 120">
+              <circle class="mg-finale-ring-outer" cx="60" cy="60" r="54" />
+              <circle class="mg-finale-ring-track" cx="60" cy="60" r="46" />
+              <circle class="mg-finale-ring-arc-prev" cx="60" cy="60" r="46"
+                stroke-dasharray="${circ}" stroke-dashoffset="${prevDash}" transform="rotate(-90 60 60)" />
+              <circle class="mg-finale-ring-arc-next" id="mg-finale-arc-next" cx="60" cy="60" r="46"
+                stroke-dasharray="${circ}" stroke-dashoffset="${prevDash}" transform="rotate(-90 60 60)" />
+            </svg>
+            <div class="mg-finale-ring-center">
+              <strong class="mg-finale-ring-pct">${nextAnomaly}%</strong>
+              <span class="mg-finale-ring-delta">${deltaLabel}</span>
+            </div>
+          </div>
+          ${shiftTargets.length > 0 ? `<div class="mg-finale-nodes">${nodesMarkup}</div>` : ''}
+        `;
+      }
+
+      if (timerFill) {
+        timerFill.classList.remove('is-running');
+      }
 
       const finishClose = () => {
+        if (this.finaleRevealTimerId !== null) {
+          clearTimeout(this.finaleRevealTimerId);
+          this.finaleRevealTimerId = null;
+        }
+        if (this.finaleArcTimerId !== null) {
+          clearTimeout(this.finaleArcTimerId);
+          this.finaleArcTimerId = null;
+        }
         if (this.finaleTimerId !== null) {
           clearTimeout(this.finaleTimerId);
           this.finaleTimerId = null;
         }
-        finale.classList.add('hidden');
         onDecoded?.(spec);
-        this.destroy(true);
+        this.requestExit(true, spec);
       };
 
       if (logBtn) {
@@ -366,10 +473,29 @@ export class MinigameHostView {
           finishClose();
         };
       }
-      this.finaleTimerId = window.setTimeout(finishClose, 9000);
+
+      const showFinale = () => {
+        if (this.isExiting || !this.isFinishing) return;
+        if (timerFill) {
+          timerFill.classList.remove('is-running');
+          void timerFill.offsetWidth;
+          timerFill.classList.add('is-running');
+        }
+        finale.classList.remove('hidden');
+        this.finaleArcTimerId = window.setTimeout(() => {
+          this.finaleArcTimerId = null;
+          const nextArc = this.root.querySelector<SVGCircleElement>('#mg-finale-arc-next');
+          if (nextArc) {
+            nextArc.style.strokeDashoffset = nextDash;
+          }
+        }, 80);
+        this.finaleTimerId = window.setTimeout(finishClose, 10000);
+      };
+
+      this.finaleRevealTimerId = window.setTimeout(showFinale, 320);
     } else {
       onDecoded?.(spec);
-      this.destroy(true);
+      this.requestExit(true, spec);
     }
   }
 
@@ -428,7 +554,7 @@ export class MinigameHostView {
     const guideCard = this.root.querySelector<HTMLElement>('#mg-field-guide-card');
     const helperBtn = this.root.querySelector<HTMLButtonElement>('#mg-helper-btn');
 
-    const onClose = () => this.destroy(false);
+    const onClose = () => this.requestExit(false, null);
     const onToggleGuide = () => {
       this.audio.playCue('choice');
       guideCard?.classList.toggle('hidden');
@@ -443,14 +569,14 @@ export class MinigameHostView {
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!this.activeMinigame) return;
+      if (!this.activeMinigame || this.isExiting) return;
       if (e.key === '?' || e.key === '/') {
         onToggleGuide();
       } else if (e.key === 'Escape') {
         if (guideCard && !guideCard.classList.contains('hidden')) {
           guideCard.classList.add('hidden');
         } else {
-          this.destroy(false);
+          this.requestExit(false, null);
         }
       }
     };
@@ -470,26 +596,46 @@ export class MinigameHostView {
     };
   }
 
-  updateSignalProfile(humanity: number, _opticalFidelity: number): void {
+  updateSignalProfile(humanity: number, opticalFidelity: number): void {
     this.applyVibeChrome(humanity);
     this.showcase?.getInstrumentBridge().setVibeState?.(humanity, false);
     const nextSig = this.computeProfileSig();
-    if (!this.isFinishing && this.activeMinigame && this.activeSpec && nextSig !== this.lastProfileSig) {
-      const id = this.activeMinigame.id;
-      const spec = this.activeSpec;
-      const opts = this.activeLaunchOpts;
-      const onDecoded = this.activeOnDecoded;
-      void this.launch(spec, id, onDecoded, opts);
+    if (!this.isFinishing && !this.isExiting && this.activeMinigame && nextSig !== this.lastProfileSig) {
+      this.lastProfileSig = nextSig;
+      if (typeof this.activeMinigame.updateState === 'function') {
+        const vector = this.buildStateVector();
+        vector.humanity = humanity;
+        vector.opticalFidelity = opticalFidelity;
+        this.activeMinigame.updateState(vector);
+      } else if (this.activeSpec) {
+        const id = this.activeMinigame.id;
+        const spec = this.activeSpec;
+        const opts = this.activeLaunchOpts;
+        const onDecoded = this.activeOnDecoded;
+        void this.launch(spec, id, onDecoded, opts);
+      }
     }
   }
 
   destroy(preserveDecoded = false): void {
     this.launchSeq++;
     this.isFinishing = false;
+    this.isExiting = false;
     this.lastProfileSig = '';
     this.lastHudSig = '';
     this.currentHelperActionId = null;
     this.activeBackdrop3D = null;
+    this.activeSpec = null;
+    this.activeLaunchOpts = undefined;
+    this.activeOnDecoded = undefined;
+    if (this.finaleRevealTimerId !== null) {
+      clearTimeout(this.finaleRevealTimerId);
+      this.finaleRevealTimerId = null;
+    }
+    if (this.finaleArcTimerId !== null) {
+      clearTimeout(this.finaleArcTimerId);
+      this.finaleArcTimerId = null;
+    }
     if (this.finaleTimerId !== null) {
       clearTimeout(this.finaleTimerId);
       this.finaleTimerId = null;
@@ -497,6 +643,9 @@ export class MinigameHostView {
     this.unbindControls?.();
     this.unbindControls = null;
     this.root.querySelector('#mg-capture-finale')?.classList.add('hidden');
+    const visualEl = this.root.querySelector('#mg-finale-visual');
+    if (visualEl) visualEl.innerHTML = '';
+    this.root.querySelector('#mg-finale-timer-fill')?.classList.remove('is-running');
     this.root.querySelector('#mg-field-guide-card')?.classList.add('hidden');
     this.root.querySelector('#mg-helper-btn')?.classList.add('hidden');
     const wasActive = this.activeMinigame !== null;
@@ -515,6 +664,5 @@ export class MinigameHostView {
     }
     this.root.querySelector('#minigame-overlay')?.classList.add('hidden');
     this.hudRefs = null;
-    void this.onSwitchBandCb;
   }
 }

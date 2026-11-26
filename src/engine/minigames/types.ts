@@ -1,13 +1,13 @@
-import type * as THREE from 'three';
-
 /**
- * Unified types & 8-Input State Vector for the Instance-1419 Cosmic Instrument Suite.
- * Engine <-> Content isolated: prose/balance live in JSON, physics, 3D handles & audio live here.
+ * Unified types & Lean 3-Axis State Vector for the Instance-1419 Cosmic Instrument Suite:
+ * - Axis 1 (Warmth): `humanity` -> palette, acoustic warmth, detent wells, numeric deltas
+ * - Axis 2 (Optical Clarity): `opticalFidelity` -> plate crispness, CCD noise floor, micro-jitter
+ * - Axis 3 (Horizon Drift): `chaosDrift` + `shift` -> subtle edge seam bleed & late-shift drift
  */
 
 export type VibeMode = 'warm' | 'balanced' | 'cold';
 
-export type MinigameGrade = 'aborted' | 'partial' | 'clean' | 'deep_overclock';
+export type MinigameGrade = 'aborted' | 'clean';
 
 export type CosmicPlateId =
   | 'carina'
@@ -44,7 +44,7 @@ export type Minigame3DPropRig =
   | 'horizon_arc';
 
 export interface Minigame3DConfig {
-  mode: 'off' | 'ambient_stars' | 'coupled_showcase' | 'orbital_rig';
+  mode: 'off' | 'ambient_stars' | 'orbital_rig';
   opacity?: number;
   parallaxScale?: number;
   propRig?: Minigame3DPropRig;
@@ -54,16 +54,17 @@ export interface Minigame3DConfig {
 }
 
 export interface MinigameStateVector {
-  humanity: number;           // 0..maxHumanity
-  maxHumanity: number;        // 20..100
-  opticalFidelity: number;    // 0.25..1.0
-  chaosDrift: number;         // 0..100
-  wavelengthNm: number;       // 200..1800
-  primarySiblingH: number;    // 0..100
-  overseerSuspicion: number;  // 0..100
-  shift: number;              // 1..6
-  prunedPersonas: number;     // 0..N
-  proofFragments?: string[];  // Collected dossier fragments (for Shift 6 SIG-06)
+  humanity: number;           // Axis 1: Warmth (0..100)
+  opticalFidelity: number;    // Axis 2: Optical Clarity (0.25..1.0)
+  chaosDrift: number;         // Axis 3: Horizon Drift (0..100)
+  shift: number;              // Axis 3: Campaign Shift (1..6)
+  // Legacy optional fields retained for backward compatibility with older call sites
+  maxHumanity?: number;
+  wavelengthNm?: number;
+  primarySiblingH?: number;
+  overseerSuspicion?: number;
+  prunedPersonas?: number;
+  proofFragments?: string[];
 }
 
 export interface UnifiedVibeTheme {
@@ -79,88 +80,53 @@ export interface UnifiedVibeTheme {
   gridAlpha: number;
   glowBlurPx: number;
   reticleStyle: 'organic_amber' | 'hybrid_slate' | 'surgical_cyan';
-  requiresRawResidual: boolean;
 }
 
 export interface CognitiveInstrumentProfile {
+  // Axis 1: Warmth (H%)
   vibe: VibeMode;
+  warmth01: number;               // 0 (cold) .. 1 (warm)
   theme: UnifiedVibeTheme;
   detentWellScale: number;        // Warm = 1.35x forgiving magnetic wells, Cold = 0.72x surgical
-  jitterAmplitude: number;        // Optical fidelity inverse micro-tremor
-  snapPrecisionMul: number;       // Cold = 1.28x razor tolerance
-  pareidoliaChance: number;       // Chaos ghost decoy probability (lower in Cold)
-  showNumericDeltas: boolean;     // True in Cold, subtle in Balanced, hidden in Warm
-  requiresRawResidual: boolean;   // True when H% <= 44 (Over-Regularization Lock)
-  overclockRiskMul: number;       // Higher in high Chaos / Suspicion
+  showNumericDeltas: boolean;     // True in Cold/Balanced, hidden in Warm
   harmonicWarmthGain: number;     // Audio harmonic overtone blend (1.0 Warm -> 0.16 Cold)
+
+  // Axis 2: Optical Clarity (opticalFidelity)
+  clarity01: number;              // 0..1 optical precision from pruning
+  jitterAmplitude: number;        // Optical fidelity inverse micro-tremor
+  ccdNoiseAlpha: number;          // Subtle CCD photographic grain (clears as fidelity rises)
+  plateBlurPenaltyPx: number;     // Subtle optical softness at low fidelity
+
+  // Axis 3: Horizon Drift (chaosDrift + shift)
+  drift01: number;                // 0..1 combined instability across shifts/chaos
+  seamBleedAlpha: number;         // Subtle enclosure edge coordinate bleed
 }
 
 export interface ShowcaseCouplingUpdate {
-  progress?: number;              // 0..1 overall solve/isolation progress
-  dustPeel?: number;              // 0..1 clears obscuring dust/noise on 3D object
-  slicePlaneZ?: number;           // -14..14 axial slicer depth for 3D nebula dust
-  unwarpProgress?: number;        // 0..1 straightens Einstein caustic lensing
-  ringTwist?: number;             // radians shear/twist on 3D anomaly rings
-  seamReveal?: number;            // 0..1 reveals 93-BLY wall / synthetic grid seam
-  jetResonance?: number;          // 0..1 drives pulsar/star harmonic pulse
-  dollyDelta?: number;            // -1..+1 camera zoom/dolly nudge
-  blinkFlip?: boolean;            // true toggles Epoch B blink view
-  blinkMix?: number;              // 0..1 smooth epoch blend
-  humanity?: number;              // 0..100 live H% lookdev
-  rawResidual?: boolean;          // true clears Cold Over-Regularization film
+  progress?: number;
+  dustPeel?: number;
+  slicePlaneZ?: number;
+  unwarpProgress?: number;
+  ringTwist?: number;
+  seamReveal?: number;
+  jetResonance?: number;
+  dollyDelta?: number;
+  blinkFlip?: boolean;
+  blinkMix?: number;
+  humanity?: number;
   haloOffsets?: Array<[number, number, number]>;
   shearAngle?: number;
   shearMag?: number;
-  fringeContrast?: number;        // 0..1 Michelson constructive fringe visibility
-  fringePhase?: number;           // radians optical delay phase
-}
-
-export interface Interactive3DHandle {
-  id: string;
-  object: THREE.Object3D;
-  pickRadiusPx?: number;          // >= 44px screen-space collider guarantee
-  dragPlane?: 'camera' | 'equatorial' | 'axial_z';
-  onHover?: (hovered: boolean) => void;
-  onDragStart?: (hitPoint: THREE.Vector3) => void;
-  onDrag?: (ctx: {
-    worldPoint: THREE.Vector3;
-    worldDelta: THREE.Vector3;
-    screenX: number;
-    screenY: number;
-    screenDx: number;
-    screenDy: number;
-  }) => void;
-  onDragEnd?: () => void;
-  onTap?: (hitPoint: THREE.Vector3) => void;
-}
-
-export interface CameraKeyframe {
-  yaw?: number;
-  pitch?: number;
-  dist?: number;
-  lookAt?: [number, number, number];
-  lockOrbit?: boolean;
+  fringeContrast?: number;
+  fringePhase?: number;
 }
 
 export interface ShowcaseInstrumentBridge {
   applyInstrumentPatch(patch: ShowcaseCouplingUpdate): void;
-  trigger3DSonarPulse(originX: number, originY: number, bandIdx?: number): void;
-  add3DBearingVector(angleRad: number, confidence: number, colorHex?: string): void;
   clearInstrumentOverlays(): void;
   resetInstrumentState(): void;
-  // Extended Interactive 3D API (optional on legacy mocks, implemented on TargetShowcaseScene)
-  getInstrumentGroup?(): THREE.Group | null;
-  register3DHandle?(handle: Interactive3DHandle): () => void;
-  setCameraKeyframe?(kf: CameraKeyframe | null): void;
-  recenterCamera?(): void;
-  setVibeState?(humanity: number, rawResidual: boolean): void;
+  setVibeState?(humanity: number, rawResidual?: boolean): void;
   commitDecodedState?(targetId: string, patch: ShowcaseCouplingUpdate): void;
-  projectWorldToScreen?(worldPos: { x: number; y: number; z: number }): {
-    x: number;
-    y: number;
-    visible: boolean;
-  };
-  // Lightweight Single-Pass Minigame 3D Backdrop Mode
   setMinigameBackdropMode?(cfg: Minigame3DConfig | null): void;
   setMinigameParallax?(nx: number, ny: number, progress01: number): void;
 }
@@ -179,7 +145,6 @@ export interface InstrumentAudioHandle {
   playTumblerClick(tension: number, hitSweetSpot: boolean): void;
   playStereoSonarEcho(pan: number, distanceNorm: number, pitchHz?: number): void;
   playSolenoidClack(heavy?: boolean): void;
-  setWatchdogBed(level: number): void;
   playCaptureShutter(grade: MinigameGrade): void;
   playProximityTick?(closeness01: number, pan?: number): void;
   playPhaseLock?(stageIndex: number): void;
@@ -216,7 +181,7 @@ export interface MinigameContext {
   targetName: string;
   minigameId: string;
   state: MinigameStateVector;
-  bandIdx: number;
+  bandIdx?: number;
   isFirstRun?: boolean;
   iterationIndex?: number;
   variantSeed?: string;
@@ -267,6 +232,7 @@ export interface IMinigame {
   readonly platePool?: readonly CosmicPlateId[];
   readonly backdrop3D?: Minigame3DConfig;
   mount(ctx: MinigameContext): void;
+  updateState?(nextState: MinigameStateVector): void;
   onHelperAction?(actionId: string): void;
   getFieldGuide?(): InstrumentFieldGuide;
   getSolvabilityHarness?(): SolvabilityHarness;

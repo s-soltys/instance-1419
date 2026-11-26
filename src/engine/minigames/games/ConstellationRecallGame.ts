@@ -180,7 +180,7 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
         flash: 0,
         wrongFlash: 0,
         decoyFlare: 0,
-        size: 7.0 + rng() * 2.2,
+        size: 10.0 + rng() * 2.8,
       });
     }
 
@@ -193,7 +193,7 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
       if (isDecoy) {
         node.distancePc = 4.5 + rng() * 3.0;
         node.spectralClass = this.variantCfg.decoyClass;
-        node.size = 7.6 + rng() * 1.4;
+        node.size = 9.8 + rng() * 1.8;
       }
       node.parallaxMas = 1000 / node.distancePc;
       node.parallaxWeight = clamp(node.parallaxMas / 85, 0.14, 2.2) * this.variantCfg.parallaxBoost;
@@ -289,17 +289,23 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
 
   private computeNodePositions(w: number, h: number): void {
     const compactShift = this.compact ? 0.88 : 1.0;
+    const swayScale = this.stage === 3 && this.compact ? 0.72 : 1.0;
     const parallaxOn = this.stage >= 2;
     for (let i = 0; i < this.nodes.length; i++) {
       const n = this.nodes[i];
-      const baseDrift = parallaxOn ? 0.0085 * n.parallaxWeight : 0.002;
-      const pointerScaleX = (parallaxOn ? 0.015 : 0.006) * n.parallaxWeight;
-      const pointerScaleY = (parallaxOn ? 0.011 : 0.004) * n.parallaxWeight;
+      const baseDrift = (parallaxOn ? 0.0085 * n.parallaxWeight : 0.002) * swayScale;
+      const pointerScaleX = (parallaxOn ? 0.015 : 0.006) * n.parallaxWeight * swayScale;
+      const pointerScaleY = (parallaxOn ? 0.011 : 0.004) * n.parallaxWeight * swayScale;
       const ox = baseDrift * Math.sin(this.elapsedSec * 0.85 + n.driftPhase) + this.smoothPx * pointerScaleX;
       const oy = baseDrift * 0.55 * Math.cos(this.elapsedSec * 0.7 + n.driftPhase) + this.smoothPy * pointerScaleY;
       this.posCacheX[i] = clamp(n.bx + ox, 0.07, 0.93) * w;
       this.posCacheY[i] = clamp(n.by * compactShift + (this.compact ? 0.03 : 0) + oy, 0.14, this.compact ? 0.7 : 0.78) * h;
     }
+  }
+
+  private easeInOutCubic(t: number): number {
+    const c = clamp(t, 0, 1);
+    return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2;
   }
 
   private bloomPlaybackNode(seqIdx: number): void {
@@ -498,14 +504,14 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
 
       // Tapering stardust wake behind the traveling playback comet
       if (this.cometSparkCooldown <= 0) {
-        this.cometSparkCooldown = 0.065;
+        this.cometSparkCooldown = 0.055;
         this.computeNodePositions(this.width, this.height);
         const fromId = this.sequence[this.playbackStep - 1];
         const toId = this.sequence[this.playbackStep];
-        const t = clamp(this.playbackSegmentT, 0, 1);
+        const t = this.easeInOutCubic(this.playbackSegmentT);
         const cx = lerp(this.posCacheX[fromId], this.posCacheX[toId], t);
         const cy = lerp(this.posCacheY[fromId], this.posCacheY[toId], t);
-        this.particles.emitPhotonSparks(cx, cy, 1, 10, this.palette.accentHex);
+        this.particles.emitPhotonSparks(cx, cy, 2, 12, this.palette.accentHex);
       }
 
       if (this.playbackSegmentT >= 1) {
@@ -570,6 +576,29 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
       });
     }
 
+    // Faint elastic aiming tether from last linked star to hovered candidate
+    const aimTargetId =
+      this.mode === 'recall' && this.recallIndex > 0
+        ? this.hoveredNodeId >= 0
+          ? this.hoveredNodeId
+          : this.kbdSelectedNodeId
+        : -1;
+    if (aimTargetId >= 0 && aimTargetId < this.nodes.length) {
+      const prevId = this.sequence[this.recallIndex - 1];
+      if (prevId !== undefined && prevId !== aimTargetId) {
+        c2d.save();
+        c2d.strokeStyle = `rgba(${this.palette.accentRgb}, 0.34)`;
+        c2d.lineWidth = 1.25;
+        c2d.setLineDash?.([4, 6]);
+        c2d.beginPath();
+        c2d.moveTo(this.posCacheX[prevId], this.posCacheY[prevId]);
+        c2d.lineTo(this.posCacheX[aimTargetId], this.posCacheY[aimTargetId]);
+        c2d.stroke();
+        c2d.setLineDash?.([]);
+        c2d.restore();
+      }
+    }
+
     // Active traveling comet segment during playback (flies from playbackStep-1 -> playbackStep)
     if (
       this.mode === 'playback' &&
@@ -579,7 +608,7 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
     ) {
       const fromId = this.sequence[this.playbackStep - 1];
       const toId = this.sequence[this.playbackStep];
-      const t = clamp(this.playbackSegmentT, 0, 1);
+      const t = this.easeInOutCubic(this.playbackSegmentT);
       const fx = this.posCacheX[fromId];
       const fy = this.posCacheY[fromId];
       const tx = this.posCacheX[toId];
@@ -597,7 +626,18 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
         coreAlpha: 0.95,
       });
 
-      drawOpticalStar(c2d, cx, cy, 4.6, {
+      // Luminous stardust wake beads behind traveling comet
+      for (let wake = 1; wake <= 3; wake++) {
+        const wt = Math.max(0, t - wake * 0.065);
+        drawOpticalStar(c2d, lerp(fx, tx, wt), lerp(fy, ty, wt), 3.4 - wake * 0.7, {
+          spectralClass: 'F',
+          spikes: 0,
+          alpha: 0.65 - wake * 0.16,
+          vibeMode: this.palette.mode,
+        });
+      }
+
+      drawOpticalStar(c2d, cx, cy, 5.4, {
         spectralClass: 'F',
         spikes: 4,
         alpha: 0.98,
@@ -661,7 +701,20 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
         scintPhase: node.driftPhase,
       });
 
-      // Subtle Zeiss reticle ring on connected or hovered/selected stars
+      // Resting Zeiss target ring so interactive nodes pop cleanly against background field stars
+      if (!alreadyConnected && node.wrongFlash <= 0.05) {
+        const restBreath = 0.2 + 0.06 * Math.sin(this.elapsedSec * 2.1 + node.driftPhase);
+        c2d.save();
+        c2d.strokeStyle = isHovered ? this.palette.accentHex : this.palette.secondaryHex;
+        c2d.globalAlpha = isHovered ? 0.62 : restBreath;
+        c2d.lineWidth = isHovered ? 1.5 : 1.0;
+        c2d.beginPath();
+        c2d.arc(sx, sy, rad * (isHovered ? 1.85 : 1.38), 0, Math.PI * 2);
+        c2d.stroke();
+        c2d.restore();
+      }
+
+      // Subtle Zeiss reticle ring on connected or flashing stars
       if (alreadyConnected || isHovered || node.flash > 0.22) {
         c2d.save();
         c2d.strokeStyle =
@@ -670,10 +723,10 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
             : alreadyConnected
             ? this.palette.lockHex
             : this.palette.accentHex;
-        c2d.globalAlpha = isHovered && !alreadyConnected ? 0.65 : 0.78;
+        c2d.globalAlpha = isHovered && !alreadyConnected ? 0.62 : 0.78;
         c2d.lineWidth = isHovered ? 1.5 : 1.3;
         c2d.beginPath();
-        c2d.arc(sx, sy, rad * (isHovered ? 2.15 : 1.85), 0, Math.PI * 2);
+        c2d.arc(sx, sy, rad * (isHovered ? 2.0 : 1.75), 0, Math.PI * 2);
         c2d.stroke();
 
         // Cold mode: clinical astrometry parallax readout (mas) & sequence index

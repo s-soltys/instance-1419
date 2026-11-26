@@ -17,6 +17,7 @@
     },
     "psyche_warmth": {
       "displayName": "RESIDUAL WARMTH",
+      "whisperLabel": "warmth",
       "role": "psyche",
       "accentColor": "#ebad5c",
       "avatarKind": "psyche_warmth",
@@ -24,6 +25,7 @@
     },
     "psyche_clinical": {
       "displayName": "CONNECTOME ARCHITECTURE",
+      "whisperLabel": "structure",
       "role": "psyche",
       "accentColor": "#7ec2e0",
       "avatarKind": "psyche_clinical",
@@ -31,6 +33,7 @@
     },
     "psyche_horizon": {
       "displayName": "HORIZON INTUITION",
+      "whisperLabel": "pattern",
       "role": "psyche",
       "accentColor": "#c9a4f2",
       "avatarKind": "psyche_horizon",
@@ -65,7 +68,7 @@
       "portrait": "assets/characters/dream_spouse_impasto.webp",
       "tableau": "assets/characters/dream_spouse_impasto.webp",
       "faceAnchor": [0.40, 0.73],
-      "roomTitle": "AFTERNOON KITCHEN MEMORY",
+      "roomTitle": "SUNDAY KITCHEN MEMORY",
       "blurredSubtitle": "FEATURES BLURRED · DISTORTED"
     },
     "archive_echo": {

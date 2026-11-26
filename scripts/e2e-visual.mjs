@@ -160,12 +160,18 @@ async function run() {
     }
 
     // Step through interactive Prologue into live-cosmos Title (Kitchen + 5-phase Wakeup Briefing)
-    for (let i = 0; i < 28; i++) {
+    for (let i = 0; i < 60; i++) {
       const visual = await page.evaluate(() => document.querySelector('#boot-screen')?.dataset.bootVisual ?? '');
       if (visual === 'title') break;
-      const choiceBtn = page.locator('#prologue-choices .choice-line').first();
-      if ((await choiceBtn.count()) > 0 && (await choiceBtn.isVisible())) {
-        await choiceBtn.click({ force: true });
+      const continueBtn = page.locator('#prologue-choices .prologue-continue-bar').first();
+      const advChoiceBtn = page.locator('#prologue-choices .choice-line:not([data-choice-kind="ask"])').first();
+      const anyChoiceBtn = page.locator('#prologue-choices .choice-line').first();
+      if ((await advChoiceBtn.count()) > 0 && (await advChoiceBtn.isVisible())) {
+        await advChoiceBtn.click({ force: true });
+      } else if ((await anyChoiceBtn.count()) > 0 && (await anyChoiceBtn.isVisible())) {
+        await anyChoiceBtn.click({ force: true });
+      } else if ((await continueBtn.count()) > 0 && (await continueBtn.isVisible())) {
+        await continueBtn.click({ force: true });
       } else {
         await page.mouse.click(640, 360);
       }

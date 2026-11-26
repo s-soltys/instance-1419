@@ -55,12 +55,15 @@ describe('MinigameRegistry catalog integrity', () => {
     }
   });
 
-  it('resolves every anomaly target minigameId without falling back', async () => {
+  it('resolves every anomaly target minigameId across all 21 instruments without falling back', async () => {
     const reg = new MinigameRegistry();
-    expect(anomaliesData.anomalies.length).toBe(5);
+    expect(anomaliesData.anomalies.length).toBe(21);
+    const mappedIds = new Set<string>();
     for (const anomaly of anomaliesData.anomalies) {
       const inst = await reg.createAsync(anomaly.minigameId);
       expect(inst.id).toBe(anomaly.minigameId);
+      mappedIds.add(inst.id);
     }
+    expect(mappedIds.size).toBe(21);
   });
 });

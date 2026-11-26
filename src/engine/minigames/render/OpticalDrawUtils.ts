@@ -196,36 +196,46 @@ export function drawLockResonanceRing(
   radius: number,
   progress01: number,
   colorHex: string,
-  label?: string
+  label?: string,
+  opacityMul = 1
 ): void {
-  if (progress01 <= 0.01) return;
+  const alphaMul = clamp(opacityMul, 0, 1);
+  if (progress01 <= 0.005 || alphaMul <= 0.01) return;
   const p = clamp(progress01, 0, 1);
+  const effectiveR = radius * (0.94 + 0.06 * alphaMul);
   const startA = -Math.PI * 0.5;
   const endA = startA + Math.PI * 2 * p;
 
   c2d.save();
   // Quiet bezel track
   c2d.strokeStyle = 'rgba(255, 255, 255, 0.13)';
+  c2d.globalAlpha = alphaMul;
   c2d.lineWidth = 2;
   c2d.beginPath();
-  c2d.arc(cx, cy, radius, 0, Math.PI * 2);
+  c2d.arc(cx, cy, effectiveR, 0, Math.PI * 2);
   c2d.stroke();
 
   // 2-pass bloom progress arc (replaces shadowBlur=12)
   drawGlowStroke(
     c2d,
     (ctx) => {
-      ctx.arc(cx, cy, radius, startA, endA);
+      ctx.arc(cx, cy, effectiveR, startA, endA);
     },
     colorHex,
     2.6,
-    { outerWidthMul: 3.1, outerAlpha: 0.26, coreAlpha: 0.96, lineCap: 'round' }
+    {
+      outerWidthMul: 3.1,
+      outerAlpha: 0.26 * alphaMul,
+      coreAlpha: 0.96 * alphaMul,
+      lineCap: 'round',
+    }
   );
 
   // Delicate leading vernier bead
-  const tipX = cx + Math.cos(endA) * radius;
-  const tipY = cy + Math.sin(endA) * radius;
+  const tipX = cx + Math.cos(endA) * effectiveR;
+  const tipY = cy + Math.sin(endA) * effectiveR;
   c2d.fillStyle = '#ffffff';
+  c2d.globalAlpha = alphaMul * 0.95;
   c2d.beginPath();
   c2d.arc(tipX, tipY, 2.2, 0, Math.PI * 2);
   c2d.fill();
@@ -233,8 +243,9 @@ export function drawLockResonanceRing(
   if (label) {
     c2d.font = '600 10px ui-monospace, SFMono-Regular, Menlo, monospace';
     c2d.fillStyle = colorHex;
+    c2d.globalAlpha = alphaMul;
     c2d.textAlign = 'center';
-    c2d.fillText(label, cx, cy + radius + 16);
+    c2d.fillText(label, cx, cy + effectiveR + 16);
   }
   c2d.restore();
 }
@@ -248,33 +259,36 @@ export function drawStageUnlockPulse(
   h: number,
   flash01: number,
   bannerText: string,
-  accentHex: string
+  accentHex: string,
+  echoHex = '#ffdf9e'
 ): void {
   if (flash01 <= 0.01) return;
-  const t = 1 - clamp(flash01, 0, 1);
-  const easeOut = 1 - Math.pow(1 - t, 4);
-  const baseR = Math.min(w, h) * (0.12 + easeOut * 0.32);
+  const clamped = clamp(flash01, 0, 1);
+  const t = 1 - clamped;
+  const easeOut = 1 - Math.pow(1 - t, 3.2);
+  const softAlpha = Math.sin(clamped * Math.PI * 0.5);
+  const baseR = Math.min(w, h) * (0.11 + easeOut * 0.34);
 
   c2d.save();
   // Primary caustic hairline
   c2d.strokeStyle = accentHex;
-  c2d.globalAlpha = flash01 * 0.68;
+  c2d.globalAlpha = softAlpha * 0.62;
   c2d.lineWidth = 1.4;
   c2d.beginPath();
   c2d.arc(w * 0.5, h * 0.5, baseR, 0, Math.PI * 2);
   c2d.stroke();
 
-  // Faint chromatic echo hairline (+3px)
-  c2d.strokeStyle = '#9ee8ff';
-  c2d.globalAlpha = flash01 * 0.34;
+  // Faint secondary echo hairline (+3.5px) matching current H% palette
+  c2d.strokeStyle = echoHex;
+  c2d.globalAlpha = softAlpha * 0.3;
   c2d.lineWidth = 1;
   c2d.beginPath();
   c2d.arc(w * 0.5, h * 0.5, baseR + 3.5, 0, Math.PI * 2);
   c2d.stroke();
 
   if (bannerText) {
-    c2d.globalAlpha = Math.min(1, flash01 * 1.45);
-    c2d.font = '600 11.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+    c2d.globalAlpha = Math.min(1, softAlpha * 1.25);
+    c2d.font = '600 11px ui-monospace, SFMono-Regular, Menlo, monospace';
     c2d.fillStyle = '#e8fff5';
     c2d.textAlign = 'center';
     c2d.fillText(bannerText, w * 0.5, h < 450 ? h * 0.22 : h * 0.19);

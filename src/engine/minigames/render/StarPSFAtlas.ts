@@ -169,7 +169,7 @@ class StarPSFAtlasStore {
     const half = cellSize * 0.5;
     const invHalf = 1 / half;
     const colStride = ATLAS_CELL_STRIDE;
-    const coreScale = axes ? 0.052 : 0.068; // Slightly fuller unspiked core for pinpoint star legibility
+    const coreScale = axes ? 0.068 : 0.084; // Rich, clearly legible pinpoint core across desktop & mobile
     const minSigmaV = 1.2 / half; // Strictly above Nyquist so 60°/120° diagonal spikes never bead
 
     for (let py = 0; py < cellSize; py++) {
@@ -183,11 +183,12 @@ class StarPSFAtlasStore {
         const coreRatio = r / coreScale;
         const core = Math.pow(1 + coreRatio * coreRatio, -2.55);
         const airyDelta = (r - 0.145) / 0.032;
-        const airy1 = 0.052 * Math.exp(-airyDelta * airyDelta);
+        const airy1 = 0.058 * Math.exp(-airyDelta * airyDelta);
 
-        // Two-scale mirror scattering halo with edge-free smoothstep window
+        // Two-scale mirror scattering halo + warm inner Airy shoulder with edge-free smoothstep window
         const edgeFade = smoothstep(0.98, 0.72, r);
-        const halo = (0.28 * Math.exp(-r * 5.2) + 0.09 * Math.exp(-r * 2.1)) * edgeFade;
+        const innerShoulder = 0.28 * Math.exp(-(r * r) / (2 * 0.088 * 0.088));
+        const halo = (innerShoulder + 0.3 * Math.exp(-r * 5.0) + 0.09 * Math.exp(-r * 2.1)) * edgeFade;
 
         // Silky, chromatically fringed diffraction spikes (above-Nyquist Gaussian cross-section)
         let spikeR = 0;
@@ -445,8 +446,8 @@ export function drawOpticalStar(
   const alpha = clamp(baseAlpha * scint, 0, 1);
   if (alpha <= 0.005 || radius <= 0.1) return;
 
-  // Warm H%: fuller optical halo (1.08x); Cold H%: razor tight PSF (0.86x)
-  const vibeScale = vibeMode === 'warm' ? 1.08 : vibeMode === 'cold' ? 0.86 : 1.0;
+  // Warm H%: fuller optical halo (1.07x); Cold H%: razor tight PSF (0.93x)
+  const vibeScale = vibeMode === 'warm' ? 1.07 : vibeMode === 'cold' ? 0.93 : 1.0;
   const span = Math.max(4, radius * (spikes === 0 ? 4.4 : 6.4) * vibeScale);
 
   const atlas = starPSFAtlas.getAtlas();

@@ -32,6 +32,20 @@ The defining aesthetic of *Instance-1419* is the **visceral contrast between col
   * **`H < 45%` / Pruned:** Voronoi glass shard fracturing, cold cyan-silver monochrome drain, wireframe telemetry grid bleeding through.
   * **Overseer Audit Interrupt:** Crisp clinical white-cyan hairlines slice across top/bottom of the painting while a sterile monochrome header cuts over the dialogue ribbon.
 
-## 4. Responsive Landscape Ergonomics (Verified by Playwright)
+## 4. Dialogue Feed & Choice Presentation (Locked Layout A + Style 1 & 4)
+* **Layout A (Bottom-Anchored Right Column):** Keep the feathered right-hand reading column alongside the 2D painting, Zeiss Wake-Up schematic, and 3D starfield, **bottom-anchored** (`.dialogue-scroll > .dialogue-entry:first-child { margin-top: auto; }` + soft top `mask-image` fade—never `justify-content: flex-end` on `overflow-y: auto`) so choices always sit directly beneath the latest spoken line with zero empty chasm.
+* **Anti-Chat-Widget Rules:**
+  * Group consecutive lines from the same non-player speaker under a single speaker header.
+  * Keep Kitchen Prologue spoiler-free (`ACROSS THE TABLE` / `SUNDAY MORNING · BEFORE THE CLINIC`, never `[RELATION:SPOUSE_01]` before wake-up).
+  * No inline stick-figure wireframe SVGs in dialogue transcripts—use subtle `.voice-live-dot` pulse indicators and hover-only borderless `▶` replay buttons.
+  * No bouncing `•••` typing dots, no `border-bottom` hyperlink underlines on `.hl-warm`/`.hl-cold` (use soft glow/weight shift), no `system-ui` fallback in narrative prose (serif for human/Sibling, crisp mono for Overseer/Archive), and a dedicated `.prologue-continue-bar` separate from `.choice-line`.
+  * **Soft Internal Psyche Marginalia:** Occasional, indented italic thoughts with a whisper-quiet lowercase cue (`· warmth`, `· structure`, `· pattern`)—never ALL-CAPS stat banners.
+* **Color-Coded Consequence Choice Plates (Style 1 + 4, Zero Warm/Cold Spoiler Dots):**
+  * Render full spoken lines inside translucent tactile plates (`1–6`, `↑/↓`, `Enter`, `translateX` hover without padding reflow). Never render `.choice-affinity-dot` Warm/Cold spoiler dots.
+  * **Non-consequential / optional exploration (`# weight:explore`, `# kind:ask`):** Calm neutral-slate register (`◇` + `ASK` badge, separated above consequential replies by a subtle divider).
+  * **Consequential (`# weight:consequential`):** Distinct luminous warm-amber/gold register (`01.`, `02.`, `→` for `# kind:action`).
+  * **Irreversible permanent pruning (`# kind:prune # weight:permanent`):** Crimson **Hold-to-Commit** plate (`650ms` hold or click-to-arm + confirm) with plain-language cost whisper (`# hint:...`).
+
+## 5. Responsive Landscape Ergonomics (Verified by Playwright)
 * Verified at Desktop (`1280×720` / `1920×1080`) and Mobile Landscape (`844×390`, honoring `safe-area-inset-*`).
 * Touch drag, pinch-to-zoom, and pointer-draggable vernier work identically on mouse and mobile touchscreens.

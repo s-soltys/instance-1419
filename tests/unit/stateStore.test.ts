@@ -113,46 +113,40 @@ describe('StateStore invariants & economy', () => {
     expect(afterPetition.maxHumanity).toBe(afterPrune.maxHumanity);
   });
 
-  it('awards marginal delta when upgrading partial -> clean -> deep_overclock and never duplicates same-tier replay', () => {
+  it('awards clean completion payout once, migrates legacy partial grades to clean, and avoids duplicate replay gain', () => {
     const store = new StateStore();
     const first = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
-      anomalyGain: 9,
-      grade: 'partial',
-      chaosDelta: 2,
-      suspicionDelta: 0,
-      dossierSnippet: 'Partial lens log',
-      instrumentCode: 'CAU-03',
-      physicalPrinciple: 'Thin-lens inversion',
-    });
-    expect(first).toBe(true);
-    expect(store.getState().anomalyProgress).toBe(9);
-    expect(store.getState().decodedGrades.cluster_j1419_a).toBe('partial');
-
-    // Upgrading partial -> clean awards the +5% marginal delta (14 - 9 = 5)
-    const upgradeClean = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
-      anomalyGain: 14,
+      anomalyGain: 5,
       grade: 'clean',
-      chaosDelta: 4,
+      chaosDelta: 2,
       suspicionDelta: 0,
       proofFragmentId: 'j1419_caustic_seam',
       dossierSnippet: 'Clean lens lock',
-      instrumentCode: 'CAU-03',
+      instrumentCode: 'LNS-04',
       physicalPrinciple: 'Thin-lens inversion',
     });
-    expect(upgradeClean).toBe(true);
-    expect(store.getState().anomalyProgress).toBe(14);
+    expect(first).toBe(true);
+    expect(store.getState().anomalyProgress).toBe(5);
     expect(store.getState().decodedGrades.cluster_j1419_a).toBe('clean');
     expect(store.getState().proofFragments).toEqual(['j1419_caustic_seam']);
     expect(store.getState().proofDossier.length).toBe(1);
 
-    // Replaying at same or lower grade awards 0 additional anomalyProgress
+    // Replaying awards 0 additional anomalyProgress
     const repeat = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
-      anomalyGain: 14,
+      anomalyGain: 5,
       grade: 'clean',
       proofFragmentId: 'j1419_caustic_seam',
     });
     expect(repeat).toBe(false);
-    expect(store.getState().anomalyProgress).toBe(14);
+    expect(store.getState().anomalyProgress).toBe(5);
+
+    // Legacy 'partial' / 'deep_overclock' saved grades normalize cleanly to 'clean'
+    const migrated = migrateSavedState({
+      saveSchemaVersion: 6,
+      decodedMinigameTargets: ['cluster_j1419_a'],
+      decodedGrades: { cluster_j1419_a: 'partial' as never },
+    });
+    expect(migrated.decodedGrades.cluster_j1419_a).toBe('clean');
   });
 
   it('tracks calibratedInstruments without duplicates', () => {

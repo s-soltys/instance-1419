@@ -136,7 +136,7 @@ export class WaveShaperGame extends BaseCosmicMinigame {
   private accCount = 0;
 
   protected override onMount(): void {
-    this.lockHoldTargetSec = 0.5;
+    this.lockHoldTargetSec = 0.88;
     this.variantCfg = VARIANT_PROFILES[this.iterationIndex % VARIANT_PROFILES.length];
     this.accSum = 0;
     this.accCount = 0;

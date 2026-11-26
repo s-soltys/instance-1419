@@ -248,6 +248,14 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
   private readonly wellDustPhase = new Float32Array(12);
 
   private impactFlash: { tx: number; ty: number; ok: boolean; timer: number } | null = null;
+  private captureAnim: {
+    startTx: number;
+    startTy: number;
+    gateTx: number;
+    gateTy: number;
+    t: number;
+    duration: number;
+  } | null = null;
   private wrongTapCount = 0;
   private overridePrompt: string | null = null;
 
@@ -265,6 +273,7 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
     this.simClockSec = 0;
     this.simAccum = 0;
     this.impactFlash = null;
+    this.captureAnim = null;
     this.hasAimed = false;
     this.isDraggingAim = false;
     this.pullCancelZone = false;
@@ -420,7 +429,7 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
     }
     this.pullCancelZone = false;
     this.hasAimed = true;
-    const mag = clamp(dist * 3.15, 0.55, 1.38);
+    const mag = clamp(dist * 2.85, 0.34, 1.38);
     this.aimVx = (dx / dist) * mag;
     this.aimVy = (dy / dist) * mag;
     this.previewDirty = true;
@@ -536,7 +545,7 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
     this.trailRecordTimer = 0;
     this.simAccum = 0;
     this.overridePrompt = null;
-    this.ctx.audio?.playSolenoidClack(false);
+    this.ctx.audio?.playSolenoidClack(true);
     platform.triggerHaptic('vernierTick', 0.72);
     this.emitHud(true);
   }
@@ -624,6 +633,10 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
       if (this.impactFlash.timer <= 0) this.impactFlash = null;
     }
 
+    if (this.captureAnim) {
+      this.captureAnim.t = Math.min(1, this.captureAnim.t + dt / Math.max(0.05, this.captureAnim.duration));
+    }
+
     const progress = this.getStageProgress01();
     this.ctx.showcase?.applyInstrumentPatch({
       progress,
@@ -653,10 +666,18 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
         this.probeActive = false;
         this.ctx.audio?.stopInstrumentAudio();
         this.impactFlash = { tx: gate.tx, ty: gate.ty, ok: true, timer: 0.7 };
+        this.captureAnim = {
+          startTx: this.probeTx,
+          startTy: this.probeTy,
+          gateTx: gate.tx,
+          gateTy: gate.ty,
+          t: 0,
+          duration: 0.38,
+        };
         this.particles.emitPhotonSparks(gx, gy, 6, 44, this.palette.lockHex);
         this.triggerStageClear(
           `SLINGSHOT INSERTION ${this.stage}/3 LOCKED`,
-          0.68,
+          0.88,
           gx,
           gy
         );
@@ -718,56 +739,58 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
       starOpacity: 0.74,
     });
 
-    // Organic Bok Globule Interstellar Dust Hazards (cached drawSoftDustPuff — ZERO gradients!)
+    // Organic Bok Globule Interstellar Dust Hazards (cached drawSoftDustPuff — ZERO dashed wireframe circles!)
     for (let i = 0; i < this.stageSpec.hazards.length; i++) {
       const d = this.stageSpec.hazards[i];
       const px = toPxX(d.tx);
       const py = toPxY(d.ty);
       const rPx = d.radius * box.scale;
 
-      drawSoftDustPuff(c2d, px, py, rPx * 1.18, '#1e110a', 0.94);
-      drawSoftDustPuff(c2d, px - rPx * 0.24, py - rPx * 0.14, rPx * 0.82, '#2d190e', 0.8);
-      drawSoftDustPuff(c2d, px + rPx * 0.22, py + rPx * 0.18, rPx * 0.72, '#140a06', 0.86);
+      drawSoftDustPuff(c2d, px, py, rPx * 1.24, '#1e110a', 0.94);
+      drawSoftDustPuff(c2d, px - rPx * 0.24, py - rPx * 0.14, rPx * 0.86, '#2d190e', 0.82);
+      drawSoftDustPuff(c2d, px + rPx * 0.22, py + rPx * 0.18, rPx * 0.76, '#140a06', 0.88);
+      drawSoftDustPuff(c2d, px - rPx * 0.1, py + rPx * 0.24, rPx * 0.62, '#482412', 0.3);
 
-      c2d.save();
-      c2d.strokeStyle = 'rgba(255, 152, 96, 0.3)';
-      c2d.lineWidth = 1.1;
-      c2d.setLineDash([4, 4]);
-      c2d.beginPath();
-      c2d.arc(px, py, rPx, 0, Math.PI * 2);
-      c2d.stroke();
-      c2d.restore();
+      for (let m = 0; m < 4; m++) {
+        const ma = i * 1.7 + m * 1.57 + this.elapsedSec * 0.15;
+        drawOpticalStar(c2d, px + Math.cos(ma) * rPx * 0.82, py + Math.sin(ma) * rPx * 0.82, 1.4, {
+          spectralClass: 'K',
+          spikes: 0,
+          alpha: 0.32,
+          vibeMode: this.palette.mode,
+        });
+      }
     }
 
-    // Roche-lobe saddle bridge when twin/multiple gravity wells are present
+    // Individual Hill-sphere equipotential contours + binary L1 Lagrange saddle cross
     const wells = this.stageSpec.wells;
     if (wells.length >= 2) {
       const w0 = wells[0];
       const w1 = wells[1];
-      // Mass-weighted L1 Lagrange saddle point: heavier primary pushes L1 toward lighter companion
       const s0 = Math.sqrt(Math.max(0.01, w0.gm));
       const s1 = Math.sqrt(Math.max(0.01, w1.gm));
       const l1Frac = s0 / (s0 + s1);
       const mx = toPxX(w0.tx + (w1.tx - w0.tx) * l1Frac);
       const my = toPxY(w0.ty + (w1.ty - w0.ty) * l1Frac);
-      const span = Math.hypot(toPxX(w1.tx) - toPxX(w0.tx), toPxY(w1.ty) - toPxY(w0.ty));
       const ang = Math.atan2(w1.ty - w0.ty, w1.tx - w0.tx);
       c2d.save();
       c2d.translate(mx, my);
       c2d.rotate(ang);
-      c2d.strokeStyle = `rgba(${this.palette.accentRgb}, ${this.palette.mode === 'cold' ? '0.24' : '0.14'})`;
+      c2d.strokeStyle = `rgba(${this.palette.accentRgb}, ${this.palette.mode === 'cold' ? '0.32' : '0.2'})`;
       c2d.lineWidth = 1;
-      c2d.setLineDash([4, 6]);
       c2d.beginPath();
-      c2d.ellipse(0, 0, span * 0.68, span * 0.34, 0, 0, Math.PI * 2);
+      c2d.moveTo(-5, 0);
+      c2d.lineTo(5, 0);
+      c2d.moveTo(0, -5);
+      c2d.lineTo(0, 5);
       c2d.stroke();
-      // Subtle L1 Lagrange saddle cross marker
-      c2d.setLineDash([]);
+      // Subtle hyperbolic saddle brackets at L1
+      c2d.strokeStyle = `rgba(${this.palette.secondaryRgb}, 0.18)`;
       c2d.beginPath();
-      c2d.moveTo(-4, 0);
-      c2d.lineTo(4, 0);
-      c2d.moveTo(0, -4);
-      c2d.lineTo(0, 4);
+      c2d.arc(-11, 0, 8, -0.75, 0.75);
+      c2d.stroke();
+      c2d.beginPath();
+      c2d.arc(11, 0, 8, Math.PI - 0.75, Math.PI + 0.75);
       c2d.stroke();
       c2d.restore();
     }
@@ -840,25 +863,35 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
       c2d.restore();
     }
 
-    // Collector Gate
+    // Rotating Segmented Magnetic Receiver Gate
     const gate = this.getGatePosAt(this.simClockSec);
     const gx = toPxX(gate.tx);
     const gy = toPxY(gate.ty);
     const gateR = this.getEffectiveGateRadius() * box.scale;
     c2d.save();
-    c2d.strokeStyle = this.palette.lockHex;
-    c2d.fillStyle = `rgba(${this.palette.lockRgb}, ${this.stageClearTimer > 0 ? '0.32' : '0.12'})`;
-    c2d.lineWidth = 2.2;
+    c2d.fillStyle = `rgba(${this.palette.lockRgb}, ${this.stageClearTimer > 0 ? '0.26' : '0.09'})`;
     c2d.beginPath();
     c2d.arc(gx, gy, gateR, 0, Math.PI * 2);
     c2d.fill();
-    c2d.stroke();
-    // Subtle inner capture reticle crosshairs
-    c2d.globalAlpha = 0.55;
-    c2d.lineWidth = 1;
-    c2d.beginPath();
-    c2d.arc(gx, gy, gateR * 0.48, 0, Math.PI * 2);
-    c2d.stroke();
+
+    // 3 counter-rotating magnetic collector arc brackets
+    const gateSpin = this.elapsedSec * (this.stageClearTimer > 0 ? 2.4 : 0.75);
+    c2d.strokeStyle = this.palette.lockHex;
+    c2d.lineWidth = 2.2;
+    for (let s = 0; s < 3; s++) {
+      const sa = gateSpin + (s * Math.PI * 2) / 3;
+      c2d.beginPath();
+      c2d.arc(gx, gy, gateR, sa - 0.38, sa + 0.38);
+      c2d.stroke();
+    }
+    c2d.globalAlpha = 0.52;
+    c2d.lineWidth = 1.1;
+    for (let s = 0; s < 3; s++) {
+      const sa = -gateSpin * 1.3 + (s * Math.PI * 2) / 3;
+      c2d.beginPath();
+      c2d.arc(gx, gy, gateR * 0.56, sa - 0.45, sa + 0.45);
+      c2d.stroke();
+    }
     c2d.restore();
 
     // Ghost Echo of Previous Missed Launch Trail (enables instant precision micro-tuning!)
@@ -876,10 +909,24 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
       c2d.restore();
     }
 
-    // Dirty-cached Velocity Verlet Preview Arc + timed arrival ticks (every 0.25s!)
+    // Dirty-cached Velocity Verlet Preview Arc + timed arrival ticks + moving-gate phase-lead ghost!
     if (!this.probeActive && this.stageClearTimer <= 0 && this.hasAimed) {
       this.refreshPreviewCache();
       if (this.previewCount >= 2) {
+        if (gSpec.moveAmpX > 0 || gSpec.moveAmpY > 0) {
+          const arrivalTimeSec = ((this.previewCount - 1) * (4 * FIXED_DT)) / TIME_SCALE;
+          const futureGate = this.getGatePosAt(this.simClockSec + arrivalTimeSec);
+          c2d.save();
+          c2d.strokeStyle = `rgba(${this.palette.lockRgb}, 0.42)`;
+          c2d.lineWidth = 1.15;
+          c2d.setLineDash([3, 4]);
+          c2d.beginPath();
+          c2d.arc(toPxX(futureGate.tx), toPxY(futureGate.ty), gateR * 0.92, 0, Math.PI * 2);
+          c2d.stroke();
+          c2d.setLineDash([]);
+          c2d.restore();
+        }
+
         c2d.save();
         c2d.strokeStyle = this.palette.secondaryHex;
         c2d.globalAlpha = this.isDraggingAim ? 0.86 : 0.48;
@@ -904,12 +951,12 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
       }
     }
 
-    // Launcher Ring + Pullback Elastic + Live Δv km/s Readout
+    // Zeiss Δv Vector Compass Launcher + Pullback Elastic + Live Δv km/s Readout
     const lx = toPxX(this.stageSpec.launcher.tx);
     const ly = toPxY(this.stageSpec.launcher.ty);
     c2d.save();
     if (!this.hasAimed && !this.probeActive) {
-      const pulse = 17 + Math.sin(this.elapsedSec * 4) * 4.5;
+      const pulse = 18 + Math.sin(this.elapsedSec * 4) * 4.5;
       c2d.strokeStyle = `rgba(${this.palette.accentRgb}, 0.56)`;
       c2d.lineWidth = 1.4;
       c2d.beginPath();
@@ -917,36 +964,62 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
       c2d.stroke();
     }
 
-    c2d.strokeStyle = this.pullCancelZone && this.isDraggingAim ? '#ff8b5e' : this.palette.accentHex;
-    c2d.lineWidth = 2;
+    // Graduated 12-tick Zeiss Δv compass bezel
+    c2d.strokeStyle = `rgba(${this.palette.secondaryRgb}, 0.34)`;
+    c2d.lineWidth = 1;
     c2d.beginPath();
-    c2d.arc(lx, ly, 13, 0, Math.PI * 2);
+    for (let t = 0; t < 12; t++) {
+      const a = (t / 12) * Math.PI * 2;
+      c2d.moveTo(lx + Math.cos(a) * 14, ly + Math.sin(a) * 14);
+      c2d.lineTo(lx + Math.cos(a) * (t % 3 === 0 ? 19 : 16.5), ly + Math.sin(a) * (t % 3 === 0 ? 19 : 16.5));
+    }
+    c2d.stroke();
+
+    c2d.strokeStyle = this.pullCancelZone && this.isDraggingAim ? '#ff8b5e' : this.palette.accentHex;
+    c2d.lineWidth = 1.9;
+    c2d.beginPath();
+    c2d.arc(lx, ly, 14, 0, Math.PI * 2);
     c2d.stroke();
 
     if (!this.probeActive && this.stageClearTimer <= 0 && this.hasAimed) {
       const pullX = lx - this.aimVx * 34;
       const pullY = ly - this.aimVy * 34;
+      const aimAng = Math.atan2(this.aimVy, this.aimVx);
       c2d.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-      c2d.lineWidth = 1.4;
+      c2d.lineWidth = 1.3;
       c2d.beginPath();
       c2d.moveTo(lx, ly);
       c2d.lineTo(pullX, pullY);
       c2d.stroke();
+
+      // Forward Δv direction chevron tip
+      const tipX = lx + Math.cos(aimAng) * 24;
+      const tipY = ly + Math.sin(aimAng) * 24;
+      c2d.strokeStyle = this.palette.accentHex;
+      c2d.lineWidth = 1.7;
+      c2d.beginPath();
+      c2d.moveTo(lx + Math.cos(aimAng) * 14, ly + Math.sin(aimAng) * 14);
+      c2d.lineTo(tipX, tipY);
+      c2d.moveTo(tipX - Math.cos(aimAng - 0.5) * 5, tipY - Math.sin(aimAng - 0.5) * 5);
+      c2d.lineTo(tipX, tipY);
+      c2d.lineTo(tipX - Math.cos(aimAng + 0.5) * 5, tipY - Math.sin(aimAng + 0.5) * 5);
+      c2d.stroke();
+
       c2d.fillStyle = this.palette.accentHex;
       c2d.beginPath();
-      c2d.arc(pullX, pullY, 4.8, 0, Math.PI * 2);
+      c2d.arc(pullX, pullY, 4.6, 0, Math.PI * 2);
       c2d.fill();
 
       const dvKmS = (Math.hypot(this.aimVx, this.aimVy) * 14.5).toFixed(1);
       c2d.font = '600 8.5px ui-monospace, SFMono-Regular, Menlo, monospace';
       c2d.fillStyle = this.palette.secondaryHex;
       c2d.textAlign = 'center';
-      c2d.fillText(`Δv ${dvKmS} km/s`, lx, ly - 19);
+      c2d.fillText(`Δv ${dvKmS} km/s`, lx, ly - 22);
     }
     c2d.restore();
 
-    // Live Probe + Oberth-scaled luminous ion tail (2-pass bloom, ZERO shadowBlur!)
-    if (this.probeActive && this.trailCount >= 1) {
+    // Live Probe + Magnetic Braking Capture Spiral (never pops out on frame 1!)
+    if ((this.probeActive || this.captureAnim) && this.trailCount >= 1) {
       for (let i = 0; i < this.trailCount; i++) {
         this.renderXY[i * 2] = toPxX(this.trailTx[i]);
         this.renderXY[i * 2 + 1] = toPxY(this.trailTy[i]);
@@ -959,16 +1032,32 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
           this.trailCount,
           speedBoost > 0.55 ? '#fff1cc' : this.palette.secondaryHex,
           1.8 + speedBoost * 1.1,
-          { outerWidthMul: 2.8 + speedBoost * 0.9, outerAlpha: 0.2 + speedBoost * 0.14, coreAlpha: 0.9 }
+          {
+            outerWidthMul: 2.8 + speedBoost * 0.9,
+            outerAlpha: (0.2 + speedBoost * 0.14) * (this.captureAnim ? 1 - this.captureAnim.t * 0.4 : 1),
+            coreAlpha: this.captureAnim ? 0.9 - this.captureAnim.t * 0.45 : 0.9,
+          }
         );
       }
 
-      const px = toPxX(this.probeTx);
-      const py = toPxY(this.probeTy);
+      let px = toPxX(this.probeTx);
+      let py = toPxY(this.probeTy);
+      let probeAlpha = 1;
+      if (this.captureAnim) {
+        const u = clamp(this.captureAnim.t, 0, 1);
+        const shrink = Math.pow(1 - u, 1.4);
+        const dxG = toPxX(this.captureAnim.startTx) - gx;
+        const dyG = toPxY(this.captureAnim.startTy) - gy;
+        const r0 = Math.hypot(dxG, dyG);
+        const a0 = Math.atan2(dyG, dxG) + u * Math.PI * 1.75;
+        px = gx + Math.cos(a0) * r0 * shrink;
+        py = gy + Math.sin(a0) * r0 * shrink;
+        probeAlpha = clamp(1 - u * 0.75, 0.25, 1);
+      }
       drawOpticalStar(c2d, px, py, 5.2 + speedBoost * 2.2, {
-        spectralClass: 'F',
+        spectralClass: this.captureAnim ? 'LOCK' : 'F',
         spikes: 4,
-        alpha: 1,
+        alpha: probeAlpha,
         vibeMode: this.palette.mode,
       });
     }

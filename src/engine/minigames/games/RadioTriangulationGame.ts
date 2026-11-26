@@ -1,8 +1,9 @@
 import { platform } from '../../../platform/PlatformAdapter';
 import { BaseCosmicMinigame, type PointerLocalEvent } from '../core/BaseCosmicMinigame';
-import { drawGlowStroke, drawInclinedAstrometryRing } from '../render/OpticalDrawUtils';
+import { drawFeatheredRadioLobe, drawOutwardRadarWavefronts } from '../render/InstrumentSprites';
+import { drawInclinedAstrometryRing } from '../render/OpticalDrawUtils';
 import { drawOpticalStar } from '../render/StarPSFAtlas';
-import { angleDiffRad, clamp, lerp, wrapAngleRad } from '../tactilePhysics';
+import { angleDiffRad, clamp, lerp, SpringActuator, wrapAngleRad } from '../tactilePhysics';
 import type {
   CosmicPlateId,
   InstrumentFieldGuide,
@@ -13,7 +14,9 @@ interface RadioDish {
   id: number;
   rimAngle: number;
   aimAngle: number;
+  aimSpring: SpringActuator;
   wasLocked: boolean;
+  servoEngaged: boolean;
   closeness: number;
 }
 
@@ -124,7 +127,7 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
 
   protected override onMount(): void {
     this.scenario = SCENARIOS[this.iterationIndex % SCENARIOS.length];
-    this.lockHoldTargetSec = 0.62;
+    this.lockHoldTargetSec = 0.95;
   }
 
   protected onSetupStage(stage: 1 | 2 | 3, rng: () => number): void {
@@ -141,9 +144,9 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
     };
     this.driftAxisAngle = rng() * Math.PI * 2;
 
-    // Stage 1 interactive multipath ghost echo(es), clearly separated from true beacon
+    // Stage 1 (and Stage 3 decoy sweep): interactive multipath ghost echo(es), clearly separated from true beacon
     this.ghosts = [];
-    if (stage === 1) {
+    if (stage === 1 || stage === 3) {
       const gAng1 = srcAng + Math.PI + (rng() - 0.5) * 0.55;
       const gR1 = 0.24 + rng() * 0.16;
       this.ghosts.push({
@@ -153,7 +156,7 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
         rejectFlash: 0,
         illuminatedCount: 0,
       });
-      if (this.scenario.stage1Ghosts === 2) {
+      if (stage === 1 && this.scenario.stage1Ghosts === 2) {
         const gAng2 = srcAng + (rng() > 0.5 ? 1 : -1) * (Math.PI * 0.58);
         const gR2 = 0.26 + rng() * 0.14;
         this.ghosts.push({
@@ -191,11 +194,14 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
       const trueAim = Math.atan2(this.sourceBase.sy - Math.sin(rimAng), this.sourceBase.sx - Math.cos(rimAng));
       const offset = (id % 2 === 0 ? 1 : -1) * (0.48 + rng() * 0.16);
       const aim = this.clampAimInward(rimAng, trueAim + offset);
+      const resolved = Number.isFinite(aim) ? aim : inward;
       return {
         id,
         rimAngle: rimAng,
-        aimAngle: Number.isFinite(aim) ? aim : inward,
+        aimAngle: resolved,
+        aimSpring: new SpringActuator(resolved),
         wasLocked: false,
+        servoEngaged: false,
         closeness: 0,
       };
     });
@@ -283,6 +289,14 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
       if (hits >= 2 && !g.rejected) {
         g.rejected = true;
         g.rejectFlash = 1;
+        const { cx, cy, radius } = this.getGeometry(this.width, this.height);
+        this.particles.emitPhotonSparks(
+          cx + g.sx * radius,
+          cy + g.sy * radius,
+          6,
+          28,
+          '#ffb86c'
+        );
         this.ctx.audio?.playSolenoidClack(false);
         platform.triggerHaptic('rejectThud', 0.55);
       }
@@ -408,12 +422,25 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
       for (let i = 0; i < this.dishes.length; i++) {
         const d = this.dishes[i];
         if (d.wasLocked && d.id !== this.activeDishId) {
+          d.servoEngaged = true;
           const trueAim = this.getTrueAimForDish(d, src);
           const diff = angleDiffRad(trueAim, d.aimAngle);
-          const maxStep = dt * 0.14;
+          const maxStep = dt * 0.032;
           d.aimAngle = this.clampAimInward(d.rimAngle, d.aimAngle + clamp(diff, -maxStep, maxStep));
+        } else {
+          d.servoEngaged = false;
         }
       }
+    } else {
+      for (let i = 0; i < this.dishes.length; i++) {
+        this.dishes[i].servoEngaged = false;
+      }
+    }
+
+    for (let i = 0; i < this.dishes.length; i++) {
+      const d = this.dishes[i];
+      d.aimSpring.target = d.aimAngle;
+      d.aimSpring.step(dt, { stiffness: 165, damping: 22, wrapAngle: true });
     }
 
     const allLocked = this.refreshDishMetrics();
@@ -502,7 +529,110 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
     c2d.stroke();
     c2d.restore();
 
-    // VLBI Baseline Correlation Chords connecting dish pairs!
+    // Subtle perimeter baseline correlation arcs on the outer ring (NO heavy central triangle!)
+    c2d.save();
+    for (let i = 0; i < this.dishes.length; i++) {
+      for (let j = i + 1; j < this.dishes.length; j++) {
+        const a = this.dishes[i];
+        const b = this.dishes[j];
+        const pairCorr = a.closeness * b.closeness;
+        const bothLocked = a.wasLocked && b.wasLocked;
+
+        if (bothLocked || pairCorr > 0.58) {
+          const ax = cx + Math.cos(a.rimAngle) * radius;
+          const ay = cy + Math.sin(a.rimAngle) * radius;
+          const bx = cx + Math.cos(b.rimAngle) * radius;
+          const by = cy + Math.sin(b.rimAngle) * radius;
+          c2d.strokeStyle = bothLocked
+            ? `rgba(${this.palette.lockRgb}, 0.24)`
+            : `rgba(${this.palette.secondaryRgb}, ${(pairCorr * 0.09).toFixed(2)})`;
+          c2d.lineWidth = bothLocked ? 1.1 : 0.7;
+          c2d.setLineDash?.(bothLocked ? [] : [3, 9]);
+          c2d.beginPath();
+          c2d.moveTo(ax, ay);
+          c2d.lineTo(bx, by);
+          c2d.stroke();
+          c2d.setLineDash?.([]);
+        }
+
+        // Outer graduated baseline correlation arc segment
+        const dAng = angleDiffRad(b.rimAngle, a.rimAngle);
+        c2d.strokeStyle = bothLocked
+          ? `rgba(${this.palette.lockRgb}, 0.42)`
+          : `rgba(${this.palette.accentRgb}, ${(0.08 + pairCorr * 0.18).toFixed(2)})`;
+        c2d.lineWidth = bothLocked ? 1.6 : 1.0;
+        c2d.beginPath();
+        c2d.arc(cx, cy, radius + 5, a.rimAngle, a.rimAngle + dAng, dAng < 0);
+        c2d.stroke();
+      }
+    }
+    c2d.restore();
+
+    // Clipped outward-projecting radar signal lobes + wavefront pulses (strictly inside circular array!)
+    const beamLen = radius * 1.92;
+    c2d.save();
+    c2d.beginPath();
+    c2d.arc(cx, cy, Math.max(8, radius - 1.5), 0, Math.PI * 2);
+    c2d.clip?.();
+
+    for (let i = 0; i < this.dishes.length; i++) {
+      const dish = this.dishes[i];
+      const dx = cx + Math.cos(dish.rimAngle) * radius;
+      const dy = cy + Math.sin(dish.rimAngle) * radius;
+      const shimmer = this.scenario.ionosphericShimmer
+        ? Math.sin(this.elapsedSec * 4.2 + dish.id * 2.1) * 0.015 * (1 - dish.closeness)
+        : 0;
+      const dispAim = dish.aimSpring.value + shimmer;
+      const hornX = dx + Math.cos(dispAim) * 9;
+      const hornY = dy + Math.sin(dispAim) * 9;
+      const locked = dish.wasLocked;
+      const col = locked
+        ? this.palette.lockHex
+        : dish.closeness > 0.72
+        ? this.palette.secondaryHex
+        : this.palette.accentHex;
+      const halfCone = lerp(0.32, 0.11, dish.closeness) * (this.palette.mode === 'cold' ? 0.86 : 1.04);
+
+      drawFeatheredRadioLobe(
+        c2d,
+        hornX,
+        hornY,
+        dispAim,
+        beamLen,
+        halfCone,
+        col,
+        0.16 + dish.closeness * 0.2
+      );
+
+      drawOutwardRadarWavefronts(
+        c2d,
+        hornX,
+        hornY,
+        dispAim,
+        beamLen * 0.96,
+        halfCone * 0.94,
+        this.elapsedSec,
+        dish.id * 0.29,
+        col,
+        dish.closeness,
+        locked
+      );
+
+      // Whisper-faint boresight reticle hairline so exact aiming remains legible
+      c2d.save();
+      c2d.strokeStyle = col;
+      c2d.globalAlpha = locked ? 0.34 : 0.13 + dish.closeness * 0.12;
+      c2d.lineWidth = locked ? 1.15 : 0.8;
+      c2d.setLineDash?.(locked ? [6, 5] : [3, 8]);
+      c2d.beginPath();
+      c2d.moveTo(hornX, hornY);
+      c2d.lineTo(hornX + Math.cos(dispAim) * beamLen * 0.94, hornY + Math.sin(dispAim) * beamLen * 0.94);
+      c2d.stroke();
+      c2d.setLineDash?.([]);
+      c2d.restore();
+    }
+
+    // Live Constructive Interference Synthesis Fringe Blooms at boresight intersections
     c2d.save();
     for (let i = 0; i < this.dishes.length; i++) {
       for (let j = i + 1; j < this.dishes.length; j++) {
@@ -512,40 +642,54 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
         const ay = cy + Math.sin(a.rimAngle) * radius;
         const bx = cx + Math.cos(b.rimAngle) * radius;
         const by = cy + Math.sin(b.rimAngle) * radius;
-        const pairCorr = a.closeness * b.closeness;
-        const bothLocked = a.wasLocked && b.wasLocked;
+        const ux = Math.cos(a.aimSpring.value);
+        const uy = Math.sin(a.aimSpring.value);
+        const vx = Math.cos(b.aimSpring.value);
+        const vy = Math.sin(b.aimSpring.value);
+        const det = ux * vy - uy * vx;
+        if (Math.abs(det) < 0.08) continue;
+        const rx = bx - ax;
+        const ry = by - ay;
+        const ta = (rx * vy - ry * vx) / det;
+        const tb = (rx * uy - ry * ux) / det;
+        if (ta < 16 || tb < 16) continue;
+        const ix = ax + ux * ta;
+        const iy = ay + uy * ta;
+        if (Math.hypot(ix - cx, iy - cy) >= radius * 0.95) continue;
 
-        c2d.strokeStyle = bothLocked
-          ? `rgba(${this.palette.lockRgb}, 0.48)`
-          : `rgba(${this.palette.secondaryRgb}, ${(0.08 + pairCorr * 0.22).toFixed(2)})`;
-        c2d.lineWidth = bothLocked ? 1.4 : 0.9;
-        c2d.setLineDash?.(bothLocked ? [] : [4, 6]);
-        c2d.beginPath();
-        c2d.moveTo(ax, ay);
-        c2d.lineTo(bx, by);
-        c2d.stroke();
-
-        if (this.profile.showNumericDeltas && pairCorr > 0.35) {
-          c2d.setLineDash?.([]);
-          c2d.font = '600 8px ui-monospace, SFMono-Regular, Menlo, monospace';
-          c2d.fillStyle = bothLocked ? this.palette.lockHex : 'rgba(180, 216, 240, 0.56)';
-          c2d.textAlign = 'center';
-          c2d.fillText(`B${i + 1}${j + 1}`, (ax + bx) * 0.5, (ay + by) * 0.5 - 4);
+        const pairClose = a.closeness * b.closeness;
+        const pulse = 0.72 + 0.28 * Math.sin(this.elapsedSec * 5.2 + i + j);
+        const col = a.wasLocked && b.wasLocked ? this.palette.lockHex : this.palette.secondaryHex;
+        c2d.strokeStyle = col;
+        c2d.globalAlpha = clamp((0.18 + pairClose * 0.44) * pulse, 0, 0.7);
+        c2d.lineWidth = 1.05;
+        if (typeof c2d.ellipse === 'function') {
+          c2d.beginPath();
+          c2d.ellipse(ix, iy, 12 * pulse, 4.5 * pulse, a.aimSpring.value, 0, Math.PI * 2);
+          c2d.stroke();
+          c2d.beginPath();
+          c2d.ellipse(ix, iy, 12 * pulse, 4.5 * pulse, b.aimSpring.value, 0, Math.PI * 2);
+          c2d.stroke();
         }
+        c2d.fillStyle = col;
+        c2d.beginPath();
+        c2d.arc(ix, iy, 2.4, 0, Math.PI * 2);
+        c2d.fill();
       }
     }
     c2d.restore();
+    c2d.restore(); // end radar circle clip
 
-    // Stage 1 Interactive Multipath Ghost Echoes (respond authentically to single-dish vs dual-dish cross-check!)
+    // Stage 1 / 3 Interactive Multipath Ghost Echoes (shatter clearly on dual-beam cross-check!)
     for (let i = 0; i < this.ghosts.length; i++) {
       const g = this.ghosts[i];
       const gx = cx + g.sx * radius;
       const gy = cy + g.sy * radius;
       const activeAlpha = g.rejected
-        ? 0.14 + g.rejectFlash * 0.55
+        ? 0.2 + g.rejectFlash * 0.55
         : g.illuminatedCount === 1
-        ? 0.72
-        : 0.26;
+        ? 0.74
+        : 0.28;
 
       c2d.save();
       c2d.strokeStyle = g.rejected ? '#ff7a6b' : '#ffb86c';
@@ -567,7 +711,7 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
         c2d.font = '600 8px ui-monospace, SFMono-Regular, Menlo, monospace';
         c2d.fillStyle = '#ff9d82';
         c2d.textAlign = 'center';
-        c2d.fillText('PHASE MISMATCH · ECHO', gx, gy + 21);
+        c2d.fillText('GHOST REJECTED', gx, gy + 21);
       } else if (g.illuminatedCount === 1) {
         c2d.fillStyle = '#ffb86c';
         c2d.beginPath();
@@ -580,9 +724,9 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
       c2d.restore();
     }
 
-    // Authentic Radio Synchrotron Source (isophote contour rings + wavefront pings — ZERO optical star spikes!)
+    // Authentic Radio Synchrotron Source (isophote contours + synchrotron lobes + wavefront pings)
     const { boost: pingBoost, ringFrac } = this.evalPingStrength();
-    const revealAlpha = clamp((this.cachedAvgClose - 0.36) / 0.5 + pingBoost * 0.62, 0.12, 1);
+    const revealAlpha = clamp((this.cachedAvgClose - 0.36) / 0.5 + pingBoost * 0.62, 0.14, 1);
 
     c2d.save();
     if (this.stage === 3) {
@@ -594,8 +738,23 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
       c2d.stroke();
     }
 
-    // Nested radio contour isophotes
     const isoCol = this.cachedAvgClose > 0.8 ? this.palette.lockHex : this.palette.secondaryHex;
+    // Dual faint synchrotron jet lobes emerging when baseline correlation climbs
+    if (revealAlpha > 0.36 && typeof c2d.ellipse === 'function') {
+      const lobeScale = clamp((revealAlpha - 0.36) / 0.64, 0, 1);
+      c2d.strokeStyle = isoCol;
+      c2d.globalAlpha = lobeScale * 0.32;
+      c2d.lineWidth = 1.05;
+      const cosD = Math.cos(this.driftAxisAngle);
+      const sinD = Math.sin(this.driftAxisAngle);
+      c2d.beginPath();
+      c2d.ellipse(srcX + cosD * 18, srcY + sinD * 18, 9 * lobeScale, 5 * lobeScale, this.driftAxisAngle, 0, Math.PI * 2);
+      c2d.stroke();
+      c2d.beginPath();
+      c2d.ellipse(srcX - cosD * 18, srcY - sinD * 18, 9 * lobeScale, 5 * lobeScale, this.driftAxisAngle, 0, Math.PI * 2);
+      c2d.stroke();
+    }
+
     const contourRadii = [6, 12.5, 20];
     for (let k = 0; k < contourRadii.length; k++) {
       const rIso = contourRadii[k] * (0.85 + revealAlpha * 0.22);
@@ -608,24 +767,19 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
     }
     c2d.restore();
 
-    // Soft pinpoint unspiked radio core (from PSF atlas Row 0 — zero spikes, zero gradients!)
-    drawOpticalStar(c2d, srcX, srcY, 4.2 + revealAlpha * 2.4, {
+    drawOpticalStar(c2d, srcX, srcY, 4.4 + revealAlpha * 2.5, {
       spectralClass: this.cachedAvgClose > 0.8 ? 'LOCK' : 'O',
       spikes: 0,
       alpha: revealAlpha,
       vibeMode: this.palette.mode,
     });
 
-    // Dish beam cones (zero per-frame radial gradients: layered concentric translucent wedges!) + Articulated Dishes
-    const beamLen = radius * 1.85;
+    // Articulated Concave Parabolic Dish Turrets along perimeter
     for (let i = 0; i < this.dishes.length; i++) {
       const dish = this.dishes[i];
       const dx = cx + Math.cos(dish.rimAngle) * radius;
       const dy = cy + Math.sin(dish.rimAngle) * radius;
-      const shimmer = this.scenario.ionosphericShimmer
-        ? Math.sin(this.elapsedSec * 4.2 + dish.id * 2.1) * 0.015 * (1 - dish.closeness)
-        : 0;
-      const dispAim = dish.aimAngle + shimmer;
+      const dispAim = dish.aimSpring.value;
       const locked = dish.wasLocked;
       const selected = dish.id === this.selectedDishId;
       const col = locked
@@ -633,103 +787,81 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
         : dish.closeness > 0.72
         ? this.palette.secondaryHex
         : this.palette.accentHex;
-      const rgb = locked ? this.palette.lockRgb : this.palette.accentRgb;
-      const halfCone = lerp(0.28, 0.075, dish.closeness) * (this.palette.mode === 'cold' ? 0.84 : 1.04);
 
-      c2d.save();
-      // 3 layered fading beam tiers (replaces expensive createRadialGradient per dish!)
-      const tiers = [1.0, 0.64, 0.34];
-      const alphas = [0.06, 0.08 + dish.closeness * 0.08, 0.11 + dish.closeness * 0.12];
-      for (let t = 0; t < 3; t++) {
-        c2d.fillStyle = `rgba(${rgb}, ${alphas[t].toFixed(3)})`;
-        c2d.beginPath();
-        c2d.moveTo(dx, dy);
-        c2d.arc(dx, dy, beamLen * tiers[t], dispAim - halfCone, dispAim + halfCone);
-        c2d.closePath();
-        c2d.fill();
-      }
-
-      // Central boresight axis + animated incoming phase-front crest
-      if (locked) {
-        drawGlowStroke(
-          c2d,
-          (ctx) => {
-            ctx.moveTo(dx, dy);
-            ctx.lineTo(dx + Math.cos(dispAim) * beamLen * 0.92, dy + Math.sin(dispAim) * beamLen * 0.92);
-          },
-          col,
-          1.8,
-          { outerWidthMul: 2.6, outerAlpha: 0.22, coreAlpha: 0.9 }
-        );
-      } else {
-        c2d.strokeStyle = col;
-        c2d.globalAlpha = 0.34 + dish.closeness * 0.5;
-        c2d.lineWidth = 1.2;
-        c2d.beginPath();
-        c2d.moveTo(dx, dy);
-        c2d.lineTo(dx + Math.cos(dispAim) * beamLen * 0.9, dy + Math.sin(dispAim) * beamLen * 0.9);
-        c2d.stroke();
-      }
-
-      // Incoming radio wavefront arc sweeping from sky into dish
-      const pulseFrac = 1 - ((this.elapsedSec * 0.72 + dish.id * 0.33) % 1);
-      const pulseR = 18 + pulseFrac * beamLen * 0.74;
-      c2d.strokeStyle = col;
-      c2d.globalAlpha = (0.2 + dish.closeness * 0.45) * (1 - Math.abs(pulseFrac - 0.5) * 1.6);
-      c2d.lineWidth = 1.25;
-      c2d.beginPath();
-      c2d.arc(dx, dy, pulseR, dispAim - halfCone * 0.92, dispAim + halfCone * 0.92);
-      c2d.stroke();
-      c2d.restore();
-
-      // Articulated Parabolic Radio Dish Icon + Per-Dish Reception Meter + Tab Selection Halo
       c2d.save();
       c2d.translate(dx, dy);
 
-      // Tab / active selection ring
       if (selected) {
         c2d.strokeStyle = 'rgba(232, 245, 255, 0.58)';
         c2d.lineWidth = 1.1;
         c2d.setLineDash?.([3, 3]);
         c2d.beginPath();
-        c2d.arc(0, 0, 20, 0, Math.PI * 2);
+        c2d.arc(0, 0, 21, 0, Math.PI * 2);
         c2d.stroke();
         c2d.setLineDash?.([]);
       }
 
-      // Per-dish radial signal strength reception arc (immediate single-dish feedback!)
       if (dish.closeness > 0.08) {
         c2d.strokeStyle = col;
-        c2d.lineWidth = 2.4;
+        c2d.lineWidth = 2.2;
         c2d.beginPath();
         c2d.arc(0, 0, 17, -Math.PI * 0.5, -Math.PI * 0.5 + Math.PI * 2 * dish.closeness);
         c2d.stroke();
       }
 
       c2d.rotate(dispAim);
-      c2d.strokeStyle = col;
+      // Azimuth carriage base + rear counterweight yoke
       c2d.fillStyle = '#07101c';
-      c2d.lineWidth = 2.2;
-      // Parabolic dish reflector arc
-      c2d.beginPath();
-      c2d.arc(-3, 0, 12.5, -Math.PI * 0.44, Math.PI * 0.44);
-      c2d.stroke();
-      // Feed horn strut + receiver focal node
+      c2d.strokeStyle = 'rgba(186, 214, 240, 0.36)';
       c2d.lineWidth = 1.2;
       c2d.beginPath();
-      c2d.moveTo(-3, 0);
-      c2d.lineTo(7, 0);
+      c2d.moveTo(-10, -4);
+      c2d.lineTo(-5, -4);
+      c2d.lineTo(-5, 4);
+      c2d.lineTo(-10, 4);
+      c2d.closePath();
+      c2d.fill();
       c2d.stroke();
+
+      // Concave Parabolic Dish Reflector opening toward +X (true cup curvature!)
+      c2d.fillStyle = 'rgba(10, 22, 38, 0.72)';
+      c2d.strokeStyle = col;
+      c2d.lineWidth = 2.4;
       c2d.beginPath();
-      c2d.arc(7, 0, 2.3, 0, Math.PI * 2);
+      c2d.moveTo(0, -13);
+      if (typeof c2d.quadraticCurveTo === 'function') {
+        c2d.quadraticCurveTo(-11.5, 0, 0, 13);
+      } else {
+        c2d.lineTo(-6, 0);
+        c2d.lineTo(0, 13);
+      }
+      c2d.stroke();
+
+      // 3-strut quadripod truss converging onto cryogenic focal feed horn at (+10, 0)
+      c2d.strokeStyle = 'rgba(220, 238, 252, 0.58)';
+      c2d.lineWidth = 1.05;
+      c2d.beginPath();
+      c2d.moveTo(-0.5, -11.5);
+      c2d.lineTo(10, 0);
+      c2d.moveTo(-0.5, 11.5);
+      c2d.lineTo(10, 0);
+      c2d.moveTo(-5.5, 0);
+      c2d.lineTo(10, 0);
+      c2d.stroke();
+
+      // Cryogenic feed horn receiver node
+      c2d.beginPath();
+      c2d.arc(10, 0, 2.5, 0, Math.PI * 2);
       c2d.fillStyle = col;
       c2d.fill();
-      // Hub pedestal
-      c2d.beginPath();
-      c2d.arc(-3, 0, 4.2, 0, Math.PI * 2);
-      c2d.fillStyle = '#07101c';
-      c2d.fill();
-      c2d.stroke();
+
+      // Subtle motorized TRACK indicator LED on rear yoke
+      if (dish.servoEngaged) {
+        c2d.beginPath();
+        c2d.arc(-8.2, 0, 1.8, 0, Math.PI * 2);
+        c2d.fillStyle = this.palette.lockHex;
+        c2d.fill();
+      }
       c2d.restore();
     }
 
@@ -791,6 +923,7 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
     for (let i = 0; i < this.dishes.length; i++) {
       const d = this.dishes[i];
       d.aimAngle = this.clampAimInward(d.rimAngle, this.getTrueAimForDish(d, src));
+      d.aimSpring.snap(d.aimAngle);
     }
     this.refreshDishMetrics();
   }

@@ -207,7 +207,7 @@ export class ExoplanetTransitGame extends BaseCosmicMinigame {
 
   protected override onMount(): void {
     this.scenario = SCENARIOS[this.iterationIndex % SCENARIOS.length];
-    this.lockHoldTargetSec = 0.55;
+    this.lockHoldTargetSec = 0.88;
     this.accSum = 0;
     this.accCount = 0;
     this.hasInteracted = false;

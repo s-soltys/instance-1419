@@ -91,7 +91,7 @@ export class SupernovaEchoesGame extends BaseCosmicMinigame {
   private lastShowcaseSig = '';
 
   protected onMount(): void {
-    this.lockHoldTargetSec = 0.55;
+    this.lockHoldTargetSec = 0.88;
     this.variantProfile = VARIANT_PROFILES[this.iterationIndex % VARIANT_PROFILES.length];
   }
 
@@ -725,7 +725,7 @@ export class SupernovaEchoesGame extends BaseCosmicMinigame {
             cx: reticleX,
             cy: reticleY,
             radius: 26,
-            progress01: this.lockHoldSec / (this.phase === 'locate' ? this.lockHoldTargetSec : 0.48),
+            progress01: this.lockHoldSec / (this.phase === 'locate' ? this.lockHoldTargetSec : 0.78),
           }
         : undefined
     );

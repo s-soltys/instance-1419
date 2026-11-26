@@ -19,8 +19,13 @@ flowchart TD
     STORE -->|"uHumanity, uChaos, uFidelity"| OPTICS["3D Optics Scene (Three.js + GLSL)"]
     STORE -->|"uHumanity, activePortrait"| DREAM["2D Dream Canvas (WebGL Shader)"]
     STORE -->|"H% mix & triggers"| AUDIO["Procedural Web Audio Engine"]
+    UI -->|"Prebaked Cast 2 + audio sync"| VOICE["VoiceEngine (voiced:false Psyche, 40ms fade, waitForQueueNearEnd)"]
     STORE <--> PLAT["PlatformAdapter (localStorage -> Steam/Mobile)"]
 ```
+
+* **Dialogue & Choice Contract (`DialogueRunner.ts`, `DialogueFeedView.ts`, `VoiceEngine.ts`):**
+  * Choices carry structured metadata from Ink tags: `weight` (`explore` | `consequential` | `permanent`), `kind` (`ask` | `reply` | `action` | `prune`), and `costHint` (`# hint:...`), driving color-coded choice plates without exposing Warm/Cold spoiler dots.
+  * `VoiceEngine` reads `voice_profiles.json` (`voiced: false` skips unvoiced Psyche marginalia), prefetches audio before engaging `-6 dB` music ducking, applies `40ms` clip fade-outs on `stop()`, inserts `220ms`/`420ms` inter-line pauses, and exposes `waitForQueueNearEnd()` for audio-synced Overseer interrupts.
 
 ## 3. State Schema (`StateStore`)
 Core serializable state persisted automatically between beats:

@@ -3,10 +3,9 @@ import balance from '../../src/content/balance.json';
 import {
   computeInstrumentProfile,
   getUnifiedVibeTheme,
-  LatchController,
+  HitstopRecoil,
   resolveInstrumentPayout,
   SpringActuator,
-  StuckTimeDirector,
   wrapAngleRad,
 } from '../../src/engine/minigames/tactilePhysics';
 import type { MinigameStateVector } from '../../src/engine/minigames/types';
@@ -14,54 +13,46 @@ import type { MinigameStateVector } from '../../src/engine/minigames/types';
 function makeVector(overrides: Partial<MinigameStateVector> = {}): MinigameStateVector {
   return {
     humanity: 70,
-    maxHumanity: 90,
     opticalFidelity: 0.55,
     chaosDrift: 14,
-    wavelengthNm: 560,
-    primarySiblingH: 68,
-    overseerSuspicion: 0,
     shift: 1,
-    prunedPersonas: 0,
     ...overrides,
   };
 }
 
-describe('tactilePhysics unified H% vibe, angle wrap, viscosity & controls', () => {
+describe('tactilePhysics Lean 3-Axis contract, springs & clean payouts', () => {
   it('enforces symmetric Warm / Balanced / Cold vibe thresholds', () => {
-    const warm = getUnifiedVibeTheme(82);
-    expect(warm.mode).toBe('warm');
-    expect(warm.requiresRawResidual).toBe(false);
-
-    const warmEdge = getUnifiedVibeTheme(65);
-    expect(warmEdge.mode).toBe('warm');
-
-    const balanced = getUnifiedVibeTheme(55);
-    expect(balanced.mode).toBe('balanced');
-    expect(balanced.requiresRawResidual).toBe(false);
-
-    const coldEdge = getUnifiedVibeTheme(44);
-    expect(coldEdge.mode).toBe('cold');
-    expect(coldEdge.requiresRawResidual).toBe(true);
-
-    const cold = getUnifiedVibeTheme(24);
-    expect(cold.mode).toBe('cold');
-    expect(cold.requiresRawResidual).toBe(true);
+    expect(getUnifiedVibeTheme(82).mode).toBe('warm');
+    expect(getUnifiedVibeTheme(65).mode).toBe('warm');
+    expect(getUnifiedVibeTheme(55).mode).toBe('balanced');
+    expect(getUnifiedVibeTheme(44).mode).toBe('cold');
+    expect(getUnifiedVibeTheme(24).mode).toBe('cold');
   });
 
-  it('scales detent wells, pareidolia, numeric deltas, and RAW gate symmetrically across all 8 inputs', () => {
-    const warmProf = computeInstrumentProfile(makeVector({ humanity: 82, chaosDrift: 60 }));
-    const coldProf = computeInstrumentProfile(
-      makeVector({ humanity: 28, chaosDrift: 60, overseerSuspicion: 3, shift: 4 })
+  it('computes 3-Axis CognitiveInstrumentProfile (Warmth, Optical Clarity, Horizon Drift)', () => {
+    const warmLowFidelity = computeInstrumentProfile(
+      makeVector({ humanity: 82, opticalFidelity: 0.4, chaosDrift: 12, shift: 1 })
+    );
+    const coldHighFidelityLate = computeInstrumentProfile(
+      makeVector({ humanity: 28, opticalFidelity: 0.92, chaosDrift: 68, shift: 5 })
     );
 
-    expect(warmProf.detentWellScale).toBeGreaterThan(coldProf.detentWellScale);
-    expect(coldProf.snapPrecisionMul).toBeGreaterThan(warmProf.snapPrecisionMul);
-    expect(warmProf.harmonicWarmthGain).toBeGreaterThan(coldProf.harmonicWarmthGain);
-    expect(warmProf.showNumericDeltas).toBe(false);
-    expect(coldProf.showNumericDeltas).toBe(true);
-    expect(warmProf.requiresRawResidual).toBe(false);
-    expect(coldProf.requiresRawResidual).toBe(true);
-    expect(coldProf.overclockRiskMul).toBeGreaterThan(warmProf.overclockRiskMul);
+    // Axis 1: Warmth
+    expect(warmLowFidelity.warmth01).toBeGreaterThan(coldHighFidelityLate.warmth01);
+    expect(warmLowFidelity.detentWellScale).toBeGreaterThan(coldHighFidelityLate.detentWellScale);
+    expect(warmLowFidelity.harmonicWarmthGain).toBeGreaterThan(coldHighFidelityLate.harmonicWarmthGain);
+    expect(warmLowFidelity.showNumericDeltas).toBe(false);
+    expect(coldHighFidelityLate.showNumericDeltas).toBe(true);
+
+    // Axis 2: Optical Clarity
+    expect(coldHighFidelityLate.clarity01).toBeGreaterThan(warmLowFidelity.clarity01);
+    expect(warmLowFidelity.jitterAmplitude).toBeGreaterThan(coldHighFidelityLate.jitterAmplitude);
+    expect(warmLowFidelity.ccdNoiseAlpha).toBeGreaterThan(coldHighFidelityLate.ccdNoiseAlpha);
+    expect(warmLowFidelity.plateBlurPenaltyPx).toBeGreaterThan(coldHighFidelityLate.plateBlurPenaltyPx);
+
+    // Axis 3: Horizon Drift
+    expect(coldHighFidelityLate.drift01).toBeGreaterThan(warmLowFidelity.drift01);
+    expect(coldHighFidelityLate.seamBleedAlpha).toBeGreaterThan(warmLowFidelity.seamBleedAlpha);
   });
 
   it('converges SpringActuator smoothly, handles +-PI wrapping, and reports pseudo-haptic viscosity', () => {
@@ -82,7 +73,6 @@ describe('tactilePhysics unified H% vibe, angle wrap, viscosity & controls', () 
     expect(lastRes.inWell).toBe(true);
     expect(lastRes.wellProximity).toBeGreaterThan(0.7);
 
-    // Shortest-arc angle wrap across +PI / -PI boundary
     const angSpring = new SpringActuator(Math.PI - 0.1);
     angSpring.target = wrapAngleRad(-Math.PI + 0.1);
     for (let i = 0; i < 40; i++) {
@@ -91,58 +81,27 @@ describe('tactilePhysics unified H% vibe, angle wrap, viscosity & controls', () 
     expect(Math.abs(angSpring.value)).toBeGreaterThan(2.9);
   });
 
-  it('gates LatchController on alignment + RAW residual and separates Clean vs Deep Overclock', () => {
-    const gated = new LatchController();
-    gated.setHolding(true);
-    const blocked = gated.tick(0.5, 0.95, false);
-    expect(blocked.lockProgress).toBe(0);
-    expect(blocked.completedGrade).toBeNull();
-
-    const cleanLatch = new LatchController();
-    cleanLatch.setHolding(true);
-    for (let i = 0; i < 16; i++) {
-      cleanLatch.tick(0.05, 1.0, true);
-    }
-    cleanLatch.setHolding(false);
-    const cleanOut = cleanLatch.tick(0.016, 1.0, true);
-    expect(cleanOut.completedGrade).toBe('clean');
-
-    const ocLatch = new LatchController();
-    ocLatch.setHolding(true);
-    let out = ocLatch.tick(0.05, 1.0, true);
-    for (let i = 0; i < 40 && !out.completedGrade; i++) {
-      out = ocLatch.tick(0.05, 1.0, true);
-    }
-    expect(out.overclockZone).toBe(true);
-    expect(out.completedGrade).toBe('deep_overclock');
+  it('steps HitstopRecoil freeze and decays micro-shake', () => {
+    const recoil = new HitstopRecoil();
+    recoil.trigger(40, 5);
+    const hit = recoil.step(0.016);
+    expect(hit.frozen).toBe(true);
+    let settled = hit;
+    for (let i = 0; i < 25; i++) settled = recoil.step(0.02);
+    expect(settled.frozen).toBe(false);
+    expect(Math.hypot(settled.shakeX, settled.shakeY)).toBeLessThan(0.25);
   });
 
-  it('escalates StuckTimeDirector tiers per balance.json schedule and resets timer on progress', () => {
-    const sched = balance.minigames.assistScheduleSec;
-    const dir = new StuckTimeDirector();
-    expect(dir.tick(5, 0.1)).toBe(0);
-    expect(dir.tick(12, 0.25)).toBe(0);
-    expect(dir.tick(sched.subtlePulse + 1, 0.25)).toBe(1);
-    expect(dir.tick(sched.ghostGuide - sched.subtlePulse, 0.25)).toBe(2);
-    expect(dir.tick(sched.softPartialReady - sched.ghostGuide, 0.25)).toBe(3);
-  });
-
-  it('resolves minigame payouts strictly from balance.json', () => {
+  it('resolves clean and aborted minigame payouts from balance.json', () => {
     const aborted = resolveInstrumentPayout('aborted', 12, 0.2, 'p1', 's', 't');
     expect(aborted.success).toBe(false);
     expect(aborted.anomalyGain).toBe(0);
 
-    const partial = resolveInstrumentPayout('partial', 40, 0.65, 'p1', 's', 't');
-    expect(partial.anomalyGain).toBe(balance.minigames.payouts.partial.anomalyGain);
-    expect(partial.proofFragmentId).toBeUndefined();
-
     const clean = resolveInstrumentPayout('clean', 45, 0.9, 'p1', 's', 't', 'Physics law');
+    expect(clean.success).toBe(true);
+    expect(clean.grade).toBe('clean');
     expect(clean.anomalyGain).toBe(balance.minigames.payouts.clean.anomalyGain);
     expect(clean.proofFragmentId).toBe('p1');
     expect(clean.physicalPrinciple).toBe('Physics law');
-
-    const oc = resolveInstrumentPayout('deep_overclock', 55, 0.98, 'p1', 's', 't');
-    expect(oc.anomalyGain).toBe(balance.minigames.payouts.deep_overclock.anomalyGain);
-    expect(oc.suspicionDelta).toBe(balance.minigames.payouts.deep_overclock.suspicionDelta);
   });
 });

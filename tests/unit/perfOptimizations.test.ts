@@ -95,14 +95,13 @@ describe('Performance optimization regressions', () => {
 
     feed.renderEntriesOnly(scrollEl, [e1], {
       animateFromIndex: 0,
-      typingSpeaker: 'phantom_spouse',
       channel: 'dream',
     });
     const firstNode = scrollEl.querySelector('.dialogue-entry');
     expect(firstNode).not.toBeNull();
-    expect(scrollEl.querySelector('.dialogue-typing')).not.toBeNull();
+    expect(scrollEl.querySelector('.dialogue-typing')).toBeNull();
 
-    // Incremental append should preserve the exact first DOM element and remove typing indicator
+    // Incremental append should preserve the exact first DOM element and turn-group same speaker
     feed.renderEntriesOnly(scrollEl, [e1, e2], {
       animateFromIndex: 1,
       channel: 'dream',
@@ -110,6 +109,7 @@ describe('Performance optimization regressions', () => {
     const entries = scrollEl.querySelectorAll('.dialogue-entry');
     expect(entries.length).toBe(2);
     expect(entries[0]).toBe(firstNode);
+    expect(entries[1].classList.contains('is-continuation')).toBe(true);
     expect(scrollEl.querySelector('.dialogue-typing')).toBeNull();
 
     // Delegated click works on both old and newly appended replay buttons

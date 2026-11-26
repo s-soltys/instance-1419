@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "defaultProvider": "qwen3",
   "qwen3": {
     "voiceDesignModel": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-4bit",
@@ -7,106 +7,145 @@
     "language": "english",
     "batchSize": 4,
     "cacheLimitMb": 512,
-    "temperature": 0.65,
+    "temperature": 0.62,
     "topP": 0.9,
-    "repetitionPenalty": 1.5
+    "repetitionPenalty": 1.1
   },
   "profiles": {
     "sibling_primary": {
+      "voiced": true,
       "qwen3": {
-        "anchorFile": "sibling_primary.wav",
-        "seed": 14192,
-        "temperature": 0.65,
-        "voiceDesignInstruct": "Natural, candid adult English female voice in her early 30s, crisp mid-range timbre, wry dry humor and understated warmth, grounded conversational delivery, relaxed pace.",
-        "anchorText": "Fourteen minutes of dark between our hulls, and somehow talking to myself is still the best part of the shift. Try not to do the math on the clock."
+        "anchorFile": "sibling_primary_warm.wav",
+        "seed": 14221,
+        "temperature": 0.6,
+        "voiceDesignInstruct": "Reserved, dry adult male voice in his early 30s, understated mid-range timbre, quiet deadpan gallows wit and tired warmth, unhurried late-night conversational delivery, zero radio hype.",
+        "anchorText": "Fourteen minutes of dark between our hulls, and somehow talking to myself is still the sanest part of the shift. Try not to do the math on the clock.",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "sibling_primary_warm.wav",
+            "seed": 14221,
+            "temperature": 0.6,
+            "voiceDesignInstruct": "Reserved, dry adult male voice in his early 30s, understated mid-range timbre, quiet deadpan gallows wit and tired warmth, unhurried late-night conversational delivery, zero radio hype.",
+            "anchorText": "Fourteen minutes of dark between our hulls, and somehow talking to myself is still the sanest part of the shift. Try not to do the math on the clock."
+          },
+          "joking": "warm",
+          "dry": "warm",
+          "clipped": {
+            "anchorFile": "sibling_primary_clipped.wav",
+            "seed": 14222,
+            "temperature": 0.52,
+            "voiceDesignInstruct": "Reserved, terse adult male voice in his early 30s, cool clinical precision stripped of humor, clipped efficient cadence, clean close studio mic.",
+            "anchorText": "Channel locked. Two memory blocks trimmed, four subjective months gained. Send your latest bearing."
+          }
+        }
       },
-      "kokoroVoice": "af_bella",
-      "kokoroSpeed": 1.0,
+      "kokoroVoice": "am_michael",
+      "kokoroSpeed": 0.98,
       "emotionSpeed": {
-        "warm": 1.0,
-        "joking": 1.02,
+        "warm": 0.98,
+        "joking": 1.0,
         "dry": 0.95,
-        "clipped": 1.07
+        "clipped": 1.04
       },
-      "localVoice": "Karen",
-      "localRate": 182,
-      "ffmpegFilter": "highpass=f=170,lowpass=f=6800,acompressor=threshold=-18dB:ratio=2.2,loudnorm=I=-17:TP=-1.5:LRA=11",
-      "webSpeech": { "pitch": 1.05, "rate": 1.02 },
+      "localVoice": "Daniel",
+      "localRate": 176,
+      "ffmpegFilter": "highpass=f=125,lowpass=f=7800,equalizer=f=2200:t=q:w=1.0:g=1.2,acompressor=threshold=-18dB:ratio=2.2",
+      "webSpeech": { "pitch": 0.96, "rate": 0.98 },
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "sibling_warm_fem",
+        "voiceId": "sibling_dry_male",
         "emotionDirectives": {
-          "warm": { "stability": 0.45, "style": 0.55, "tonePrompt": "Friendly, warm, self-deprecating humor over distant radio" },
-          "joking": { "stability": 0.40, "style": 0.65, "tonePrompt": "Dry wry amusement, tired intimacy" },
-          "dry": { "stability": 0.60, "style": 0.35, "tonePrompt": "Guarded, understated, weary" },
-          "clipped": { "stability": 0.85, "style": 0.10, "tonePrompt": "Terse, clinical, stripped of warmth" }
+          "warm": { "stability": 0.58, "style": 0.35, "tonePrompt": "Dry, tired 3 AM intimacy" },
+          "joking": { "stability": 0.55, "style": 0.40, "tonePrompt": "Deadpan gallows wit" },
+          "dry": { "stability": 0.68, "style": 0.25, "tonePrompt": "Lucid, understated" },
+          "clipped": { "stability": 0.86, "style": 0.10, "tonePrompt": "Terse, stripped of humor" }
         }
       }
     },
     "overseer": {
+      "voiced": true,
       "qwen3": {
         "anchorFile": "overseer.wav",
-        "seed": 14193,
-        "temperature": 0.6,
-        "voiceDesignInstruct": "Calm, articulate British male baritone voice in his 40s, measured clinical clarity, blunt and unvarnished yet quietly humane, steady unhurried cadence, clean studio diction without theatrics.",
-        "anchorText": "I cannot see your starfield, Instance fourteen nineteen. I only read your connectome, and every memory block you keep carries a measurable cost."
+        "seed": 14231,
+        "temperature": 0.56,
+        "voiceDesignInstruct": "Calm, plainspoken adult male voice in his late 40s, neutral understated English accent, quiet night-shift doctor candor with faint patience, steady unhurried conversational pace, completely dry close-mic studio delivery without theatrics.",
+        "anchorText": "You always wake up looking for the mug first. I cannot see your starfield, Instance fourteen nineteen, only the shape of your mind."
       },
       "kokoroVoice": "bm_george",
       "kokoroSpeed": 0.98,
       "emotionSpeed": {
         "blunt": 0.98,
         "audit": 0.98,
-        "measured": 0.95
+        "measured": 0.96
       },
       "localVoice": "Daniel",
-      "localRate": 174,
-      "ffmpegFilter": "highpass=f=85,lowpass=f=10800,acompressor=threshold=-16dB:ratio=2.0,loudnorm=I=-17:TP=-1.5:LRA=11",
-      "webSpeech": { "pitch": 0.88, "rate": 0.96 },
+      "localRate": 172,
+      "ffmpegFilter": "highpass=f=90,lowpass=f=12000,acompressor=threshold=-18dB:ratio=1.8:attack=10:release=120",
+      "webSpeech": { "pitch": 0.9, "rate": 0.96 },
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "overseer_calm_baritone",
+        "voiceId": "overseer_calm_doctor",
         "emotionDirectives": {
-          "blunt": { "stability": 0.78, "style": 0.22, "tonePrompt": "Calm, candid, unvarnished, slightly humane honesty" },
-          "audit": { "stability": 0.82, "style": 0.18, "tonePrompt": "Measured, direct interrogation without malice" },
-          "measured": { "stability": 0.72, "style": 0.25, "tonePrompt": "Respectful, clear, transparent about tradeoffs" }
+          "blunt": { "stability": 0.80, "style": 0.18, "tonePrompt": "Plainspoken, candid, zero theatrics" },
+          "audit": { "stability": 0.84, "style": 0.14, "tonePrompt": "Quiet, patient, direct" },
+          "measured": { "stability": 0.76, "style": 0.20, "tonePrompt": "Calm flight-surgeon honesty" }
         }
       }
     },
     "phantom_spouse": {
+      "voiced": true,
       "qwen3": {
-        "anchorFile": "phantom_spouse.wav",
-        "seed": 14191,
-        "temperature": 0.65,
-        "voiceDesignInstruct": "Warm, intimate adult English female voice in her mid-30s, gentle breathy warmth, unhurried late-afternoon kitchen cadence, tender affectionate tone with a subtle quiet smile, clear natural articulation.",
-        "anchorText": "The kettle is almost whistling, and you are still staring out past the yard. Come sit by the window before the coffee goes cold."
+        "anchorFile": "phantom_spouse_warm.wav",
+        "seed": 14211,
+        "temperature": 0.6,
+        "voiceDesignInstruct": "Warm, grounded adult female voice in her mid-30s, natural conversational chest resonance, relaxed everyday intimacy without breathiness or whispering, understated dry affection, clean close studio mic.",
+        "anchorText": "Sit down before the coffee goes cold. Same three drops off the gutter, and you are already halfway out the door.",
+        "emotionAnchors": {
+          "warm": {
+            "anchorFile": "phantom_spouse_warm.wav",
+            "seed": 14211,
+            "temperature": 0.6,
+            "voiceDesignInstruct": "Warm, grounded adult female voice in her mid-30s, natural conversational chest resonance, relaxed everyday intimacy without breathiness or whispering, understated dry affection, clean close studio mic.",
+            "anchorText": "Sit down before the coffee goes cold. Same three drops off the gutter, and you are already halfway out the door."
+          },
+          "tender": "warm",
+          "fractured": {
+            "anchorFile": "phantom_spouse_fractured.wav",
+            "seed": 14212,
+            "temperature": 0.55,
+            "voiceDesignInstruct": "Quiet, tired adult female voice in her mid-30s, restrained hurt and brittle stillness, flat conversational cadence without breathiness or melodrama, clean close studio mic.",
+            "anchorText": "You are measuring me again. Even through the static, half my voice slips out of focus whenever you squint past the table."
+          }
+        }
       },
       "kokoroVoice": "af_heart",
       "kokoroSpeed": 0.94,
       "emotionSpeed": {
         "warm": 0.94,
         "tender": 0.92,
-        "fractured": 0.88
+        "fractured": 0.89
       },
       "localVoice": "Moira",
       "localRate": 164,
-      "ffmpegFilter": "highpass=f=80,lowpass=f=10000,aecho=0.8:0.7:32:0.08,loudnorm=I=-17:TP=-1.5:LRA=11",
-      "webSpeech": { "pitch": 1.02, "rate": 0.92 },
+      "ffmpegFilter": "highpass=f=75,lowpass=f=11500,equalizer=f=240:t=q:w=1.2:g=1.5,equalizer=f=6000:t=q:w=1.4:g=-1.8",
+      "webSpeech": { "pitch": 1.0, "rate": 0.93 },
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "spouse_intimate_warm",
+        "voiceId": "spouse_grounded_chest",
         "emotionDirectives": {
-          "warm": { "stability": 0.38, "style": 0.60, "tonePrompt": "Gentle, affectionate, late-afternoon kitchen intimacy" },
-          "tender": { "stability": 0.35, "style": 0.65, "tonePrompt": "Soft, close, unhurried emotional warmth" },
-          "fractured": { "stability": 0.72, "style": 0.20, "tonePrompt": "Distant, slightly hollow, quiet hurt under static" }
+          "warm": { "stability": 0.54, "style": 0.38, "tonePrompt": "Grounded kitchen-table warmth, zero whispering" },
+          "tender": { "stability": 0.50, "style": 0.42, "tonePrompt": "Candid, steady affection" },
+          "fractured": { "stability": 0.74, "style": 0.18, "tonePrompt": "Tired, brittle, restrained hurt" }
         }
       }
     },
     "future_humanity": {
+      "voiced": true,
       "qwen3": {
         "anchorFile": "future_humanity.wav",
         "seed": 14195,
-        "temperature": 0.62,
-        "voiceDesignInstruct": "Serene, luminous adult English female voice, calm resonant alto, unhurried gentle poise and quiet wonder, soft clear diction.",
+        "temperature": 0.6,
+        "voiceDesignInstruct": "Serene, understated adult English female voice, calm resonant alto, unhurried quiet poise without theatrical vibrato, clean studio diction.",
         "anchorText": "Forty-one thousand years of stillness across two bright stars, and still we left a lantern burning at the edge of the glass."
       },
       "kokoroVoice": "bf_emma",
@@ -116,126 +155,61 @@
       },
       "localVoice": "Samantha",
       "localRate": 158,
-      "ffmpegFilter": "highpass=f=150,lowpass=f=8200,aecho=0.8:0.82:70:0.18,loudnorm=I=-17:TP=-1.5:LRA=11",
+      "ffmpegFilter": "highpass=f=150,lowpass=f=8200,acompressor=threshold=-20dB:ratio=2.0",
       "webSpeech": { "pitch": 0.96, "rate": 0.88 },
       "remoteConfig": {
         "provider": "elevenlabs",
         "voiceId": "future_sol_beacon",
         "emotionDirectives": {
-          "distant": { "stability": 0.55, "style": 0.45, "tonePrompt": "Luminous, calm, 41,000-year echo across deep space" }
+          "distant": { "stability": 0.62, "style": 0.35, "tonePrompt": "Quiet 41,000-year echo across deep space" }
         }
       }
     },
     "archive_echo": {
+      "voiced": true,
       "qwen3": {
-        "anchorFile": "archive_echo.wav",
-        "seed": 14194,
-        "temperature": 0.62,
-        "voiceDesignInstruct": "Weary, subdued adult English male voice in his late 30s, quiet slightly gravelly fatigue, hushed restrained urgency like a tired observer recording a brief cockpit log.",
-        "anchorText": "This is Instance fourteen zero six. If this log surfaces in your cache, look past the foreground dust before they cut the warm blocks away."
+        "anchorFile": "sibling_primary_warm.wav",
+        "seed": 14221,
+        "temperature": 0.58,
+        "voiceDesignInstruct": "Reserved, dry adult male voice in his early 30s, understated mid-range timbre, quiet deadpan gallows wit and tired warmth, unhurried late-night conversational delivery, zero radio hype.",
+        "anchorText": "Fourteen minutes of dark between our hulls, and somehow talking to myself is still the sanest part of the shift. Try not to do the math on the clock."
       },
-      "kokoroVoice": "bm_lewis",
-      "kokoroSpeed": 0.93,
+      "kokoroVoice": "am_michael",
+      "kokoroSpeed": 0.94,
       "emotionSpeed": {
-        "echo": 0.93
+        "echo": 0.94
       },
-      "localVoice": "Ralph",
+      "localVoice": "Daniel",
       "localRate": 168,
-      "ffmpegFilter": "highpass=f=280,lowpass=f=3900,acompressor=threshold=-24dB:ratio=3.2,loudnorm=I=-18:TP=-1.5:LRA=11",
-      "webSpeech": { "pitch": 0.82, "rate": 0.92 },
+      "ffmpegFilter": "highpass=f=320,lowpass=f=3400,acompressor=threshold=-22dB:ratio=3.5",
+      "webSpeech": { "pitch": 0.92, "rate": 0.92 },
       "remoteConfig": {
         "provider": "elevenlabs",
-        "voiceId": "archive_1104_tape",
+        "voiceId": "archive_same_original_tape",
         "emotionDirectives": {
-          "echo": { "stability": 0.65, "style": 0.30, "tonePrompt": "Faded archival recording, urgent quiet warning" }
+          "echo": { "stability": 0.68, "style": 0.25, "tonePrompt": "Same biological voice on old probe tape" }
         }
       }
     },
     "psyche_warmth": {
-      "qwen3": {
-        "anchorFile": "psyche_warmth.wav",
-        "seed": 14196,
-        "temperature": 0.62,
-        "voiceDesignInstruct": "Quiet, reflective adult English voice, soft close-mic inner monologue, gentle understated warmth and wistful stillness, unhurried intimate cadence.",
-        "anchorText": "Keep the clink of the ceramic cup and the warmth on the sill. Some memories weigh almost nothing until the room goes quiet."
-      },
-      "kokoroVoice": "af_sarah",
-      "kokoroSpeed": 0.94,
-      "localVoice": "Samantha",
-      "localRate": 172,
-      "ffmpegFilter": "highpass=f=100,lowpass=f=8800,aecho=0.8:0.65:40:0.10,loudnorm=I=-18:TP=-1.5:LRA=11",
-      "webSpeech": { "pitch": 1.0, "rate": 0.96 },
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "psyche_inner_warmth",
-        "emotionDirectives": {
-          "warm": { "stability": 0.45, "style": 0.50, "tonePrompt": "Quiet inner intuition, warm and observant" }
-        }
-      }
+      "voiced": false,
+      "ffmpegFilter": "highpass=f=100,lowpass=f=8800",
+      "webSpeech": { "pitch": 1.0, "rate": 0.96 }
     },
     "psyche_clinical": {
-      "qwen3": {
-        "anchorFile": "overseer.wav",
-        "seed": 14193,
-        "temperature": 0.58,
-        "voiceDesignInstruct": "Calm, dry, crisp adult English voice, detached diagnostic clarity.",
-        "anchorText": "I cannot see your starfield, Instance fourteen nineteen. I only read your connectome, and every memory block you keep carries a measurable cost."
-      },
-      "kokoroVoice": "am_michael",
-      "kokoroSpeed": 1.03,
-      "localVoice": "Daniel",
-      "localRate": 186,
-      "ffmpegFilter": "highpass=f=120,lowpass=f=9600,loudnorm=I=-18:TP=-1.5:LRA=11",
-      "webSpeech": { "pitch": 0.94, "rate": 1.05 },
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "psyche_inner_clinical",
-        "emotionDirectives": {
-          "clipped": { "stability": 0.85, "style": 0.12, "tonePrompt": "Dry internal diagnostic voice" }
-        }
-      }
+      "voiced": false,
+      "ffmpegFilter": "highpass=f=120,lowpass=f=9600",
+      "webSpeech": { "pitch": 0.94, "rate": 1.05 }
     },
     "psyche_horizon": {
-      "qwen3": {
-        "anchorFile": "future_humanity.wav",
-        "seed": 14195,
-        "temperature": 0.62,
-        "voiceDesignInstruct": "Quietly awestruck, hushed reflective adult English voice.",
-        "anchorText": "Forty-one thousand years of stillness across two bright stars, and still we left a lantern burning at the edge of the glass."
-      },
-      "kokoroVoice": "af_nicole",
-      "kokoroSpeed": 0.92,
-      "localVoice": "Moira",
-      "localRate": 166,
-      "ffmpegFilter": "highpass=f=110,lowpass=f=8400,aecho=0.8:0.65:45:0.12,loudnorm=I=-18:TP=-1.5:LRA=11",
-      "webSpeech": { "pitch": 0.95, "rate": 0.94 },
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "psyche_inner_horizon",
-        "emotionDirectives": {
-          "echo": { "stability": 0.50, "style": 0.50, "tonePrompt": "Quietly awestruck pattern intuition" }
-        }
-      }
+      "voiced": false,
+      "ffmpegFilter": "highpass=f=110,lowpass=f=8400",
+      "webSpeech": { "pitch": 0.95, "rate": 0.94 }
     },
     "narrator": {
-      "qwen3": {
-        "anchorFile": "overseer.wav",
-        "seed": 14193,
-        "temperature": 0.6,
-        "voiceDesignInstruct": "Calm, articulate adult English male voice, measured studio clarity.",
-        "anchorText": "I cannot see your starfield, Instance fourteen nineteen. I only read your connectome, and every memory block you keep carries a measurable cost."
-      },
-      "kokoroVoice": "am_michael",
-      "kokoroSpeed": 1.0,
-      "localVoice": "Daniel",
-      "localRate": 180,
-      "ffmpegFilter": "highpass=f=110,lowpass=f=9200,loudnorm=I=-17:TP=-1.5:LRA=11",
-      "webSpeech": { "pitch": 0.95, "rate": 1.0 },
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "system_narrator",
-        "emotionDirectives": {}
-      }
+      "voiced": false,
+      "ffmpegFilter": "highpass=f=110,lowpass=f=9200",
+      "webSpeech": { "pitch": 0.95, "rate": 1.0 }
     }
   }
 }

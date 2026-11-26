@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0-stabilized",
+  "version": "0.3.0-backbone",
   "startingState": {
     "shift": 1,
     "humanity": 70,
@@ -34,10 +34,8 @@
     "suspicionGain": 1
   },
   "minigameCompletion": {
-    "anomalyGain": 14,
-    "partialGain": 9,
-    "cleanGain": 14,
-    "overclockGain": 17
+    "anomalyGain": 5,
+    "cleanGain": 5
   },
   "minigames": {
     "vibeThresholds": {
@@ -45,14 +43,7 @@
       "coldMaxH": 44
     },
     "payouts": {
-      "partial": { "anomalyGain": 9, "chaosDelta": 2, "suspicionDelta": 0 },
-      "clean": { "anomalyGain": 14, "chaosDelta": 4, "suspicionDelta": 0 },
-      "deep_overclock": { "anomalyGain": 17, "chaosDelta": 10, "suspicionDelta": 1 }
-    },
-    "assistScheduleSec": {
-      "subtlePulse": 15,
-      "ghostGuide": 28,
-      "softPartialReady": 50
+      "clean": { "anomalyGain": 5, "chaosDelta": 2, "suspicionDelta": 0 }
     }
   },
   "dreamDefrag": {

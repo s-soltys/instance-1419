@@ -8,6 +8,7 @@ import {
   type VernierItemInput,
   type VernierStripSpec,
 } from '../core/vernierWidgets';
+import { drawSoftGalaxyHalo } from '../render/InstrumentSprites';
 import { drawGlowStroke, drawInclinedAstrometryRing } from '../render/OpticalDrawUtils';
 import { drawLimbDarkenedStar, drawOpticalStar, drawSoftDustPuff } from '../render/StarPSFAtlas';
 import { clamp, lerp } from '../tactilePhysics';
@@ -150,9 +151,10 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
   private activeStripKey: string | null = null;
   private keyboardFocusStrip: 'dist' | 'dust' = 'dist';
   private lastShowcaseSig = '';
+  private phaseBOpenT = 1;
 
   protected onMount(): void {
-    this.lockHoldTargetSec = 0.55;
+    this.lockHoldTargetSec = 0.9;
     this.variantProfile = VARIANT_PROFILES[this.iterationIndex % VARIANT_PROFILES.length];
     this.pulsePool = Array.from({ length: PULSE_POOL_SIZE }, () => ({
       active: false,
@@ -195,6 +197,7 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
     this.activeStripKey = null;
     this.keyboardFocusStrip = 'dist';
     this.targetLastCycle = -1;
+    this.phaseBOpenT = 1;
     for (let i = 0; i < this.pulsePool.length; i++) {
       this.pulsePool[i].active = false;
     }
@@ -232,13 +235,14 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
     this.targetRefIdx = Math.floor(rng() * this.refs.length);
 
     // Variant 4 (Overtone Decoy Rung): on Stages 2–3 convert one non-target into a close-period sinusoidal overtone
+    // WITHOUT spoiling it via label text ("CEPHEID" label stays identical so players read the curve shape!)
     if (this.variantProfile.hasOvertoneDecoy && stage >= 2) {
       const decoyIdx = (this.targetRefIdx + 1) % this.refs.length;
       const targetRef = this.refs[this.targetRefIdx];
       const decoy = this.refs[decoyIdx];
       decoy.isOvertone = true;
       decoy.freqHz = clamp(targetRef.freqHz * (rng() > 0.5 ? 1.1 : 0.91), 0.52, 2.35);
-      decoy.label = `${decoy.periodDays.toFixed(1)}d 1ST-OVT`;
+      decoy.label = `${decoy.periodDays.toFixed(1)}d CEPHEID`;
     }
 
     this.targetDist = 0.24 + rng() * 0.58;
@@ -271,8 +275,12 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
   private selectReference(idx: number): void {
     if (idx < 0 || idx >= this.refs.length || this.stageClearTimer > 0) return;
     const r = this.refs[idx];
+    const wasMatched = this.selectedRefIdx === this.targetRefIdx;
     this.selectedRefIdx = r.idx;
     const ok = r.idx === this.targetRefIdx;
+    if (ok && !wasMatched) {
+      this.phaseBOpenT = 0;
+    }
     this.ctx.audio?.playTumblerClick(0.85, ok);
     this.ctx.audio?.playStereoSonarEcho?.((r.x / Math.max(1, this.width)) * 2 - 1, 0.35, r.pitchHz);
     platform.triggerHaptic(ok ? 'phaseSnapLock' : 'rejectThud', ok ? 0.8 : 0.55);
@@ -413,6 +421,9 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
 
   protected onUpdate(dt: number): void {
     const tempoMatched = this.selectedRefIdx === this.targetRefIdx;
+    if (this.phaseBOpenT < 1) {
+      this.phaseBOpenT = Math.min(1, this.phaseBOpenT + dt / 0.36);
+    }
 
     // Update reference & target heartbeat pulse rings (mute noisy target ping during Phase B photometry!)
     for (let i = 0; i < this.refs.length; i++) {
@@ -514,20 +525,33 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
     hSpark: number
   ): void {
     const x0 = cx - wSpark * 0.5;
+    const padX = 5;
+    const padY = 4;
     c2d.save();
-    // Subtle baseline rail
+    // Recessed Zeiss micro-oscilloscope viewport
+    c2d.fillStyle = 'rgba(4, 9, 17, 0.72)';
+    c2d.strokeStyle = 'rgba(188, 220, 248, 0.2)';
+    c2d.lineWidth = 0.9;
+    c2d.fillRect(x0 - padX, yTop - padY, wSpark + padX * 2, hSpark + padY * 2);
+    c2d.strokeRect(x0 - padX, yTop - padY, wSpark + padX * 2, hSpark + padY * 2);
+
+    // Subtle phase baseline + center tick
     c2d.strokeStyle = 'rgba(200, 224, 248, 0.14)';
-    c2d.lineWidth = 0.8;
+    c2d.lineWidth = 0.75;
     c2d.beginPath();
     c2d.moveTo(x0, yTop + hSpark * 0.5);
     c2d.lineTo(x0 + wSpark, yTop + hSpark * 0.5);
+    c2d.moveTo(cx, yTop);
+    c2d.lineTo(cx, yTop + hSpark);
     c2d.stroke();
 
     c2d.strokeStyle = color;
-    c2d.globalAlpha = 0.84;
+    c2d.globalAlpha = 0.88;
     c2d.lineWidth = this.compact ? 1.2 : 1.45;
     c2d.beginPath();
     const steps = 26;
+    let tipX = x0 + wSpark;
+    let tipY = yTop + hSpark * 0.5;
     for (let i = 0; i <= steps; i++) {
       const u = i / steps;
       const t = this.elapsedSec - (1 - u) * 1.45;
@@ -536,8 +560,16 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
       const py = yTop + hSpark - val * hSpark;
       if (i === 0) c2d.moveTo(px, py);
       else c2d.lineTo(px, py);
+      tipX = px;
+      tipY = py;
     }
     c2d.stroke();
+
+    c2d.fillStyle = '#ffffff';
+    c2d.globalAlpha = 0.9;
+    c2d.beginPath();
+    c2d.arc(tipX, tipY, 1.8, 0, Math.PI * 2);
+    c2d.fill();
     c2d.restore();
   }
 
@@ -677,51 +709,53 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
     if (tempoMatched) {
       this.drawDistanceLadderRail(c2d, w, h);
 
+      const openEase = 1 - Math.pow(1 - clamp(this.phaseBOpenT, 0, 1), 3);
+      const drawLensR = lensR * lerp(0.68, 1.0, openEase);
+
       // True inverse-square distance luminosity scaling + signed R_V=3.1 IR de-reddening!
       // Derived luminosity L_derived / L_true = (d_user / d_target)^2 * 10^(-0.4 * R_V * deltaEbv)
-      // Visual photosphere radius scales as flux^0.32 -> EXACTLY 1.000 at exact match!
+      // Visual photosphere radius scales as flux^0.24 -> EXACTLY 1.000 at exact match!
       const dUser = this.distMpcFrom01(this.userDist);
       const dTarg = this.distMpcFrom01(this.targetDist);
       const distFluxRatio = Math.pow(dUser / Math.max(0.05, dTarg), 2);
       const deltaEbv = this.stage === 3 ? this.ebvFrom01(this.targetRedden) - this.ebvFrom01(this.userRedden) : 0;
-      // deltaEbv > 0: under-corrected (still reddened & dimmed); deltaEbv < 0: over-corrected (too blue & bright!)
       const dustFluxMul = Math.pow(10, -0.4 * R_V * deltaEbv);
       const combinedScale = clamp(Math.pow(distFluxRatio * dustFluxMul, 0.24), 0.42, 1.58);
 
-      const refDiscR = lensR * (0.44 + 0.12 * tPulse);
-      const targDiscR = clamp(refDiscR * combinedScale, 12, lensR * 0.96);
+      const refDiscR = drawLensR * (0.44 + 0.12 * tPulse);
+      const targDiscR = clamp(refDiscR * combinedScale, 12, drawLensR * 0.96);
 
       // Subtle inclined astrometry frame behind split-mirror lens
       drawInclinedAstrometryRing(
         c2d,
         cx,
         cy,
-        lensR * 1.24,
-        lensR * 0.52,
+        drawLensR * 1.24,
+        drawLensR * 0.52,
         -0.18,
         this.palette.accentRgb,
-        { backAlpha: 0.08, frontAlpha: 0.18, ticks: 8 }
+        { backAlpha: 0.08 * openEase, frontAlpha: 0.18 * openEase, ticks: 8 }
       );
 
       // Dark optical comparator interior
       c2d.save();
       c2d.fillStyle = 'rgba(4, 9, 17, 0.84)';
       c2d.beginPath();
-      c2d.arc(cx, cy, lensR, 0, Math.PI * 2);
+      c2d.arc(cx, cy, drawLensR, 0, Math.PI * 2);
       c2d.fill();
       c2d.restore();
 
       // LEFT HALF: Reference Standard Candle (intrinsic luminosity)
       c2d.save();
       c2d.beginPath();
-      c2d.arc(cx, cy, lensR - 1, Math.PI * 0.5, Math.PI * 1.5);
+      c2d.arc(cx, cy, Math.max(4, drawLensR - 1), Math.PI * 0.5, Math.PI * 1.5);
       c2d.closePath();
       c2d.clip?.();
-      drawLimbDarkenedStar(c2d, cx, cy, refDiscR, tWave > 0.55 ? 'F' : 'G', 0.96);
+      drawLimbDarkenedStar(c2d, cx, cy, refDiscR, tWave > 0.55 ? 'F' : 'G', 0.96 * openEase);
       drawOpticalStar(c2d, cx, cy, refDiscR * 0.42, {
         spectralClass: 'F',
         spikes: 0,
-        alpha: 0.42,
+        alpha: 0.42 * openEase,
         vibeMode: this.palette.mode,
       });
       c2d.restore();
@@ -729,36 +763,30 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
       // RIGHT HALF: Target Galaxy Cepheid reconstructed @ userDist & IR de-reddening
       c2d.save();
       c2d.beginPath();
-      c2d.arc(cx, cy, lensR - 1, -Math.PI * 0.5, Math.PI * 0.5);
+      c2d.arc(cx, cy, Math.max(4, drawLensR - 1), -Math.PI * 0.5, Math.PI * 0.5);
       c2d.closePath();
       c2d.clip?.();
 
-      // Subtle mottled host-galaxy spiral silhouette scaling inversely with dUser
+      // Multi-layer photographic host galaxy spiral silhouette scaling inversely with dUser
       const galScale = clamp(lerp(1.05, 0.34, this.userDist), 0.32, 1.1);
-      c2d.strokeStyle = 'rgba(188, 220, 248, 0.18)';
-      c2d.lineWidth = 1;
-      if (typeof c2d.ellipse === 'function') {
-        c2d.beginPath();
-        c2d.ellipse(cx + 12 * galScale, cy, lensR * 0.72 * galScale, lensR * 0.34 * galScale, 0.35, 0, Math.PI * 2);
-        c2d.stroke();
-      }
+      const galCx = cx + 14 * galScale;
+      drawSoftGalaxyHalo(c2d, galCx, cy, drawLensR * 0.86 * galScale, drawLensR * 0.42 * galScale, 0.35, '#9ecbff', 0.38 * openEase);
+      drawSoftGalaxyHalo(c2d, galCx, cy, drawLensR * 0.46 * galScale, drawLensR * 0.24 * galScale, 0.35, '#ffe6bd', 0.42 * openEase);
 
-      // Signed spectral tint: under-corrected dust -> warm red/M, flush -> F/G, over-corrected -> cool blue B/O!
       let rightClass: SpectralClass = tWave > 0.55 ? 'F' : 'G';
       if (deltaEbv > 0.08) rightClass = deltaEbv > 0.24 ? 'M' : 'K';
       else if (deltaEbv < -0.08) rightClass = deltaEbv < -0.24 ? 'O' : 'B';
 
-      drawLimbDarkenedStar(c2d, cx, cy, targDiscR, rightClass, 0.96);
+      drawLimbDarkenedStar(c2d, cx, cy, targDiscR, rightClass, 0.96 * openEase);
       drawOpticalStar(c2d, cx, cy, targDiscR * 0.42, {
         spectralClass: rightClass,
         spikes: 0,
-        alpha: 0.42,
+        alpha: 0.42 * openEase,
         vibeMode: this.palette.mode,
       });
 
-      // Pre-baked translucent dust veil in Stage 3 that thins as under-correction clears
       if (this.stage === 3 && deltaEbv > 0.03) {
-        drawSoftDustPuff(c2d, cx + lensR * 0.25, cy, lensR * 0.92, '#4a2114', clamp(deltaEbv * 1.15, 0, 0.68));
+        drawSoftDustPuff(c2d, cx + drawLensR * 0.25, cy, drawLensR * 0.92, '#4a2114', clamp(deltaEbv * 1.15, 0, 0.68));
       }
       c2d.restore();
 
@@ -768,68 +796,78 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
       drawGlowStroke(
         c2d,
         (ctx) => {
-          ctx.arc(cx, cy, lensR, 0, Math.PI * 2);
+          ctx.arc(cx, cy, drawLensR, 0, Math.PI * 2);
         },
         bezelCol,
         synced ? 2.2 : 1.5,
-        { outerAlpha: synced ? 0.28 : 0.16 }
+        { outerAlpha: (synced ? 0.28 : 0.16) * openEase, coreAlpha: openEase }
       );
 
       c2d.save();
-      // Precision bezel ticks (batched)
       c2d.strokeStyle = 'rgba(220, 236, 250, 0.28)';
+      c2d.globalAlpha = openEase;
       c2d.lineWidth = 1;
       c2d.beginPath();
       for (let t = 0; t < 12; t++) {
         const a = (t / 12) * Math.PI * 2;
-        const inner = lensR - (t % 3 === 0 ? 5 : 3);
+        const inner = drawLensR - (t % 3 === 0 ? 5 : 3);
         c2d.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
-        c2d.lineTo(cx + Math.cos(a) * lensR, cy + Math.sin(a) * lensR);
+        c2d.lineTo(cx + Math.cos(a) * drawLensR, cy + Math.sin(a) * drawLensR);
       }
       c2d.stroke();
 
-      // Center optical split hairline
       c2d.strokeStyle = synced ? this.palette.lockHex : 'rgba(232, 244, 255, 0.58)';
       if (typeof c2d.setLineDash === 'function') c2d.setLineDash([4, 4]);
       c2d.lineWidth = 1.25;
       c2d.beginPath();
-      c2d.moveTo(cx, cy - lensR - 7);
-      c2d.lineTo(cx, cy + lensR + 7);
+      c2d.moveTo(cx, cy - drawLensR - 7);
+      c2d.lineTo(cx, cy + drawLensR + 7);
       c2d.stroke();
       if (typeof c2d.setLineDash === 'function') c2d.setLineDash([]);
 
       c2d.font = '600 8.5px ui-monospace, SFMono-Regular, Menlo, monospace';
       c2d.fillStyle = this.palette.secondaryHex;
       c2d.textAlign = 'right';
-      c2d.fillText('REF CANDLE', cx - 10, cy - lensR - 8);
+      c2d.fillText('REF CANDLE', cx - 10, cy - drawLensR - 8);
       c2d.textAlign = 'left';
-      c2d.fillText(this.variantProfile.galaxyLabel, cx + 10, cy - lensR - 8);
+      c2d.fillText(this.variantProfile.galaxyLabel, cx + 10, cy - drawLensR - 8);
 
-      // Diagnostic guide synced to EXACT getActiveTol() (eliminates Cold H% green-lock trap!)
+      // Diegetic center-zero Photometric Balance Needle (zero directional slider spoilers!)
       const tol = this.getActiveTol();
-      let diagMsg = 'PHOTOMETRIC FLUSH MATCH';
+      const dustBad = this.stage === 3 && Math.abs(this.userRedden - this.targetRedden) > tol;
+      const distBad = Math.abs(this.userDist - this.targetDist) > tol;
+      const needleW = compact ? 92 : 124;
+      const needleY = cy + drawLensR + (compact ? 11 : 14);
+      const balanceFrac = clamp(Math.log2(clamp(combinedScale, 0.35, 2.8)) * 0.85, -1, 1);
+
+      c2d.strokeStyle = 'rgba(200, 224, 248, 0.28)';
+      c2d.lineWidth = 1;
+      c2d.beginPath();
+      c2d.moveTo(cx - needleW * 0.5, needleY);
+      c2d.lineTo(cx + needleW * 0.5, needleY);
+      c2d.moveTo(cx, needleY - 4);
+      c2d.lineTo(cx, needleY + 4);
+      c2d.stroke();
+
+      let diagMsg = 'PHOTOMETRIC FLUSH';
       let diagCol = this.palette.lockHex;
-      if (this.stage === 3 && Math.abs(this.userRedden - this.targetRedden) > tol) {
-        if (this.userRedden < this.targetRedden - tol) {
-          diagMsg = 'DUST REDDENED — INCREASE IR DE-REDDENING';
-          diagCol = '#ff9875';
-        } else {
-          diagMsg = 'OVER-CORRECTED BLUE — EASE IR DE-REDDENING';
-          diagCol = '#8ad4ff';
-        }
-      } else if (this.userDist < this.targetDist - tol) {
-        diagMsg = 'DERIVED FLUX TOO DIM — SLIDE FARTHER (+Mpc)';
-        diagCol = this.palette.accentHex;
-      } else if (this.userDist > this.targetDist + tol) {
-        diagMsg = 'DERIVED FLUX TOO BRIGHT — SLIDE CLOSER (-Mpc)';
+      if (dustBad) {
+        diagMsg = 'CHROMATIC EXCESS';
+        diagCol = deltaEbv > 0 ? '#ff9875' : '#8ad4ff';
+      } else if (distBad) {
+        diagMsg = 'FLUX MISMATCH';
         diagCol = this.palette.accentHex;
       }
 
+      c2d.fillStyle = diagCol;
+      c2d.beginPath();
+      c2d.arc(cx + balanceFrac * (needleW * 0.48), needleY, 3.3, 0, Math.PI * 2);
+      c2d.fill();
+
       c2d.textAlign = 'center';
       c2d.fillStyle = diagCol;
-      c2d.fillText(diagMsg, cx, cy + lensR + (compact ? 16 : 20));
+      c2d.fillText(diagMsg, cx, needleY + 14);
 
-      // Cold/Balanced numeric distance modulus readout
       if (this.profile.showNumericDeltas && !compact) {
         const mu = 5 * Math.log10(dUser * 1e6) - 5;
         const ebv = this.ebvFrom01(this.userRedden);
@@ -839,7 +877,7 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
             : `μ = m - M = ${mu.toFixed(2)} mag`;
         c2d.fillStyle = 'rgba(186, 224, 248, 0.72)';
         c2d.font = '500 8.5px ui-monospace, SFMono-Regular, Menlo, monospace';
-        c2d.fillText(read, cx, cy + lensR + 34);
+        c2d.fillText(read, cx, needleY + 26);
       }
       c2d.restore();
     } else {

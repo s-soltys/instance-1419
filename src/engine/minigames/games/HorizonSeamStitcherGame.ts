@@ -9,6 +9,7 @@ import {
   type VernierStripSpec,
 } from '../core/vernierWidgets';
 import { getPlateCanvasPair } from '../render/BackdropCachePipeline';
+import { drawSoftGalaxyHalo } from '../render/InstrumentSprites';
 import { drawGlowStroke } from '../render/OpticalDrawUtils';
 import { drawOpticalStar } from '../render/StarPSFAtlas';
 import { angleDiffRad, clamp, lerp } from '../tactilePhysics';
@@ -116,9 +117,10 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
   private stripInputs: VernierItemInput[] = [];
   private lastShowcaseSig = '';
   private lastOverlapCount = 0;
+  private flipAnimT = 1;
 
   protected onMount(): void {
-    this.lockHoldTargetSec = 0.6;
+    this.lockHoldTargetSec = 0.92;
     this.variantProfile = VARIANT_PROFILES[this.iterationIndex % VARIANT_PROFILES.length];
   }
 
@@ -148,6 +150,7 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
   protected onSetupStage(stage: 1 | 2 | 3, rng: () => number): void {
     this.dragMode = null;
     this.lastOverlapCount = 0;
+    this.flipAnimT = 1;
 
     this.northNx = 0.54 + (rng() - 0.5) * 0.1;
     this.northNy = 0.41 + (rng() - 0.5) * 0.07;
@@ -249,6 +252,7 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
 
   private toggleMirrorFlip(): void {
     this.patchFlipped = !this.patchFlipped;
+    this.flipAnimT = 0;
     this.ctx.audio?.playSolenoidClack(true);
     platform.triggerHaptic('vernierTick', 0.72);
     this.particles.emitPhotonSparks(
@@ -423,13 +427,13 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
     if (this.isScaleActive() && (e.key === '-' || e.key === '_' || e.key === '[' || e.key === 'z' || e.key === 'Z')) {
       e.preventDefault();
       const scStep = e.shiftKey ? 0.015 : 0.035;
-      this.patchScale = clamp(this.patchScale - scStep, 0.78, 1.26);
+      this.patchScale = clamp(this.patchScale - scStep, 0.72, 1.28);
       return;
     }
     if (this.isScaleActive() && (e.key === '=' || e.key === '+' || e.key === ']' || e.key === 'x' || e.key === 'X')) {
       e.preventDefault();
       const scStep = e.shiftKey ? 0.015 : 0.035;
-      this.patchScale = clamp(this.patchScale + scStep, 0.78, 1.26);
+      this.patchScale = clamp(this.patchScale + scStep, 0.72, 1.28);
       return;
     }
     const moveStep = e.shiftKey ? 0.008 : 0.018;
@@ -478,6 +482,9 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
   }
 
   protected onUpdate(dt: number): void {
+    if (this.flipAnimT < 1) {
+      this.flipAnimT = Math.min(1, this.flipAnimT + dt / 0.28);
+    }
     if (this.stageClearTimer > 0) return;
 
     // Count individual galaxy overlaps for tactile micro-feedback chimes
@@ -568,19 +575,22 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
     c2d.translate(x, y);
     c2d.rotate(rotRad + g.tilt);
     c2d.scale(flipSignX, flipSignY);
+
+    // Pre-rendered luminous galactic halo beneath every miniature galaxy
+    drawSoftGalaxyHalo(c2d, 0, 0, r * 1.45, r * 1.05, 0, tintHex, alpha * 0.46);
     c2d.globalAlpha = alpha;
 
     if (g.morph === 'spiral') {
-      // Soft spiral arms with unambiguous chiral winding!
+      // Multi-stroke tapered spiral arms with unambiguous chiral winding
       c2d.strokeStyle = tintHex;
-      c2d.lineWidth = isOverlayPlate ? 1.55 : 1.75;
       for (let arm = 0; arm < 2; arm++) {
+        c2d.lineWidth = isOverlayPlate ? 1.55 : 1.85;
         c2d.beginPath();
         const baseA = arm * Math.PI;
-        for (let step = 0; step <= 10; step++) {
-          const u = step / 10;
-          const a = baseA + g.spiralChirality * u * 2.15;
-          const rad = 1.6 + u * r * 1.15;
+        for (let step = 0; step <= 12; step++) {
+          const u = step / 12;
+          const a = baseA + g.spiralChirality * u * 2.25;
+          const rad = 1.6 + u * r * 1.2;
           const px = Math.cos(a) * rad;
           const py = Math.sin(a) * rad * 0.66;
           if (step === 0) c2d.moveTo(px, py);
@@ -588,10 +598,10 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
         }
         c2d.stroke();
       }
-      drawOpticalStar(c2d, 0, 0, r * 0.38, {
+      drawOpticalStar(c2d, 0, 0, r * 0.42, {
         spectralClass: isOverlayPlate ? 'B' : g.spectralClass,
         spikes: 0,
-        alpha: alpha * 0.9,
+        alpha: alpha * 0.92,
         vibeMode: this.palette.mode,
       });
     } else if (g.morph === 'lenticular') {
@@ -681,25 +691,34 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
       reticleDuck: { cx: pCx, cy: pCy, r: patchR + 18 },
     });
 
-    // Dramatic 93-BLY synthetic hexagonal enclosure facet seam emerging as alignment climbs!
-    const seamVis = aligned ? 1 : clamp((corr - 0.65) / 0.35, 0, 1);
+    // Multi-facet geodesic 93-BLY spherical enclosure lattice emerging as alignment climbs
+    const seamVis = aligned ? 1 : clamp((corr - 0.58) / 0.42, 0, 1);
     if (seamVis > 0.04) {
       const seamCol = aligned ? this.palette.lockHex : this.palette.secondaryHex;
-      const facetR = scalePx * 0.36;
+      const facetInnerR = scalePx * 0.33;
+      const facetOuterR = scalePx * 0.44;
       c2d.save();
       c2d.strokeStyle = seamCol;
-      c2d.globalAlpha = seamVis * (this.palette.mode === 'cold' ? 0.45 : 0.32);
-      c2d.lineWidth = aligned ? 1.5 : 1.0;
+      c2d.globalAlpha = seamVis * (this.palette.mode === 'cold' ? 0.44 : 0.3);
+      c2d.lineWidth = aligned ? 1.4 : 0.95;
       if (typeof c2d.setLineDash === 'function') c2d.setLineDash([7, 6]);
       c2d.beginPath();
+      for (let ring = 0; ring < 2; ring++) {
+        const rad = ring === 0 ? facetInnerR : facetOuterR;
+        for (let v = 0; v < 6; v++) {
+          const a = (v * Math.PI) / 3 + 0.18;
+          const vx = nCx + Math.cos(a) * rad;
+          const vy = nCy + Math.sin(a) * rad;
+          if (v === 0) c2d.moveTo(vx, vy);
+          else c2d.lineTo(vx, vy);
+        }
+        c2d.closePath();
+      }
       for (let v = 0; v < 6; v++) {
         const a = (v * Math.PI) / 3 + 0.18;
-        const vx = nCx + Math.cos(a) * facetR;
-        const vy = nCy + Math.sin(a) * facetR;
-        if (v === 0) c2d.moveTo(vx, vy);
-        else c2d.lineTo(vx, vy);
+        c2d.moveTo(nCx + Math.cos(a) * facetInnerR, nCy + Math.sin(a) * facetInnerR);
+        c2d.lineTo(nCx + Math.cos(a) * facetOuterR, nCy + Math.sin(a) * facetOuterR);
       }
-      c2d.closePath();
       c2d.stroke();
       if (typeof c2d.setLineDash === 'function') c2d.setLineDash([]);
       c2d.restore();
@@ -730,10 +749,13 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
     c2d.fillText(this.variantProfile.raLabelNorth, nCx, nCy - patchR - 8);
     c2d.restore();
 
-    // Draggable South-Sky Translucent Photographic Comparison Lens!
+    // Draggable South-Sky Translucent Photographic Comparison Lens with optical-prism mirror flip squash!
     const flipMismatch = this.patchFlipped !== this.targetFlipped;
     const flipSignX = flipMismatch && this.variantProfile.flipAxis === 'horizontal' ? -1 : 1;
     const flipSignY = flipMismatch && this.variantProfile.flipAxis === 'vertical' ? -1 : 1;
+    const flipSquash = this.flipAnimT < 1 ? Math.max(0.06, Math.abs(Math.cos(this.flipAnimT * Math.PI))) : 1;
+    const drawScaleX = flipSignX * (this.variantProfile.flipAxis === 'horizontal' ? flipSquash : 1);
+    const drawScaleY = flipSignY * (this.variantProfile.flipAxis === 'vertical' ? flipSquash : 1);
     const relRot = this.patchRot - this.targetRot;
     const relScale = this.patchScale / Math.max(0.5, this.targetScale);
 
@@ -750,7 +772,7 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
       c2d.save();
       c2d.translate(pCx, pCy);
       c2d.rotate(relRot);
-      c2d.scale(flipSignX * relScale, flipSignY * relScale);
+      c2d.scale(drawScaleX * relScale, drawScaleY * relScale);
       c2d.globalAlpha = aligned ? 0.34 : 0.22;
       c2d.drawImage(platePair.sharp, -nCx, -nCy, w, h);
       c2d.restore();
@@ -761,10 +783,14 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
       const g = this.galaxies[i];
       if (g.isForegroundDecoy) continue;
       const off = this.transformPatchGalaxy(g, scalePx);
-      const gx = pCx + off.x;
-      const gy = pCy + off.y;
-      const dToNorth = Math.hypot(gx - (nCx + g.rx * scalePx), gy - (nCy + g.ry * scalePx));
-      const matchedThis = dToNorth <= 14;
+      const squashedOffX =
+        this.variantProfile.flipAxis === 'horizontal' ? off.x * flipSquash : off.x;
+      const squashedOffY =
+        this.variantProfile.flipAxis === 'vertical' ? off.y * flipSquash : off.y;
+      const gx = pCx + squashedOffX;
+      const gy = pCy + squashedOffY;
+      const dToNorth = Math.hypot(pCx + off.x - (nCx + g.rx * scalePx), pCy + off.y - (nCy + g.ry * scalePx));
+      const matchedThis = this.flipAnimT >= 0.9 && dToNorth <= 14;
       const overlayCol = matchedThis ? this.palette.lockHex : '#8be0ff';
 
       this.drawMiniGalaxy(
@@ -774,8 +800,8 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
         g,
         relRot,
         relScale,
-        flipSignX,
-        flipSignY,
+        drawScaleX,
+        drawScaleY,
         overlayCol,
         matchedThis ? 0.96 : 0.82,
         true
@@ -833,10 +859,8 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
     c2d.fillText(`${this.variantProfile.raLabelSouth}${parityStr}`, pCx, pCy + patchR + 14);
 
     if (this.profile.showNumericDeltas && !compact) {
-      const degErr = Math.round((angleDiffRad(this.patchRot, this.targetRot) * 180) / Math.PI);
-      const posErr = Math.round(this.getPosErrorPx());
       c2d.fillStyle = aligned ? this.palette.lockHex : 'rgba(186, 224, 248, 0.68)';
-      c2d.fillText(`Δr ${posErr}px · Δθ ${degErr >= 0 ? '+' : ''}${degErr}° · 93.0 Gly`, pCx, pCy + patchR + 25);
+      c2d.fillText(`CORR ${Math.round(corr * 100)}% · 93.0 Gly`, pCx, pCy + patchR + 25);
     }
     c2d.restore();
 

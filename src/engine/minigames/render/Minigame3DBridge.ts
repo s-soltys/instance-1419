@@ -148,14 +148,22 @@ export class Minigame3DBridge {
     return this.active && this.config.mode !== 'off' && Boolean(this.showcase);
   }
 
-  enter(config: Minigame3DConfig): void {
+  enter(config: Minigame3DConfig, humanity?: number): void {
     this.config = config;
     this.active = true;
     this.lastNx = 0;
     this.lastNy = 0;
     this.lastProgress = -1;
+    if (typeof humanity === 'number') {
+      this.showcase?.setVibeState?.(humanity, false);
+    }
     this.showcase?.setMinigameBackdropMode?.(config);
     setGlobal3DBackdropComposite(this.is3DVisible);
+  }
+
+  setVibe(humanity: number): void {
+    if (!this.active) return;
+    this.showcase?.setVibeState?.(humanity, false);
   }
 
   updateParallax(nx: number, ny: number, progress01: number): void {

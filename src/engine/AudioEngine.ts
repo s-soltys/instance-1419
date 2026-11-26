@@ -53,8 +53,6 @@ export class AudioEngine {
   private beatFilter: BiquadFilterNode | null = null;
   private beatPanner: StereoPannerNode | null = null;
   private beatGain: GainNode | null = null;
-  private watchdogOsc: OscillatorNode | null = null;
-  private watchdogGain: GainNode | null = null;
 
   // Subtle noise bed for analog warmth / space floor
   private noiseGain: GainNode | null = null;
@@ -377,22 +375,6 @@ export class AudioEngine {
     this.beatOscA.start();
     this.beatOscB.start();
     this.beatHarmOsc.start();
-  }
-
-  private ensureWatchdog(): void {
-    if (!this.ctx || !this.sfxGain || this.watchdogOsc) return;
-    this.watchdogOsc = this.ctx.createOscillator();
-    this.watchdogOsc.type = 'sawtooth';
-    this.watchdogOsc.frequency.value = 62;
-    const wdFilter = this.ctx.createBiquadFilter();
-    wdFilter.type = 'lowpass';
-    wdFilter.frequency.value = 190;
-    this.watchdogGain = this.ctx.createGain();
-    this.watchdogGain.gain.value = 0.0001;
-    this.watchdogOsc.connect(wdFilter);
-    wdFilter.connect(this.watchdogGain);
-    this.watchdogGain.connect(this.sfxGain);
-    this.watchdogOsc.start();
   }
 
   private startGenerativeScheduler(): void {
@@ -858,7 +840,6 @@ export class AudioEngine {
       playStereoSonarEcho: (pan, distanceNorm, pitchHz) =>
         this.playStereoSonarEcho(pan, distanceNorm, pitchHz),
       playSolenoidClack: (heavy) => this.playSolenoidClack(heavy),
-      setWatchdogBed: (level) => this.setWatchdogBed(level),
       playCaptureShutter: (grade) => this.playCaptureShutter(grade),
       playProximityTick: (closeness01, pan) => this.playProximityTick(closeness01, pan),
       playPhaseLock: (stageIndex) => this.playPhaseLock(stageIndex),
@@ -939,7 +920,6 @@ export class AudioEngine {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
     this.beatGain?.gain.setTargetAtTime(0.0001, now, 0.07);
-    this.watchdogGain?.gain.setTargetAtTime(0.0001, now, 0.07);
   }
 
   playTumblerClick(tension: number, hitSweetSpot: boolean): void {
@@ -972,37 +952,15 @@ export class AudioEngine {
     this.shortClick(heavy ? 680 : 880, 0.018, 0.04, now + 0.01, 'triangle');
   }
 
-  setWatchdogBed(level: number): void {
-    if (!this.ctx) return;
-    const now = this.ctx.currentTime;
-    if (this.settings.muted || level <= 0.02) {
-      this.watchdogGain?.gain.setTargetAtTime(0.0001, now, 0.06);
-      return;
-    }
-    this.ensureWatchdog();
-    if (!this.watchdogGain || !this.watchdogOsc) return;
-    const clamped = Math.max(0, Math.min(1, level));
-    this.watchdogOsc.frequency.setTargetAtTime(58 + clamped * 44, now, 0.05);
-    this.watchdogGain.gain.setTargetAtTime(clamped * 0.055, now, 0.06);
-  }
-
   playCaptureShutter(grade: MinigameGrade): void {
     if (!this.ctx || !this.sfxGain || this.settings.muted) return;
     const now = this.ctx.currentTime;
     this.stopInstrumentAudio();
     this.playSolenoidClack(true);
-    if (grade === 'deep_overclock') {
-      this.playGlassNote(293.66, 0.09, 0.02, 1.4, now + 0.03, 'triangle', this.sfxGain);
-      this.playGlassNote(440.0, 0.09, 0.03, 1.6, now + 0.09, 'sine', this.sfxGain);
-      this.playGlassNote(587.33, 0.08, 0.04, 1.8, now + 0.15, 'sine', this.sfxGain);
-      this.playGlassNote(880.0, 0.07, 0.05, 2.0, now + 0.22, 'sine', this.sfxGain);
-    } else if (grade === 'clean') {
+    if (grade === 'clean') {
       this.playGlassNote(293.66, 0.075, 0.02, 1.2, now + 0.03, 'sine', this.sfxGain);
       this.playGlassNote(440.0, 0.07, 0.04, 1.4, now + 0.11, 'triangle', this.sfxGain);
       this.playGlassNote(587.33, 0.055, 0.06, 1.6, now + 0.2, 'sine', this.sfxGain);
-    } else if (grade === 'partial') {
-      this.playGlassNote(261.63, 0.06, 0.02, 0.9, now + 0.04, 'sine', this.sfxGain);
-      this.playGlassNote(329.63, 0.05, 0.04, 1.0, now + 0.13, 'sine', this.sfxGain);
     }
   }
 }

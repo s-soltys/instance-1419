@@ -21,12 +21,16 @@ export interface VoiceRequest {
 
 export interface IVoiceProvider {
   readonly id: string;
-  speak(req: VoiceRequest, onAmplitudeUpdate?: (amp: number) => void): Promise<boolean>;
+  speak(
+    req: VoiceRequest,
+    onPlaybackStart?: (durationSec: number) => void
+  ): Promise<boolean>;
   stop(): void;
   getAmplitude(): number;
 }
 
-interface VoiceProfile {
+export interface VoiceProfile {
+  voiced?: boolean;
   webSpeech?: { pitch: number; rate: number };
 }
 
@@ -82,6 +86,7 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
   private gainNode: GainNode | null = null;
   private boundCtx: AudioContext | null = null;
   private activeSource: AudioBufferSourceNode | null = null;
+  private activeClipGain: GainNode | null = null;
   private freqData: Uint8Array<ArrayBuffer> | null = null;
   private bufferCache = new Map<string, AudioBuffer>();
   private volume = 0.92;
@@ -145,7 +150,10 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
     return this.volume;
   }
 
-  async speak(req: VoiceRequest): Promise<boolean> {
+  async speak(
+    req: VoiceRequest,
+    onPlaybackStart?: (durationSec: number) => void
+  ): Promise<boolean> {
     const rec = findScriptRecord(req);
     if (!rec) {
       console.warn('[VoiceEngine] Missing prebaked line:', req.lineId ?? req.text);
@@ -168,17 +176,29 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
       this.stop();
       return await new Promise<boolean>((resolve) => {
         const src = ctx.createBufferSource();
+        const clipGain = ctx.createGain();
+        clipGain.gain.setValueAtTime(1.0, ctx.currentTime);
         src.buffer = buf!;
-        src.connect(this.analyser!);
+        src.connect(clipGain);
+        clipGain.connect(this.analyser!);
         this.activeSource = src;
+        this.activeClipGain = clipGain;
         this.activeResolve = resolve;
         this.playing = true;
+
+        onPlaybackStart?.(buf!.duration);
 
         src.onended = () => {
           if (this.activeSource === src) {
             this.activeSource = null;
+            this.activeClipGain = null;
             this.playing = false;
             this.activeResolve = null;
+            try {
+              clipGain.disconnect();
+            } catch {
+              // Ignore already disconnected
+            }
             resolve(true);
           }
         };
@@ -191,17 +211,37 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
   }
 
   stop(): void {
-    if (this.activeSource) {
+    const src = this.activeSource;
+    const clipGain = this.activeClipGain;
+    this.activeSource = null;
+    this.activeClipGain = null;
+    this.playing = false;
+
+    if (src) {
       try {
-        this.activeSource.onended = null;
-        this.activeSource.stop();
-        this.activeSource.disconnect();
+        src.onended = null;
+        if (clipGain && this.boundCtx) {
+          const now = this.boundCtx.currentTime;
+          clipGain.gain.cancelScheduledValues(now);
+          clipGain.gain.setValueAtTime(Math.max(0.0001, clipGain.gain.value), now);
+          clipGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+          src.stop(now + 0.045);
+          window.setTimeout(() => {
+            try {
+              src.disconnect();
+              clipGain.disconnect();
+            } catch {
+              // Ignore cleanup errors
+            }
+          }, 65);
+        } else {
+          src.stop();
+          src.disconnect();
+        }
       } catch {
         // Ignore already stopped source
       }
-      this.activeSource = null;
     }
-    this.playing = false;
     if (this.activeResolve) {
       const res = this.activeResolve;
       this.activeResolve = null;
@@ -288,10 +328,15 @@ export class VoiceEngine {
 
   private enabled = true;
   private activeSpeaker: string | null = null;
+  private activeLineId: string | null = null;
   private queue: VoiceRequest[] = [];
   private processing = false;
+  private playedInCurrentQueue = false;
   private runToken = 0;
-  private listeners = new Set<(speaker: string | null) => void>();
+  private listeners = new Set<(speaker: string | null, lineId?: string | null) => void>();
+  private finalClipEndWaiters: Array<{ leadMs: number; resolve: () => void }> = [];
+  private finalClipTimer: number | null = null;
+  private queueDoneWaiters: Array<(playedAny: boolean) => void> = [];
 
   constructor(audio: AudioEngine) {
     this.audio = audio;
@@ -302,15 +347,16 @@ export class VoiceEngine {
     this.remoteProvider = provider;
   }
 
-  subscribe(listener: (speaker: string | null) => void): () => void {
+  subscribe(listener: (speaker: string | null, lineId?: string | null) => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
   }
 
-  private notifySpeaker(speaker: string | null): void {
+  private notifySpeaker(speaker: string | null, lineId: string | null = null): void {
     this.activeSpeaker = speaker;
+    this.activeLineId = speaker ? lineId : null;
     this.audio.setVoiceDucking(speaker !== null);
-    for (const l of this.listeners) l(speaker);
+    for (const l of this.listeners) l(speaker, this.activeLineId);
   }
 
   setEnabled(enabled: boolean): void {
@@ -334,6 +380,10 @@ export class VoiceEngine {
     return this.activeSpeaker;
   }
 
+  getActiveLineId(): string | null {
+    return this.activeLineId;
+  }
+
   getAmplitude(): number {
     if (!this.enabled || !this.activeProvider) return 0;
     return this.activeProvider.getAmplitude();
@@ -344,6 +394,7 @@ export class VoiceEngine {
     if (!this.enabled) return;
 
     const filtered = requests.filter((r) => {
+      if (PROFILES[r.speaker]?.voiced === false) return false;
       const t = stripInlineMarkup(r.text).trim();
       return t.length > 0 && !(t.startsWith('[') && t.endsWith(']'));
     });
@@ -361,35 +412,119 @@ export class VoiceEngine {
     this.runToken++;
     this.queue = [];
     this.processing = false;
+    this.playedInCurrentQueue = false;
+    if (this.finalClipTimer !== null) {
+      window.clearTimeout(this.finalClipTimer);
+      this.finalClipTimer = null;
+    }
+    const endWaiters = this.finalClipEndWaiters.splice(0);
+    for (const w of endWaiters) w.resolve();
+    const doneWaiters = this.queueDoneWaiters.splice(0);
+    for (const resolve of doneWaiters) resolve(false);
+
     this.prebaked.stop();
     this.remoteProvider?.stop();
     this.activeProvider = null;
-    this.notifySpeaker(null);
+    this.notifySpeaker(null, null);
+  }
+
+  /**
+   * Resolves `leadMs` before the final queued voice clip completes (for audio-synced
+   * mid-sentence interrupts), or after `fallbackMs` if voice is disabled or no clip plays.
+   */
+  waitForQueueNearEnd(leadMs = 260, fallbackMs = 2200): Promise<void> {
+    if (!this.enabled || (!this.processing && this.queue.length === 0)) {
+      return new Promise((resolve) => window.setTimeout(resolve, fallbackMs));
+    }
+
+    const startedAt = performance.now();
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        resolve();
+      };
+
+      this.finalClipEndWaiters.push({ leadMs, resolve: finish });
+      this.queueDoneWaiters.push((playedAny) => {
+        if (settled) return;
+        if (playedAny) {
+          finish();
+        } else {
+          const elapsed = performance.now() - startedAt;
+          const remaining = Math.max(0, fallbackMs - elapsed);
+          window.setTimeout(finish, remaining);
+        }
+      });
+    });
+  }
+
+  private waitPauseMs(ms: number, token: number): Promise<boolean> {
+    if (ms <= 0) return Promise.resolve(token === this.runToken && this.enabled);
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        resolve(token === this.runToken && this.enabled);
+      }, ms);
+    });
   }
 
   private async drainQueue(token: number): Promise<void> {
     if (this.processing) return;
     this.processing = true;
+    this.playedInCurrentQueue = false;
+    let prevSpeaker: string | null = null;
 
     while (this.queue.length > 0 && token === this.runToken && this.enabled) {
       const req = this.queue.shift()!;
-      this.notifySpeaker(req.speaker);
+      const isLastInQueue = this.queue.length === 0;
+
+      if (prevSpeaker !== null && this.playedInCurrentQueue) {
+        const gapMs = prevSpeaker === req.speaker ? 220 : 420;
+        const ok = await this.waitPauseMs(gapMs, token);
+        if (!ok) break;
+      }
 
       let played = false;
+      const onPlaybackStart = (durationSec: number) => {
+        if (token !== this.runToken) return;
+        this.playedInCurrentQueue = true;
+        this.notifySpeaker(req.speaker, req.lineId ?? null);
+        if (isLastInQueue && this.finalClipEndWaiters.length > 0) {
+          const waiters = this.finalClipEndWaiters.splice(0);
+          for (const w of waiters) {
+            const delayMs = Math.max(200, Math.round(durationSec * 1000) - w.leadMs);
+            this.finalClipTimer = window.setTimeout(() => {
+              this.finalClipTimer = null;
+              w.resolve();
+            }, delayMs);
+          }
+        }
+      };
+
       if (this.remoteProvider) {
         this.activeProvider = this.remoteProvider;
-        played = await this.remoteProvider.speak(req);
+        played = await this.remoteProvider.speak(req, onPlaybackStart);
       }
       if (!played && token === this.runToken && this.enabled) {
         this.activeProvider = this.prebaked;
-        await this.prebaked.speak(req);
+        played = await this.prebaked.speak(req, onPlaybackStart);
       }
+      if (played) {
+        this.playedInCurrentQueue = true;
+      }
+      prevSpeaker = req.speaker;
     }
 
     if (token === this.runToken) {
+      const playedAny = this.playedInCurrentQueue;
       this.activeProvider = null;
       this.processing = false;
-      this.notifySpeaker(null);
+      this.notifySpeaker(null, null);
+      const endWaiters = this.finalClipEndWaiters.splice(0);
+      for (const w of endWaiters) w.resolve();
+      const doneWaiters = this.queueDoneWaiters.splice(0);
+      for (const resolve of doneWaiters) resolve(playedAny);
     }
   }
 }

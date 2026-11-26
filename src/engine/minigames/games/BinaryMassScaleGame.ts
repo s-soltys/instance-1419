@@ -132,7 +132,7 @@ export class BinaryMassScaleGame extends BaseCosmicMinigame {
 
   protected override onMount(): void {
     this.scenario = SCENARIOS[this.iterationIndex % SCENARIOS.length];
-    this.lockHoldTargetSec = 0.52;
+    this.lockHoldTargetSec = 0.88;
   }
 
   protected onSetupStage(stage: 1 | 2 | 3, rng: () => number): void {

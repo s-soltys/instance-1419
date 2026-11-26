@@ -3,6 +3,8 @@ import compiledSpikeStory from '../content/dialogue/compiled/spike_shift1.ink.js
 import type { AuditOutcome, StateStore } from './StateStore';
 
 export type ChoiceAffinity = 'warm' | 'cold';
+export type ChoiceWeight = 'explore' | 'consequential' | 'permanent';
+export type ChoiceKind = 'ask' | 'reply' | 'action' | 'prune';
 
 export interface DialogueEntry {
   text: string;
@@ -25,6 +27,9 @@ export interface DialogueChoice {
   index: number;
   text: string;
   affinity?: ChoiceAffinity;
+  weight?: ChoiceWeight;
+  kind?: ChoiceKind;
+  costHint?: string;
   tags?: string[];
 }
 
@@ -82,19 +87,40 @@ function parseTags(rawTags: string[] | null): ParsedTags {
   return meta;
 }
 
-function parseChoiceAffinity(rawTags: string[] | null | undefined): ChoiceAffinity | undefined {
-  if (!rawTags) return undefined;
+interface ParsedChoiceTags {
+  affinity?: ChoiceAffinity;
+  weight?: ChoiceWeight;
+  kind?: ChoiceKind;
+  costHint?: string;
+}
+
+function parseChoiceTags(rawTags: string[] | null | undefined): ParsedChoiceTags {
+  const out: ParsedChoiceTags = {};
+  if (!rawTags) return out;
   for (const tag of rawTags) {
     const trimmed = tag.trim();
     const colon = trimmed.indexOf(':');
     if (colon === -1) continue;
     const key = trimmed.slice(0, colon).trim().toLowerCase();
-    const val = trimmed.slice(colon + 1).trim().toLowerCase();
-    if (key === 'affinity' && (val === 'warm' || val === 'cold')) {
-      return val;
+    const val = trimmed.slice(colon + 1).trim();
+    const valLower = val.toLowerCase();
+    if (key === 'affinity' && (valLower === 'warm' || valLower === 'cold')) {
+      out.affinity = valLower;
+    } else if (
+      key === 'weight' &&
+      (valLower === 'explore' || valLower === 'consequential' || valLower === 'permanent')
+    ) {
+      out.weight = valLower;
+    } else if (
+      key === 'kind' &&
+      (valLower === 'ask' || valLower === 'reply' || valLower === 'action' || valLower === 'prune')
+    ) {
+      out.kind = valLower;
+    } else if (key === 'hint' && val) {
+      out.costHint = val;
     }
   }
-  return undefined;
+  return out;
 }
 
 function formatPlayerEcho(rawChoiceText: string): string {
@@ -333,11 +359,14 @@ export class DialogueRunner {
 
     const choices: DialogueChoice[] = story.currentChoices.map((c) => {
       const rawTags = (c as { tags?: string[] | null }).tags ?? undefined;
-      const affinity = parseChoiceAffinity(rawTags);
+      const parsed = parseChoiceTags(rawTags);
       return {
         index: c.index,
         text: c.text,
-        ...(affinity ? { affinity } : {}),
+        ...(parsed.affinity ? { affinity: parsed.affinity } : {}),
+        ...(parsed.weight ? { weight: parsed.weight } : {}),
+        ...(parsed.kind ? { kind: parsed.kind } : {}),
+        ...(parsed.costHint ? { costHint: parsed.costHint } : {}),
         ...(rawTags && rawTags.length > 0 ? { tags: [...rawTags] } : {}),
       };
     });

@@ -22,7 +22,7 @@ export interface VernierItemInput {
 }
 
 export function stageLabel(stage: 1 | 2 | 3): string {
-  return stage === 1 ? '1/3 · EASY' : stage === 2 ? '2/3 · MEDIUM' : '3/3 · HARD';
+  return stage === 1 ? 'PASS I · COARSE' : stage === 2 ? 'PASS II · FINE' : 'PASS III · LOCK';
 }
 
 export function getAspectFieldBox(
@@ -240,37 +240,46 @@ export function drawVernierStrip(
     c2d.font = '600 8.5px ui-monospace, SFMono-Regular, Menlo, monospace';
     c2d.fillStyle = strip.locked ? lockColorHex : 'rgba(220, 236, 250, 0.84)';
     c2d.textAlign = 'center';
-    c2d.fillText(strip.label, cx, strip.y - 10);
+    c2d.fillText(strip.label, cx, strip.y - 11);
 
-    // Subtle hairline calibration ticks along rack
-    c2d.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+    // Subtle 8-step Zeiss micrometer ticks
+    c2d.strokeStyle = 'rgba(215, 234, 248, 0.16)';
     c2d.lineWidth = 1;
     c2d.beginPath();
-    for (let t = 0; t <= 4; t++) {
-      const ty = strip.y + (t / 4) * strip.h;
-      const half = t % 2 === 0 ? 5 : 3;
+    for (let t = 0; t <= 8; t++) {
+      const ty = strip.y + (t / 8) * strip.h;
+      const half = t % 4 === 0 ? 5.5 : t % 2 === 0 ? 3.5 : 2;
       c2d.moveTo(cx - half, ty);
       c2d.lineTo(cx + half, ty);
     }
     c2d.stroke();
 
-    c2d.fillStyle = 'rgba(255, 255, 255, 0.16)';
-    c2d.fillRect(cx - 1, strip.y, 2, strip.h);
+    c2d.fillStyle = 'rgba(255, 255, 255, 0.14)';
+    c2d.fillRect(cx - 0.5, strip.y, 1, strip.h);
 
     const fillH = v * strip.h;
     const knobY = strip.y + strip.h - fillH;
+    c2d.globalAlpha = 0.24;
     c2d.fillStyle = col;
-    c2d.fillRect(cx - 1.5, knobY, 3, fillH);
+    c2d.fillRect(cx - 2.5, knobY, 5, fillH);
+    c2d.globalAlpha = 0.94;
+    c2d.fillRect(cx - 1, knobY, 2, fillH);
 
-    // Tactile Zeiss collar knob
+    // Machined Zeiss collar ring + center pip
     c2d.beginPath();
-    c2d.arc(cx, knobY, 6.5, 0, Math.PI * 2);
-    c2d.fillStyle = '#07101c';
+    c2d.arc(cx, knobY, 6.2, 0, Math.PI * 2);
+    c2d.fillStyle = 'rgba(5, 10, 18, 0.92)';
     c2d.fill();
-    c2d.lineWidth = 2;
+    c2d.lineWidth = 1.6;
     c2d.strokeStyle = col;
     c2d.stroke();
 
+    c2d.beginPath();
+    c2d.arc(cx, knobY, 1.7, 0, Math.PI * 2);
+    c2d.fillStyle = '#ffffff';
+    c2d.fill();
+
+    c2d.globalAlpha = 1;
     c2d.fillStyle = col;
     c2d.fillText(strip.rightText ?? `${Math.round(v * 100)}%`, cx, strip.y + strip.h + 15);
     c2d.restore();
@@ -287,31 +296,54 @@ export function drawVernierStrip(
   c2d.fillText(strip.rightText ?? `${Math.round(v * 100)}%`, strip.x + strip.w, strip.y - 6);
 
   const lineY = strip.y + 6;
-  // Subtle micrometer ticks (batched into 1 draw call)
-  c2d.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+  // Fine 8-step Zeiss micrometer ticks (batched into 1 draw call)
+  c2d.strokeStyle = 'rgba(215, 234, 248, 0.16)';
   c2d.lineWidth = 1;
   c2d.beginPath();
-  for (let t = 0; t <= 4; t++) {
-    const tx = strip.x + (t / 4) * strip.w;
-    const half = t % 2 === 0 ? 4.5 : 2.5;
+  for (let t = 0; t <= 8; t++) {
+    const tx = strip.x + (t / 8) * strip.w;
+    const half = t % 4 === 0 ? 5.2 : t % 2 === 0 ? 3.2 : 1.8;
     c2d.moveTo(tx, lineY - half);
     c2d.lineTo(tx, lineY + half);
   }
   c2d.stroke();
 
-  c2d.fillStyle = 'rgba(255, 255, 255, 0.16)';
-  c2d.fillRect(strip.x, lineY - 1, strip.w, 2);
+  // Hairline glass track
+  c2d.fillStyle = 'rgba(255, 255, 255, 0.14)';
+  c2d.fillRect(strip.x, lineY - 0.5, strip.w, 1);
 
+  // 2-pass luminous fill (soft halo + razor core)
+  const fillW = v * strip.w;
+  c2d.globalAlpha = 0.24;
   c2d.fillStyle = col;
-  c2d.fillRect(strip.x, lineY - 1.5, v * strip.w, 3);
+  c2d.fillRect(strip.x, lineY - 2.5, fillW, 5);
+  c2d.globalAlpha = 0.94;
+  c2d.fillRect(strip.x, lineY - 1, fillW, 2);
 
-  const knobX = strip.x + v * strip.w;
+  // Machined hollow Zeiss indicator ring + center pip
+  const knobX = strip.x + fillW;
+  c2d.globalAlpha = 1;
   c2d.beginPath();
-  c2d.arc(knobX, lineY, 6.5, 0, Math.PI * 2);
-  c2d.fillStyle = '#07101c';
+  c2d.arc(knobX, lineY, 6.2, 0, Math.PI * 2);
+  c2d.fillStyle = 'rgba(5, 10, 18, 0.92)';
   c2d.fill();
-  c2d.lineWidth = 2;
+  c2d.lineWidth = 1.6;
   c2d.strokeStyle = col;
   c2d.stroke();
+
+  c2d.beginPath();
+  c2d.arc(knobX, lineY, 1.7, 0, Math.PI * 2);
+  c2d.fillStyle = '#ffffff';
+  c2d.fill();
+
+  if (strip.locked) {
+    c2d.beginPath();
+    c2d.arc(knobX, lineY, 9.2, -0.45, 0.45);
+    c2d.arc(knobX, lineY, 9.2, Math.PI - 0.45, Math.PI + 0.45);
+    c2d.strokeStyle = lockColorHex;
+    c2d.lineWidth = 1;
+    c2d.globalAlpha = 0.55;
+    c2d.stroke();
+  }
   c2d.restore();
 }

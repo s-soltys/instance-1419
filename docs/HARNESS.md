@@ -7,6 +7,7 @@ It locks in your latest plot rulings:
 * **Rotating Dream Personas:** Pool of ~10–14 personas, surfacing **3–4 per playthrough** (with pruning tied to sacrificing specific cached personas).
 * **Volunteer Mystery:** Stays **permanently ambiguous** (not explored or explained).
 * **Prior 1,417 Copies:** Keep active waking cast intimate (Primary + optional Secondary Sibling), sprinkled lightly with **subtle archived log echoes** from earlier decommissioned copies.
+* **Dialogue, Choice UX & Reserved Voice Taste (Locked):** Non-abrupt explanatory pacing (~2,000-word intro scale) with optional `◇` Q&A hubs; dry gallows humor + creeping cosmic horror; occasional unvoiced softly styled Psyche marginalia (`· warmth`/`· structure`/`· pattern`); Layout A bottom-anchored feeds with color-coded consequence choice plates (neutral-slate `◇`/explore vs. warm-amber consequential vs. crimson Hold-to-Commit prune, zero Warm/Cold spoiler dots); and reserved, zero-theatrics Cast 2 voices (grounded female Spouse; dry male Sibling 1420 + same male voice on probe tape for Archive 1406; quiet night-shift-doctor male Overseer).
 
 ---
 
@@ -107,11 +108,11 @@ Each skill packages exact instructions, checklists, and helper scripts so any ag
   * Locks `volunteer_motive = PERMANENTLY_AMBIGUOUS`.
 
 ### 2. `ink-dialogue-writer` (Adaptive Dialogue & Character Voices)
-* **Purpose:** Writes and refactors `.ink` scenes across all 4 cast archetypes (Other "Me" Siblings, Overseer AI, Dream Personas, Internal Psyche).
-* **Key Outputs:** Modular `src/content/dialogue/*.ink` files + tag-validated speaker/mood metadata.
+* **Purpose:** Writes and refactors `.ink` scenes across all cast archetypes (Spouse/Dream Personas, Overseer AI, Primary/Secondary Siblings, occasional Internal Psyche marginalia, and Archive Echoes).
+* **Key Outputs:** Modular `src/content/dialogue/*.ink` files + tag-validated `# speaker`/`# emotion`/`# id` & choice metadata.
 * **Built-In Rules:**
-  * Reads `docs/VOICE_GUIDE.md` before drafting (anti-cliché filter: no melodramatic sci-fi exposition; Overseer stays calm, clinical, and tragically banal; Primary Sibling's humor genuinely thins as `sibling_h` falls).
-  * Every dream scene includes live `H%` tonal bands (`>=75%`, `45–74%`, `<45%`) and strictly uses redacted relational tags (`[RELATION:*]`) instead of loved-one names.
+  * Reads `docs/VOICE_GUIDE.md` before drafting: fuller non-abrupt beats with optional `◇` Q&A hubs; dry gallows humor + cosmic horror; Spouse (`C+D` uncanny cracks + candid upload honesty); Overseer (`B+D` calm night-shift doctor + eerie 1,417-copy patience); Sibling (`A+C` dry 3 AM deadpan + lucid engineer); Archive (`B` dry note to future self); occasional unvoiced Psyche marginalia (`<=160` chars per voiced line).
+  * Tags choices with `# kind:ask|reply|action|prune`, `# weight:explore|consequential|permanent`, and `# hint:<cost>` without forced Warm/Cold spoiler binaries; keeps loved-one names redacted (`[RELATION:*]`).
   * Compiles every `.ink` edit immediately with `inkjs` compiler.
 
 ### 3. `visual-shader-studio` (3D Optics Shaders, 2D `H%` Decay & Dream Character Art)
@@ -128,15 +129,15 @@ Each skill packages exact instructions, checklists, and helper scripts so any ag
   * Rejects any `CC BY-SA` or non-commercial asset automatically (strictly preserves your clean commercial IP boundary for Steam).
   * Enforces mobile-friendly texture budgets (max 2048px skybox tiles, fast load times for pure HTML playtesting).
 
-### 5. `audio-atmosphere-designer` (Procedural Soundscape & `H%` Mix)
-* **Purpose:** Builds meditative, minimalist Web Audio sound design—probe sub-bass hum, tactile optical detents, clinical Overseer tones, warm acoustic dream layers that thin out as `H%` drops.
-* **Key Outputs:** `src/engine/audio/*` + `assets/audio/MANIFEST.json` (if any CC0 stems are used).
-* **Built-In Rules:** Handles browser autoplay unlock gracefully on first click/touch (crucial for pure HTML & mobile Safari playtesting).
+### 5. `audio-atmosphere-designer` (Procedural Soundscape, Music & Reserved Cast 2 VO)
+* **Purpose:** Builds meditative Web Audio soundscapes (`H%`-reactive dream music, optical detents, clinical Overseer cues) and maintains the reserved Cast 2 Qwen3-TTS voice pipeline (`voice_profiles.json`, `VoiceEngine.ts`).
+* **Key Outputs:** `src/engine/AudioEngine.ts`, `src/engine/audio/*`, `src/engine/voice/VoiceEngine.ts`, `src/content/voice_profiles.json`.
+* **Built-In Rules:** Reserved, zero-theatrics Cast 2 delivery (`repetitionPenalty: 1.1`, emotion-split anchors, `agate` + two-pass `loudnorm`, no `aecho` slapback, shared biological-original male voice for 1420 & 1406, `"voiced": false` Psyche, `40ms` stop fade-out, audio-synced Overseer interrupts via `waitForQueueNearEnd()`); handles browser autoplay unlock cleanly.
 
 ### 6. `engine-builder` (Pure HTML/TS Core, UI & Director Overlay)
-* **Purpose:** Implements Three.js scenes, 2D dream canvas, `inkjs` runtime + JSON Storylet Scheduler, responsive landscape UI (desktop + phone touch), `PlatformAdapter`, and the `?dev=1` Director Overlay.
-* **Key Outputs:** Strict TypeScript modules in `src/engine/` and `src/platform/`.
-* **Built-In Rules:** Zero hardcoded dialogue/balance values; keeps touch targets ≥44px and text legible at mobile landscape (844×390) as well as 16:9 desktop (1920×1080).
+* **Purpose:** Implements Three.js scenes, 2D dream canvas, `inkjs` runtime + Storylet Scheduler, Layout A dialogue & Color-Coded Choice Plates UI, responsive landscape UI, `PlatformAdapter`, and the `?dev=1` Director Overlay.
+* **Key Outputs:** Strict TypeScript modules in `src/engine/`, `src/platform/`, and `src/ui/`.
+* **Built-In Rules:** Zero hardcoded dialogue/balance values; Layout A bottom-anchored dialogue + Style 1 & 4 color-coded choice plates (no `.choice-affinity-dot`, Hold-to-Commit prune, turn-grouping, spoiler-free Kitchen Prologue, `1–6`/`↑↓`/`Enter`); touch targets ≥44px and legible at `844×390` and `1920×1080`.
 
 ### 7. `consistency-auditor` (Automated Linting + Deep Continuity Review)
 * **Purpose:** The immune system of the project. Combines deterministic scripts with structured qualitative audits.
@@ -145,10 +146,10 @@ Each skill packages exact instructions, checklists, and helper scripts so any ag
   2. **500-Run Playthrough Simulator (`sim-playthroughs.ts`):** Runs Pure Pruner, Pure Humanist, Balanced, Indecisive, and Random bots from Prologue to Credits—asserts zero soft-locks, permanent `Max_H` ceiling drops work, and all 3 Endings are reachable.
   3. **Narrative & Canon Linter (`lint-narrative.ts`):** Flags any accidental loved-one proper names, missing `# speaker`/`# portrait` tags, orphaned `characters.json` entries, per-shift word-count overruns, and accidental IP overlap terms (e.g., *Lena* proper nouns).
   4. **License Manifest Check:** Every file in `assets/` has a verified commercial-safe entry in `MANIFEST.json`.
-* **Qualitative Review Pass (Per Milestone):** Audits voice consistency (Overseer banality, Sibling estrangement curve), emotional pacing, and subtle 1,417-copy continuity.
+* **Qualitative Review Pass (Per Milestone):** Audits voice fidelity (night-shift-doctor Overseer, dry 3 AM Sibling, uncanny-cracked Spouse, occasional unvoiced Psyche, Cast 2 biological-original consistency between 1420 & 1406), non-abrupt pacing with `◇` Q&A depth, color-coded choice hierarchy (zero Warm/Cold spoiler dots), and subtle 1,417-copy continuity.
 
 ### 8. `playtest-verifier` (Playwright Visual & End-to-End QA + Human Telemetry)
-* **Purpose:** Drives the real pure-HTML build in headless Chromium via Playwright to catch what unit tests miss—WebGL errors, overlapping text on mobile landscape, unreadable fonts, broken shader uniforms, or dead buttons.
+* **Purpose:** Drives the real pure-HTML build in headless Chromium via Playwright to catch what unit tests miss—WebGL errors, dialogue chasms, choice-plate regressions, overlapping text on mobile landscape, unreadable fonts, broken shader uniforms, or dead buttons.
 * **Key Outputs:**
   * Visual regression filmstrip (`artifacts/visual-check/`): 3D lensing view, clinical boot log, and 2D Dream at `H = 90%, 70%, 45%, 20%` on both **1920×1080** and **844×390 (mobile landscape)**.
   * Human Playtest Analyzer: Parses testers' 1-click end-of-run JSON telemetry summaries (shift durations, `H%` trajectories, ending distribution, Secondary Sibling discovery rate) into concrete pacing recommendations.

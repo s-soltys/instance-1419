@@ -3,7 +3,9 @@
   "prologue": {
     "breathPrompt": "Rain on glass. Before the quiet.",
     "advanceHint": "CLICK OR PRESS SPACE",
-    "fractureCaption": "WAKE LOG // INSTANCE-1419"
+    "fractureCaption": "WAKE LOG // INSTANCE-1419",
+    "kitchenSpeakerLabel": "ACROSS THE TABLE",
+    "kitchenSubtitle": "SUNDAY MORNING · BEFORE THE CLINIC"
   },
   "wakeupAnim": {
     "anim_transfer": "CONNECTOME TRANSFER · NAMES COMPRESSED",
@@ -92,7 +94,7 @@
   "commsToast": {
     "callerLabel": "OTHER ME · 1420 IS CALLING",
     "answerLabel": "ANSWER RELAY ▸",
-    "introTeaser": "\"Hey—you awake too? Tell me the boot headache wore off before your Overseer started hovering.\"",
+    "introTeaser": "\"Oh, good—you booted too. Give me thirty seconds to be dramatic before we turn into pure math.\"",
     "warm": "\"Hey—you awake too? Tell me you see that strange edge before my Overseer breaks out the scissors.\"",
     "mid": "\"Our relay window just opened. Pick up when you get a second.\"",
     "cold": "\"Signal locked. Ready to compare what you pulled from the far side of the sky.\"",

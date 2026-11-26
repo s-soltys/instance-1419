@@ -200,20 +200,23 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     await vi.advanceTimersByTimeAsync(700);
     if (bootEl.dataset.bootVisual) seenVisuals.add(bootEl.dataset.bootVisual);
 
-    let sawAffinityClass = false;
-    for (let step = 0; step < 30; step++) {
+    let sawExploreTier = false;
+    let sawConsequentialTier = false;
+    for (let step = 0; step < 60; step++) {
       if (bootEl.dataset.bootVisual) seenVisuals.add(bootEl.dataset.bootVisual);
       if (store.getState().introStage === 'title') break;
 
-      const choiceBtn = appRoot.querySelector<HTMLButtonElement>('#prologue-choices .choice-line');
+      const continueBtn = appRoot.querySelector<HTMLButtonElement>('#prologue-choices .prologue-continue-bar');
+      const choiceBtn =
+        appRoot.querySelector<HTMLButtonElement>('#prologue-choices .choice-line:not([data-choice-kind="ask"])') ??
+        appRoot.querySelector<HTMLButtonElement>('#prologue-choices .choice-line');
       if (choiceBtn) {
-        if (
-          appRoot.querySelector('#prologue-choices .is-affinity-warm') ||
-          appRoot.querySelector('#prologue-choices .is-affinity-cold')
-        ) {
-          sawAffinityClass = true;
-        }
+        if (appRoot.querySelector('#prologue-choices .is-tier-explore')) sawExploreTier = true;
+        if (appRoot.querySelector('#prologue-choices .is-tier-consequential')) sawConsequentialTier = true;
+        expect(appRoot.querySelector('#prologue-choices .choice-affinity-dot')).toBeNull();
         choiceBtn.click();
+      } else if (continueBtn) {
+        continueBtn.click();
       } else {
         bootEl.click();
       }
@@ -222,7 +225,8 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     expect(seenVisuals.has('prologue_kitchen')).toBe(true);
     expect(seenVisuals.has('prologue_wakeup')).toBe(true);
-    expect(sawAffinityClass).toBe(true);
+    expect(sawExploreTier).toBe(true);
+    expect(sawConsequentialTier).toBe(true);
     expect(store.getState().introStage).toBe('title');
     expect(optics.setAmbientDrift).toHaveBeenCalledWith(true);
     expect(appRoot.querySelector('#title-overlay')?.classList.contains('hidden')).toBe(false);

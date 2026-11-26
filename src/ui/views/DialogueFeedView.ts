@@ -1,13 +1,18 @@
 import charactersData from '../../content/characters.json';
 import type { AudioEngine } from '../../engine/AudioEngine';
-import type { DialogueEntry, DialogueRunner, DialogueSnapshot } from '../../engine/DialogueRunner';
+import type {
+  DialogueChoice,
+  DialogueEntry,
+  DialogueRunner,
+  DialogueSnapshot,
+} from '../../engine/DialogueRunner';
 import type { StateStore } from '../../engine/StateStore';
 import type { TelemetryLogger } from '../../engine/TelemetryLogger';
 import type { VoiceEngine, VoiceRequest } from '../../engine/voice/VoiceEngine';
-import { renderSpeakerAvatar } from '../SpeakerAvatar';
 
 interface CharacterInfo {
   displayName: string;
+  whisperLabel?: string;
   role: string;
   accentColor: string;
 }
@@ -51,17 +56,240 @@ function inferChannel(scrollSel: string): DialogueChannel {
   return 'dream';
 }
 
+function getChoiceTierMeta(c: DialogueChoice, replyOrd: number): {
+  tierClass: string;
+  glyph: string;
+  isPermanent: boolean;
+  isAsk: boolean;
+} {
+  const isAsk = c.kind === 'ask';
+  const isAction = c.kind === 'action';
+  const isPermanent = c.kind === 'prune' || c.weight === 'permanent';
+
+  if (isPermanent) {
+    return { tierClass: 'is-tier-permanent', glyph: '◈', isPermanent: true, isAsk: false };
+  }
+  if (isAsk) {
+    return { tierClass: 'is-tier-explore', glyph: '◇', isPermanent: false, isAsk: true };
+  }
+  if (isAction) {
+    const weightCls = c.weight === 'explore' ? 'is-tier-explore' : 'is-tier-consequential';
+    return {
+      tierClass: `is-tier-action ${weightCls}`,
+      glyph: '→',
+      isPermanent: false,
+      isAsk: false,
+    };
+  }
+  const tierClass = c.weight === 'explore' ? 'is-tier-explore' : 'is-tier-consequential';
+  return {
+    tierClass,
+    glyph: `${String(replyOrd).padStart(2, '0')}.`,
+    isPermanent: false,
+    isAsk: false,
+  };
+}
+
+/**
+ * Renders color-coded Style 1 + 4 tactile choice plates:
+ * - Non-consequential / optional exploration (`◇` / `weight:explore`) in calm neutral-slate
+ * - Consequential replies (`weight:consequential`) in luminous warm-amber
+ * - Irreversible pruning (`kind:prune` / `weight:permanent`) as Hold-to-Commit plates
+ */
+export function renderChoicePlatesHtml(choices: DialogueChoice[]): string {
+  const askChoices = choices.filter((c) => c.kind === 'ask');
+  const mainChoices = choices.filter((c) => c.kind !== 'ask');
+
+  let animIdx = 0;
+  let replyOrd = 0;
+
+  const renderOne = (c: DialogueChoice): string => {
+    const idx = animIdx++;
+    const ord = c.kind === 'ask' || c.kind === 'action' ? 0 : ++replyOrd;
+    const { tierClass, glyph, isPermanent, isAsk } = getChoiceTierMeta(c, ord);
+    const kindAttr = c.kind ?? (isPermanent ? 'prune' : 'reply');
+    const weightAttr = c.weight ?? (isPermanent ? 'permanent' : 'consequential');
+    const hintHtml = isPermanent
+      ? `<span class="choice-cost-hint">${escapeHtml(c.costHint ?? 'Permanent · clears optics, lowers warmth ceiling')}</span>`
+      : '';
+    const holdHtml = isPermanent
+      ? `<span class="choice-hold-fill" aria-hidden="true"></span>`
+      : '';
+    const tagHtml = isPermanent
+      ? `<span class="choice-hold-tag">HOLD OR CLICK TWICE</span>`
+      : isAsk
+        ? `<span class="choice-tier-tag">ASK</span>`
+        : '';
+
+    return `
+      <button class="choice-line choice-enter ${tierClass}"
+        data-choice-index="${c.index}"
+        data-choice-kind="${kindAttr}"
+        data-choice-weight="${weightAttr}"
+        style="--choice-idx:${idx}"
+        type="button">
+        ${holdHtml}
+        <span class="choice-num">${glyph}</span>
+        <span class="choice-body"><span class="choice-main-text">${formatInlineHighlights(c.text)}</span>${hintHtml}</span>
+        ${tagHtml}
+      </button>
+    `;
+  };
+
+  const parts: string[] = [];
+  for (const c of askChoices) parts.push(renderOne(c));
+  if (askChoices.length > 0 && mainChoices.length > 0) {
+    parts.push('<div class="choice-group-divider" aria-hidden="true"></div>');
+  }
+  for (const c of mainChoices) parts.push(renderOne(c));
+  return parts.join('');
+}
+
+/**
+ * Binds hover ticks, standard selection, and Hold-to-Commit (650ms hold OR
+ * click-to-arm + click-to-confirm) behavior on rendered `.choice-line` plates.
+ */
+export function bindChoicePlates(
+  choicesEl: HTMLElement,
+  opts: {
+    onHover?: () => void;
+    onSelect: (choiceIndex: number, btn: HTMLButtonElement) => void;
+    playArmCue?: () => void;
+  }
+): void {
+  const buttons = choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line');
+  buttons.forEach((btn) => {
+    btn.addEventListener('mouseenter', () => {
+      choicesEl.querySelectorAll('.choice-line.is-kbd-focus').forEach((b) => b.classList.remove('is-kbd-focus'));
+      opts.onHover?.();
+    });
+
+    const isPermanent = btn.classList.contains('is-tier-permanent');
+    if (!isPermanent) {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        opts.onSelect(Number(btn.dataset.choiceIndex), btn);
+      });
+      return;
+    }
+
+    let holdRaf = 0;
+    let holdStart = 0;
+    let committedByHold = false;
+    const HOLD_MS = 650;
+
+    const resetHold = () => {
+      if (holdRaf) {
+        cancelAnimationFrame(holdRaf);
+        holdRaf = 0;
+      }
+      btn.classList.remove('is-holding');
+      btn.style.setProperty('--hold-progress', '0');
+    };
+
+    const commit = () => {
+      resetHold();
+      opts.onSelect(Number(btn.dataset.choiceIndex), btn);
+    };
+
+    btn.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      committedByHold = false;
+      holdStart = performance.now();
+      btn.classList.add('is-holding');
+      const step = () => {
+        const p = Math.min(1, (performance.now() - holdStart) / HOLD_MS);
+        btn.style.setProperty('--hold-progress', p.toFixed(3));
+        if (p >= 1) {
+          committedByHold = true;
+          commit();
+          return;
+        }
+        holdRaf = requestAnimationFrame(step);
+      };
+      holdRaf = requestAnimationFrame(step);
+    });
+
+    btn.addEventListener('pointerup', resetHold);
+    btn.addEventListener('pointerleave', resetHold);
+    btn.addEventListener('pointercancel', resetHold);
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (committedByHold) {
+        committedByHold = false;
+        return;
+      }
+      if (!btn.classList.contains('is-armed')) {
+        btn.classList.add('is-armed');
+        const tag = btn.querySelector('.choice-hold-tag');
+        if (tag) tag.textContent = 'CONFIRM CUT';
+        opts.playArmCue?.();
+        return;
+      }
+      commit();
+    });
+  });
+}
+
+/**
+ * Handles `1–6`, `ArrowUp`, `ArrowDown`, and `Enter` keyboard navigation on a
+ * visible `.dialogue-choices` container. Returns true if the event was handled.
+ */
+export function handleChoiceKeyboardNav(
+  e: KeyboardEvent,
+  choicesEl: HTMLElement | null
+): boolean {
+  if (!choicesEl || choicesEl.classList.contains('is-locked')) return false;
+  const buttons = Array.from(choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line'));
+  if (buttons.length === 0) return false;
+
+  const num = Number(e.key);
+  if (num >= 1 && num <= 6) {
+    const btn = buttons[num - 1];
+    if (btn) {
+      e.preventDefault();
+      btn.click();
+      return true;
+    }
+  }
+
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault();
+    const curIdx = buttons.findIndex(
+      (b) => b === document.activeElement || b.classList.contains('is-kbd-focus')
+    );
+    const delta = e.key === 'ArrowDown' ? 1 : -1;
+    const nextIdx =
+      curIdx === -1
+        ? delta > 0
+          ? 0
+          : buttons.length - 1
+        : (curIdx + delta + buttons.length) % buttons.length;
+    buttons.forEach((b, i) => b.classList.toggle('is-kbd-focus', i === nextIdx));
+    buttons[nextIdx]?.focus();
+    return true;
+  }
+
+  if (e.key === 'Enter') {
+    const focused = buttons.find(
+      (b) => b === document.activeElement || b.classList.contains('is-kbd-focus')
+    );
+    if (focused) {
+      e.preventDefault();
+      focused.click();
+      return true;
+    }
+  }
+
+  return false;
+}
+
 interface ScrollFeedCache {
   entries: DialogueEntry[];
   renderedCount: number;
   channel: DialogueChannel;
-  humanityBucket: number;
-  siblingBucket: number;
   boundClick: boolean;
-}
-
-function humanityAvatarBucket(h: number): number {
-  return h < 45 ? 0 : h < 70 ? 1 : 2;
 }
 
 function prefixMatches(prev: DialogueEntry[], next: DialogueEntry[], count: number): boolean {
@@ -83,9 +311,9 @@ function prefixMatches(prev: DialogueEntry[], next: DialogueEntry[], count: numb
 }
 
 /**
- * Modular editorial dialogue renderer supporting append-only DOM updates (PR #1 perf),
- * subtle inline [[warm:...]] / [[cold:...]] highlights, choice affinity accents,
- * live reply pacing, voice replay via stable lineId, and telemetry logging.
+ * Modular editorial dialogue renderer supporting bottom-anchored Layout A flow,
+ * speaker turn-grouping, softly styled internal Psyche marginalia, color-coded
+ * choice plates, hover-only voice replay, and telemetry logging.
  */
 export class DialogueFeedView {
   private replyBeatTimer: number | null = null;
@@ -147,7 +375,6 @@ export class DialogueFeedView {
       const preReplyEntries = snap.entries.slice(0, preReplyCount);
       this.renderEntriesOnly(scrollEl, preReplyEntries, {
         animateFromIndex: Math.max(0, preReplyCount - 1),
-        typingSpeaker: snap.lastAddedEntries[0].speaker,
         channel,
       });
 
@@ -162,7 +389,7 @@ export class DialogueFeedView {
         this.replyBeatTimer = null;
         this.speakEntries(snap.lastAddedEntries);
         onSettled(snap);
-      }, 320);
+      }, 260);
       return;
     }
 
@@ -173,55 +400,57 @@ export class DialogueFeedView {
   private renderEntryHtml(
     entry: DialogueEntry,
     idx: number,
+    prevEntry: DialogueEntry | undefined,
     animateFrom: number,
-    channel: DialogueChannel,
-    humanity: number,
-    siblingH: number
+    channel: DialogueChannel
   ): string {
     const ch = CHAR_MAP[entry.speaker] ?? CHAR_MAP.narrator;
-    const playerClass = entry.isPlayerChoice ? 'is-player-echo' : '';
     const isNew = idx >= animateFrom;
     const animClass = isNew ? 'is-new' : 'is-history';
     const delayMs = isNew ? Math.min(4, Math.max(0, idx - animateFrom)) * 70 : 0;
-    const avH = entry.speaker === 'sibling_primary' ? siblingH : humanity;
+
+    if (ch.role === 'psyche') {
+      const cueLabel = ch.whisperLabel ?? ch.displayName.toLowerCase();
+      return `
+        <div class="dialogue-entry role-psyche is-psyche-whisper ${animClass}" data-channel="${channel}" style="border-left-color:${ch.accentColor};--entry-delay:${delayMs}ms;">
+          <span class="psyche-cue" style="color:${ch.accentColor};">· ${escapeHtml(cueLabel)}</span>
+          <div class="dialogue-text">${formatInlineHighlights(entry.text)}</div>
+        </div>
+      `;
+    }
+
+    const playerClass = entry.isPlayerChoice ? 'is-player-echo' : '';
+    const isContinuation = Boolean(
+      prevEntry &&
+        prevEntry.speaker === entry.speaker &&
+        !entry.isPlayerChoice &&
+        !prevEntry.isPlayerChoice
+    );
+    const contClass = isContinuation ? 'is-continuation' : '';
     const plain = stripInlineHighlights(entry.text);
     const canSpeak = !entry.isPlayerChoice && !(plain.startsWith('[') && plain.endsWith(']'));
-    return `
-      <div class="dialogue-entry role-${ch.role} ${playerClass} ${animClass}" data-channel="${channel}" style="border-left-color:${ch.accentColor};--entry-delay:${delayMs}ms;">
-        <div class="dialogue-entry-head">
-          ${renderSpeakerAvatar(entry.speaker, avH, 24, true)}
-          <div class="dialogue-speaker" style="color:${ch.accentColor};">${ch.displayName}</div>
-          ${
-            canSpeak
-              ? `<button class="voice-replay-btn" data-replay-idx="${idx}" type="button" title="Listen to line">▶</button>`
-              : ''
-          }
-        </div>
-        <div class="dialogue-text">${formatInlineHighlights(entry.text)}</div>
-      </div>
-    `;
-  }
+    const replayBtn = canSpeak
+      ? `<button class="voice-replay-btn" data-replay-idx="${idx}" type="button" title="Listen to line" aria-label="Listen to line">▶</button>`
+      : '';
 
-  private renderTypingHtml(
-    typingSpeaker: string | undefined,
-    channel: DialogueChannel,
-    humanity: number,
-    siblingH: number
-  ): string {
-    if (!typingSpeaker) return '';
-    const tch = CHAR_MAP[typingSpeaker] ?? CHAR_MAP.narrator;
-    const tavH = typingSpeaker === 'sibling_primary' ? siblingH : humanity;
-    const indicator =
-      channel === 'overseer'
-        ? `<span class="typing-status">EVALUATING</span><span class="typing-cursor" aria-label="Evaluating"></span>`
-        : channel === 'comms'
-          ? `<span class="typing-status">RELAY PACKET</span><span class="typing-dots" aria-label="Receiving"><i></i><i></i><i></i></span>`
-          : `<span class="typing-dots" aria-label="Responding"><i></i><i></i><i></i></span>`;
+    const displayName =
+      channel === 'prologue' && entry.speaker === 'phantom_spouse'
+        ? 'ACROSS THE TABLE'
+        : ch.displayName;
+    const headHtml = isContinuation
+      ? replayBtn
+      : `
+        <div class="dialogue-entry-head">
+          <span class="voice-live-dot" data-voice-dot-speaker="${escapeHtml(entry.speaker)}" style="background:${ch.accentColor};"></span>
+          <div class="dialogue-speaker" style="color:${ch.accentColor};">${escapeHtml(displayName)}</div>
+          ${replayBtn}
+        </div>
+      `;
+
     return `
-      <div class="dialogue-typing" data-channel="${channel}" style="border-left-color:${tch.accentColor};">
-        ${renderSpeakerAvatar(typingSpeaker, tavH, 20, true)}
-        <span class="typing-name" style="color:${tch.accentColor};">${tch.displayName}</span>
-        ${indicator}
+      <div class="dialogue-entry role-${ch.role} ${playerClass} ${contClass} ${animClass}" data-channel="${channel}" style="border-left-color:${ch.accentColor};--entry-delay:${delayMs}ms;">
+        ${headHtml}
+        <div class="dialogue-text">${formatInlineHighlights(entry.text)}</div>
       </div>
     `;
   }
@@ -233,8 +462,6 @@ export class DialogueFeedView {
         entries: [],
         renderedCount: 0,
         channel: inferChannel(`#${scrollEl.id}`),
-        humanityBucket: -1,
-        siblingBucket: -1,
         boundClick: false,
       };
       this.feedCache.set(scrollEl, cache);
@@ -263,26 +490,19 @@ export class DialogueFeedView {
   renderEntriesOnly(
     scrollEl: HTMLElement,
     entries: DialogueEntry[],
-    opts?: { animateFromIndex?: number; typingSpeaker?: string; channel?: DialogueChannel }
+    opts?: { animateFromIndex?: number; channel?: DialogueChannel }
   ): void {
-    const s = this.store.getState();
     const animateFrom = opts?.animateFromIndex ?? 0;
     const channel = opts?.channel ?? inferChannel(`#${scrollEl.id}`);
-    const hBucket = humanityAvatarBucket(s.humanity);
-    const sBucket = humanityAvatarBucket(s.primarySiblingH);
     const cache = this.ensureDelegatedReplay(scrollEl);
-    const typingHtml = this.renderTypingHtml(opts?.typingSpeaker, channel, s.humanity, s.primarySiblingH);
 
     const canAppend =
       cache.renderedCount > 0 &&
       cache.renderedCount <= entries.length &&
       cache.channel === channel &&
-      cache.humanityBucket === hBucket &&
-      cache.siblingBucket === sBucket &&
       prefixMatches(cache.entries, entries, cache.renderedCount);
 
     if (canAppend) {
-      scrollEl.querySelector('.dialogue-typing')?.remove();
       if (animateFrom >= cache.renderedCount) {
         scrollEl.querySelectorAll('.dialogue-entry.is-new').forEach((el) => {
           el.classList.remove('is-new');
@@ -291,32 +511,21 @@ export class DialogueFeedView {
       }
       let deltaHtml = '';
       for (let i = cache.renderedCount; i < entries.length; i++) {
-        deltaHtml += this.renderEntryHtml(
-          entries[i],
-          i,
-          animateFrom,
-          channel,
-          s.humanity,
-          s.primarySiblingH
-        );
+        deltaHtml += this.renderEntryHtml(entries[i], i, entries[i - 1], animateFrom, channel);
       }
-      if (deltaHtml || typingHtml) {
-        scrollEl.insertAdjacentHTML('beforeend', deltaHtml + typingHtml);
+      if (deltaHtml) {
+        scrollEl.insertAdjacentHTML('beforeend', deltaHtml);
       }
     } else {
       const entryHtml = entries
-        .map((entry, idx) =>
-          this.renderEntryHtml(entry, idx, animateFrom, channel, s.humanity, s.primarySiblingH)
-        )
+        .map((entry, idx) => this.renderEntryHtml(entry, idx, entries[idx - 1], animateFrom, channel))
         .join('');
-      scrollEl.innerHTML = entryHtml + typingHtml;
+      scrollEl.innerHTML = entryHtml;
     }
 
     cache.entries = entries.slice();
     cache.renderedCount = entries.length;
     cache.channel = channel;
-    cache.humanityBucket = hBucket;
-    cache.siblingBucket = sBucket;
 
     if (typeof scrollEl.scrollTo === 'function') {
       scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
@@ -347,30 +556,14 @@ export class DialogueFeedView {
     choicesEl.classList.remove('is-locked');
 
     if (snap.choices.length > 0) {
-      choicesEl.innerHTML = snap.choices
-        .map((c, i) => {
-          const affCls =
-            c.affinity === 'warm'
-              ? 'is-affinity-warm'
-              : c.affinity === 'cold'
-                ? 'is-affinity-cold'
-                : '';
-          const dot = affCls ? '<i class="choice-affinity-dot" aria-hidden="true"></i>' : '';
-          return `
-          <button class="choice-line choice-enter ${affCls}" data-choice-index="${c.index}" style="--choice-idx:${i}" type="button">
-            <span class="choice-num">${i + 1}.</span>
-            <span class="choice-body">${formatInlineHighlights(c.text)}</span>
-            ${dot}
-          </button>
-        `;
-        })
-        .join('');
-      choicesEl.querySelectorAll<HTMLButtonElement>('.choice-line').forEach((btn) => {
-        btn.addEventListener('mouseenter', () => this.audio.playHoverTick());
-        btn.addEventListener('click', () => {
+      choicesEl.innerHTML = renderChoicePlatesHtml(snap.choices);
+      bindChoicePlates(choicesEl, {
+        onHover: () => this.audio.playHoverTick(),
+        playArmCue: () => this.audio.playCue('tick'),
+        onSelect: (choiceIdx) => {
           this.audio.playCue('choice');
-          handlers.onChoose(Number(btn.dataset.choiceIndex));
-        });
+          handlers.onChoose(choiceIdx);
+        },
       });
       return;
     }
@@ -378,9 +571,9 @@ export class DialogueFeedView {
     if (snap.resumeDreamKnot && handlers.onResumeDream) {
       const nextKnot = snap.resumeDreamKnot;
       choicesEl.innerHTML = `
-        <button class="choice-line choice-enter" id="btn-overseer-return" style="--choice-idx:0" type="button">
-          <span class="choice-num">1.</span>
-          <span>Return to the dream</span>
+        <button class="choice-line choice-enter is-tier-action is-tier-consequential" id="btn-overseer-return" style="--choice-idx:0" type="button">
+          <span class="choice-num">→</span>
+          <span class="choice-body">Return to the dream</span>
         </button>
       `;
       choicesEl.querySelector('#btn-overseer-return')?.addEventListener('click', () => {
@@ -392,7 +585,10 @@ export class DialogueFeedView {
 
     if (scrollSel === '#dream-scroll' && !snap.autoInterruptKnot && handlers.onWakeToSky) {
       choicesEl.innerHTML = `
-        <button class="choice-line choice-enter" id="btn-return-3d" style="--choice-idx:0" type="button"><span class="choice-num">1.</span><span>Wake up and return to the sky</span></button>
+        <button class="choice-line choice-enter is-tier-action is-tier-consequential" id="btn-return-3d" style="--choice-idx:0" type="button">
+          <span class="choice-num">→</span>
+          <span class="choice-body">Wake up and return to the sky</span>
+        </button>
       `;
       choicesEl.querySelector('#btn-return-3d')?.addEventListener('click', () => {
         this.audio.playCue('boot_click');
@@ -401,7 +597,12 @@ export class DialogueFeedView {
       });
     } else if (scrollSel === '#comms-scroll' && handlers.onCloseComms) {
       const label = handlers.closeCommsLabel ?? 'Close relay';
-      choicesEl.innerHTML = `<button class="choice-line choice-enter" id="btn-comms-done" style="--choice-idx:0" type="button"><span class="choice-num">→</span><span>${escapeHtml(label)}</span></button>`;
+      choicesEl.innerHTML = `
+        <button class="choice-line choice-enter is-tier-action is-tier-consequential" id="btn-comms-done" style="--choice-idx:0" type="button">
+          <span class="choice-num">→</span>
+          <span class="choice-body">${escapeHtml(label)}</span>
+        </button>
+      `;
       choicesEl.querySelector('#btn-comms-done')?.addEventListener('click', () => {
         this.audio.playCue('tick');
         handlers.onCloseComms!();

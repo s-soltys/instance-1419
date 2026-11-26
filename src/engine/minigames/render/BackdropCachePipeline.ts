@@ -55,6 +55,42 @@ export function preloadCosmicPlate(plateId: CosmicPlateId): void {
   getCosmicPlateImage(plateId);
 }
 
+/**
+ * Preloads & awaits plate readiness up to `timeoutMs` so optical_dive cross-morphs
+ * never flash a flat dark rect on frame 1 of a minigame.
+ */
+export function preloadCosmicPlateReady(plateId: CosmicPlateId, timeoutMs = 320): Promise<void> {
+  if (typeof Image === 'undefined') return Promise.resolve();
+  if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) {
+    getCosmicPlateImage(plateId);
+    return Promise.resolve();
+  }
+  getCosmicPlateImage(plateId);
+  const img = imageCache.get(plateId);
+  if (!img || (img.complete && img.naturalWidth > 0)) {
+    return Promise.resolve();
+  }
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolve();
+    };
+    const timer = typeof window !== 'undefined' ? window.setTimeout(finish, timeoutMs) : null;
+    const done = () => {
+      if (timer !== null && typeof window !== 'undefined') window.clearTimeout(timer);
+      finish();
+    };
+    if (typeof img.decode === 'function') {
+      img.decode().then(done).catch(done);
+    } else {
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    }
+  });
+}
+
 export interface PlateCanvasPair {
   key: string;
   plateId: CosmicPlateId;
@@ -75,6 +111,34 @@ const MAX_OVERLAY_CACHE_ENTRIES = 6;
 const plateLru = new Map<string, PlateCanvasPair>();
 const vignetteLru = new Map<string, OverlayCacheEntry>();
 const gridLru = new Map<string, OverlayCacheEntry>();
+let cachedGrainPattern: CanvasPattern | null = null;
+let cachedGrainCanvas: HTMLCanvasElement | null = null;
+
+function getCachedGrainCanvas(): HTMLCanvasElement | null {
+  if (cachedGrainCanvas) return cachedGrainCanvas;
+  if (typeof document === 'undefined') return null;
+  const size = 128;
+  const canvas = makeOffscreen(size, size);
+  const ctx = canvas?.getContext('2d');
+  if (!canvas || !ctx || typeof ctx.createImageData !== 'function' || typeof ctx.putImageData !== 'function') {
+    return null;
+  }
+  const img = ctx.createImageData(size, size);
+  const data = img.data;
+  let seed = 141908;
+  for (let i = 0; i < size * size; i++) {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    const n = (seed >>> 24) & 0xff;
+    const idx = i * 4;
+    data[idx] = n;
+    data[idx + 1] = n;
+    data[idx + 2] = Math.min(255, n + 10);
+    data[idx + 3] = 28;
+  }
+  ctx.putImageData(img, 0, 0);
+  cachedGrainCanvas = canvas;
+  return canvas;
+}
 
 function quantizeDim(n: number): number {
   return Math.max(64, Math.ceil(n / 32) * 32);
@@ -255,6 +319,10 @@ export interface BackdropDrawOpts {
   tintAlpha?: number;
   vignetteAlpha?: number;
   gridAlpha?: number;
+  /** Subtle CCD photographic noise grain (0..0.15) cleared as opticalFidelity rises */
+  grainAlpha?: number;
+  /** Subtle late-shift enclosure horizon edge ticks (0..0.2) from chaosDrift + shift */
+  horizonDriftAlpha?: number;
   clipCircle?: { cx: number; cy: number; r: number };
   clipRect?: { x: number; y: number; w: number; h: number };
   /** True = clearRect + translucent plate compositing so live 3D showcase breathes behind it */
@@ -286,7 +354,9 @@ export function drawCachedCosmicBackdrop(
     tintHex = '#040812',
     tintAlpha = 0.42,
     vignetteAlpha = 0.78,
-    gridAlpha = 0.08,
+    gridAlpha = 0,
+    grainAlpha = 0,
+    horizonDriftAlpha = 0,
     clipCircle,
     clipRect,
     parallaxX = 0,
@@ -388,6 +458,44 @@ export function drawCachedCosmicBackdrop(
       c2d.globalAlpha = 1;
       c2d.drawImage(vigCanvas, 0, 0, w, h);
     }
+  }
+
+  if (grainAlpha > 0.005 && !isClipped) {
+    const grainCanvas = getCachedGrainCanvas();
+    if (grainCanvas) {
+      if (!cachedGrainPattern && typeof c2d.createPattern === 'function') {
+        cachedGrainPattern = c2d.createPattern(grainCanvas, 'repeat');
+      }
+      if (cachedGrainPattern) {
+        c2d.globalAlpha = clamp(grainAlpha * 4.5, 0, 0.48);
+        c2d.fillStyle = cachedGrainPattern;
+        c2d.fillRect(0, 0, w, h);
+      }
+    }
+  }
+
+  if (horizonDriftAlpha > 0.01 && !isClipped) {
+    const a = clamp(horizonDriftAlpha, 0, 0.18);
+    c2d.globalAlpha = a;
+    c2d.strokeStyle = '#9ee8ff';
+    c2d.lineWidth = 1;
+    c2d.beginPath();
+    // Subtle outer viewport corner geodesic ticks (zero central clutter)
+    const tick = 14;
+    const pad = 18;
+    c2d.moveTo(pad, pad + tick);
+    c2d.lineTo(pad, pad);
+    c2d.lineTo(pad + tick, pad);
+    c2d.moveTo(w - pad - tick, pad);
+    c2d.lineTo(w - pad, pad);
+    c2d.lineTo(w - pad, pad + tick);
+    c2d.moveTo(pad, h - pad - tick);
+    c2d.lineTo(pad, h - pad);
+    c2d.lineTo(pad + tick, h - pad);
+    c2d.moveTo(w - pad - tick, h - pad);
+    c2d.lineTo(w - pad, h - pad);
+    c2d.lineTo(w - pad, h - pad - tick);
+    c2d.stroke();
   }
 
   c2d.restore();

@@ -3,7 +3,7 @@ import { BaseCosmicMinigame, type PointerLocalEvent } from '../core/BaseCosmicMi
 import { getPlateCanvasPair } from '../render/BackdropCachePipeline';
 import { drawGlowStroke } from '../render/OpticalDrawUtils';
 import { drawOpticalStar, drawSoftDustPuff } from '../render/StarPSFAtlas';
-import { clamp } from '../tactilePhysics';
+import { clamp, lerp, SpringActuator } from '../tactilePhysics';
 import type {
   CosmicPlateId,
   InstrumentFieldGuide,
@@ -120,6 +120,9 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
   private band: SpectralBand = 'optical';
   private loupeNx = 0.5;
   private loupeNy = 0.42;
+  private readonly loupeSpringX = new SpringActuator(0.5);
+  private readonly loupeSpringY = new SpringActuator(0.42);
+  private bandSwitchT = 1;
   private dragging = false;
   private pointerMoved = false;
   private downX = 0;
@@ -185,6 +188,9 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
     this.band = 'optical';
     this.loupeNx = 0.5;
     this.loupeNy = 0.42;
+    this.loupeSpringX.snap(0.5);
+    this.loupeSpringY.snap(0.42);
+    this.bandSwitchT = 1;
     this.dragging = false;
     this.decoyWarningText = '';
     this.decoyWarningTimer = 0;
@@ -233,10 +239,11 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
       pushTarget('xray', false, true);
       pushTarget('optical', true, false);
     } else {
-      // Stage 3: 1 X-ray pulsar + 2 IR protostars + N foreground optical decoy stars!
+      // Stage 3: 1 X-ray pulsar + 2 IR protostars + N foreground optical stars + 1 diffuse IR thermal decoy!
       pushTarget('xray', false, true);
       pushTarget('infrared', false, true);
       pushTarget('infrared', false, true);
+      pushTarget('infrared', true, true);
       for (let d = 0; d < this.variantProfile.stage3Decoys; d++) {
         pushTarget('optical', true, false);
       }
@@ -262,9 +269,15 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
     if (this.stage === 1 && next === 'xray') return;
     if (this.band !== next) {
       this.band = next;
+      this.bandSwitchT = 0;
       this.ctx.audio?.playSolenoidClack(false);
       platform.triggerHaptic('vernierTick', 0.5);
-      this.particles.emitSpectralShimmer(this.loupeNx * this.width, this.loupeNy * this.height, 0.65, 2);
+      this.particles.emitSpectralShimmer(
+        this.loupeSpringX.value * this.width,
+        this.loupeSpringY.value * this.height,
+        0.65,
+        2
+      );
       this.emitHud(true);
     }
   }
@@ -276,6 +289,11 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
   }
 
   private getBandColor(band: SpectralBand): string {
+    if (this.palette.mode === 'cold') {
+      if (band === 'optical') return '#d8eefc';
+      if (band === 'infrared') return '#ff9e78';
+      return '#7fe4ff';
+    }
     if (band === 'optical') return '#ffe29c';
     if (band === 'infrared') return '#ff8559';
     return '#7fd8ff';
@@ -290,8 +308,8 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
   private tryTagAt(px: number, py: number, isTouch: boolean): boolean {
     const w = Math.max(1, this.width);
     const h = Math.max(1, this.height);
-    const lx = this.loupeNx * w;
-    const ly = this.loupeNy * h;
+    const lx = this.loupeSpringX.value * w;
+    const ly = this.loupeSpringY.value * h;
     const loupeR = this.getLoupeRadiusPx();
     const pickR = isTouch ? 46 : 38;
 
@@ -317,7 +335,10 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
     if (best.isDecoy) {
       best.rejectFlash = 1.0;
       this.wrongTapCount++;
-      this.decoyWarningText = 'FOREGROUND STAR — NO IR/X-RAY COUNTERPART';
+      this.decoyWarningText =
+        best.band === 'infrared'
+          ? 'DIFFUSE THERMAL KNOT — NO PROTOSTAR CORE'
+          : 'FOREGROUND STAR — NO IR/X-RAY COUNTERPART';
       this.decoyWarningTimer = 2.1;
       platform.triggerHaptic('rejectThud', 0.65);
       this.ctx.audio?.playSolenoidClack(false);
@@ -365,8 +386,8 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
     this.pointerMoved = false;
     this.downX = ev.x;
     this.downY = ev.y;
-    const lx = this.loupeNx * this.width;
-    const ly = this.loupeNy * this.height;
+    const lx = this.loupeSpringX.value * this.width;
+    const ly = this.loupeSpringY.value * this.height;
     const loupeR = this.getLoupeRadiusPx();
     if (Math.hypot(ev.x - lx, ev.y - ly) <= loupeR + 18) {
       this.dragOffsetX = ev.x - lx;
@@ -427,6 +448,14 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
   }
 
   protected onUpdate(dt: number): void {
+    this.loupeSpringX.target = this.loupeNx;
+    this.loupeSpringY.target = this.loupeNy;
+    this.loupeSpringX.step(dt, { stiffness: 185, damping: 24 });
+    this.loupeSpringY.step(dt, { stiffness: 185, damping: 24 });
+    if (this.bandSwitchT < 1) {
+      this.bandSwitchT = Math.min(1, this.bandSwitchT + dt / 0.24);
+    }
+
     if (this.decoyWarningTimer > 0) {
       this.decoyWarningTimer = Math.max(0, this.decoyWarningTimer - dt);
       if (this.decoyWarningTimer === 0) {
@@ -435,8 +464,8 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
       }
     }
 
-    const lx = this.loupeNx * this.width;
-    const ly = this.loupeNy * this.height;
+    const lx = this.loupeSpringX.value * this.width;
+    const ly = this.loupeSpringY.value * this.height;
     const loupeR = this.getLoupeRadiusPx();
 
     for (let i = 0; i < this.targets.length; i++) {
@@ -523,17 +552,22 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
     c2d.rotate(pillar.tilt);
 
     if (ghostOnly) {
-      // Inside IR loupe: dust turns translucent revealing embedded cores beneath!
-      drawSoftDustPuff(c2d, 0, -hr * 0.25, wr * 0.9, '#6a2e1a', 0.16 * opacityMul);
-      drawSoftDustPuff(c2d, 0, hr * 0.2, wr * 1.05, '#522214', 0.14 * opacityMul);
+      // Inside IR loupe: filamentary wisps turn translucent exposing buried cores!
+      drawSoftDustPuff(c2d, Math.sin(pillar.puffSeeds[0]) * 6, -hr * 0.28, wr * 0.85, '#6a2e1a', 0.16 * opacityMul);
+      drawSoftDustPuff(c2d, Math.cos(pillar.puffSeeds[1]) * 7, hr * 0.2, wr * 1.0, '#522214', 0.14 * opacityMul);
     } else {
-      // Subtle ionized backlit edge glow
-      drawSoftDustPuff(c2d, 0, -hr * 0.42, wr * 0.72, this.variantProfile.rimHighlightHex, 0.14 * opacityMul);
-      // Layered dark molecular dust silhouette column (head -> torso -> base)
-      const col = this.variantProfile.dustColorHex;
-      drawSoftDustPuff(c2d, Math.sin(pillar.puffSeeds[0]) * 6, -hr * 0.34, wr * 0.78, col, 0.88 * opacityMul);
-      drawSoftDustPuff(c2d, Math.cos(pillar.puffSeeds[1]) * 7, 0, wr * 0.96, col, 0.94 * opacityMul);
-      drawSoftDustPuff(c2d, Math.sin(pillar.puffSeeds[2]) * 9, hr * 0.36, wr * 1.12, col, 0.9 * opacityMul);
+      // Sculpted filamentary molecular dust columns (6 overlapping asymmetric wisps + backlit rim)
+      const col = this.palette.mode === 'cold' ? '#141720' : this.variantProfile.dustColorHex;
+      const rim = this.palette.mode === 'cold' ? '#7098b8' : this.variantProfile.rimHighlightHex;
+      drawSoftDustPuff(c2d, Math.sin(pillar.puffSeeds[0]) * 8, -hr * 0.44, wr * 0.62, rim, 0.15 * opacityMul);
+      drawSoftDustPuff(c2d, Math.cos(pillar.puffSeeds[2]) * 10, -hr * 0.14, wr * 0.72, rim, 0.1 * opacityMul);
+
+      for (let seg = 0; seg < 5; seg++) {
+        const u = seg / 4 - 0.5;
+        const swayX = Math.sin(pillar.puffSeeds[seg % 3] + seg * 1.4) * (10 + seg * 2);
+        const rad = wr * lerp(0.56, 1.08, (seg + 1) / 5);
+        drawSoftDustPuff(c2d, swayX, u * hr * 0.92, rad, col, lerp(0.84, 0.94, seg / 4) * opacityMul);
+      }
     }
     c2d.restore();
   }
@@ -542,7 +576,7 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
    * Draws an astrophysically distinct source inside the loupe (NO spoiler target circles!).
    */
   private drawBandSource(c2d: CanvasRenderingContext2D, t: BandTarget, tx: number, ty: number): void {
-    if (t.band === 'infrared') {
+    if (t.band === 'infrared' && !t.isDecoy) {
       // Embedded IR protostar: warm crimson-amber PSF core + delicate bipolar Herbig-Haro outflow wisps!
       const cosA = Math.cos(t.jetAngle);
       const sinA = Math.sin(t.jetAngle);
@@ -563,6 +597,15 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
         alpha: 0.96,
         timeSec: this.elapsedSec,
         scintPhase: t.pulsePhase,
+        vibeMode: this.palette.mode,
+      });
+    } else if (t.band === 'infrared' && t.isDecoy) {
+      // Diffuse IR thermal knot decoy: soft warm glow without a protostellar core or bipolar jet!
+      drawSoftDustPuff(c2d, tx, ty, 14, '#c45e3a', 0.56);
+      drawOpticalStar(c2d, tx, ty, 4.2, {
+        spectralClass: 'M',
+        spikes: 0,
+        alpha: 0.55,
         vibeMode: this.palette.mode,
       });
     } else if (t.band === 'xray') {
@@ -624,8 +667,8 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
 
   protected onRender(c2d: CanvasRenderingContext2D, w: number, h: number): void {
     const compact = this.compact;
-    const lx = this.loupeNx * w;
-    const ly = this.loupeNy * h;
+    const lx = this.loupeSpringX.value * w;
+    const ly = this.loupeSpringY.value * h;
     const loupeR = this.getLoupeRadiusPx();
     const bandCol = this.getBandColor(this.band);
     const dustOpacity = this.getDustOpacity();
@@ -720,20 +763,51 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
       }
     }
 
-    // Stage 2 cross-band clue: X-ray outflow filament pointing cleanly toward buried IR protostar
+    // Stage 2 cross-band clue: organic tapered synchrotron jet plume pointing toward buried IR protostar
     if (this.stage === 2 && this.band === 'xray') {
       const irTarget = this.targets.find((item) => item.band === 'infrared' && !item.isDecoy);
       const xTarget = this.targets.find((item) => item.band === 'xray' && !item.isDecoy);
       if (irTarget && xTarget) {
+        const xx = xTarget.nx * w;
+        const xy = xTarget.ny * h;
+        const ix = irTarget.nx * w;
+        const iy = irTarget.ny * h;
+        const jetDist = Math.hypot(ix - xx, iy - xy);
+        const jetAng = Math.atan2(iy - xy, ix - xx);
+        const perpX = -Math.sin(jetAng);
+        const perpY = Math.cos(jetAng);
+
         c2d.save();
-        c2d.strokeStyle = 'rgba(127, 216, 255, 0.68)';
-        if (typeof c2d.setLineDash === 'function') c2d.setLineDash([5, 6]);
-        c2d.lineWidth = 1.5;
+        // Multi-layered tapered synchrotron jet envelope + bright inner filament
+        drawGlowStroke(
+          c2d,
+          (ctx) => {
+            ctx.moveTo(xx, xy);
+            ctx.lineTo(ix, iy);
+          },
+          '#7fd8ff',
+          1.35,
+          { outerWidthMul: 4.5, outerAlpha: 0.22, coreAlpha: 0.54 }
+        );
+        c2d.fillStyle = 'rgba(127, 216, 255, 0.14)';
         c2d.beginPath();
-        c2d.moveTo(xTarget.nx * w, xTarget.ny * h);
-        c2d.lineTo(irTarget.nx * w, irTarget.ny * h);
-        c2d.stroke();
-        if (typeof c2d.setLineDash === 'function') c2d.setLineDash([]);
+        c2d.moveTo(xx + perpX * 8, xy + perpY * 8);
+        c2d.lineTo(ix, iy);
+        c2d.lineTo(xx - perpX * 8, xy - perpY * 8);
+        c2d.closePath();
+        c2d.fill();
+
+        // Streaming synchrotron emission knots moving from pulsar toward IR protostar
+        for (let k = 0; k < 4; k++) {
+          const u = ((this.elapsedSec * 0.42 + k / 4) % 1 + 1) % 1;
+          drawOpticalStar(
+            c2d,
+            xx + Math.cos(jetAng) * jetDist * u,
+            xy + Math.sin(jetAng) * jetDist * u,
+            lerp(2.6, 1.4, u),
+            { spectralClass: 'O', spikes: 0, alpha: (1 - u * 0.5) * 0.72, vibeMode: this.palette.mode }
+          );
+        }
         c2d.restore();
       }
     }
@@ -750,6 +824,27 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
         hoveredSnrTarget = t;
       }
     }
+
+    // Filter-wheel iris sweep wipe & subtle Fresnel optical glass sheen on band switch
+    if (this.bandSwitchT < 0.99) {
+      const wipeEase = 1 - Math.pow(1 - this.bandSwitchT, 3);
+      c2d.save();
+      c2d.strokeStyle = bandCol;
+      c2d.globalAlpha = (1 - wipeEase) * 0.65;
+      c2d.lineWidth = 2.2;
+      c2d.beginPath();
+      c2d.arc(lx, ly, loupeR * lerp(0.18, 1.0, wipeEase), 0, Math.PI * 2);
+      c2d.stroke();
+      c2d.restore();
+    }
+
+    c2d.save();
+    c2d.strokeStyle = 'rgba(232, 246, 255, 0.24)';
+    c2d.lineWidth = 1.4;
+    c2d.beginPath();
+    c2d.arc(lx, ly, loupeR * 0.88, -Math.PI * 0.78, -Math.PI * 0.34);
+    c2d.stroke();
+    c2d.restore();
 
     // Cold H%: crisp astrometric reticle hairlines inside the loupe
     if (this.profile.vibe === 'cold') {
@@ -804,6 +899,14 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
       c2d.fillStyle = hoveredSnrTarget.isDecoy ? '#ffb385' : this.palette.lockHex;
       c2d.fillText(snrText, lx, ly + loupeR + 14);
     }
+    c2d.restore();
+
+    // Target-aware subtle instrument sector header + Cold SNR telemetry
+    c2d.save();
+    c2d.font = '600 9px ui-monospace, SFMono-Regular, Menlo, monospace';
+    c2d.fillStyle = `rgba(${this.palette.secondaryRgb}, 0.66)`;
+    c2d.textAlign = 'left';
+    c2d.fillText(`${this.ctx.targetName.toUpperCase()} · ${this.variantProfile.regionTag}`, w * 0.06, compact ? 58 : 76);
     c2d.restore();
 
     // Unified Diegetic Spectral Filter Tabs (ZERO duplicate DOM CYCLE BAND button, >=36px tall!)
@@ -870,6 +973,8 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
   }
 
   protected solveCurrentStage(_stage: 1 | 2 | 3): void {
+    this.loupeSpringX.snap(this.loupeNx);
+    this.loupeSpringY.snap(this.loupeNy);
     for (let i = 0; i < this.targets.length; i++) {
       if (!this.targets[i].isDecoy) {
         this.targets[i].found = true;

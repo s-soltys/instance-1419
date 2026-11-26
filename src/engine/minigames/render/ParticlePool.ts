@@ -367,8 +367,8 @@ export class ParticlePool {
         c2d.arc(drawX, drawY, radius, 0, Math.PI * 2);
         c2d.stroke();
 
-        // Subtle +2px chromatic echo ring
-        c2d.strokeStyle = '#9ee8ff';
+        // Subtle +2px secondary echo ring matching Warm/Cold H% vibe
+        c2d.strokeStyle = this.vibeMode === 'warm' ? '#ffdf9e' : '#9ee8ff';
         c2d.globalAlpha = s.alpha * fade * 0.42;
         c2d.lineWidth = 0.9;
         c2d.beginPath();

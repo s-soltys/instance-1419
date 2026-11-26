@@ -56,7 +56,7 @@ export function getUnifiedVibeTheme(humanity: number): UnifiedVibeTheme {
     return {
       mode: 'warm',
       label: 'WARM HARMONIC',
-      subtitle: 'Broad Amber Detents · Intuitive Acoustic Lock · High Pareidolia',
+      subtitle: 'Broad Amber Detents · Intuitive Acoustic Lock',
       accentHex: '#ffb86c',
       accentRgb: '255, 184, 108',
       secondaryHex: '#ffdf9e',
@@ -66,14 +66,13 @@ export function getUnifiedVibeTheme(humanity: number): UnifiedVibeTheme {
       gridAlpha: 0.14,
       glowBlurPx: 14,
       reticleStyle: 'organic_amber',
-      requiresRawResidual: false,
     };
   }
   if (mode === 'cold') {
     return {
       mode: 'cold',
       label: 'SURGICAL COLD',
-      subtitle: 'Razor Millimeter Detents · Numeric Deltas · [R] RAW Residual Required',
+      subtitle: 'Razor Cryo-Cyan Detents · Numeric Residuals',
       accentHex: '#9ee8ff',
       accentRgb: '158, 232, 255',
       secondaryHex: '#e6f7ff',
@@ -83,13 +82,12 @@ export function getUnifiedVibeTheme(humanity: number): UnifiedVibeTheme {
       gridAlpha: 0.34,
       glowBlurPx: 4,
       reticleStyle: 'surgical_cyan',
-      requiresRawResidual: true,
     };
   }
   return {
     mode: 'balanced',
     label: 'DUAL-LATTICE',
-    subtitle: 'Balanced Aperture · Adaptive Detents · Pareidolia Moderate',
+    subtitle: 'Balanced Aperture · Adaptive Detents',
     accentHex: '#d9cc9e',
     accentRgb: '217, 204, 158',
     secondaryHex: '#9cc8ff',
@@ -99,41 +97,42 @@ export function getUnifiedVibeTheme(humanity: number): UnifiedVibeTheme {
     gridAlpha: 0.22,
     glowBlurPx: 9,
     reticleStyle: 'hybrid_slate',
-    requiresRawResidual: false,
   };
 }
 
 /**
- * Translates all 8 live GameState inputs into one unified instrument physics & vibe contract
- * so every minigame degrades and rewards symmetrically as Humanity/Fidelity/Chaos change.
+ * Translates GameState into the lean 3-Axis Cognitive Instrument Profile:
+ *  1. Warmth (`humanity`) -> palette, detents, numeric deltas, audio warmth
+ *  2. Optical Clarity (`opticalFidelity`) -> plate focus, CCD noise floor, micro-jitter
+ *  3. Horizon Drift (`chaosDrift` + `shift`) -> subtle late-shift enclosure seam bleed
  */
 export function computeInstrumentProfile(state: MinigameStateVector): CognitiveInstrumentProfile {
   const theme = getUnifiedVibeTheme(state.humanity);
-  const fidelity = clamp(state.opticalFidelity, 0.3, 1.0);
+  const warmth01 = clamp((state.humanity - 20) / 70, 0, 1);
+  const clarity01 = clamp(state.opticalFidelity, 0.25, 1.0);
   const chaosNorm = clamp(state.chaosDrift / 100, 0, 1);
-  const siblingLowBoost = state.primarySiblingH < 45 ? 0.12 : 0;
+  const shiftNorm = clamp((state.shift - 1) / 5, 0, 1);
+  const drift01 = clamp(chaosNorm * 0.65 + shiftNorm * 0.35, 0, 1);
 
   const detentWellScale =
     theme.mode === 'warm' ? 1.35 : theme.mode === 'cold' ? 0.72 : 1.0;
-  const snapPrecisionMul =
-    theme.mode === 'warm' ? 0.88 : theme.mode === 'cold' ? 1.28 : 1.0;
-
-  const basePareidolia = clamp(chaosNorm * 0.58 + siblingLowBoost, 0.04, 0.65);
-  const pareidoliaChance = theme.mode === 'cold' ? basePareidolia * 0.42 : basePareidolia;
 
   return {
     vibe: theme.mode,
+    warmth01,
     theme,
     detentWellScale,
-    jitterAmplitude: (1 - fidelity) * 1.45,
-    snapPrecisionMul,
-    pareidoliaChance,
     showNumericDeltas: theme.mode !== 'warm',
-    requiresRawResidual: theme.requiresRawResidual,
-    overclockRiskMul:
-      1 + clamp(state.overseerSuspicion, 0, 10) * 0.1 + clamp(state.shift - 1, 0, 6) * 0.06,
     harmonicWarmthGain:
       theme.mode === 'warm' ? 1.0 : theme.mode === 'cold' ? 0.16 : 0.56,
+
+    clarity01,
+    jitterAmplitude: (1 - clarity01) * 1.45,
+    ccdNoiseAlpha: lerp(0.085, 0.012, clarity01),
+    plateBlurPenaltyPx: lerp(2.1, 0, clarity01),
+
+    drift01,
+    seamBleedAlpha: clamp((drift01 - 0.18) * 0.22, 0, 0.16),
   };
 }
 
@@ -233,37 +232,6 @@ export class SpringActuator {
 }
 
 /**
- * Anti-frustration Stuck-Time Director (0-30s silent -> 30s pulse -> 45s ghost guide -> 75s partial rescue).
- */
-export class StuckTimeDirector {
-  private lastProgressTime = 0;
-  private elapsed = 0;
-  private highWaterMark = 0;
-
-  tick(dt: number, currentProgress: number): 0 | 1 | 2 | 3 {
-    this.elapsed += dt;
-    if (currentProgress > this.highWaterMark + 0.045) {
-      this.highWaterMark = currentProgress;
-      this.lastProgressTime = this.elapsed;
-    }
-    const stuckFor = this.elapsed - this.lastProgressTime;
-    const sched = balance.minigames.assistScheduleSec;
-    if (stuckFor >= sched.softPartialReady) return 3;
-    if (stuckFor >= sched.ghostGuide) return 2;
-    if (stuckFor >= sched.subtlePulse) return 1;
-    return 0;
-  }
-
-  getElapsed(): number {
-    return this.elapsed;
-  }
-
-  resetIdleTimer(): void {
-    this.lastProgressTime = this.elapsed;
-  }
-}
-
-/**
  * Brief mechanical hitstop + micro-shake when tumblers snap or vectors lock.
  */
 export class HitstopRecoil {
@@ -284,64 +252,6 @@ export class HitstopRecoil {
       frozen: this.freezeTimer > 0,
       shakeX: Math.cos(angle) * this.shakeAmp,
       shakeY: Math.sin(angle) * this.shakeAmp,
-    };
-  }
-}
-
-export interface LatchTickOutput {
-  lockProgress: number;     // 0..1.25 (>0.85 enters Deep Overclock red zone)
-  overclockZone: boolean;
-  completedGrade: Exclude<MinigameGrade, 'aborted'> | null;
-}
-
-/**
- * Manages Beat 03 Capture Latch (`Space` / button hold) with Clean vs Deep Overclock risk-reward release.
- */
-export class LatchController {
-  holding = false;
-  progress = 0;
-  private committed: Exclude<MinigameGrade, 'aborted'> | null = null;
-
-  get overclockZone(): boolean {
-    return this.progress >= 0.85;
-  }
-
-  setHolding(active: boolean): void {
-    if (this.committed) return;
-    if (!active && this.holding && this.progress >= 0.72) {
-      this.committed = this.progress >= 0.96 ? 'deep_overclock' : 'clean';
-      this.holding = false;
-      return;
-    }
-    this.holding = active;
-  }
-
-  tick(dt: number, alignmentReady: number, rawSatisfied: boolean): LatchTickOutput {
-    if (this.committed) {
-      return {
-        lockProgress: Math.min(1.2, this.progress),
-        overclockZone: this.progress >= 0.85,
-        completedGrade: this.committed,
-      };
-    }
-
-    const canCharge = this.holding && alignmentReady >= 0.78 && rawSatisfied;
-    if (canCharge) {
-      // 0 -> 0.85 takes ~0.75s; pushing deep into Overclock takes ~0.65s more
-      const rate = this.progress < 0.85 ? 1.15 : 0.48;
-      this.progress = Math.min(1.2, this.progress + dt * rate);
-      if (this.progress >= 1.18) {
-        this.committed = 'deep_overclock';
-        this.holding = false;
-      }
-    } else if (!this.holding) {
-      this.progress = Math.max(0, this.progress - dt * 0.95);
-    }
-
-    return {
-      lockProgress: this.progress,
-      overclockZone: this.progress >= 0.85,
-      completedGrade: this.committed,
     };
   }
 }
@@ -368,17 +278,17 @@ export function resolveInstrumentPayout(
       telemetrySummary,
     };
   }
-  const table = balance.minigames.payouts[grade];
+  const table = balance.minigames.payouts.clean;
   return {
     success: true,
-    grade,
+    grade: 'clean',
     anomalyGain: table.anomalyGain,
     chaosDelta: table.chaosDelta,
     suspicionDelta: table.suspicionDelta,
     humanityDelta: 0,
     accuracy,
     elapsedSec,
-    proofFragmentId: grade === 'partial' ? undefined : proofFragmentId,
+    proofFragmentId,
     physicalPrinciple: physicalPrinciple ?? dossierSnippet,
     dossierSnippet,
     telemetrySummary,

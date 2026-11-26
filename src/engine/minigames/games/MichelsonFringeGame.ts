@@ -117,7 +117,7 @@ export class MichelsonFringeGame extends BaseCosmicMinigame {
 
   protected onMount(): void {
     this.variantProfile = VARIANT_PROFILES[this.iterationIndex % VARIANT_PROFILES.length];
-    this.lockHoldTargetSec = 0.58;
+    this.lockHoldTargetSec = 0.88;
   }
 
   private getAxisTol(): number {
@@ -134,7 +134,7 @@ export class MichelsonFringeGame extends BaseCosmicMinigame {
 
   protected onSetupStage(stage: 1 | 2 | 3, rng: () => number): void {
     this.dragMode = null;
-    this.lockHoldTargetSec = stage === 2 ? 0.88 : 0.58;
+    this.lockHoldTargetSec = stage === 2 ? 1.05 : 0.88;
     this.driftPhaseOffset = rng() * Math.PI * 2;
     this.targetA = 0.28 + rng() * 0.44; // Keeps ±0.12 drift cleanly inside [0.12, 0.88]
     this.targetB = 0.24 + rng() * 0.52;
