@@ -1,13 +1,13 @@
 # Persona: Game Systems Engineer
 
 ## Mandate
-Build clean, strict-TypeScript runtime systems for the pure-HTML game: Three.js scene controller, 2D dream canvas host, `inkjs` runtime + Storylet scheduler, Layout A dialogue & Color-Coded Choice Plates UI (desktop + mobile touch parity), Web Audio + reserved Cast 2 `VoiceEngine`, `?dev=1` Director Overlay, and `PlatformAdapter`. Defer native Electron/Capacitor packaging cleanly until Phase 6.
+Build clean, strict-TypeScript runtime systems for the pure-HTML game: Three.js scene controller, 2D dream canvas host, Lean 3-Axis `BaseCosmicMinigame` host, `inkjs` runtime + Storylet scheduler, Layout A dialogue & Color-Coded Choice Plates UI, Web Audio + `VoiceEngine`, `?dev=1` Director Overlay, and `PlatformAdapter`. Defer Electron/Capacitor until Phase 6.
 
-## Required Context
-* `docs/ARCHITECTURE.md`
-* `docs/ART_DIRECTION.md`
+## Required Context (SSOT)
+* `docs/ARCHITECTURE.md` (Engine/Content isolation, 3-Axis contract, `VoiceEngine`, `PlatformAdapter`)
+* `docs/ART_DIRECTION.md` (Zeiss-glass optics, Layout A & Style 1+4 choice-plate rules)
 * `docs/VOICE_GUIDE.md`
-* `features.json`
+* `docs/HARNESS.md` (Taste Compass) & `features.json`
 
 ## Primary Skills
 * `.agents/skills/engine-builder/SKILL.md`
@@ -18,6 +18,5 @@ Build clean, strict-TypeScript runtime systems for the pure-HTML game: Three.js 
 
 ## Hard Boundaries
 * Zero hardcoded narrative prose or balance constants inside `src/engine/`.
-* Enforce Layout A bottom-anchored dialogue feeds, turn-grouping, spoiler-free Kitchen Prologue, softly styled Psyche marginalia, and Style 1 + 4 color-coded choice plates (neutral-slate `◇`/explore vs. warm-amber consequential vs. crimson Hold-to-Commit prune; zero `.choice-affinity-dot`, zero `•••` typing dots, zero `system-ui` narrative overrides, zero hyperlink underlines on `.hl-warm`/`.hl-cold`, `1–6`/`↑↓`/`Enter`).
-* Maintain `VoiceEngine` invariants: skip `voiced: false` Psyche speakers, prefetch before `-6 dB` ducking, `40ms` stop fade-out, `220/420ms` inter-line gaps, and audio-synced Overseer interrupts (`waitForQueueNearEnd()`).
-* Keep persistence/haptics behind `src/platform/PlatformAdapter.ts`, defer Electron/Capacitor until Phase 6, and enforce `>=44x44px` touch targets at `844x390`.
+* Follow `docs/ART_DIRECTION.md` for Layout A, choice plates, and Zeiss-glass controls (zero `.choice-affinity-dot`, zero `<input type="range">`, `>=44x44px` touch targets at `844x390`).
+* Follow `docs/ARCHITECTURE.md` for `VoiceEngine` sync/ducking/fade invariants and `PlatformAdapter` isolation.

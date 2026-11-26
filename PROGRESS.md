@@ -358,3 +358,31 @@ Each agent session reads the latest entries here before starting work and append
   * Recast to reserved Cast 2 (grounded female chest-voice Spouse with `aecho` removed and `warm`/`fractured` anchors; dry early-30s male Sibling 1420 with `warm`/`clipped` anchors; shared biological-original male Archive 1406 on probe-tape EQ; calm neutral late-40s male Overseer; unvoiced Psyche `"voiced": false`).
   * Lowered Qwen3-TTS `repetitionPenalty` (`1.5 → 1.1`), wired emotion-split anchors + deterministic SHA-1 seeds + two-pass `loudnorm` + `agate`, fixed `VoiceEngine` (`40ms` stop fade-out, prefetch-before-ducking, `220ms`/`420ms` inter-line pauses, `waitForQueueNearEnd()` replacing the 1,700ms Overseer interrupt cutoff, deduplicated Prologue `overseer_chime`), and re-synthesized all **162/162** lines via local Qwen3-TTS (`0` retries, pruned `14` stale clips).
 * **Verified:** `compile-ink`, `tsc --noEmit`, `vitest run` (`11` files / `152` tests), `sim-playthroughs` (`500` runs / `0` soft-locks), `lint-narrative` (`162` unique IDs & MP3s verified), `MANIFEST.json`, `vite build`, `e2e-visual.mjs` (`0` errors), plus live `1280×720` screenshot inspection across Kitchen Prologue, Wake-Up Q&A, Sibling Relay, Dream 1, and Overseer Audits.
+
+
+---
+
+## Session 20 — 2026-11-26 — Minigame Lean 3-Axis Overhaul, Zeiss Optics Chrome, Phase 2 Polish & Visual Finale (`d1277b6`)
+* **Lean 3-Axis External Steering & 3D Rig Cleanup (`types.ts`, `tactilePhysics.ts`, `TargetShowcaseScene.ts`, `MinigameHostView.ts`):**
+  * Replaced the 10-input / 4-grade minigame bloat with the **Lean 3-Axis Contract** (`Warmth` from `humanity`, `Optical Clarity` from `opticalFidelity`, `Horizon Drift` from `chaosDrift` + `shift`) and meditative clean completions (retiring `StuckTimeDirector`, `LatchController`, `partial`/`deep_overclock` grades, and ~1,600 lines of hidden volumetric 3D rigs + `showcaseShaders.ts` in favor of lightweight 3D star domes/parallax and 2D Zeiss optics over JWST/Hubble plates).
+  * Mapped all 21 instruments cleanly across Shifts 1–6 in `shifts.json` & `anomalies.json` (`balance.json` `0.3.0-backbone`).
+* **Zeiss-Glass Chrome, Unhurried Transitions & Visual Gain Finale (`BaseCosmicMinigame.ts`, `OpticalDrawUtils.ts`, `MinigameHostView.ts`, `UIController.ts`, `styles.css`):**
+  * Removed graph-paper plate grids and chunky pill chrome (`PASS I · COARSE → PASS II · FINE → PASS III · LOCK`), added inertial lock-resonance ring damping (`lockHoldTargetSec: 0.92s`), a two-phase optical aperture cross-dissolve between Stages 1 → 2 → 3, pre-loaded chunks/plates before `optical_dive`, and replaced the text-heavy completion card with a borderless **Horizon Arc Ring + Shift Constellation** gain display.
+* **Phase 2 Tier C & Starter #1 Polish (`InstrumentSprites.ts`, `StarPSFAtlas.ts`, `RadioTriangulationGame.ts`, `ConstellationRecallGame.ts`, `MultiBandLoupeGame.ts`, etc.):**
+  * Built shared offscreen `InstrumentSprites.ts`, added animated outward radar wavefronts to `RadioTriangulationGame`, enlarged PSF stars & aiming tethers in `ConstellationRecallGame`, and refined Tier C & Starter #1 (`BND-19`) visual/balance craft.
+* **Verified (`d1277b6`):** `compile-ink`, `tsc --noEmit`, `vitest run` (`11` files / `152` tests), `sim-playthroughs`, `lint-narrative`, `MANIFEST.json`, `vite build`, and `e2e-visual.mjs` (`0` errors).
+
+---
+
+## Session 21 — 2026-11-26 — Full AI Harness & Mechanical Verification Overhaul (`H0-02`)
+* **Ledgers & Canonical Design Alignment (`PROGRESS.md`, `features.json`, `docs/CANON.md`, `docs/BEAT_SHEET.md`):**
+  * Resynced `PROGRESS.md` (backfilled Session 20 `d1277b6`) and `features.json` (marked `P2-01`, `P2-02`, and `H0-02` passing; split `P4-01` into `P4-01a`, `P4-01b`, `P4-01c`).
+  * Updated `docs/CANON.md` & `docs/BEAT_SHEET.md` to lock **2 required + 1–2 optional push-your-luck deeper scans per shift** across the 21-instrument sky and an **8–12 Dream Persona pool (`2 Fixed Anchors + 2 rotating = 4 cached/run`)**.
+* **AI Harness SSOT De-Duplication & Taste Calibration (`AGENTS.md`, `docs/HARNESS.md`, `.agents/personas/*.md`, `.agents/skills/*/SKILL.md`):**
+  * Added the **4-Point Creative Director Taste Compass**, **1-by-1 Taste-Calibration Protocol**, **SSOT Ownership Table**, and **Atomic Milestone Commits / Swarm Model Hygiene** rules to `docs/HARNESS.md`.
+  * Kept `AGENTS.md` at `44` lines (`<80`) and de-duplicated all 6 personas + 6 domain `SKILL.md` files to link cleanly to SSOT `docs/*.md` owners instead of repeating detailed specs verbatim.
+* **Hardened 9-Gate Mechanical Verification (`scripts/lint-narrative.mjs`, `scripts/sim-playthroughs.mjs`, `scripts/check-hygiene.mjs`, `scripts/verify.mjs`, `package.json`, `tests/unit/minigame3AxisContract.test.ts`):**
+  * Extended `lint-narrative.mjs` with Ink prose word-budget floor/ceiling (`1200..12000`), `# kind:`/`# weight:` enum checks, zero `.choice-affinity-dot` enforcement in `src/ui/`, unvoiced speaker isolation + `190`-char hard VO cap, biological-original voice parity between `sibling_primary` & `archive_echo`, and 6-shift/21-instrument coverage integrity.
+  * Upgraded `sim-playthroughs.mjs` to execute the real compiled `spike_shift1.ink.json` across 8 entry knots (`120` traversals + Shift-2 `overseer_interrogation` prune invariant) alongside the `500`-run `2+optional` economy simulation.
+  * Added `scripts/check-hygiene.mjs` (Gate 6: orphaned `.ts`/`.json` detection + retired zombie-architecture guard) and `tests/unit/minigame3AxisContract.test.ts` (`22` tests verifying `BaseCosmicMinigame`, live 3-axis `updateState()`, and `drawBackdropAndAmbient()` across all `21` instruments).
+* **Verified:** All 9 `scripts/verify.mjs` gates pass (`compile-ink`, `tsc --noEmit` 0 errors, `vitest run` **12 files · 174/174 tests**, `sim-playthroughs` 500 economy + 120 real-Ink runs, `lint-narrative` 3,739 Ink words / 162 IDs, `check-hygiene` 61 TS / 9 JSON / 0 zombies, `MANIFEST.json`, `vite build`, and `e2e-visual.mjs` 0 errors).

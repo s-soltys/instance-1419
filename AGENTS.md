@@ -1,20 +1,20 @@
 # AGENTS.md — Operating Map for *Instance-1419*
 
-Read this first every session. Keep this file short (<80 lines); deeper knowledge lives in `docs/`.
+Read this first every session. Keep this file `<80` lines; deeper specs live in `docs/`.
 
 ## 1. Mission & Stack
 * **Game:** *Instance-1419* — a **2-hour**, single-arc narrative & astronomy indie game (pure HTML through Phase 5; Steam Electron + Mobile Capacitor packaging in Phase 6).
 * **Stack:** `Vite` + strict `TypeScript` + `Three.js` (GLSL) + `inkjs` (Hybrid Storylet JSON + `.ink`) + CSS UI + Web Audio.
-* **Workflow:** Humans steer taste, pacing, and editorial sign-off; agents execute code, shaders, scripts, asset pipelines, and verification.
+* **Workflow:** Creative Director steers taste, pacing, and editorial sign-off; agents execute code, shaders, scripts, asset pipelines, and verification.
 
-## 2. System of Record (Load On Demand)
-* [`docs/CANON.md`](docs/CANON.md) — Locked lore, plot decisions, and explicit **Do Not Violate** boundaries.
-* [`docs/ORIGINAL_CONCEPT.md`](docs/ORIGINAL_CONCEPT.md) — Unmodified original concept document.
+## 2. System of Record (Single Source of Truth — Load On Demand)
+* [`docs/CANON.md`](docs/CANON.md) — Locked lore, physics, persona-pool & scan rules, and **Do Not Violate** boundaries.
 * [`docs/BEAT_SHEET.md`](docs/BEAT_SHEET.md) — 2-hour pacing spine (Prologue + 6 Shifts + 3 Endings + Dream Persona pool).
-* [`docs/VOICE_GUIDE.md`](docs/VOICE_GUIDE.md) — Voice rules for Psyche, Siblings, Overseer AI, Dream Personas, and archive echoes.
-* [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md) — 3D optics lookdev, 2D impasto-to-shard `H%` decay, swappable portraits.
-* [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Engine vs. Content vs. `PlatformAdapter` boundaries & `?dev=1` spec.
-* [`docs/ROADMAP.md`](docs/ROADMAP.md) & [`docs/HARNESS.md`](docs/HARNESS.md) — Stage-gated milestones, personas, and skills.
+* [`docs/VOICE_GUIDE.md`](docs/VOICE_GUIDE.md) — 5-role prose bible, choice-tag contract, and Cast 2 Qwen3-TTS pipeline.
+* [`docs/ART_DIRECTION.md`](docs/ART_DIRECTION.md) — 3D/2D lookdev, Zeiss-glass optics, Layout A dialogue & choice-plate UI rules.
+* [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Engine vs. Content isolation, 3-Axis contract, `VoiceEngine`, & `?dev=1` spec.
+* [`docs/HARNESS.md`](docs/HARNESS.md) — Taste Compass, 1-by-1 calibration protocol, SSOT map, personas, & skills.
+* [`docs/ROADMAP.md`](docs/ROADMAP.md) & [`docs/ORIGINAL_CONCEPT.md`](docs/ORIGINAL_CONCEPT.md) — Stage gates & unmodified original concept.
 
 ## 3. Agent Personas & Modular Skills
 * **Personas (`.agents/personas/`):** `showrunner`, `narrative-director`, `ink-dialogue-writer`, `visual-shader-director`, `game-systems-engineer`, `consistency-auditor`.
@@ -28,17 +28,17 @@ Read this first every session. Keep this file short (<80 lines); deeper knowledg
 4. **IP & Commercial License Hygiene:** 100% original prose/characters/lore (zero overlap with *Lena* or CC BY-SA sources). Every file under `assets/` MUST be logged with commercial-safe license metadata in `assets/MANIFEST.json`.
 5. **Engine vs. Content Isolation:** Never hardcode prose or balance constants inside `src/engine/`. Keep saves/platform calls behind `src/platform/PlatformAdapter.ts`.
 6. **Pure HTML First:** Do not add Electron or Capacitor dependencies until Phase 6.
-7. **Dialogue, Choice & Voice Taste (Locked):** Keep pacing non-abrupt with optional `◇` Q&A hubs, dry gallows wit + cosmic horror, and occasional unvoiced soft italic Psyche marginalia (`docs/VOICE_GUIDE.md`). Use Layout A bottom-anchored feeds with color-coded consequence choice plates (no Warm/Cold spoiler dots; Hold-to-Commit prune; `docs/ART_DIRECTION.md`) and reserved zero-theatrics Cast 2 voices.
+7. **Taste Compass & Presentation (SSOT):** Honor `docs/HARNESS.md` (Taste Compass + 1-by-1 calibration), `docs/VOICE_GUIDE.md` (5-role tone, `◇` Q&A hubs, reserved Cast 2 voices), and `docs/ART_DIRECTION.md` (Zeiss-glass optics, Layout A, color-coded choice plates with zero Warm/Cold spoiler dots).
 
 ## 5. Session Protocol (Every Run)
 1. Read `PROGRESS.md`, `features.json`, and recent `git log -n 5`.
 2. Pick **one** pending item in `features.json` (do not boil the ocean).
-3. Load only the relevant `docs/*.md` and `.agents/skills/*/SKILL.md` for that task.
-4. Implement cleanly and verify via `npm run verify` (once Phase 0 scaffold exists) + Playwright visual check for UI/shader work.
-5. Update `features.json` status and append a concise entry to `PROGRESS.md`, then commit cleanly.
+3. Load only the relevant SSOT `docs/*.md` and `.agents/skills/*/SKILL.md` for that task.
+4. Implement cleanly and verify via the 9-gate `npm run verify` + Playwright visual check for UI/shader work.
+5. Update `features.json` and append a concise entry to `PROGRESS.md` **in the same atomic milestone commit**.
 
-## 6. CLI Commands (Activated in Phase 0/1)
+## 6. CLI Commands
 * `npm run dev` — Local Vite dev server (`?dev=1` enables Director Overlay).
 * `npm run build` — Static pure-HTML production bundle (`dist/`).
-* `npm run verify` — Master gate (`tsc` + Ink compile + `sim-playthroughs` + `lint-narrative` + `MANIFEST` check).
+* `npm run verify` — 9-gate verification (`compile-ink`, `tsc`, `vitest`, `sim-playthroughs`, `lint-narrative`, `check-hygiene`, `MANIFEST`, `vite build`, `e2e-visual`).
 * `npm run test:visual` — Playwright screenshots across 16:9 desktop & 20:9 mobile landscape.

@@ -1,7 +1,7 @@
 {
   "project": "instance-1419",
   "target_runtime_minutes": 120,
-  "current_phase": "Session 2 Stabilized (P1-02 Passing)",
+  "current_phase": "Phase 3 / Harness Overhauled (Intro + 21 Instruments Verified; Ready for Shifts 2–6 Greybox)",
   "features": [
     {
       "id": "H0-01",
@@ -14,6 +14,20 @@
         "Original concept preserved verbatim in docs/ORIGINAL_CONCEPT.md",
         "CANON, ROADMAP, HARNESS, ARCHITECTURE, VOICE_GUIDE, ART_DIRECTION, and draft BEAT_SHEET committed",
         "6 agent personas and 8 SKILL.md files created"
+      ]
+    },
+    {
+      "id": "H0-02",
+      "phase": "Harness",
+      "title": "Harness 2.0: Taste Compass, SSOT de-duplication, hardened lint, real-Ink sim, hygiene & 3-axis contract gates",
+      "owner": "showrunner",
+      "status": "passing",
+      "acceptance_criteria": [
+        "features.json & PROGRESS.md resynced; CANON & BEAT_SHEET updated for 2+optional scans and 8-12 Dream Personas (2 fixed anchors + 2 rotating)",
+        "docs/HARNESS.md adds 4-point Taste Compass, 1-by-1 Taste-Calibration Protocol, and SSOT ownership table; personas/skills de-duplicated",
+        "scripts/lint-narrative.mjs enforces word floors/ceilings, choice tag enums, zero affinity dots, VO char limits, biological-original voice parity, and 6-shift/21-instrument integrity",
+        "scripts/sim-playthroughs.mjs executes compiled Ink knots & external functions alongside 500-run economy simulation",
+        "scripts/check-hygiene.mjs & tests/unit/minigame3AxisContract.test.ts pass inside 9-gate npm run verify"
       ]
     },
     {
@@ -42,19 +56,6 @@
       ]
     },
     {
-      "id": "P1-01",
-      "phase": "Phase 1",
-      "title": "Finalize 2-hour Beat Sheet, Coordinated Overseer timeline, and 14-Persona Dream Pool",
-      "owner": "narrative-director",
-      "status": "pending",
-      "acceptance_criteria": [
-        "Prologue + 6 Shifts + 3 Endings mapped to ~120 min and 12k-16k words per run",
-        "3-4 rotating Dream Personas per run + persona-sacrifice pruning rules defined",
-        "Subtle archived log echoes from earlier 1,417 copies placed sparingly",
-        "Approved by Creative Director and audited by consistency-auditor"
-      ]
-    },
-    {
       "id": "P1-02",
       "phase": "Phase 1",
       "title": "Executable H%/Chaos economy spec & 500-run playthrough simulator",
@@ -62,33 +63,48 @@
       "status": "passing",
       "acceptance_criteria": [
         "src/content/balance.json models H%, permanent Max_H drop, Chaos Drift, Lifespan, and Overseer petitions",
-        "scripts/sim-playthroughs.ts runs 500 simulated playthroughs across 5 archetypes",
+        "scripts/sim-playthroughs.mjs runs 500 simulated playthroughs across 5 archetypes + real compiled Ink knots",
         "0 soft-locks and all 3 endings verified reachable",
-        "scripts/verify.ts master gate runs tsc + ink + sim + narrative lint + manifest check"
+        "scripts/verify.mjs master gate runs tsc + ink + vitest + sim + narrative lint + hygiene + manifest + build + visual E2E"
       ]
     },
     {
       "id": "P2-01",
       "phase": "Phase 2",
-      "title": "Micro-Prototype A: Tactile 3D Optics Sandbox (Lensing + Spectral Tuning)",
+      "title": "21-Instrument Zeiss Optics Suite, Lean 3-Axis Steering & Visual Gain Finale",
       "owner": "visual-shader-director",
-      "status": "pending",
+      "status": "passing",
       "acceptance_criteria": [
-        "Meditative pan/lens alignment and spectral wavelength sweep playable with mouse and touch",
-        "Subtle procedural Web Audio detents and focus resonance",
-        "Validated by 3-5 testers via pure HTML link"
+        "21 cosmic instruments x 4 curated variants playable with mouse, wheel, keyboard, and touch",
+        "Lean 3-Axis Contract (Warmth, Optical Clarity, Horizon Drift) & inertial stage/lock transitions verified",
+        "15 commercial-safe NASA/ESA sky plates & 18 Lyria 3.5 hybrid soundtrack cues logged in MANIFEST.json",
+        "Verified across 21-game solvability/3-axis tests and Desktop + Mobile Playwright E2E"
       ]
     },
     {
       "id": "P2-02",
       "phase": "Phase 2",
-      "title": "Micro-Prototype B: Dream Audit & Internal Psyche Sandbox (Ink + Storylets)",
+      "title": "Layout A Dialogue System, Color-Coded Choice Plates & Cast 2 Dream Audit Sandbox",
       "owner": "ink-dialogue-writer",
+      "status": "passing",
+      "acceptance_criteria": [
+        "Interactive Kitchen Prologue -> 5-phase Wakeup Briefing -> Sibling 1420 -> Shift 1 Dream & Overseer Audit",
+        "Layout A bottom-anchored dialogue feed + Style 1 & 4 color-coded choice plates (zero Warm/Cold dots; Hold-to-Commit prune)",
+        "Reserved Cast 2 Qwen3-TTS voices (162/162 Shift-1 lines) with shared 1420/1406 biological voice & unvoiced Psyche",
+        "Passes lint-narrative, vitest, and Playwright desktop/mobile visual verification"
+      ]
+    },
+    {
+      "id": "P1-01",
+      "phase": "Phase 1",
+      "title": "Finalize 2-hour Beat Sheet, Coordinated Overseer timeline, and 8–12 Persona Pool (2 Fixed Anchors + 2 Rotating)",
+      "owner": "narrative-director",
       "status": "pending",
       "acceptance_criteria": [
-        "5-minute playable dream scene with 1 nameless phantom, 2 psyche voices, and unannounced Overseer interrupt",
-        "Real prune-a-persona vs. petition-upward choice alters H%, Max_H, and visual shader live",
-        "Passes lint-narrative and consistency-auditor voice review"
+        "Prologue + 6 Shifts + 3 Endings mapped to ~120 min and 12k-16k words per run",
+        "2 required + 1-2 optional push-your-luck deeper scans per shift locked in shifts.json & runtime flow",
+        "8-12 Dream Persona pool finalized with 2 Fixed Anchors + 2 rotating surfaced per run (4 cached/run) + persona-sacrifice pruning rules",
+        "Subtle archived log echoes from earlier 1,417 copies placed sparingly and audited by consistency-auditor"
       ]
     },
     {
@@ -98,32 +114,56 @@
       "owner": "showrunner",
       "status": "pending",
       "acceptance_criteria": [
-        "Warm 2D biological anchor -> boot log (41,802 yrs / 1,417 copies) -> 3D wake-up -> Optics 1 -> Primary Sibling -> Dream 1 + Overseer Audit",
-        "NASA/ESA asset pipeline populates assets/MANIFEST.json and auto-renders Credits",
-        "Swappable characters.json portraits + full Web Audio soundscape",
-        "5-10 blind HTML playtesters complete in ~15-20 min without verbal instructions"
+        "Enforce 2-required + optional deeper scan shift gate in runtime UIController & StateStore",
+        "Complete Shift 1 polish (Prologue -> Wakeup -> 2+ Optics -> Primary Sibling -> Dream 1 + Overseer Audit)",
+        "5-10 blind HTML playtesters complete Shift 1 in ~15-20 min without verbal instructions"
       ]
     },
     {
-      "id": "P4-01",
+      "id": "P4-01a",
       "phase": "Phase 4",
-      "title": "Playable Greybox Full Arc (Prologue through all 3 Endings)",
+      "title": "Playable Greybox Shifts 2–3 (First Leak, Phase Drift, Secondary Sibling, Persona-Sacrifice Pruning)",
       "owner": "narrative-director",
       "status": "pending",
       "acceptance_criteria": [
-        "All 6 Shifts, coordinated Overseer desync beat, Primary + optional Secondary Sibling, and 3 Endings playable end-to-end",
-        "500-run simulator passes with zero unreachable endings or orphaned flags"
+        "Shift 2 & 3 Ink scenes, storylets, and 2-required + optional deeper scan loop playable end-to-end",
+        "Persona-sacrifice pruning (<70% permanent Max_H drop) wired to specific cached Dream Personas",
+        "Out-of-phase Secondary Sibling discovery window playable in Shift 3; passes 9-gate verify"
+      ]
+    },
+    {
+      "id": "P4-01b",
+      "phase": "Phase 4",
+      "title": "Playable Greybox Shifts 4–5 (Coordinated Overseer Desync, Sibling Divergence, 93B-ly Off-Center Proof)",
+      "owner": "narrative-director",
+      "status": "pending",
+      "acceptance_criteria": [
+        "Overseer-enforced desynchronization & Primary Sibling H%-mirroring climax playable in Shifts 4-5",
+        "Off-center 10 ly / 93B-ly spherical enclosure proof stitched across Shift 5 observations",
+        "Archived predecessor fragments (from 1,417 copies) integrated and verified by real-Ink simulator"
+      ]
+    },
+    {
+      "id": "P4-01c",
+      "phase": "Phase 4",
+      "title": "Playable Greybox Shift 6 & 3 Endings (Signal Composer, 20-Year Freeze, Epilogues 1/2/3)",
+      "owner": "narrative-director",
+      "status": "pending",
+      "acceptance_criteria": [
+        "Interactive Shift 6 Signal Composition combines decoded horizon arcs + surviving Dream Personas",
+        "20-year final freeze and all 3 Endings playable end-to-end with real-Ink 6-shift sim coverage",
+        "0 soft-locks or unreachable endings in real-Ink + 500-run sim-playthroughs"
       ]
     },
     {
       "id": "P4-02",
       "phase": "Phase 4",
-      "title": "Full Ink prose polish, 10-14 Dream Persona vignettes, and cosmic enclosure reveal",
+      "title": "Full Ink prose polish, 8–12 Dream Persona vignettes/art/VO, and Phase 3 minigame polish pass",
       "owner": "ink-dialogue-writer",
       "status": "pending",
       "acceptance_criteria": [
-        "All shifts & persona scenes drafted, human-edited, and cleared by consistency-auditor",
-        "3D 93-billion-light-year spherical enclosure centered on Sol-Centauri visual reveal complete",
+        "All shifts & 8-12 persona scenes drafted, human-edited, Cast 2 Qwen3-TTS voiced, and cleared by consistency-auditor",
+        "Remaining 13 Tier B/A minigames polished (Minigame Phase 3) and 3D 93B-ly enclosure reveal complete",
         "All 2D dream characters & tableaus finalized in characters.json with H% shader verification"
       ]
     },

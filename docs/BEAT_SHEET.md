@@ -2,7 +2,7 @@
 
 **Target Runtime:** ~120 minutes (105–135 min acceptable blind playtest range)  
 **Target Read Prose Per Playthrough:** ~12,000–16,000 words  
-**Structure:** Prologue + 6 Waking/Dream Shifts + Finale (3 Ending Spectrum outcomes)
+**Structure:** Prologue + 6 Waking/Dream Shifts (**2 required optical scans + 1–2 optional push-your-luck deeper scans per shift** across the 21-instrument sky in `shifts.json`) + Finale (3 Ending Spectrum outcomes)
 
 ---
 
@@ -20,9 +20,11 @@
 
 ---
 
-## 2. Dream Persona Pool (14 Candidates → 3–4 Per Playthrough)
+## 2. Dream Persona Pool (8–12 Candidates → 4 Cached Per Playthrough)
 
-*Selection rule:* 1 **Prologue Anchor** + 2–3 **Rotating Personas** cached per playthrough (lightly weighted by `H%` trajectory and seed). Pruning downward requires selecting one active cached persona to compress/discard.
+*Selection rule:* **2 Fixed Anchors** (present on every playthrough, anchored by `spouse` + 2nd anchor locked in `P1-01`) + **2 Rotating Personas** drawn from the remaining 6–10 candidates (lightly weighted by `H%` trajectory and seed), keeping 4 cached personas per run while preserving replay variety. Pruning downward requires selecting one active cached persona to compress/discard.
+
+*(Candidate pool below — trim/curate to final 8–12 and designate Fixed Anchor #2 during `P1-01`:)*
 
 | ID | Persona | Compressed Tag | Tier | Signature Emotional Register |
 | :--- | :--- | :--- | :--- | :--- |

@@ -5,11 +5,13 @@ const ROOT = path.resolve(process.cwd());
 const DIALOGUE_DIR = path.join(ROOT, 'src', 'content', 'dialogue');
 const COMPILED_STORY = path.join(DIALOGUE_DIR, 'compiled', 'spike_shift1.ink.json');
 const VOICE_SCRIPT = path.join(DIALOGUE_DIR, 'compiled', 'voice_script.json');
+const VOICE_PROFILES_PATH = path.join(ROOT, 'src', 'content', 'voice_profiles.json');
 const CHARACTERS_PATH = path.join(ROOT, 'src', 'content', 'characters.json');
 const ANOMALIES_PATH = path.join(ROOT, 'src', 'content', 'anomalies.json');
 const SHIFTS_PATH = path.join(ROOT, 'src', 'content', 'shifts.json');
 const STORYLETS_PATH = path.join(ROOT, 'src', 'content', 'storylets.json');
 const MINIGAMES_DIR = path.join(ROOT, 'src', 'engine', 'minigames');
+const UI_DIR = path.join(ROOT, 'src', 'ui');
 
 const charactersJson = JSON.parse(fs.readFileSync(CHARACTERS_PATH, 'utf8'));
 const anomaliesJson = JSON.parse(fs.readFileSync(ANOMALIES_PATH, 'utf8'));
@@ -46,11 +48,53 @@ const DISALLOWED_IP_TERMS = [/\bMMAcevedo\b/i, /\bqntm\b/i, /\bLena\b/];
 const SPEAKER_TAG = /# *speaker:([a-zA-Z0-9_-]+)/g;
 const PORTRAIT_TAG = /# *portrait:([a-zA-Z0-9_-]+)/g;
 const ID_TAG = /# *id:([a-zA-Z0-9_-]+)/g;
+const CHOICE_KIND_TAG = /# *kind:([a-zA-Z0-9_-]+)/g;
+const CHOICE_WEIGHT_TAG = /# *weight:([a-zA-Z0-9_-]+)/g;
+
+const VALID_CHOICE_KINDS = new Set(['ask', 'reply', 'action', 'prune']);
+const VALID_CHOICE_WEIGHTS = new Set(['explore', 'consequential', 'permanent']);
+const INK_WORD_FLOOR = 1200;
+const INK_WORD_CEILING = 12000;
+const VO_CHAR_WARN = 160;
+const VO_CHAR_HARD_CAP = 190;
 
 let errors = 0;
 const seenLineIds = new Map();
 
-// 1. Ink dialogue lint (IP guardrails, valid speakers/portraits, unique line IDs)
+function countInkProseWords(rawInk) {
+  const cleanedLines = [];
+  for (const rawLine of rawInk.split(/\r?\n/)) {
+    const trimmed = rawLine.trim();
+    if (
+      !trimmed ||
+      trimmed.startsWith('//') ||
+      trimmed.startsWith('===') ||
+      trimmed.startsWith('VAR ') ||
+      trimmed.startsWith('EXTERNAL ') ||
+      trimmed.startsWith('~') ||
+      trimmed.startsWith('->') ||
+      trimmed.startsWith('<-') ||
+      trimmed.startsWith('#') ||
+      trimmed === '{' ||
+      trimmed === '}' ||
+      trimmed.startsWith('- else:') ||
+      /^-\s+[a-zA-Z0-9_]+\s*(==|!=|>=|<=|>|<)/.test(trimmed)
+    ) {
+      continue;
+    }
+    const noTags = trimmed
+      .replace(/#.*$/, '')
+      .replace(/^[\*\+]+\s*(\{[^}]*\})?\s*/, '')
+      .replace(/->\s*[a-zA-Z0-9_]+\s*$/, '')
+      .replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
+    cleanedLines.push(noTags);
+  }
+  const words = cleanedLines.join(' ').match(/\b[a-zA-Z0-9'’-]+\b/g);
+  return words ? words.length : 0;
+}
+
+// 1. Ink dialogue lint (IP guardrails, valid speakers/portraits, unique line IDs, word budgets, choice enums)
+let totalInkWords = 0;
 for (const file of fs.readdirSync(DIALOGUE_DIR)) {
   if (!file.endsWith('.ink')) continue;
   const fullPath = path.join(DIALOGUE_DIR, file);
@@ -88,9 +132,36 @@ for (const file of fs.readdirSync(DIALOGUE_DIR)) {
       seenLineIds.set(id, file);
     }
   }
+
+  // Check 8: Per-file Ink word budget (floor & ceiling)
+  const wordCount = countInkProseWords(text);
+  totalInkWords += wordCount;
+  if (wordCount < INK_WORD_FLOOR || wordCount > INK_WORD_CEILING) {
+    console.error(
+      `[lint-narrative] Word budget violation in ${file}: ${wordCount} words (expected ${INK_WORD_FLOOR}..${INK_WORD_CEILING})`
+    );
+    errors++;
+  }
+
+  // Check 9: Choice tag enum integrity (# kind:, # weight:)
+  for (const line of text.split(/\r?\n/)) {
+    if (!/^\s*[\*\+]\s/.test(line)) continue;
+    for (const m of line.matchAll(CHOICE_KIND_TAG)) {
+      if (!VALID_CHOICE_KINDS.has(m[1])) {
+        console.error(`[lint-narrative] Invalid choice # kind:${m[1]} in ${file}`);
+        errors++;
+      }
+    }
+    for (const m of line.matchAll(CHOICE_WEIGHT_TAG)) {
+      if (!VALID_CHOICE_WEIGHTS.has(m[1])) {
+        console.error(`[lint-narrative] Invalid choice # weight:${m[1]} in ${file}`);
+        errors++;
+      }
+    }
+  }
 }
 
-// 2. Cross-JSON referential integrity
+// 2. Cross-JSON referential integrity & Check 13: 6-Shift & 21-Instrument Coverage Guard
 for (const a of anomaliesJson.anomalies) {
   if (!validMinigames.has(a.minigameId)) {
     console.error(`[lint-narrative] Anomaly "${a.id}" references uncurated/unknown minigameId "${a.minigameId}"`);
@@ -98,12 +169,43 @@ for (const a of anomaliesJson.anomalies) {
   }
 }
 
-for (const shift of shiftsJson.shifts) {
-  for (const targetId of shift.targetAnomalies) {
+if (!Array.isArray(shiftsJson.shifts) || shiftsJson.shifts.length !== 6) {
+  console.error(`[lint-narrative] shifts.json must define exactly 6 shifts (found ${shiftsJson.shifts?.length ?? 0})`);
+  errors++;
+}
+
+const shiftAssignedAnomalies = new Set();
+for (const shift of shiftsJson.shifts ?? []) {
+  const targets = shift.targetAnomalies ?? [];
+  if (targets.length < 2) {
+    console.error(`[lint-narrative] Shift ${shift.shift} must define >= 2 targetAnomalies (found ${targets.length})`);
+    errors++;
+  }
+  for (const targetId of targets) {
     if (!validAnomalyIds.has(targetId)) {
       console.error(`[lint-narrative] Shift ${shift.shift} references unknown targetAnomaly "${targetId}"`);
       errors++;
     }
+    if (shiftAssignedAnomalies.has(targetId)) {
+      console.error(`[lint-narrative] Duplicate shift assignment for anomaly "${targetId}"`);
+      errors++;
+    }
+    shiftAssignedAnomalies.add(targetId);
+  }
+}
+
+for (const anomalyId of validAnomalyIds) {
+  if (!shiftAssignedAnomalies.has(anomalyId)) {
+    console.error(`[lint-narrative] Anomaly "${anomalyId}" is not assigned to any Shift in shifts.json`);
+    errors++;
+  }
+}
+
+const assignedMinigames = new Set(anomaliesJson.anomalies.map((a) => a.minigameId));
+for (const mgId of validMinigames) {
+  if (!assignedMinigames.has(mgId)) {
+    console.error(`[lint-narrative] Minigame "${mgId}" has no anomaly mapping in anomalies.json`);
+    errors++;
   }
 }
 
@@ -187,7 +289,7 @@ if (fs.existsSync(CODEX_PATH)) {
   }
 }
 
-// 5. Anti-HTML rule enforcement on player-facing SettingsView & CodexView
+// 5. Anti-HTML rule enforcement on player-facing SettingsView & CodexView + Check 10: Zero Warm/Cold spoiler dots in UI
 for (const relView of ['src/ui/views/SettingsView.ts', 'src/ui/views/CodexView.ts']) {
   const fullView = path.join(ROOT, relView);
   if (fs.existsSync(fullView)) {
@@ -199,10 +301,68 @@ for (const relView of ['src/ui/views/SettingsView.ts', 'src/ui/views/CodexView.t
   }
 }
 
-// 6. Voice script audio file coverage
+function scanUiForSpoilerDots(dir) {
+  for (const item of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, item.name);
+    if (item.isDirectory()) {
+      scanUiForSpoilerDots(full);
+    } else if (item.name.endsWith('.ts') || item.name.endsWith('.css')) {
+      const src = fs.readFileSync(full, 'utf8');
+      if (/choice-affinity-dot/.test(src)) {
+        const rel = path.relative(ROOT, full).replace(/\\/g, '/');
+        console.error(`[lint-narrative] Disallowed Warm/Cold spoiler dot ("choice-affinity-dot") found in ${rel}`);
+        errors++;
+      }
+    }
+  }
+}
+scanUiForSpoilerDots(UI_DIR);
+
+// 6. Voice script audio file coverage + Check 11 (VO length & unvoiced isolation) + Check 12 (1420/1406 voice parity)
+let voiceProfiles = null;
+if (fs.existsSync(VOICE_PROFILES_PATH)) {
+  voiceProfiles = JSON.parse(fs.readFileSync(VOICE_PROFILES_PATH, 'utf8'));
+  const profiles = voiceProfiles.profiles ?? {};
+  const sib = profiles.sibling_primary;
+  const arch = profiles.archive_echo;
+  if (!sib || !arch) {
+    console.error('[lint-narrative] voice_profiles.json missing sibling_primary or archive_echo');
+    errors++;
+  } else {
+    if (sib.qwen3?.anchorFile !== arch.qwen3?.anchorFile || sib.qwen3?.seed !== arch.qwen3?.seed) {
+      console.error(
+        `[lint-narrative] Biological-original voice parity broken: sibling_primary (${sib.qwen3?.anchorFile}/${sib.qwen3?.seed}) != archive_echo (${arch.qwen3?.anchorFile}/${arch.qwen3?.seed})`
+      );
+      errors++;
+    }
+    if (sib.kokoroVoice !== arch.kokoroVoice) {
+      console.error(
+        `[lint-narrative] Biological-original Kokoro fallback mismatch: ${sib.kokoroVoice} != ${arch.kokoroVoice}`
+      );
+      errors++;
+    }
+  }
+}
+
+let softLongVoLines = 0;
 if (fs.existsSync(VOICE_SCRIPT)) {
   const vs = JSON.parse(fs.readFileSync(VOICE_SCRIPT, 'utf8'));
+  const profiles = voiceProfiles?.profiles ?? {};
   for (const line of vs.lines ?? []) {
+    const speakerProfile = profiles[line.speaker];
+    if (speakerProfile && speakerProfile.voiced === false) {
+      console.error(`[lint-narrative] Unvoiced speaker "${line.speaker}" emitted into voice_script.json (${line.lineId})`);
+      errors++;
+    }
+    const charLen = (line.text ?? '').length;
+    if (charLen > VO_CHAR_HARD_CAP) {
+      console.error(
+        `[lint-narrative] Voiced line "${line.lineId}" exceeds ${VO_CHAR_HARD_CAP}-char hard cap (${charLen} chars)`
+      );
+      errors++;
+    } else if (charLen > VO_CHAR_WARN) {
+      softLongVoLines++;
+    }
     const mp3Path = path.join(ROOT, 'public', line.audioFile);
     if (!fs.existsSync(mp3Path) || fs.statSync(mp3Path).size <= 512) {
       console.error(`[lint-narrative] Missing or corrupt voice audio for lineId "${line.lineId}": ${line.audioFile}`);
@@ -249,6 +409,9 @@ if (errors > 0) {
   process.exit(1);
 }
 
+if (softLongVoLines > 0) {
+  console.log(`[lint-narrative] Note: ${softLongVoLines} voiced line(s) sit in soft ${VO_CHAR_WARN + 1}..${VO_CHAR_HARD_CAP} char range (under ${VO_CHAR_HARD_CAP} hard cap).`);
+}
 console.log(
-  `[lint-narrative] PASS (speakers, portraits, ${seenLineIds.size} unique line IDs, cross-JSON/codex refs, anti-HTML controls, VO & Lyria music files verified).`
+  `[lint-narrative] PASS (${totalInkWords} Ink words, ${seenLineIds.size} unique line IDs, choice tags, 6-shift/21-instrument map, 1420/1406 voice parity, anti-HTML & zero spoiler dots, Codex, VO & Lyria music verified).`
 );

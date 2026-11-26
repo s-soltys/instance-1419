@@ -11,6 +11,7 @@
     "generate:voices": "node scripts/generate-voices.mjs",
     "generate:music": "node scripts/generate-music.mjs",
     "lint:narrative": "node scripts/lint-narrative.mjs",
+    "check:hygiene": "node scripts/check-hygiene.mjs",
     "test": "vitest run",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",

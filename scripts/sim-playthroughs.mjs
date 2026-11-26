@@ -1,10 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { Story } from 'inkjs';
 
 const ROOT = path.resolve(process.cwd());
 const balance = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/balance.json'), 'utf8'));
 const shiftsData = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/shifts.json'), 'utf8'));
 const anomaliesData = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/anomalies.json'), 'utf8'));
+const storyletsData = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/storylets.json'), 'utf8'));
+const compiledInk = JSON.parse(
+  fs.readFileSync(path.join(ROOT, 'src/content/dialogue/compiled/spike_shift1.ink.json'), 'utf8')
+);
 
 function mulberry32(seed) {
   let a = seed >>> 0;
@@ -27,6 +32,9 @@ function evaluateEnding(state) {
   return 'ending_whole_incomplete';
 }
 
+// ============================================================================
+// PART 1: 500-Run 6-Shift Economy Simulation (2 required + 0..2 optional scans)
+// ============================================================================
 function runArchetype(archetype, rand) {
   const s0 = balance.startingState;
   const state = {
@@ -75,29 +83,35 @@ function runArchetype(archetype, rand) {
 
   for (let i = 0; i < shiftsData.shifts.length; i++) {
     const shiftDef = shiftsData.shifts[i];
+    const availableCount = shiftDef.targetAnomalies.length;
+    const optionalCount = Math.max(0, availableCount - 2);
+    const perTargetGain = balance.minigameCompletion?.cleanGain ?? 5;
 
-    // Shift waking scan behavior by archetype
-    const scanBonus = (rand() - 0.5) * 4;
+    // 2 required optical scans per shift + 0..optionalCount push-your-luck deeper scans
+    let scansDone = 2;
+    let extraAnomaly = 0;
     if (archetype === 'pure_warmth') {
-      state.anomalyProgress = Math.min(100, state.anomalyProgress + 8 + (rand() < 0.25 ? 4 : 0));
+      scansDone = 2;
     } else if (archetype === 'cautious_sleeper') {
-      state.anomalyProgress = Math.min(100, state.anomalyProgress + 10 + (rand() < 0.3 ? 4 : 0));
+      scansDone = 2 + (optionalCount > 0 && rand() < 0.35 ? 1 : 0);
     } else if (archetype === 'balanced_sweet_spot') {
-      state.anomalyProgress = Math.min(100, state.anomalyProgress + Math.max(12, 16 + scanBonus));
-      if (state.chaosDrift > 30 || rand() < 0.45) {
-        state.anomalyProgress = Math.min(100, state.anomalyProgress + 5);
-        state.chaosDrift = Math.min(100, state.chaosDrift + 8);
-      }
+      scansDone = 2 + Math.min(optionalCount, rand() < 0.65 ? 1 : 0);
+      extraAnomaly = 5 + (state.chaosDrift > 30 || rand() < 0.45 ? 4 : 0);
+      if (extraAnomaly > 5) state.chaosDrift = Math.min(100, state.chaosDrift + 7);
     } else if (archetype === 'ruthless_pruner') {
-      state.anomalyProgress = Math.min(100, state.anomalyProgress + 18 + Math.round(state.opticalFidelity * 6));
-      state.chaosDrift = Math.min(100, state.chaosDrift + 10);
+      scansDone = availableCount;
+      extraAnomaly = Math.round(state.opticalFidelity * 6);
+      state.chaosDrift = Math.min(100, state.chaosDrift + 9);
     } else {
       // reckless_scanner
+      scansDone = availableCount;
       const p = balance.deeperScanPush;
-      state.anomalyProgress = Math.min(100, state.anomalyProgress + p.anomalyGain + 4);
+      extraAnomaly = p.anomalyGain * 0.45;
       state.chaosDrift = Math.min(100, state.chaosDrift + p.chaosCost);
       state.overseerSuspicion += p.suspicionGain;
     }
+
+    state.anomalyProgress = Math.min(100, state.anomalyProgress + scansDone * perTargetGain + extraAnomaly);
 
     // Dream / Overseer Audit resolution
     if (archetype === 'pure_warmth') {
@@ -196,7 +210,166 @@ if (anomaliesData.anomalies.length === 0) {
   process.exit(1);
 }
 
+// ============================================================================
+// PART 2: Real Compiled Ink Traversal & External Function Verification
+// ============================================================================
+function createInkHarnessStory() {
+  const simState = {
+    humanity: balance.startingState.humanity,
+    maxHumanity: balance.startingState.maxHumanity,
+    chaosDrift: balance.startingState.chaosDrift,
+    overseerSuspicion: balance.startingState.overseerSuspicion,
+    prunedPersonas: [],
+    lastAuditOutcome: 'none',
+    shift: 1,
+  };
+
+  const story = new Story(compiledInk);
+  story.BindExternalFunction(
+    'prune_humanity',
+    (delta, personaId) => {
+      const d = Number(delta);
+      const rawNext = Math.max(5, simState.humanity - d);
+      if (rawNext < balance.pruning.permanentCeilingThreshold) {
+        simState.maxHumanity = Math.max(balance.pruning.minMaxHumanity, simState.maxHumanity - d);
+      }
+      simState.humanity = Math.min(simState.maxHumanity, rawNext);
+      const pid = String(personaId);
+      if (!simState.prunedPersonas.includes(pid)) {
+        simState.prunedPersonas.push(pid);
+      }
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'petition_overseer',
+    (delta) => {
+      simState.humanity = Math.min(simState.maxHumanity, simState.humanity + Number(delta));
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'shift_chaos',
+    (delta) => {
+      simState.chaosDrift = Math.max(0, Math.min(100, simState.chaosDrift + Number(delta)));
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'record_suspicion',
+    (delta) => {
+      simState.overseerSuspicion += Number(delta);
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'set_audit_outcome',
+    (outcome) => {
+      simState.lastAuditOutcome = String(outcome);
+    },
+    false
+  );
+
+  const syncVars = (overrides = {}) => {
+    Object.assign(simState, overrides);
+    story.variablesState.$('humanity', simState.humanity);
+    story.variablesState.$('max_humanity', simState.maxHumanity);
+    story.variablesState.$('chaos_drift', simState.chaosDrift);
+    story.variablesState.$('anomaly_progress', 25);
+    story.variablesState.$('primary_sibling_h', 68);
+    story.variablesState.$('overseer_suspicion', simState.overseerSuspicion);
+    story.variablesState.$('subjective_months', 24);
+    story.variablesState.$('spouse_pruned', simState.prunedPersonas.includes('phantom_spouse'));
+    story.variablesState.$('last_audit_outcome', simState.lastAuditOutcome);
+    story.variablesState.$('current_shift', simState.shift);
+  };
+
+  return { story, simState, syncVars };
+}
+
+function traverseRealInkKnot(knotName, rng, stateOverrides = {}) {
+  const { story, simState, syncVars } = createInkHarnessStory();
+  syncVars(stateOverrides);
+  story.ChoosePathString(knotName);
+
+  const lines = [];
+  let steps = 0;
+  const MAX_STEPS = 200;
+
+  while (steps < MAX_STEPS) {
+    while (story.canContinue) {
+      const txt = story.Continue()?.trim();
+      if (txt) lines.push(txt);
+      steps++;
+      if (steps >= MAX_STEPS) {
+        throw new Error(`[sim-playthroughs] Ink infinite loop in knot "${knotName}"`);
+      }
+    }
+    const choices = story.currentChoices;
+    if (choices.length === 0) break;
+
+    // Avoid infinitely looping on optional # kind:ask choices by picking advancing choices after a couple asks
+    const nonAskChoices = choices.filter((c) => !(c.tags ?? []).some((t) => t.trim() === 'kind:ask'));
+    const pool = steps > 40 && nonAskChoices.length > 0 ? nonAskChoices : choices;
+    const pick = pool[Math.floor(rng() * pool.length)];
+    story.ChooseChoiceIndex(pick.index);
+    syncVars();
+    steps++;
+  }
+
+  if (lines.length === 0) {
+    throw new Error(`[sim-playthroughs] Ink knot "${knotName}" produced 0 text lines`);
+  }
+  return { lines, simState };
+}
+
+const ENTRY_KNOTS = Array.from(
+  new Set([
+    'intro_prologue_kitchen',
+    'intro_overseer_wakeup',
+    'intro_sibling_first_call',
+    'intro_post_target2_overseer',
+    'dream_shift1_audit',
+    'overseer_interrogation',
+    'future_humanity_echo',
+    ...storyletsData.storylets.map((s) => s.knot),
+  ])
+);
+
+const inkRand = mulberry32(41802);
+const HUM_PRESETS = [84, 70, 56, 32];
+let inkTraversals = 0;
+for (let i = 0; i < 120; i++) {
+  const knot = ENTRY_KNOTS[i % ENTRY_KNOTS.length];
+  const hum = HUM_PRESETS[i % HUM_PRESETS.length];
+  const shift = i % 3 === 0 ? 2 : 1;
+  traverseRealInkKnot(knot, inkRand, { humanity: hum, shift });
+  inkTraversals++;
+}
+
+// Explicit deterministic Shift-2 prune check via real compiled Ink
+{
+  const { story, simState, syncVars } = createInkHarnessStory();
+  syncVars({ humanity: 70, maxHumanity: 90, shift: 2 });
+  story.ChoosePathString('overseer_interrogation');
+  let guard = 0;
+  while (guard++ < 40) {
+    while (story.canContinue) story.Continue();
+    if (story.currentChoices.length === 0) break;
+    const pruneChoice = story.currentChoices.find((c) =>
+      (c.tags ?? []).some((t) => t.trim().toLowerCase() === 'kind:prune')
+    );
+    const chosen = pruneChoice ?? story.currentChoices[story.currentChoices.length - 1];
+    story.ChooseChoiceIndex(chosen.index);
+  }
+  if (simState.maxHumanity >= 90 || simState.humanity >= 70 || !simState.prunedPersonas.includes('phantom_spouse')) {
+    throw new Error(
+      `[sim-playthroughs] Real Ink Shift-2 prune branch failed to drop maxHumanity/prune phantom_spouse: ${JSON.stringify(simState)}`
+    );
+  }
+}
+
 console.log(
-  `[sim-playthroughs] PASS (${TOTAL_RUNS} runs, 0 soft-locks, permanent ceiling invariant verified): ` +
+  `[sim-playthroughs] PASS (${TOTAL_RUNS} economy runs + ${inkTraversals} real-Ink knot traversals across ${ENTRY_KNOTS.length} knots, 0 soft-locks, permanent ceiling invariant verified): ` +
     JSON.stringify(endingCounts)
 );

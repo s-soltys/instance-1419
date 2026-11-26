@@ -54,11 +54,12 @@ function verifyAssetManifest() {
 }
 
 run('node scripts/compile-ink.mjs');
-run('npx tsc --noEmit');
-run('npx vitest run');
+run('./node_modules/.bin/tsc --noEmit');
+run('./node_modules/.bin/vitest run');
 run('node scripts/sim-playthroughs.mjs');
 run('node scripts/lint-narrative.mjs');
+run('node scripts/check-hygiene.mjs');
 verifyAssetManifest();
-run('npx vite build');
+run('./node_modules/.bin/vite build');
 run('node scripts/e2e-visual.mjs');
-console.log('\n[verify] ALL 8 GATES PASSED.');
+console.log('\n[verify] ALL 9 GATES PASSED.');

@@ -8,27 +8,23 @@ description: Independently audit Instance-1419 across lore canon, character voic
 ## When to Use
 Run at the end of every feature or milestone before marking anything `"passing"` in `features.json`. Always execute from an independent critic perspective (never self-approving work you just wrote).
 
-## Required Reading Before Auditing
+## Required Reading Before Auditing (SSOT)
 1. `docs/CANON.md`
-2. `docs/VOICE_GUIDE.md`
-3. `docs/BEAT_SHEET.md`
+2. `docs/BEAT_SHEET.md`
+3. `docs/VOICE_GUIDE.md`
 4. `docs/ART_DIRECTION.md`
-5. `assets/MANIFEST.json`
+5. `docs/HARNESS.md` (Taste Compass) & `assets/MANIFEST.json`
 
 ## Core Audit Checklist
-1. **Run Mechanical Gates (`node scripts/verify.mjs`):**
-   * Strict `tsc --noEmit` passes.
-   * All `.ink` files compile cleanly with `inkjs`.
-   * `sim-playthroughs.mjs` (500 runs across 5 archetypes) confirms zero soft-locks, permanent `Max_H` ceiling drops on pruning, and all 3 endings reachable.
-   * `lint-narrative.mjs` flags zero loved-one proper names, zero unregistered `# speaker`/`# portrait` tags, zero missing voice MP3s, and zero disallowed IP overlap terms.
-   * `assets/MANIFEST.json` covers 100% of files under `assets/`, `public/voices/`, and `public/music/` with commercial-safe licenses.
-2. **Qualitative Lore & Canon Audit:**
-   * Verify fixed numbers match canon (`Instance-1419`, `41,802 years`, `1,417 prior copies`, `~10 light-years`, `93 billion light-years`, `~2 subjective years`, `20-year final freeze`, Sol–Centauri only).
-   * Confirm the biological volunteer mystery AND how humanity evolved over 41,802 years remain permanently vague.
-   * Confirm Kitchen Prologue stays spoiler-free (`ACROSS THE TABLE`, never leaking `[RELATION:SPOUSE_01]` before wake-up).
-3. **Qualitative Voice, Pacing & Choice UX Audit:**
-   * Verify non-abrupt pacing (2-line beats, optional `◇` Q&A hubs) and locked 5-role voices: uncanny-cracked + candid Spouse, calm night-shift-doctor + eerily patient Overseer, dry 3 AM deadpan + lucid engineer Sibling 1420, dry-note Archive 1406, and occasional unvoiced soft italic Psyche marginalia (no ALL-CAPS banners).
-   * Verify reserved Cast 2 voice audio (`<=160` chars per voiced line, shared biological male voice across 1420 & 1406, zero ASMR/slapback/theatrics, audio-synced Overseer interrupts).
-   * Verify Layout A bottom-anchored dialogue (no chasm) and color-coded consequence choice plates (neutral-slate `◇`/explore vs. warm-amber consequential vs. crimson Hold-to-Commit prune; zero Warm/Cold spoiler dots).
-4. **Output Format:**
-   * Write a concise audit report under `docs/audits/<milestone>.md` with `PASS / BLOCKED` verdict and file/line-referenced fix tickets assigned to the responsible persona. Never silently rewrite creative work.
+1. **Run All 9 Mechanical Gates (`node scripts/verify.mjs`):**
+   * `compile-ink.mjs` & strict `tsc --noEmit`.
+   * `vitest run` (including 21-game solvability & 3-axis contract tests).
+   * `sim-playthroughs.mjs` (500-run economy simulation + compiled Ink knot traversal, `Max_H` ceiling drops, 3 endings reachable).
+   * `lint-narrative.mjs` (name redaction, IP terms, word floor/ceiling, choice tag enums, zero `.choice-affinity-dot`, VO char cap & unvoiced isolation, 1420/1406 voice parity, 6-shift/21-instrument integrity).
+   * `check-hygiene.mjs` (zero orphaned `.ts`/`.json` files, zero retired zombie symbols).
+   * `assets/MANIFEST.json` 100% coverage & commercial-safe licenses, `vite build`, and `e2e-visual.mjs`.
+2. **Qualitative SSOT Review:**
+   * Audit lore & hard numbers against `docs/CANON.md` (`Instance-1419`, `41,802 years`, `1,417 prior copies`, `~10 ly`, `93B ly`, `~2 subjective years`, `20-year freeze`, `2 required + optional` shift scans, `8–12` Dream Personas with `2 Fixed Anchors + 2 rotating`).
+   * Audit prose, choice UX, layout, and Cast 2 VO fidelity against `docs/VOICE_GUIDE.md`, `docs/ART_DIRECTION.md`, and the 4-point Taste Compass (`docs/HARNESS.md`).
+3. **Output Format:**
+   * Write concise audit reports under `docs/audits/<milestone>.md` with `PASS / BLOCKED` verdict and file/line-referenced fix tickets. Never silently rewrite creative work.

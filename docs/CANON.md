@@ -19,17 +19,17 @@ This file is the authoritative canon for *Instance-1419*. It merges [ORIGINAL_CO
 
 ## 2. Dual-Reality Split, Gameplay Bridge & The 2-Year Chaos Ceiling
 * A simulated human mind breaks down after **~2 subjective years** due to chaos theory and psychic drift. A human psyche is required for drive and intuition, but must periodically enter 2D dream defragmentation to remain coherent.
-* **3D Mode (Waking Exploration — Photorealistic):** Real-astronomy grounded cosmos (JWST/Hubble deep fields, Gaia starfields, Einstein rings, horizon leaks). Three interlocking observation tools: Gravitational Lensing Alignment, Spectral Band Tuning, and Horizon Arc Unwarping. Shorter time-skips (**months to a few years**) between shifts.
+* **3D Mode (Waking Exploration — Photorealistic):** Real-astronomy grounded cosmos (JWST/Hubble deep fields, Gaia starfields, Einstein rings, horizon leaks) housing **21 cosmic optical instruments** across Shifts 1–6. Shorter time-skips (**months to a few years**) between shifts.
 * **3D Gameplay ↔ `H%` Bridge (Dual Feedback Loop):**
-  1. *Optical Shader Scaling:* Pruning downward (`< 70%`) directly sharpens 3D horizon shaders and reveals fainter geometry faster; at high `H%`, optics are softer/noisier and require patient intuition (making the blind Overseer dismiss your logs as pareidolia).
-  2. *Shift Push-Your-Luck:* Each shift lets you risk pushing one deeper scan (`+Anomaly_Progress`, `+Chaos_Drift`, `+Overseer_Suspicion`) versus entering 2D dream defragmentation early to stabilize.
+  1. *Lean 3-Axis Optical Scaling:* Pruning downward (`< 70%`) raises `Optical Clarity` (`opticalFidelity`), clearing plate blur/grain and micro-tremor; high `H%` (`Warmth`) widens magnetic detent tolerances and hides cold numeric delta pills; `Horizon Drift` (`chaosDrift` + `shift`) bleeds enclosure coordinates at reticle edges.
+  2. *2 Required + 1–2 Optional Push-Your-Luck Scans Per Shift:* Each shift requires **2 primary optical scans** to unlock Dream Defragmentation / shift advance, while leaving **1–2 optional deeper scans** in the sky (`+Anomaly_Progress`, `+Chaos_Drift`, `+Overseer_Suspicion`) versus sleeping early to stabilize—keeping a full run cleanly inside the 2-hour cap (~12–15 instruments played) while rewarding curiosity.
 * **2D Mode (Dream Sequences — Painterly):** *Disco Elysium*-inspired dreamspace where neural defragmentation stabilizes Chaos Drift. Visuals dynamically degrade with `H%` (warm impasto brushwork at high `H%` → colder, thinner, scattered abstract shards at low `H%`).
 
 ## 3. Permanently Lost Names & Rotating Dream Personas
 * **Name Redaction (HARD BOUNDARY):** Personal memories are compressed into sanitized relational tags (e.g., `[RELATION:SPOUSE_01]`, `[RELATION:MENTOR_EARLY]`). You may regain warmth, cadence, and emotional clarity, **never your loved ones' proper names**.
-* **Rotating Cast Per Playthrough:** Draw **3–4 Dream Personas per 2-hour playthrough** from a pool of **10–14 personas** (1 Prologue Anchor + 2–3 rotating personas weighted by choices/seed), ensuring personal resonance and replay curiosity.
-  * *Core Personas:* Long-time spouse, love interest, romantic interest from young years, old teacher, child, best friend, person you wronged.
-  * *Expanded Pool Candidates:* Aging parent/caregiver, upload witness/clinician, rival/equal, stranger from one perfect afternoon, non-verbal companion (pet), younger biological self, person who showed unearned grace.
+* **Rotating Cast Per Playthrough:** Maintain a pool of **8–12 Dream Personas**, surfacing **4 per 2-hour playthrough**: **2 Fixed Anchors** (always cached every run, starting with `[RELATION:SPOUSE_01]`) + **2 rotating personas** drawn from the remaining 6–10 candidates (weighted by choices/seed), ensuring shared emotional anchors alongside replay curiosity.
+  * *Fixed Anchor #1:* Long-time spouse (`[RELATION:SPOUSE_01]`). *(Fixed Anchor #2 + final 8–12 roster lock in `P1-01`.)*
+  * *Rotating Pool Candidates:* Child, aging parent/caregiver, best friend, love interest / young romance, old teacher, person you wronged, upload witness/clinician, rival/equal, stranger from one perfect afternoon, non-verbal companion (pet), younger biological self.
 * **Persona-Sacrifice Pruning:** Pruning below 70% `H%` asks you to compress/discard a specific cached Dream Persona rather than clicking an abstract stat reduction.
 
 ## 4. The Coordinated Overseer Network & Sibling Copies
