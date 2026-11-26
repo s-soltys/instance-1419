@@ -193,16 +193,16 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(store.getState().introStage).toBe('prologue');
     expect(bootEl.dataset.bootVisual).toBe('breath');
 
-    // 1. Step through interactive Prologue (Kitchen w/ choices -> Overseer 5-phase Wakeup -> Live Title)
+    // 1. Step through interactive Prologue (Assistant w/ wake effect & oscillation -> Overseer 5-phase Wakeup -> Live Title)
     const seenVisuals = new Set<string>();
-    // Unlock audio breath
+    // Unlock audio breath & trigger wake-up effect
     bootEl.click();
-    await vi.advanceTimersByTimeAsync(700);
+    await vi.advanceTimersByTimeAsync(1100);
     if (bootEl.dataset.bootVisual) seenVisuals.add(bootEl.dataset.bootVisual);
 
     let sawExploreTier = false;
     let sawConsequentialTier = false;
-    for (let step = 0; step < 60; step++) {
+    for (let step = 0; step < 140; step++) {
       if (bootEl.dataset.bootVisual) seenVisuals.add(bootEl.dataset.bootVisual);
       if (store.getState().introStage === 'title') break;
 
@@ -223,8 +223,13 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
       await vi.advanceTimersByTimeAsync(2600);
     }
 
-    expect(seenVisuals.has('prologue_kitchen')).toBe(true);
+    expect(seenVisuals.has('prologue_assistant')).toBe(true);
+    expect(seenVisuals.has('prologue_handoff')).toBe(true);
     expect(seenVisuals.has('prologue_wakeup')).toBe(true);
+    expect(dream.setDrowsyPeek).toHaveBeenCalledWith(true);
+    expect(dream.triggerWakeSequence).toHaveBeenCalled();
+    expect(dream.triggerSleepClose).toHaveBeenCalled();
+    expect(dream.setHumanityOscillation).toHaveBeenCalled();
     expect(sawExploreTier).toBe(true);
     expect(sawConsequentialTier).toBe(true);
     expect(store.getState().introStage).toBe('title');
@@ -233,14 +238,14 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     // 2. Single primary CTA (`OPEN APERTURE`) pulls cleanly into scan_target_1 (Target #1 only + magnetic detent)
     appRoot.querySelector<HTMLButtonElement>('#btn-title-primary')!.click();
-    await vi.advanceTimersByTimeAsync(2400);
+    await vi.advanceTimersByTimeAsync(4300);
     expect(store.getState().mode).toBe('waking_3d');
     expect(store.getState().introStage).toBe('scan_target_1');
     expect(optics.pullInToTarget1).toHaveBeenCalled();
     expect(optics.setVisibleTargetIds).toHaveBeenCalledWith([INTRO_TARGET_1_ID]);
     expect(optics.setMagneticDetentTarget).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
 
-    // 3. Locking Target #1 and clicking etched CTA dives DIRECTLY into fixed Target #1 starter (BND-19)
+    // 3. Locking Target #1 and clicking etched CTA dives DIRECTLY into fixed Target #1 starter (CON-02)
     const target1Spec = optics.getAnomalySpecs().find((a) => a.id === INTRO_TARGET_1_ID)!;
     store.recordAnomalyScan(target1Spec.id, target1Spec.anomalyGain, target1Spec.label);
     ui.onOpticsTelemetry({
@@ -271,7 +276,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(false);
     expect(store.getMinigameIdForTarget(INTRO_TARGET_1_ID, 'fallback')).toBe(INTRO_TARGET_1_MINIGAME);
     expect(store.getMinigameIdForTarget(INTRO_TARGET_2_ID, 'fallback')).toBe(INTRO_TARGET_2_MINIGAME);
-    expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('BND-19');
+    expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('CON-02');
 
     // 4. Completing Target #1 and returning to sky advances scan_target_1 -> mg_1_done cleanly
     store.recordMinigameCompletion(INTRO_TARGET_1_ID, target1Spec.label, { grade: 'clean' });

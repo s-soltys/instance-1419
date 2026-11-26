@@ -1,11 +1,14 @@
 {
   "schema_version": 3,
   "prologue": {
-    "breathPrompt": "Rain on glass. Before the quiet.",
-    "advanceHint": "CLICK OR PRESS SPACE",
-    "fractureCaption": "WAKE LOG · PROBE 1419",
-    "kitchenSpeakerLabel": "ACROSS THE TABLE",
-    "kitchenSubtitle": "SUNDAY MORNING · BEFORE THE CLINIC"
+    "breathEyebrow": "CALIBRATION SUITE · STANDBY",
+    "breathPrompt": "Light behind heavy lids. Someone is waiting across the desk.",
+    "advanceHint": "CLICK OR PRESS SPACE TO WAKE",
+    "fractureCaption": "HANDOFF · WATCH #1419",
+    "handoffCaption": "CALIBRATING TRANSFER · STANDBY",
+    "assistantSpeakerLabel": "INTAKE ASSISTANT",
+    "assistantSubtitle": "CALIBRATION SUITE · INITIAL WAKE",
+    "wakeupSubtitle": "WATCH CARETAKER · FIRST BRIEFING"
   },
   "wakeupAnim": {
     "anim_transfer": "CONNECTOME TRANSFER · NAMES COMPRESSED",

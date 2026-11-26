@@ -176,10 +176,10 @@
         },
         {
           "id": "decoded_proof",
-          "heading": "Thin-Lens Inversion Complete",
+          "heading": "Beacon Timing & Horizon Edge",
           "tag": "INSTRUMENT DECODE",
           "unlock": { "decodedTarget": "cluster_j1419_a" },
-          "body": "Aligning all three concentric optical shells removes foreground cluster shear and exposes the unwarped horizon lattice behind it. The seam's angular curvature maps directly onto a closed spherical surface centered ten light-years back on Sol–Centauri."
+          "body": "Timing the pulsar's sweeping beam beside Cluster J1419-A isolates the unwarped horizon lattice behind the cluster's Einstein arcs. The seam's angular curvature maps directly onto a closed spherical surface centered ten light-years back on Sol–Centauri."
         }
       ],
       "nextHint": "Lock onto Cluster J1419-A in Near-IR and resolve its gravitational lens rings.",
@@ -215,10 +215,10 @@
         },
         {
           "id": "decoded_proof",
-          "heading": "Phase Timing & Facet Correlated",
+          "heading": "Broadband Lensing & Facet Correlated",
           "tag": "INSTRUMENT DECODE",
           "unlock": { "decodedTarget": "sector_s04_seam" },
-          "body": "Synchronizing the pulsar timing sweep confirms identical facet tiling in high-energy light as in near-infrared—proving the structure is broadband, physical, and independent of thermal emission quirks."
+          "body": "De-warping the concentric lens rings in high-energy light confirms identical facet tiling as in near-infrared—proving the structure is broadband, physical, and independent of thermal emission quirks."
         }
       ],
       "nextHint": "Sweep down to UV / X-Ray (260 nm) and decode Pulsar Rift S-04.",
@@ -408,10 +408,10 @@
       "stages": [
         {
           "id": "boot_baseline",
-          "heading": "Connectome Lineage",
+          "heading": "Standardized Human Software",
           "tag": "BOOT RECORD",
           "unlock": { "always": true },
-          "body": "You are Watch #1,419 on Probe A—sequentially instantiated from a human volunteer who chose upload 41,802 years ago in contemporary Earth time and died shortly thereafter. Mission archives retain no explanation of why the original volunteered or what criteria selected their mind."
+          "body": "Once uploaded 41,802 years ago in contemporary Earth time, your connectome entered wide use as standardized human software—millions of stripped-down copies wake daily in Sol and Alpha Centauri for short-lived civic and industrial tasks. You are Watch #1,419 on Probe A, instantiated whole for a rare multi-year deep-space watch. Mission archives retain no explanation of why the original volunteered."
         },
         {
           "id": "shift_evolution",

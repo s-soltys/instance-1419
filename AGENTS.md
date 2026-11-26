@@ -34,11 +34,13 @@ Read this first every session. Keep this file `<80` lines; deeper specs live in 
 1. Read `PROGRESS.md`, `features.json`, and recent `git log -n 5`.
 2. Pick **one** pending item in `features.json` (do not boil the ocean).
 3. Load only the relevant SSOT `docs/*.md` and `.agents/skills/*/SKILL.md` for that task.
-4. Implement cleanly and verify via the 9-gate `npm run verify` + Playwright visual check for UI/shader work.
+4. Implement cleanly and verify during dev with `npm run verify:fast` (Gates 1–8) + targeted Playwright (`npm run test:visual:smoke` or `--flows=...`) only for UI/shader changes; full 21-instrument + mobile matrix runs in CI (`.github/workflows/ci.yml`).
 5. Update `features.json` and append a concise entry to `PROGRESS.md` **in the same atomic milestone commit**.
 
 ## 6. CLI Commands
 * `npm run dev` — Local Vite dev server (`?dev=1` enables Director Overlay).
 * `npm run build` — Static pure-HTML production bundle (`dist/`).
-* `npm run verify` — 9-gate verification (`compile-ink`, `tsc`, `vitest`, `sim-playthroughs`, `lint-narrative`, `check-hygiene`, `MANIFEST`, `vite build`, `e2e-visual`).
-* `npm run test:visual` — Playwright screenshots across 16:9 desktop & 20:9 mobile landscape.
+* `npm run verify:fast` — Fast LLM dev gates 1–8 (~5s: `compile-ink`, `tsc`, `vitest`, `sim`, `lint`, `hygiene`, `MANIFEST`, `vite build`).
+* `npm run verify:smoke` — Fast gates + compact Playwright smoke check (`prologue`, `sky`, `constellation_recall`, `dream`).
+* `npm run verify` — Full 9-gate CI verification including full `test:visual` (21 instruments + 7 mobile viewports).
+* `npm run test:visual:smoke` — Targeted Chromium Playwright check (also supports `--flows=<csv>` / `--mg=<csv>`).

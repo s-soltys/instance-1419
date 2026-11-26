@@ -152,10 +152,13 @@ export class UIController {
   private activeOverseerSnapshot: DialogueSnapshot | null = null;
   private focusedSpec: AnomalySpec | null = null;
 
-  private prologuePhase: 'breath' | 'kitchen' | 'transitioning' | 'wakeup' | 'title' = 'breath';
+  private prologuePhase: 'breath' | 'assistant' | 'transitioning' | 'wakeup' | 'title' = 'breath';
+  private prologueTableau = 'base';
+  private prologueCalibHumanity = 100;
   private activePrologueSnap: DialogueSnapshot | null = null;
   private prologueRevealedCount = 0;
   private prologueStepTimer: number | null = null;
+  private prologueTimers: number[] = [];
   private resumeModeAfterTitle: 'waking_3d' | 'dream_2d' = 'waking_3d';
 
   private activeMinigameTargetId: string | null = null;
@@ -400,6 +403,8 @@ export class UIController {
           <div class="wakeup-canvas-mount hidden" id="wakeup-canvas-mount" aria-hidden="true"></div>
 
           <div class="prologue-breath-panel" id="prologue-breath-panel">
+            <span class="prologue-breath-eyebrow" id="prologue-breath-eyebrow"></span>
+            <span class="breath-iris-line" aria-hidden="true"></span>
             <p class="prologue-breath-line" id="prologue-breath-line"></p>
             <span class="prologue-advance-cue" id="prologue-breath-hint"></span>
           </div>
@@ -691,6 +696,10 @@ export class UIController {
       window.clearTimeout(this.prologueStepTimer);
       this.prologueStepTimer = null;
     }
+    for (const id of this.prologueTimers) {
+      window.clearTimeout(id);
+    }
+    this.prologueTimers = [];
     if (this.idleDragTimer !== null) {
       window.clearTimeout(this.idleDragTimer);
       this.idleDragTimer = null;
@@ -735,18 +744,21 @@ export class UIController {
     this.clearTimers();
     this.voice.stop();
     this.prologuePhase = 'breath';
+    this.prologueTableau = 'base';
+    this.prologueCalibHumanity = 100;
     this.activePrologueSnap = null;
     this.prologueRevealedCount = 0;
     this.wakeupCanvas.setActive(false);
 
-    // Render softly veiled live warm kitchen canvas behind Frame 0 breath prompt
+    // Render softly veiled half-closed intake suite canvas behind Frame 0 breath prompt
     this.root.querySelector('#optics-layer')?.classList.add('hidden');
     this.root.querySelector('#dream-layer')?.classList.remove('hidden');
     this.optics.setAmbientDrift(false);
     this.optics.setActive(false);
 
-    const s = this.store.getState();
-    this.dream.setState(s.humanity, false, false, 'phantom_spouse');
+    this.dream.setHumanityOscillation?.(null);
+    this.dream.setState(100, false, false, 'phantom_upload_witness', 'base');
+    this.dream.setDrowsyPeek?.(true);
     this.dream.setActive(true);
     this.bootView.showBreath();
   }
@@ -758,11 +770,12 @@ export class UIController {
     if (this.prologuePhase === 'breath') {
       this.prologuePhase = 'transitioning';
       this.bootView.setInputLocked(true);
-      this.audio.playCue('tick');
+      this.audio.playCue('wake_up');
+      this.dream.triggerWakeSequence?.();
       this.prologueStepTimer = window.setTimeout(() => {
         this.prologueStepTimer = null;
-        this.startPrologueKitchen();
-      }, 420);
+        this.startPrologueAssistant();
+      }, 1550);
       return;
     }
 
@@ -783,16 +796,18 @@ export class UIController {
     if (snap.choices.length > 0) return;
 
     // Knot finished -> slow meditative transition to next beat
-    if (this.prologuePhase === 'kitchen') {
-      this.transitionKitchenToWakeup();
+    if (this.prologuePhase === 'assistant') {
+      this.transitionAssistantToWakeup();
     } else if (this.prologuePhase === 'wakeup') {
       this.transitionWakeupToTitle();
     }
   }
 
-  private startPrologueKitchen(): void {
+  private startPrologueAssistant(): void {
     const s = this.store.getState();
-    this.prologuePhase = 'kitchen';
+    this.prologuePhase = 'assistant';
+    this.prologueTableau = 'base';
+    this.prologueCalibHumanity = 100;
     this.bootView.setInputLocked(false);
     this.wakeupCanvas.setActive(false);
 
@@ -800,71 +815,89 @@ export class UIController {
     this.root.querySelector('#dream-layer')?.classList.remove('hidden');
     this.optics.setAmbientDrift(false);
     this.optics.setActive(false);
-    this.dream.setState(s.humanity, false, false, 'phantom_spouse');
+    this.dream.setHumanityOscillation?.(null);
+    this.dream.setState(100, false, false, 'phantom_upload_witness', 'base');
     this.dream.setActive(true);
 
     this.bootView.showPrologueConversation(
-      'prologue_kitchen',
-      'phantom_spouse',
-      uiCopy.prologue.kitchenSubtitle ?? 'SUNDAY MORNING · BEFORE THE CLINIC',
-      s.humanity,
-      uiCopy.prologue.kitchenSpeakerLabel ?? 'ACROSS THE TABLE',
+      'prologue_assistant',
+      'phantom_upload_witness',
+      uiCopy.prologue.assistantSubtitle ?? 'CALIBRATION SUITE · INITIAL WAKE',
+      100,
+      uiCopy.prologue.assistantSpeakerLabel ?? 'INTAKE ASSISTANT',
       true
     );
 
-    // Sync warm harmonium dream music bed softly under kitchen conversation
-    this.syncAudioMusic({ ...s, mode: 'dream_2d' });
+    // Sync warm Rhodes/cello dream music bed softly under intake calibration
+    this.syncAudioMusic({ ...s, mode: 'dream_2d', humanity: 100, activeDreamPersonaId: 'phantom_upload_witness' });
 
-    const snap = this.prologueDialogue.startKnot('intro_prologue_kitchen');
+    const snap = this.prologueDialogue.startKnot('intro_prologue_assistant');
     this.activePrologueSnap = snap;
     this.prologueRevealedCount = Math.min(1, snap.entries.length);
     this.renderPrologueStep(true);
   }
 
-  private transitionKitchenToWakeup(): void {
+  private transitionAssistantToWakeup(): void {
     this.prologuePhase = 'transitioning';
     this.bootView.setInputLocked(true);
     this.voice.stop();
+    this.dream.setHumanityOscillation?.(null);
+    this.dream.setDrowsyPeek?.(false);
+    this.dream.triggerSleepClose?.();
     this.bootView.dissolvePrologueRibbon();
-    this.audio.playCue('overseer_slice');
+    this.audio.playCue('handoff_static');
 
-    this.transitions.playOverlayPulse(
-      'overseer_slice',
-      uiCopy.prologue.fractureCaption,
-      () => {
-        // Midpoint: swap warm kitchen DreamCanvas -> Zeiss-glass WakeupBriefingCanvas
-        this.dream.setActive(false);
-        this.root.querySelector('#dream-layer')?.classList.add('hidden');
-        this.root.querySelector('#optics-layer')?.classList.add('hidden');
-        this.optics.setActive(false);
-        this.wakeupCanvas.setPhase('anim_transfer');
-        this.wakeupCanvas.setActive(true);
-        const s = this.store.getState();
-        this.bootView.showPrologueConversation(
-          'prologue_wakeup',
-          'overseer',
-          'MIND CARETAKER · WAKE-UP BRIEFING',
-          s.humanity
-        );
-        // Clear previous kitchen transcript cleanly while fracture settles
-        const scrollEl = this.root.querySelector<HTMLElement>('#prologue-scroll');
-        const choicesEl = this.root.querySelector<HTMLElement>('#prologue-choices');
-        if (scrollEl) scrollEl.innerHTML = '';
-        if (choicesEl) choicesEl.innerHTML = '';
-        this.syncAudioMusic({ ...s, mode: 'boot' });
-      },
-      {
-        midpointMs: 450,
-        durationMs: 1950,
-        onComplete: () => {
-          // Quiet cryo settle breath before Overseer speaks
-          this.prologueStepTimer = window.setTimeout(() => {
-            this.prologueStepTimer = null;
-            this.startPrologueWakeup();
-          }, 480);
+    // Stage 1 (1.35s): Eyelids drift shut and intake room powers down into white-noise standby
+    const tStandby = window.setTimeout(() => {
+      this.dream.setActive(false);
+      this.root.querySelector('#dream-layer')?.classList.add('hidden');
+      this.root.querySelector('#optics-layer')?.classList.add('hidden');
+      this.optics.setActive(false);
+      this.wakeupCanvas.setPhase('anim_handoff_static');
+      this.wakeupCanvas.setActive(true);
+      this.bootView.showHandoff();
+
+      const scrollEl = this.root.querySelector<HTMLElement>('#prologue-scroll');
+      const choicesEl = this.root.querySelector<HTMLElement>('#prologue-choices');
+      if (scrollEl) scrollEl.innerHTML = '';
+      if (choicesEl) choicesEl.innerHTML = '';
+
+      const s = this.store.getState();
+      this.syncAudioMusic({ ...s, mode: 'boot' });
+    }, 1350);
+
+    // Stage 2 (after ~4.9s of standby static calibration): crisp Overseer slice wakes Watch #1419
+    const tWake = window.setTimeout(() => {
+      this.audio.playCue('overseer_slice');
+      this.transitions.playOverlayPulse(
+        'overseer_slice',
+        uiCopy.prologue.fractureCaption,
+        () => {
+          this.wakeupCanvas.setPhase('anim_transfer');
+          this.wakeupCanvas.setActive(true);
+          const s = this.store.getState();
+          this.bootView.showPrologueConversation(
+            'prologue_wakeup',
+            'overseer',
+            uiCopy.prologue.wakeupSubtitle ?? 'WATCH CARETAKER · FIRST BRIEFING',
+            s.humanity
+          );
+          this.syncAudioMusic({ ...s, mode: 'boot' });
         },
-      }
-    );
+        {
+          midpointMs: 380,
+          durationMs: 1350,
+          onComplete: () => {
+            this.prologueStepTimer = window.setTimeout(() => {
+              this.prologueStepTimer = null;
+              this.startPrologueWakeup();
+            }, 350);
+          },
+        }
+      );
+    }, 6250);
+
+    this.prologueTimers.push(tStandby, tWake);
   }
 
   private startPrologueWakeup(): void {
@@ -876,7 +909,7 @@ export class UIController {
     this.bootView.showPrologueConversation(
       'prologue_wakeup',
       'overseer',
-      'MIND CARETAKER · WAKE-UP BRIEFING',
+      uiCopy.prologue.wakeupSubtitle ?? 'WATCH CARETAKER · FIRST BRIEFING',
       s.humanity
     );
 
@@ -892,8 +925,9 @@ export class UIController {
     this.voice.stop();
     this.bootView.dissolvePrologueRibbon();
     this.wakeupCanvas.setPhase('anim_aperture');
+    this.audio.playCue('aperture_unseal');
 
-    // Ensure live drifting 3D cosmos is glowing softly behind the dissolving schematic
+    // Ensure live drifting 3D cosmos is glowing softly behind the unsealing Zeiss shutter arcs
     this.root.querySelector('#optics-layer')?.classList.remove('hidden');
     this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID]);
     this.optics.setAmbientDrift(true);
@@ -904,11 +938,11 @@ export class UIController {
       this.wakeupCanvas.setActive(false);
       this.store.setIntroStage('title');
       this.enterTitleOverlay(false);
-    }, 1450);
+    }, 4100);
   }
 
   private choosePrologueOption(choiceIndex: number): void {
-    if (this.prologuePhase !== 'kitchen' && this.prologuePhase !== 'wakeup') return;
+    if (this.prologuePhase !== 'assistant' && this.prologuePhase !== 'wakeup') return;
     this.audio.playCue('choice');
     this.voice.stop();
     this.bootView.setInputLocked(true);
@@ -940,6 +974,37 @@ export class UIController {
     const visibleEntries = snap.entries.slice(0, this.prologueRevealedCount);
     const latestEntry = visibleEntries[visibleEntries.length - 1];
 
+    // Drive intake suite tableaus + H% calibration wave during assistant prologue
+    if (this.prologuePhase === 'assistant' && latestEntry) {
+      if (latestEntry.tableauCue) {
+        this.prologueTableau = latestEntry.tableauCue;
+        this.dream.setState(
+          this.prologueCalibHumanity,
+          false,
+          false,
+          'phantom_upload_witness',
+          this.prologueTableau
+        );
+      }
+      if (latestEntry.hWaveCue === 'hold_100') {
+        this.prologueCalibHumanity = 100;
+        this.dream.setHumanityOscillation?.(null);
+        this.dream.setState(100, false, false, 'phantom_upload_witness', this.prologueTableau);
+      } else if (latestEntry.hWaveCue === 'sweep') {
+        this.dream.setState(this.prologueCalibHumanity, false, false, 'phantom_upload_witness', this.prologueTableau);
+        this.dream.setHumanityOscillation?.({
+          center: 58,
+          amplitude: 40,
+          periodSec: 11.5,
+          startPhase: Math.PI * 0.5,
+        });
+      } else if (latestEntry.hWaveCue === 'settle_70') {
+        this.prologueCalibHumanity = 70;
+        this.dream.setHumanityOscillation?.(null);
+        this.dream.setState(70, false, false, 'phantom_upload_witness', this.prologueTableau);
+      }
+    }
+
     // Drive 5-phase WakeupBriefingCanvas in lockstep with Overseer # anim: tags
     if (this.prologuePhase === 'wakeup' && latestEntry?.animCue) {
       this.wakeupCanvas.setPhase(latestEntry.animCue);
@@ -955,6 +1020,7 @@ export class UIController {
     this.dialogueFeed.renderEntriesOnly(scrollEl, visibleEntries, {
       animateFromIndex: animateFrom,
       channel: this.prologuePhase === 'wakeup' ? 'overseer' : 'prologue',
+      deferScroll: true,
     });
 
     if (speakLatest && latestEntry) {
@@ -986,19 +1052,25 @@ export class UIController {
       });
     } else {
       const endLabel =
-        this.prologuePhase === 'kitchen' ? 'Let the morning go' : 'Step toward the glass';
+        this.prologuePhase === 'assistant' ? 'Step through the handoff' : 'Step toward the glass';
       this.bootView.renderPrologueControls({
         continueLabel: endLabel,
         onHover: () => this.audio.playHoverTick(),
         onAdvance: () => this.advancePrologue(),
       });
     }
+
+    // Re-pin after #prologue-choices resizes the bottom of the flex column
+    this.dialogueFeed.scrollToLatest(scrollEl);
   }
 
   private enterTitleOverlay(isReturningBoot: boolean): void {
     this.prologuePhase = 'title';
     this.activePrologueSnap = null;
     this.wakeupCanvas.setActive(false);
+    this.dream.setHumanityOscillation?.(null);
+    this.dream.setDrowsyPeek?.(false);
+    this.dream.setWakeProgress?.(1.0);
     this.dream.setActive(false);
     this.root.querySelector('#dream-layer')?.classList.add('hidden');
     this.root.querySelector('#optics-layer')?.classList.remove('hidden');
@@ -1014,6 +1086,7 @@ export class UIController {
   private handleTitlePrimaryAction(): void {
     this.audio.unlock();
     this.audio.playCue('boot_click');
+    this.audio.playCue('aperture_unseal');
     this.wakeupCanvas.setActive(false);
 
     const s = this.store.getState();
@@ -1705,8 +1778,9 @@ export class UIController {
     `;
 
     const snap = this.futureDialogue.startKnot('future_humanity_echo');
-    this.dialogueFeed.renderEntriesOnly(scroll, snap.entries, { animateFromIndex: 0 });
+    this.dialogueFeed.renderEntriesOnly(scroll, snap.entries, { animateFromIndex: 0, deferScroll: true });
     panel.classList.remove('hidden');
+    this.dialogueFeed.scrollToLatest(scroll, { instant: true });
     this.dialogueFeed.speakEntries(snap.lastAddedEntries);
   }
 
@@ -1908,6 +1982,9 @@ export class UIController {
     this.closeSiblingComms();
     this.hideCommsToast();
     this.wakeupCanvas.setActive(false);
+    this.dream.setHumanityOscillation?.(null);
+    this.dream.setDrowsyPeek?.(false);
+    this.dream.setWakeProgress?.(1.0);
 
     this.suppressMinigamePullback = true;
     this.minigameHost.destroy();
@@ -2037,6 +2114,7 @@ export class UIController {
       choicesEl.querySelector('#btn-audit-now')?.addEventListener('click', () => {
         this.triggerOverseerInterrogation(knot);
       });
+      this.dialogueFeed.scrollToLatest(this.root.querySelector<HTMLElement>('#dream-scroll'));
     }
 
     void this.voice.waitForQueueNearEnd(260, 2200).then(() => {
@@ -2275,8 +2353,8 @@ export class UIController {
     const bootVisual = this.bootView.getVisualMode();
     const isBoot = state.mode === 'boot';
     const isMinigame = state.mode === 'waking_3d' && this.activeMinigameTargetId !== null;
-    const bootUsesDream = isBoot && (bootVisual === 'breath' || bootVisual === 'prologue_kitchen');
-    const bootUsesWakeup = isBoot && bootVisual === 'prologue_wakeup';
+    const bootUsesDream = isBoot && (bootVisual === 'breath' || bootVisual === 'prologue_assistant');
+    const bootUsesWakeup = isBoot && (bootVisual === 'prologue_wakeup' || bootVisual === 'prologue_handoff');
     const bootUsesOptics =
       isBoot && (bootVisual === 'title' || (bootUsesWakeup && this.wakeupCanvas.getPhase() === 'anim_aperture'));
     const visSig = `${state.mode}|${bootVisual}|${bootUsesWakeup ? this.wakeupCanvas.getPhase() : ''}|${isMinigame ? 1 : 0}`;
@@ -2373,7 +2451,7 @@ export class UIController {
     }
 
     const dreamStateSig = `${state.humanity}|${personaPruned ? 1 : 0}|${state.overseerAuditActive ? 1 : 0}|${activePersona}`;
-    if (dreamStateSig !== this.lastDreamStateSig) {
+    if (!bootUsesDream && dreamStateSig !== this.lastDreamStateSig) {
       this.lastDreamStateSig = dreamStateSig;
       this.dream.setState(
         state.humanity,
@@ -2394,10 +2472,9 @@ export class UIController {
 
   private syncAudioMusic(state: GameState): void {
     const bootVisual = this.bootView.getVisualMode();
-    const effectiveMode: GameMode =
-      state.mode === 'boot' && (bootVisual === 'breath' || bootVisual === 'prologue_kitchen')
-        ? 'dream_2d'
-        : state.mode;
+    const bootUsesDream =
+      state.mode === 'boot' && (bootVisual === 'breath' || bootVisual === 'prologue_assistant');
+    const effectiveMode: GameMode = bootUsesDream ? 'dream_2d' : state.mode;
 
     const moodSig = `${effectiveMode}|${state.humanity}|${state.overseerAuditActive ? 1 : 0}|${state.wavelengthNm}`;
     if (moodSig !== this.lastAudioMoodSig) {
@@ -2405,7 +2482,9 @@ export class UIController {
       this.audio.updateMood(effectiveMode, state.humanity, state.overseerAuditActive, state.wavelengthNm);
     }
     const activeMgId = this.minigameHost.getActiveMinigameId();
-    const activePersona = state.activeDreamPersonaId || 'phantom_spouse';
+    const activePersona = bootUsesDream
+      ? 'phantom_upload_witness'
+      : state.activeDreamPersonaId || 'phantom_spouse';
     const musicSig = `${effectiveMode}|${state.humanity}|${state.overseerAuditActive ? 1 : 0}|${state.overseerSuspicion}|${state.chaosDrift}|${state.shift}|${activeMgId ?? ''}|${activePersona}|${state.prunedPersonas.join('|')}`;
     if (musicSig !== this.lastMusicCtxSig) {
       this.lastMusicCtxSig = musicSig;
@@ -2701,7 +2780,7 @@ export class UIController {
             : mode === 'dream_2d'
               ? this.dream.getPerfInfo?.()
               : mode === 'boot'
-                ? bootVisual === 'breath' || bootVisual === 'prologue_kitchen'
+                ? bootVisual === 'breath' || bootVisual === 'prologue_assistant'
                   ? this.dream.getPerfInfo?.()
                   : this.optics.getPerfInfo?.()
                 : undefined;
@@ -2731,6 +2810,9 @@ export class UIController {
     this.hideCommsToast();
     this.hideOverseerPanel();
     this.wakeupCanvas.setActive(false);
+    this.dream.setHumanityOscillation?.(null);
+    this.dream.setDrowsyPeek?.(false);
+    this.dream.setWakeProgress?.(1.0);
     this.root.querySelector('#future-panel')?.classList.add('hidden');
     this.root.querySelector('#minigame-layer')?.classList.add('hidden');
     this.root.querySelector('#vernier-dock')?.classList.remove('is-ir-nudge');

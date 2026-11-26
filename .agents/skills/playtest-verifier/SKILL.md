@@ -15,9 +15,10 @@ Use after any UI, Three.js shader, 2D dream canvas, dialogue UI, or gameplay flo
 4. `scripts/README.md`
 
 ## Core Workflow
-1. **Headless Browser Verification (`npm run test:visual`):**
-   * Boot the pure HTML Vite build and drive it with Playwright at Desktop 16:9 (`1280x720` / `1920x1080`) and Mobile Landscape (`844x390`).
-   * Assert **zero** uncaught page errors, console errors, failed asset requests, or WebGL shader compile warnings.
+1. **Two-Speed Browser Verification:**
+   * **During LLM Dev Loops (`npm run test:visual:smoke` or targeted flags):** Run `node scripts/e2e-visual.mjs --smoke` (~20–30s covering Prologue, Sky Aperture, Dream, and `constellation_recall`), or scope tightly to touched screens via `--flows=prologue,dream` / `--mg=<id>`.
+   * **Full CI Sweep (`npm run test:visual`):** Runs in `.github/workflows/ci.yml` on PRs/pushes (all 21 instruments + V1/V2 variants + Cold/Warm + Desktop `1280x720` + 7 Mobile Landscape `844x390` targets). Only invoke locally when preparing an explicit phase sign-off or debugging CI failures.
+   * Always assert **zero** uncaught page errors, console errors, failed asset requests, or WebGL shader compile warnings.
 2. **Inspect Visual Regression Filmstrip:**
    * Using `?dev=1`, inspect Kitchen Prologue, 5-Phase Wakeup Q&A, Sibling 1420 Relay, 3D Deep-Field Lensing, active cosmic instruments + visual gain finale, 2D Dream Cache, and Overseer Audit (`H = 84%, 58%, 24%`).
    * Verify visual conformance against `docs/ART_DIRECTION.md` (Zeiss-glass optics, Layout A bottom-anchored feeds, color-coded choice plates with zero `.choice-affinity-dot` spoilers, zero clipped choices or finger-occluded controls at `844x390`).

@@ -607,12 +607,18 @@ export class OpticsScene {
 
   pullInToTarget1(): void {
     this.ambientDrift = false;
+    // Start slightly wider for an unhurried ceremonial pull into the deep-sky view
+    this.fovDeg = Math.max(this.fovDeg, 68);
+    if (this.camera) {
+      this.camera.fov = this.fovDeg;
+      this.camera.updateProjectionMatrix();
+    }
     // Shortest angular path from current drifting yaw to RA 22°
     const delta = ((((22 - this.yawDeg) % 360) + 540) % 360) - 180;
     this.targetYawDeg = this.yawDeg + delta;
     this.targetPitchDeg = -6;
-    this.targetFovDeg = 56;
-    this.introPullUntil = performance.now() + 1250;
+    this.targetFovDeg = 54;
+    this.introPullUntil = performance.now() + 3400;
   }
 
   private isTargetVisible(id: string): boolean {

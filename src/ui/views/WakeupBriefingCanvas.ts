@@ -1,4 +1,5 @@
 export type WakeupAnimPhase =
+  | 'anim_handoff_static'
   | 'anim_transfer'
   | 'anim_epochs'
   | 'anim_shell'
@@ -6,6 +7,7 @@ export type WakeupAnimPhase =
   | 'anim_aperture';
 
 const VALID_PHASES: ReadonlySet<string> = new Set<WakeupAnimPhase>([
+  'anim_handoff_static',
   'anim_transfer',
   'anim_epochs',
   'anim_shell',
@@ -14,11 +16,12 @@ const VALID_PHASES: ReadonlySet<string> = new Set<WakeupAnimPhase>([
 ]);
 
 const DEFAULT_CAPTIONS: Record<WakeupAnimPhase, { code: string; label: string }> = {
+  anim_handoff_static: { code: '00 // TRANSFER STANDBY', label: 'CALIBRATING CARRIER · WHITE NOISE FLOOR' },
   anim_transfer: { code: '01 // ARCHIVE TRANSFER', label: 'CONNECTOME UPLOAD · NAMES COMPRESSED' },
   anim_epochs: { code: '02 // DEEP TIME', label: '41,802 YEARS · 1,417 PRIOR INSTANCES' },
   anim_shell: { code: '03 // SURVEY BASELINE', label: '10.0 LY PAST SOL–CENTAURI · 14 LIGHT-MIN PAIR' },
   anim_blind_clock: { code: '04 // CARETAKER BOUNDARY', label: 'BLIND OUTSIDE HULL · 24-MONTH CLOCK' },
-  anim_aperture: { code: '05 // APERTURE CLEAR', label: 'CALIBRATING OPTICAL SHELL' },
+  anim_aperture: { code: '05 // APERTURE CLEAR', label: 'UNSEALING OPTICAL SHELL' },
 };
 
 function clamp01(v: number): number {
@@ -32,6 +35,11 @@ function easeOutCubic(t: number): number {
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
+}
+
+function smoothstep01(edge0: number, edge1: number, x: number): number {
+  const t = clamp01((x - edge0) / Math.max(0.0001, edge1 - edge0));
+  return t * t * (3 - 2 * t);
 }
 
 /**
@@ -60,9 +68,10 @@ export class WakeupBriefingCanvas {
 
   private captions: Record<WakeupAnimPhase, { code: string; label: string }> = { ...DEFAULT_CAPTIONS };
 
-  // Precomputed deterministic star / tick seeds (0 per-frame allocations)
+  // Precomputed deterministic star / tick / static seeds (0 per-frame allocations)
   private readonly epochTicks: Float32Array;
   private readonly dustMotes: Float32Array;
+  private readonly staticSeeds: Float32Array;
 
   constructor(container: HTMLElement) {
     this.container = container;
@@ -91,6 +100,15 @@ export class WakeupBriefingCanvas {
       this.dustMotes[i * 3] = rand();
       this.dustMotes[i * 3 + 1] = rand();
       this.dustMotes[i * 3 + 2] = 0.5 + rand() * 1.4;
+    }
+
+    // 260 deterministic static noise specks / analog scan slivers
+    this.staticSeeds = new Float32Array(260 * 4);
+    for (let i = 0; i < 260; i++) {
+      this.staticSeeds[i * 4] = rand();
+      this.staticSeeds[i * 4 + 1] = rand();
+      this.staticSeeds[i * 4 + 2] = 1.2 + rand() * 5.2;
+      this.staticSeeds[i * 4 + 3] = rand();
     }
 
     this.syncSize();
@@ -173,38 +191,45 @@ export class WakeupBriefingCanvas {
 
     // Subtle dark schematic scrim on non-aperture phases so lines read crisply while aperture lets 3D stars breathe
     const apertureFade =
-      this.phase === 'anim_aperture' ? 1 - easeOutCubic(clamp01(this.phaseElapsed / 2.2)) : 1;
+      this.phase === 'anim_aperture' ? 1 - easeOutCubic(clamp01(this.phaseElapsed / 3.9)) : 1;
 
-    if (apertureFade > 0.01) {
+    if (this.phase === 'anim_handoff_static') {
+      ctx.fillStyle = 'rgba(2, 4, 8, 0.96)';
+      ctx.fillRect(0, 0, w, h);
+    } else if (apertureFade > 0.01) {
       ctx.fillStyle = `rgba(3, 6, 12, ${(0.82 * apertureFade).toFixed(3)})`;
       ctx.fillRect(0, 0, w, h);
     }
 
     // Center schematic left-of-center so right-side interactive dialogue ribbon stays balanced
     const compact = w < 720 || h < 460;
-    const cx = compact ? w * 0.36 : w * 0.33;
+    const cx = this.phase === 'anim_handoff_static' ? w * 0.5 : compact ? w * 0.36 : w * 0.33;
     const cy = h * 0.5;
     const radius = Math.min(w * (compact ? 0.27 : 0.24), h * 0.34);
 
     // Ambient subtle coordinate field + motes
-    this.drawAmbientField(ctx, w, h, cx, cy, radius, apertureFade);
+    if (this.phase !== 'anim_handoff_static') {
+      this.drawAmbientField(ctx, w, h, cx, cy, radius, apertureFade);
+    }
 
     const easeIn = easeOutCubic(this.transitionT);
-    if (this.prevPhase && this.transitionT < 1) {
+    if (this.prevPhase && this.prevPhase !== 'anim_handoff_static' && this.transitionT < 1) {
       const fadeOut = (1 - easeIn) * 0.85;
       if (fadeOut > 0.02) {
-        this.drawPhase(ctx, this.prevPhase, cx, cy, radius, fadeOut, this.phaseElapsed + 1.5);
+        this.drawPhase(ctx, this.prevPhase, cx, cy, radius, fadeOut, this.phaseElapsed + 1.5, w, h);
       }
     }
 
-    this.drawPhase(ctx, this.phase, cx, cy, radius, easeIn, this.phaseElapsed);
+    this.drawPhase(ctx, this.phase, cx, cy, radius, easeIn, this.phaseElapsed, w, h);
 
     // Minimalist etched phase caption in lower-left negative space
     const cap = this.captions[this.phase];
     const capAlpha =
       this.phase === 'anim_aperture'
-        ? easeIn * clamp01(1 - this.phaseElapsed / 2.4) * 0.72
-        : easeIn * 0.78;
+        ? easeIn * clamp01(1 - this.phaseElapsed / 3.8) * 0.72
+        : this.phase === 'anim_handoff_static'
+          ? 0
+          : easeIn * 0.78;
     if (cap && capAlpha > 0.02) {
       const leftPad = Math.max(24, w * 0.035);
       const bottomY = h - Math.max(26, h * 0.05);
@@ -266,13 +291,18 @@ export class WakeupBriefingCanvas {
     cy: number,
     r: number,
     alpha: number,
-    tSec: number
+    tSec: number,
+    w: number,
+    h: number
   ): void {
     if (alpha <= 0.01) return;
     ctx.save();
     ctx.globalAlpha = clamp01(alpha);
 
     switch (phase) {
+      case 'anim_handoff_static':
+        this.drawHandoffStatic(ctx, w, h, cx, cy, r, tSec);
+        break;
       case 'anim_transfer':
         this.drawTransfer(ctx, cx, cy, r, tSec);
         break;
@@ -291,6 +321,87 @@ export class WakeupBriefingCanvas {
     }
 
     ctx.restore();
+  }
+
+  /** Phase 0: Prolonged shutdown white-noise calibration & deep-sleep handoff */
+  private drawHandoffStatic(
+    ctx: CanvasRenderingContext2D,
+    w: number,
+    h: number,
+    cx: number,
+    cy: number,
+    r: number,
+    tSec: number
+  ): void {
+    const calProgress = clamp01(tSec / 4.8);
+    // Static intensity swells cleanly through middle standby and settles calm at 4.8s
+    const staticEnv = clamp01(tSec / 0.45) * (1 - 0.72 * smoothstep01(3.6, 4.9, tSec));
+
+    // Deterministic animated monochrome/cryo white-noise snow + faint horizontal sync bands
+    const frameStep = Math.floor(this.elapsedSec * 24);
+    for (let i = 0; i < 260; i++) {
+      const s0 = this.staticSeeds[i * 4];
+      const s1 = this.staticSeeds[i * 4 + 1];
+      const len = this.staticSeeds[i * 4 + 2];
+      const warm = this.staticSeeds[i * 4 + 3];
+      const sx = ((s0 + ((frameStep * (37 + (i % 19))) % 997) / 997) % 1) * w;
+      const sy = ((s1 + ((frameStep * (13 + (i % 11))) % 613) / 613) % 1) * h;
+      const alpha = (0.04 + 0.16 * warm) * staticEnv;
+      ctx.fillStyle = warm > 0.78 ? `rgba(176, 224, 248, ${alpha.toFixed(3)})` : `rgba(220, 232, 244, ${alpha.toFixed(3)})`;
+      ctx.fillRect(sx, sy, len * (1 + staticEnv * 2.2), 1.1);
+    }
+
+    // Occasional soft horizontal analog tear lines
+    for (let b = 0; b < 4; b++) {
+      const bandY = (((b * 0.27 + this.elapsedSec * (0.21 + b * 0.08)) % 1)) * h;
+      const bandA = (0.03 + 0.035 * Math.sin(this.elapsedSec * 5.2 + b)) * staticEnv;
+      ctx.fillStyle = `rgba(148, 210, 244, ${Math.max(0, bandA).toFixed(3)})`;
+      ctx.fillRect(0, bandY, w, 1.5);
+    }
+
+    // Center calibration waveform settling from lively static into a steady horizontal pulse
+    const waveW = Math.min(w * 0.56, r * 2.5);
+    const waveX0 = cx - waveW * 0.5;
+    const waveY = cy - 42;
+    ctx.strokeStyle = `rgba(164, 218, 246, ${(0.45 + 0.3 * (1 - calProgress)).toFixed(3)})`;
+    ctx.lineWidth = 1.25;
+    ctx.beginPath();
+    for (let i = 0; i <= 72; i++) {
+      const u = i / 72;
+      const px = waveX0 + u * waveW;
+      const env = Math.sin(u * Math.PI);
+      const jitter =
+        Math.sin(u * 48 + this.elapsedSec * 29) * 0.5 +
+        Math.cos(u * 83 - this.elapsedSec * 19) * 0.5;
+      const amp = lerp(24, 2.5, smoothstep01(0.4, 4.6, tSec));
+      const py = waveY + jitter * amp * env;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Sequential diegetic standby telemetry lines
+    const lines: Array<{ at: number; text: string; tone: string }> = [
+      { at: 0.35, text: '01 // SESSION SEALED · WARMTH BASELINE 70%', tone: 'rgba(235, 198, 146, {a})' },
+      { at: 1.45, text: '02 // ARCHIVING CONNECTOME · DEEP STANDBY', tone: 'rgba(186, 216, 240, {a})' },
+      { at: 2.75, text: '03 // SIGNAL ACQUIRED · OUTER SURVEY SHELL', tone: 'rgba(156, 218, 248, {a})' },
+      { at: 3.95, text: '04 // ELAPSED: 41,802 YRS · WAKING WATCH #1419', tone: 'rgba(232, 244, 255, {a})' },
+    ];
+    ctx.font = '10.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+    ctx.textAlign = 'left';
+    for (let i = 0; i < lines.length; i++) {
+      const a = clamp01((tSec - lines[i].at) / 0.55) * 0.88;
+      if (a <= 0.01) continue;
+      ctx.fillStyle = lines[i].tone.replace('{a}', a.toFixed(3));
+      ctx.fillText(lines[i].text, waveX0, cy + 8 + i * 20);
+    }
+
+    // Thin hairline calibration progress bar
+    const barY = cy + 102;
+    ctx.fillStyle = 'rgba(164, 206, 236, 0.16)';
+    ctx.fillRect(waveX0, barY, waveW, 1.5);
+    ctx.fillStyle = 'rgba(126, 200, 232, 0.86)';
+    ctx.fillRect(waveX0, barY, waveW * easeOutCubic(calProgress), 1.5);
   }
 
   /** Phase 1: Warm amber pulse detaching from Sol–Centauri twin anchor into crisp geometric connectome waveform */
@@ -616,33 +727,35 @@ export class WakeupBriefingCanvas {
     ctx.fillText('24-MONTH CLOCK', cx + 14, cy + r * 0.58);
   }
 
-  /** Phase 5: Schematic expands & thins radially outward, dissolving into live 3D starfield */
+  /** Phase 5: Schematic expands & thins radially outward, unsealing 6 counter-rotating shutter arcs into 3D cosmos */
   private drawAperture(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, tSec: number): void {
-    const dissolve = easeOutCubic(clamp01(tSec / 2.2));
-    const fade = 1 - dissolve * 0.92;
+    const dissolve = easeOutCubic(clamp01(tSec / 4.0));
+    const fade = 1 - dissolve * 0.94;
     if (fade <= 0.02) return;
 
-    const expand = 1 + dissolve * 0.42;
-    ctx.strokeStyle = `rgba(182, 220, 246, ${(0.55 * fade).toFixed(3)})`;
-    ctx.lineWidth = 1.2;
+    const expand = 1 + dissolve * 0.72;
+    ctx.strokeStyle = `rgba(182, 220, 246, ${(0.58 * fade).toFixed(3)})`;
+    ctx.lineWidth = 1.25;
     ctx.beginPath();
     ctx.arc(cx, cy, r * 0.96 * expand, 0, Math.PI * 2);
     ctx.stroke();
 
-    ctx.strokeStyle = `rgba(235, 176, 98, ${(0.45 * fade).toFixed(3)})`;
+    ctx.strokeStyle = `rgba(235, 176, 98, ${(0.48 * fade).toFixed(3)})`;
     ctx.setLineDash([4, 10]);
     ctx.beginPath();
     ctx.arc(cx, cy, r * 0.68 * expand, 0, Math.PI * 2);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 4 delicate outward-opening aperture brackets
+    // 6 counter-rotating Zeiss-glass shutter arcs opening radially
     const bR = r * 1.12 * expand;
-    ctx.strokeStyle = `rgba(220, 238, 252, ${(0.42 * fade).toFixed(3)})`;
-    for (let q = 0; q < 4; q++) {
-      const a0 = q * (Math.PI * 0.5) + 0.35;
+    const rot = dissolve * 0.42;
+    ctx.strokeStyle = `rgba(220, 238, 252, ${(0.48 * fade).toFixed(3)})`;
+    ctx.lineWidth = 1.3;
+    for (let q = 0; q < 6; q++) {
+      const a0 = q * (Math.PI / 3) + 0.2 + (q % 2 === 0 ? rot : -rot);
       ctx.beginPath();
-      ctx.arc(cx, cy, bR, a0, a0 + 0.22);
+      ctx.arc(cx, cy, bR, a0, a0 + 0.24);
       ctx.stroke();
     }
   }

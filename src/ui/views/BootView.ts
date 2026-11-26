@@ -19,7 +19,12 @@ interface CharacterInfo {
 
 const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
 
-export type BootVisualMode = 'breath' | 'prologue_kitchen' | 'prologue_wakeup' | 'title';
+export type BootVisualMode =
+  | 'breath'
+  | 'prologue_assistant'
+  | 'prologue_handoff'
+  | 'prologue_wakeup'
+  | 'title';
 
 export interface BootViewCallbacks {
   onAdvancePrologue: () => void;
@@ -30,8 +35,8 @@ export interface BootViewCallbacks {
 
 /**
  * Manages the transparent Interactive Prologue + Live-Cosmos Integrated Title overlay:
- * - Frame 0 (`breath`): Sensory audio-unlock breath over softly veiled live kitchen canvas
- * - Beat A (`prologue_kitchen`): Interactive Sunday kitchen conversation with [RELATION:SPOUSE_01]
+ * - Frame 0 (`breath`): Sensory audio-unlock breath over softly veiled live intake suite canvas
+ * - Beat A (`prologue_assistant`): Interactive calibration conversation with Intake Assistant
  * - Beat B (`prologue_wakeup`): 5-phase WakeupBriefingCanvas schematic + interactive Overseer Q&A
  * - Beat C (`title`): Monumental title over live drifting 3D OpticsScene cosmos
  */
@@ -55,12 +60,14 @@ export class BootView {
   }
 
   populate(): void {
+    const breathEyebrow = this.root.querySelector<HTMLElement>('#prologue-breath-eyebrow');
     const breathLine = this.root.querySelector<HTMLElement>('#prologue-breath-line');
     const breathHint = this.root.querySelector<HTMLElement>('#prologue-breath-hint');
     const eyebrow = this.root.querySelector<HTMLElement>('#boot-eyebrow');
     const title = this.root.querySelector<HTMLElement>('#boot-title');
     const newRunBtn = this.root.querySelector<HTMLElement>('#btn-title-new-run');
 
+    if (breathEyebrow) breathEyebrow.textContent = uiCopy.prologue.breathEyebrow ?? 'CALIBRATION SUITE · STANDBY';
     if (breathLine) breathLine.textContent = uiCopy.prologue.breathPrompt;
     if (breathHint) breathHint.textContent = uiCopy.prologue.advanceHint;
     if (eyebrow) eyebrow.textContent = uiCopy.title.eyebrow;
@@ -150,8 +157,18 @@ export class BootView {
     this.root.querySelector('#title-overlay')?.classList.add('hidden');
   }
 
+  showHandoff(): void {
+    this.hasActiveChoices = false;
+    this.inputLocked = true;
+    this.setVisualMode('prologue_handoff');
+    this.root.querySelector('#prologue-breath-panel')?.classList.add('hidden');
+    this.root.querySelector('#prologue-convo-ribbon')?.classList.add('hidden');
+    this.root.querySelector('#title-overlay')?.classList.add('hidden');
+    this.root.querySelector('#wakeup-canvas-mount')?.classList.remove('hidden');
+  }
+
   showPrologueConversation(
-    mode: 'prologue_kitchen' | 'prologue_wakeup',
+    mode: 'prologue_assistant' | 'prologue_wakeup',
     headerSpeakerId: string,
     headerSubtitle: string,
     humanity: number,

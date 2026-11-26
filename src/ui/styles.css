@@ -99,11 +99,11 @@ body,
 }
 
 .stage > section.is-leaving[data-leave-kind='aperture_boot'] {
-  animation: leaveApertureBoot 1.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: leaveApertureBoot 3.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .stage > section.is-arriving[data-arrive-kind='aperture_boot'] {
-  animation: arriveApertureBoot 1.95s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arriveApertureBoot 3.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* --- 2. 3D Sky -> Direct Minigame (optical_dive) --- */
@@ -286,6 +286,10 @@ body,
   animation-duration: 1.15s;
 }
 
+.transition-stage[data-kind='aperture_boot'].is-active .ts-bloom {
+  animation-duration: 3.4s;
+}
+
 @keyframes fxFlareStreak {
   0% { opacity: 0; transform: translate(-50%, -50%) scaleX(0.15) scaleY(0.7); }
   28% { opacity: 0.95; transform: translate(-50%, -50%) scaleX(1) scaleY(1.15); }
@@ -324,6 +328,10 @@ body,
 
 .transition-stage[data-kind='overseer_slice'].is-active .ts-flare {
   animation-duration: 1.05s;
+}
+
+.transition-stage[data-kind='aperture_boot'].is-active .ts-flare {
+  animation-duration: 2.9s;
 }
 
 @keyframes fxIrisBoot {
@@ -373,7 +381,7 @@ body,
 }
 
 .transition-stage[data-kind='aperture_boot'].is-active .ts-iris-ring {
-  animation: fxIrisBoot 1.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxIrisBoot 3.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .transition-stage[data-kind='optical_dive'][data-tone='warm'] .ts-iris-ring,
@@ -679,7 +687,8 @@ body,
   cursor: pointer;
 }
 
-.boot-screen[data-boot-visual='prologue_kitchen'],
+.boot-screen[data-boot-visual='prologue_assistant'],
+.boot-screen[data-boot-visual='prologue_handoff'],
 .boot-screen[data-boot-visual='prologue_wakeup'] {
   background: transparent;
   padding: 0;
@@ -692,17 +701,17 @@ body,
   cursor: pointer;
 }
 
-/* Pure GPU-composited breath framing (zero live-canvas filter: blur!) */
+/* Pure GPU-composited breath & wake-up framing (zero live-canvas filter: blur!) */
 .stage[data-boot-visual='breath'] #dream-layer .dream-visual-pane {
   opacity: 0.72;
-  transform: scale(1.035);
-  transition: opacity 1.1s ease, transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: scale(1.045);
+  transition: opacity 2.2s ease, transform 2.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.stage[data-boot-visual='prologue_kitchen'] #dream-layer .dream-visual-pane {
+.stage[data-boot-visual='prologue_assistant'] #dream-layer .dream-visual-pane {
   opacity: 1;
   transform: scale(1);
-  transition: opacity 1.1s ease, transform 1.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 2.2s ease, transform 2.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stage[data-mode='boot'] #dream-layer .dream-ribbon,
@@ -730,7 +739,7 @@ body,
   display: block;
 }
 
-/* Frame 0 Sensory Breath (Audio Unlock) */
+/* Frame 0 Sensory Breath (Audio Unlock + Synchronized Eyelid-Slit Breathing Cue) */
 .prologue-breath-panel {
   position: relative;
   z-index: 4;
@@ -738,9 +747,32 @@ body,
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 18px;
-  max-width: 620px;
-  animation: arriveGlideUp 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  gap: 16px;
+  max-width: 640px;
+  animation: arriveGlideUp 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.prologue-breath-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(212, 224, 236, 0.58);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.95);
+}
+
+.breath-iris-line {
+  width: 84px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(235, 198, 146, 0.72) 50%, transparent 100%);
+  transform-origin: center;
+  animation: breathLidLine 5.2s ease-in-out infinite;
+}
+
+@keyframes breathLidLine {
+  0%, 100% { transform: scaleX(0.45); opacity: 0.32; }
+  34% { transform: scaleX(1.15); opacity: 0.88; }
+  56% { transform: scaleX(0.88); opacity: 0.64; }
 }
 
 .prologue-breath-panel.hidden {
@@ -889,7 +921,7 @@ body,
   text-align: center;
   max-width: 720px;
   gap: 14px;
-  animation: arriveGlideUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: arriveGlideUp 2.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .title-overlay.hidden {
@@ -1803,7 +1835,8 @@ body,
 .dialogue-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 8px 6px 0;
+  padding: 24px 8px 18px 0;
+  scroll-padding-bottom: 18px;
   display: flex;
   flex-direction: column;
   gap: 12px;
