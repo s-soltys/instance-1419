@@ -69,6 +69,13 @@ export class DreamCanvas {
   private wakeProgress = 1.0;
   private wakeAnimating = false;
   private wakeElapsed = 0;
+  private wakeStartProgress = 0.02;
+  private drowsyPeek = false;
+  private drowsyElapsed = 0;
+  private sleepClosing = false;
+  private sleepCloseElapsed = 0;
+  private sleepStartProgress = 1.0;
+  private headTiltRad = 0;
   private oscConfig: HumanityOscillationConfig | null = null;
   private oscElapsed = 0;
   private slicePulse = 0.0;
@@ -109,6 +116,7 @@ export class DreamCanvas {
         uOverseer: { value: this.overseerActive ? 1.0 : 0.0 },
         uReveal: { value: this.revealProgress },
         uWakeProgress: { value: this.wakeProgress },
+        uHeadTilt: { value: this.headTiltRad },
         uSlicePulse: { value: this.slicePulse },
         uViewAspect: { value: w / h },
         uTexAspect: { value: 1280 / 714 },
@@ -223,18 +231,47 @@ export class DreamCanvas {
   }
 
   setWakeProgress(progress: number): void {
+    this.drowsyPeek = false;
+    this.sleepClosing = false;
     this.wakeAnimating = false;
+    this.headTiltRad = 0;
     this.wakeProgress = Math.max(0, Math.min(1, progress));
     this.lastRenderMs = 0;
     if (this.mat) {
       this.mat.uniforms.uWakeProgress.value = this.wakeProgress;
+      this.mat.uniforms.uHeadTilt.value = 0;
     }
   }
 
+  setDrowsyPeek(active: boolean): void {
+    this.drowsyPeek = active;
+    this.wakeAnimating = false;
+    this.sleepClosing = false;
+    this.drowsyElapsed = 0;
+    this.headTiltRad = 0;
+    this.wakeProgress = active ? 0.03 : 1.0;
+    this.lastRenderMs = 0;
+    if (this.mat) {
+      this.mat.uniforms.uWakeProgress.value = this.wakeProgress;
+      this.mat.uniforms.uHeadTilt.value = 0;
+    }
+  }
+
+  triggerSleepClose(): void {
+    this.drowsyPeek = false;
+    this.wakeAnimating = false;
+    this.sleepClosing = true;
+    this.sleepCloseElapsed = 0;
+    this.sleepStartProgress = this.wakeProgress;
+    this.lastRenderMs = 0;
+  }
+
   triggerWakeSequence(): void {
+    this.drowsyPeek = false;
+    this.sleepClosing = false;
     this.wakeAnimating = true;
     this.wakeElapsed = 0;
-    this.wakeProgress = 0.02;
+    this.wakeStartProgress = Math.max(0.02, Math.min(0.45, this.wakeProgress));
     this.lastRenderMs = 0;
     if (this.mat) {
       this.mat.uniforms.uWakeProgress.value = this.wakeProgress;
@@ -293,23 +330,46 @@ export class DreamCanvas {
     const dt = Math.min(0.05, Math.max(0.001, (now - this.lastFrameMs) / 1000));
     this.lastFrameMs = now;
 
-    if (this.wakeAnimating) {
+    if (this.drowsyPeek) {
+      this.drowsyElapsed += dt;
+      // 5.2s organic breathing cycle: eyelids stay mostly shut with brief partial slits + ~2° drowsy inclination
+      const cyc = (this.drowsyElapsed % 5.2) / 5.2;
+      const slit1 = Math.exp(-Math.pow((cyc - 0.34) / 0.11, 2)) * 0.145;
+      const slit2 = Math.exp(-Math.pow((cyc - 0.56) / 0.07, 2)) * 0.075;
+      this.wakeProgress = 0.025 + slit1 + slit2;
+      this.headTiltRad = Math.sin(this.drowsyElapsed * 0.45) * 0.035;
+    } else if (this.sleepClosing) {
+      this.sleepCloseElapsed += dt;
+      const k = Math.min(1, this.sleepCloseElapsed / 1.35);
+      const eased = k * k * (3 - 2 * k);
+      this.wakeProgress = this.sleepStartProgress * (1 - eased);
+      this.headTiltRad = eased * 0.024;
+      if (k >= 1) {
+        this.wakeProgress = 0.0;
+        this.sleepClosing = false;
+      }
+    } else if (this.wakeAnimating) {
       this.wakeElapsed += dt;
       const t = this.wakeElapsed;
-      if (t < 0.95) {
-        const k = t / 0.95;
-        this.wakeProgress = 0.02 + 0.54 * (1 - Math.pow(1 - k, 2.2));
-      } else if (t < 1.22) {
-        const k = (t - 0.95) / 0.27;
+      const startP = this.wakeStartProgress;
+      if (t < 1.15) {
+        const k = t / 1.15;
+        this.wakeProgress = startP + (0.56 - startP) * (1 - Math.pow(1 - k, 2.2));
+        this.headTiltRad *= Math.max(0, 1 - dt * 2.2);
+      } else if (t < 1.48) {
+        const k = (t - 1.15) / 0.33;
         // Soft natural micro-blink dip before full focus
         const dip = Math.sin(k * Math.PI);
-        this.wakeProgress = 0.56 - dip * 0.32;
-      } else if (t < 2.65) {
-        const k = (t - 1.22) / 1.43;
+        this.wakeProgress = 0.56 - dip * 0.36;
+        this.headTiltRad *= Math.max(0, 1 - dt * 3.0);
+      } else if (t < 3.40) {
+        const k = (t - 1.48) / 1.92;
         const eased = 1 - Math.pow(1 - k, 3);
-        this.wakeProgress = 0.24 + 0.76 * eased;
+        this.wakeProgress = 0.20 + 0.80 * eased;
+        this.headTiltRad *= Math.max(0, 1 - dt * 4.0);
       } else {
         this.wakeProgress = 1.0;
+        this.headTiltRad = 0;
         this.wakeAnimating = false;
       }
     }
@@ -334,6 +394,8 @@ export class DreamCanvas {
 
     const u = this.mat.uniforms;
     const isSettled =
+      !this.drowsyPeek &&
+      !this.sleepClosing &&
       !this.wakeAnimating &&
       this.oscConfig === null &&
       this.revealProgress >= 1.0 &&
@@ -355,6 +417,7 @@ export class DreamCanvas {
     u.uOverseer.value += (targetOverseer - u.uOverseer.value) * 0.15;
     u.uReveal.value = easedReveal;
     u.uWakeProgress.value = this.wakeProgress;
+    u.uHeadTilt.value = this.headTiltRad;
     u.uSlicePulse.value = this.slicePulse;
 
     this.renderer.render(this.scene, this.camera);

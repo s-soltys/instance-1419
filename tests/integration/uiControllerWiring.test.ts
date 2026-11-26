@@ -224,8 +224,11 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     }
 
     expect(seenVisuals.has('prologue_assistant')).toBe(true);
+    expect(seenVisuals.has('prologue_handoff')).toBe(true);
     expect(seenVisuals.has('prologue_wakeup')).toBe(true);
+    expect(dream.setDrowsyPeek).toHaveBeenCalledWith(true);
     expect(dream.triggerWakeSequence).toHaveBeenCalled();
+    expect(dream.triggerSleepClose).toHaveBeenCalled();
     expect(dream.setHumanityOscillation).toHaveBeenCalled();
     expect(sawExploreTier).toBe(true);
     expect(sawConsequentialTier).toBe(true);
@@ -235,7 +238,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     // 2. Single primary CTA (`OPEN APERTURE`) pulls cleanly into scan_target_1 (Target #1 only + magnetic detent)
     appRoot.querySelector<HTMLButtonElement>('#btn-title-primary')!.click();
-    await vi.advanceTimersByTimeAsync(2400);
+    await vi.advanceTimersByTimeAsync(4300);
     expect(store.getState().mode).toBe('waking_3d');
     expect(store.getState().introStage).toBe('scan_target_1');
     expect(optics.pullInToTarget1).toHaveBeenCalled();

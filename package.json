@@ -17,7 +17,10 @@
     "test:integration": "vitest run tests/integration",
     "test:e2e": "node scripts/e2e-visual.mjs",
     "verify": "node scripts/verify.mjs",
-    "test:visual": "node scripts/e2e-visual.mjs"
+    "verify:fast": "node scripts/verify.mjs --fast",
+    "verify:smoke": "node scripts/verify.mjs --smoke",
+    "test:visual": "node scripts/e2e-visual.mjs",
+    "test:visual:smoke": "node scripts/e2e-visual.mjs --smoke"
   },
   "dependencies": {
     "inkjs": "^2.3.2",

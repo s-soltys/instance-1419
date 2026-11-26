@@ -53,6 +53,10 @@ function verifyAssetManifest() {
   console.log('[verify] Asset, Voice & Music MANIFEST.json check PASS.');
 }
 
+const args = new Set(process.argv.slice(2));
+const isFast = args.has('--fast');
+const isSmoke = args.has('--smoke');
+
 run('node scripts/compile-ink.mjs');
 run('./node_modules/.bin/tsc --noEmit');
 run('./node_modules/.bin/vitest run');
@@ -61,5 +65,13 @@ run('node scripts/lint-narrative.mjs');
 run('node scripts/check-hygiene.mjs');
 verifyAssetManifest();
 run('./node_modules/.bin/vite build');
-run('node scripts/e2e-visual.mjs');
-console.log('\n[verify] ALL 9 GATES PASSED.');
+
+if (isFast) {
+  console.log('\n[verify] FAST GATES (1–8) PASSED (Playwright E2E deferred to smoke/CI).');
+} else if (isSmoke) {
+  run('node scripts/e2e-visual.mjs --smoke');
+  console.log('\n[verify] SMOKE VERIFY PASSED.');
+} else {
+  run('node scripts/e2e-visual.mjs');
+  console.log('\n[verify] ALL 9 GATES PASSED.');
+}

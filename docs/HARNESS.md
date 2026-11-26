@@ -16,8 +16,8 @@ Locked Creative Director rulings governing this harness:
 
 1. **Map, Not Encyclopedia (`AGENTS.md` + `docs/`):** Keep root `AGENTS.md` `<80` lines as an operating map pointing into Single-Source-of-Truth `docs/` files loaded on demand.
 2. **Cross-Session Memory Ledger (`features.json` + `PROGRESS.md`):** Every session reads `PROGRESS.md` + `git log`, works on **one** pending feature in `features.json`, verifies it, and updates both `features.json` and `PROGRESS.md` in the same atomic milestone commit.
-3. **Mechanical Enforcement Over Prose Rules:** Critical rules live in `npm run verify` (9 deterministic gates including `lint-narrative`, `check-hygiene`, real-Ink `sim-playthroughs`, and 21-game 3-axis Vitest contracts).
-4. **Browser-in-the-Loop Verification (Playwright):** "Compiles cleanly" is never "done" for a game. Verify real DOM/WebGL output in headless Chromium (`npm run test:visual`) across desktop (`1280x720`) and mobile landscape (`844x390`).
+3. **Two-Speed Verification (Fast LLM Loop + Full CI Matrix):** During active LLM development, run `npm run verify:fast` (~5s for Gates 1–8: `compile-ink`, `tsc`, `vitest`, `sim-playthroughs`, `lint-narrative`, `check-hygiene`, `MANIFEST`, `vite build`) on every change. Reserve the exhaustive 9-gate matrix (all 21 instruments + V1/V2 + Warm/Cold + 7 mobile viewports in `npm run verify`) for GitHub Actions CI (`.github/workflows/ci.yml`) on PRs/pushes or explicit milestone sign-off.
+4. **Targeted Browser-in-the-Loop Checks:** "Compiles cleanly" is never "done" for visual or flow changes. Verify real DOM/WebGL output with targeted Playwright runs (`npm run test:visual:smoke` or `node scripts/e2e-visual.mjs --flows=... --mg=...`) covering the touched screens, while CI runs the full desktop (`1280x720`) + mobile landscape (`844x390`) sweep.
 5. **Creator vs. Critic Separation:** Agents that write code, prose, or shaders never self-approve a milestone—run `consistency-auditor` and `playtest-verifier` before marking a feature `"passing"`.
 6. **Atomic Milestone Commits & Swarm Model Hygiene:** Commit per cohesive milestone (avoid mega-commits bundling unrelated subsystems). When running `/swarm`, reserve the heaviest reasoning model for architecture, prose, and art-direction, and use lighter models for mechanical grep/screenshot passes.
 
@@ -50,11 +50,12 @@ flowchart TD
     DIS --> VS["Visual & Shader Director (visual-shader-studio / astro-asset-curator)"]
     DIS --> GE["Game Systems Engineer (engine-builder / audio-atmosphere-designer)"]
 
-    ND & DW & VS & GE --> GATE["9-Gate Gate: npm run verify (ink + tsc + vitest + sim + lint + hygiene + manifest + build + e2e)"]
+    ND & DW & VS & GE --> GATE["Fast Dev Loop: npm run verify:fast (~5s Gates 1-8) + targeted e2e (--smoke / --flows=...)"]
     GATE -->|"Fail: auto-fix loop"| DIS
-    GATE -->|"Pass"| AUD["Consistency & QA Auditor (consistency-auditor / playtest-verifier)"]
+    GATE -->|"Pass"| AUD["Consistency & QA Auditor (SSOT review + screenshot inspection)"]
     AUD -->|"Fix ticket"| DIS
-    AUD -->|"Clean report + visual check"| H
+    AUD -->|"PR / Push"| CI["GitHub Actions CI (.github/workflows/ci.yml): Full 9-Gate Matrix (21 instruments + 7 mobile)"]
+    CI -->|"Clean report + green CI"| H
 ```
 
 ---
@@ -81,13 +82,13 @@ instance-1419/
 ├── .agents/
 │   ├── personas/                    # 6 lean role mandates pointing to SSOT docs
 │   └── skills/                      # 8 modular domain skills pointing to SSOT docs
-├── scripts/                         # Deterministic 9-gate verification & generation scripts
-│   ├── verify.mjs                   # Master gate: `npm run verify`
+├── scripts/                         # Tiered verification & generation scripts + CI backing
+│   ├── verify.mjs                   # Tiered runner: `--fast` (Gates 1-8), `--smoke`, or full 9-gate CI
 │   ├── compile-ink.mjs              # inkjs compiler
 │   ├── sim-playthroughs.mjs         # 500-run economy sim + real compiled Ink traversal
 │   ├── lint-narrative.mjs           # Canon, word floor/ceiling, choice tags, VO & shift lint
 │   ├── check-hygiene.mjs            # Orphaned TS/JSON & retired zombie-architecture guard
-│   └── e2e-visual.mjs               # Playwright E2E + visual checks (1280x720 & 844x390)
+│   └── e2e-visual.mjs               # Playwright E2E + visual checks (`--smoke` / `--flows=` / `--mg=` or full CI)
 └── src/
     ├── engine/                      # Three.js optics, 2D dream shader, 21 instruments, Ink, Audio/VO, ?dev=1
     ├── content/                     # shifts.json, anomalies.json, balance.json, characters.json, codex.json, voice_profiles.json, music_catalog.json, dialogue/*.ink
@@ -105,7 +106,7 @@ instance-1419/
 | **3. Ink Dialogue Writer** | `src/content/dialogue/*.ink` | Drafts grounded, non-abrupt `.ink` scenes honoring `VOICE_GUIDE.md` and `ART_DIRECTION.md` choice tags (`# kind:`, `# weight:`). | Never names loved ones; keeps voiced lines within TTS cadence limits; never alters `balance.json`. |
 | **4. Visual & Shader Director** | `ART_DIRECTION.md`, `src/engine/shaders/*`, `characters.json`, `anomalies.json`, `assets/*` | Authors 3D/2D GLSL shaders, swappable Dream Persona oil paintings, Zeiss optics craft, and NASA/ESA `MANIFEST.json` curation. | Must keep 2D portraits swappable via `characters.json` and log 100% of assets in `MANIFEST.json`. |
 | **5. Game Systems Engineer** | `src/engine/*`, `src/platform/*`, `src/ui/*` | Builds strict TS runtime systems, Lean 3-Axis instruments, Layout A UI, Web Audio + `VoiceEngine`, `?dev=1`, and `PlatformAdapter`. | Zero hardcoded prose/balance in `src/engine/`; zero Electron/Capacitor until Phase 6. |
-| **6. Consistency & QA Auditor** | `docs/audits/*`, `scripts/*` (read-only on `src/`) | **Independent critic.** Runs 9-gate `npm run verify` + Playwright visual checks + qualitative reviews against SSOT docs. | Never silently edits creative work; files line-referenced fix tickets. |
+| **6. Consistency & QA Auditor** | `docs/audits/*`, `scripts/*` (read-only on `src/`) | **Independent critic.** Runs `npm run verify:fast` + targeted Playwright visual checks (`--smoke`/`--flows=...`) and qualitative SSOT audits, deferring full 21-game sweeps to CI. | Never silently edits creative work; files line-referenced fix tickets. |
 
 ---
 
@@ -117,5 +118,5 @@ instance-1419/
 4. **`astro-asset-curator`** — Commercial-safe NASA/STScI & ESA imagery/catalogs + `assets/MANIFEST.json` hygiene (zero `CC BY-SA` or `NC`).
 5. **`audio-atmosphere-designer`** — Procedural Web Audio, Lyria 3.5 hybrid music stems, and Cast 2 Qwen3-TTS pipeline per `docs/VOICE_GUIDE.md` & `docs/ARCHITECTURE.md`.
 6. **`engine-builder`** — Pure-HTML TypeScript architecture, Lean 3-Axis `BaseCosmicMinigame`, Layout A & choice-plate UI per `docs/ART_DIRECTION.md`, `PlatformAdapter`, and `?dev=1`.
-7. **`consistency-auditor`** — Runs the 9-gate `npm run verify` (`compile-ink`, `tsc`, `vitest`, `sim-playthroughs`, `lint-narrative`, `check-hygiene`, `MANIFEST.json`, `vite build`, `e2e-visual`) + qualitative SSOT audit.
-8. **`playtest-verifier`** — Headless Playwright verification (`1280x720` & `844x390`) + 1-click blind playtest telemetry synthesis.
+7. **`consistency-auditor`** — Runs `npm run verify:fast` (Gates 1–8) + targeted Playwright visual checks during dev (relying on `ci.yml` / `npm run verify` for full milestone sweeps) + qualitative SSOT audit.
+8. **`playtest-verifier`** — Headless Playwright verification (`npm run test:visual:smoke` / `--flows=` for dev; full `1280x720` & `844x390` suite in CI) + 1-click blind playtest telemetry synthesis.

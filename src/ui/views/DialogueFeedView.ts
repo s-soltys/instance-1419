@@ -290,6 +290,11 @@ interface ScrollFeedCache {
   renderedCount: number;
   channel: DialogueChannel;
   boundClick: boolean;
+  boundScrollIntent: boolean;
+  userScrolledUp: boolean;
+  scrollRafId: number;
+  scrollRaf2Id: number;
+  scrollSettleTimer: number | null;
 }
 
 function prefixMatches(prev: DialogueEntry[], next: DialogueEntry[], count: number): boolean {
@@ -463,6 +468,11 @@ export class DialogueFeedView {
         renderedCount: 0,
         channel: inferChannel(`#${scrollEl.id}`),
         boundClick: false,
+        boundScrollIntent: false,
+        userScrolledUp: false,
+        scrollRafId: 0,
+        scrollRaf2Id: 0,
+        scrollSettleTimer: null,
       };
       this.feedCache.set(scrollEl, cache);
     }
@@ -484,13 +494,86 @@ export class DialogueFeedView {
         }
       });
     }
+    if (!cache.boundScrollIntent) {
+      cache.boundScrollIntent = true;
+      const markManualScroll = () => {
+        const cur = this.feedCache.get(scrollEl);
+        if (!cur) return;
+        cur.userScrolledUp = true;
+        if (cur.scrollSettleTimer !== null) {
+          window.clearTimeout(cur.scrollSettleTimer);
+          cur.scrollSettleTimer = null;
+        }
+      };
+      scrollEl.addEventListener('wheel', markManualScroll, { passive: true });
+      scrollEl.addEventListener('touchstart', markManualScroll, { passive: true });
+    }
     return cache;
+  }
+
+  /**
+   * Pins a dialogue scroll container to its newest bottom entry after flex/choice
+   * layout updates settle, so new sentences never clip behind the choices bay
+   * or stall mid-scroll during rapid advances.
+   */
+  scrollToLatest(scrollEl: HTMLElement | null, opts?: { instant?: boolean }): void {
+    if (!scrollEl) return;
+    const cache = this.ensureDelegatedReplay(scrollEl);
+
+    if (cache.scrollRafId) {
+      cancelAnimationFrame(cache.scrollRafId);
+      cache.scrollRafId = 0;
+    }
+    if (cache.scrollRaf2Id) {
+      cancelAnimationFrame(cache.scrollRaf2Id);
+      cache.scrollRaf2Id = 0;
+    }
+    if (cache.scrollSettleTimer !== null) {
+      window.clearTimeout(cache.scrollSettleTimer);
+      cache.scrollSettleTimer = null;
+    }
+
+    cache.userScrolledUp = false;
+
+    const pinNow = () => {
+      if (typeof scrollEl.scrollTo === 'function') {
+        scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'auto' });
+      }
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+    };
+
+    if (opts?.instant || this.instantPacing || typeof requestAnimationFrame !== 'function') {
+      pinNow();
+    }
+
+    if (typeof requestAnimationFrame === 'function') {
+      cache.scrollRafId = requestAnimationFrame(() => {
+        cache.scrollRafId = 0;
+        if (cache.userScrolledUp) return;
+        pinNow();
+
+        cache.scrollRaf2Id = requestAnimationFrame(() => {
+          cache.scrollRaf2Id = 0;
+          if (cache.userScrolledUp) return;
+          pinNow();
+        });
+      });
+    }
+
+    cache.scrollSettleTimer = window.setTimeout(() => {
+      cache.scrollSettleTimer = null;
+      if (cache.userScrolledUp) return;
+      const remaining = scrollEl.scrollHeight - scrollEl.clientHeight - scrollEl.scrollTop;
+      if (remaining > 2) {
+        pinNow();
+      }
+    }, 180);
   }
 
   renderEntriesOnly(
     scrollEl: HTMLElement,
     entries: DialogueEntry[],
-    opts?: { animateFromIndex?: number; channel?: DialogueChannel }
+    opts?: { animateFromIndex?: number; channel?: DialogueChannel; deferScroll?: boolean }
   ): void {
     const animateFrom = opts?.animateFromIndex ?? 0;
     const channel = opts?.channel ?? inferChannel(`#${scrollEl.id}`);
@@ -527,10 +610,8 @@ export class DialogueFeedView {
     cache.renderedCount = entries.length;
     cache.channel = channel;
 
-    if (typeof scrollEl.scrollTo === 'function') {
-      scrollEl.scrollTo({ top: scrollEl.scrollHeight, behavior: 'smooth' });
-    } else {
-      scrollEl.scrollTop = scrollEl.scrollHeight;
+    if (!opts?.deferScroll) {
+      this.scrollToLatest(scrollEl, { instant: !canAppend });
     }
   }
 
@@ -551,7 +632,11 @@ export class DialogueFeedView {
     const channel = inferChannel(scrollSel);
 
     const animateFrom = Math.max(0, snap.entries.length - Math.max(1, snap.lastAddedEntries.length));
-    this.renderEntriesOnly(scrollEl, snap.entries, { animateFromIndex: animateFrom, channel });
+    this.renderEntriesOnly(scrollEl, snap.entries, {
+      animateFromIndex: animateFrom,
+      channel,
+      deferScroll: true,
+    });
 
     choicesEl.classList.remove('is-locked');
 
@@ -565,10 +650,7 @@ export class DialogueFeedView {
           handlers.onChoose(choiceIdx);
         },
       });
-      return;
-    }
-
-    if (snap.resumeDreamKnot && handlers.onResumeDream) {
+    } else if (snap.resumeDreamKnot && handlers.onResumeDream) {
       const nextKnot = snap.resumeDreamKnot;
       choicesEl.innerHTML = `
         <button class="choice-line choice-enter is-tier-action is-tier-consequential" id="btn-overseer-return" style="--choice-idx:0" type="button">
@@ -580,10 +662,7 @@ export class DialogueFeedView {
         this.audio.playCue('tick');
         handlers.onResumeDream!(nextKnot);
       });
-      return;
-    }
-
-    if (scrollSel === '#dream-scroll' && !snap.autoInterruptKnot && handlers.onWakeToSky) {
+    } else if (scrollSel === '#dream-scroll' && !snap.autoInterruptKnot && handlers.onWakeToSky) {
       choicesEl.innerHTML = `
         <button class="choice-line choice-enter is-tier-action is-tier-consequential" id="btn-return-3d" style="--choice-idx:0" type="button">
           <span class="choice-num">→</span>
@@ -610,5 +689,8 @@ export class DialogueFeedView {
     } else {
       choicesEl.innerHTML = '';
     }
+
+    // Scroll only after choicesEl has updated so flex-shrink never clips the latest line
+    this.scrollToLatest(scrollEl);
   }
 }

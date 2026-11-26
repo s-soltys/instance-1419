@@ -33,7 +33,7 @@ interface TransitionTimings {
  * Preserves 100% of PR #1 compositor-only performance (zero SVG filters / live-canvas blur).
  */
 const TIMINGS: Record<TransitionKind, TransitionTimings> = {
-  aperture_boot: { switchMs: 320, durationMs: 2100 },
+  aperture_boot: { switchMs: 950, durationMs: 3900 },
   optical_dive: { switchMs: 480, durationMs: 1850 },
   optical_pullback: { switchMs: 360, durationMs: 1850 },
   dream_submerge: { switchMs: 420, durationMs: 2350 },

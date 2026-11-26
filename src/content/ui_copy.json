@@ -1,9 +1,11 @@
 {
   "schema_version": 3,
   "prologue": {
-    "breathPrompt": "Light behind closed eyelids. A quiet room coming into focus.",
-    "advanceHint": "CLICK OR PRESS SPACE",
+    "breathEyebrow": "CALIBRATION SUITE · STANDBY",
+    "breathPrompt": "Light behind heavy lids. Someone is waiting across the desk.",
+    "advanceHint": "CLICK OR PRESS SPACE TO WAKE",
     "fractureCaption": "HANDOFF · WATCH #1419",
+    "handoffCaption": "CALIBRATING TRANSFER · STANDBY",
     "assistantSpeakerLabel": "INTAKE ASSISTANT",
     "assistantSubtitle": "CALIBRATION SUITE · INITIAL WAKE",
     "wakeupSubtitle": "WATCH CARETAKER · FIRST BRIEFING"

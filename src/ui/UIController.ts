@@ -158,6 +158,7 @@ export class UIController {
   private activePrologueSnap: DialogueSnapshot | null = null;
   private prologueRevealedCount = 0;
   private prologueStepTimer: number | null = null;
+  private prologueTimers: number[] = [];
   private resumeModeAfterTitle: 'waking_3d' | 'dream_2d' = 'waking_3d';
 
   private activeMinigameTargetId: string | null = null;
@@ -402,6 +403,8 @@ export class UIController {
           <div class="wakeup-canvas-mount hidden" id="wakeup-canvas-mount" aria-hidden="true"></div>
 
           <div class="prologue-breath-panel" id="prologue-breath-panel">
+            <span class="prologue-breath-eyebrow" id="prologue-breath-eyebrow"></span>
+            <span class="breath-iris-line" aria-hidden="true"></span>
             <p class="prologue-breath-line" id="prologue-breath-line"></p>
             <span class="prologue-advance-cue" id="prologue-breath-hint"></span>
           </div>
@@ -693,6 +696,10 @@ export class UIController {
       window.clearTimeout(this.prologueStepTimer);
       this.prologueStepTimer = null;
     }
+    for (const id of this.prologueTimers) {
+      window.clearTimeout(id);
+    }
+    this.prologueTimers = [];
     if (this.idleDragTimer !== null) {
       window.clearTimeout(this.idleDragTimer);
       this.idleDragTimer = null;
@@ -750,8 +757,8 @@ export class UIController {
     this.optics.setActive(false);
 
     this.dream.setHumanityOscillation?.(null);
-    this.dream.setWakeProgress?.(0.16);
     this.dream.setState(100, false, false, 'phantom_upload_witness', 'base');
+    this.dream.setDrowsyPeek?.(true);
     this.dream.setActive(true);
     this.bootView.showBreath();
   }
@@ -768,7 +775,7 @@ export class UIController {
       this.prologueStepTimer = window.setTimeout(() => {
         this.prologueStepTimer = null;
         this.startPrologueAssistant();
-      }, 850);
+      }, 1550);
       return;
     }
 
@@ -835,47 +842,62 @@ export class UIController {
     this.bootView.setInputLocked(true);
     this.voice.stop();
     this.dream.setHumanityOscillation?.(null);
-    this.dream.setWakeProgress?.(1.0);
+    this.dream.setDrowsyPeek?.(false);
+    this.dream.triggerSleepClose?.();
     this.bootView.dissolvePrologueRibbon();
-    this.audio.playCue('overseer_slice');
+    this.audio.playCue('handoff_static');
 
-    this.transitions.playOverlayPulse(
-      'overseer_slice',
-      uiCopy.prologue.fractureCaption,
-      () => {
-        // Midpoint: swap intake suite DreamCanvas -> Zeiss-glass WakeupBriefingCanvas
-        this.dream.setActive(false);
-        this.root.querySelector('#dream-layer')?.classList.add('hidden');
-        this.root.querySelector('#optics-layer')?.classList.add('hidden');
-        this.optics.setActive(false);
-        this.wakeupCanvas.setPhase('anim_transfer');
-        this.wakeupCanvas.setActive(true);
-        const s = this.store.getState();
-        this.bootView.showPrologueConversation(
-          'prologue_wakeup',
-          'overseer',
-          uiCopy.prologue.wakeupSubtitle ?? 'WATCH CARETAKER · FIRST BRIEFING',
-          s.humanity
-        );
-        // Clear previous intake transcript cleanly while handoff settles
-        const scrollEl = this.root.querySelector<HTMLElement>('#prologue-scroll');
-        const choicesEl = this.root.querySelector<HTMLElement>('#prologue-choices');
-        if (scrollEl) scrollEl.innerHTML = '';
-        if (choicesEl) choicesEl.innerHTML = '';
-        this.syncAudioMusic({ ...s, mode: 'boot' });
-      },
-      {
-        midpointMs: 450,
-        durationMs: 1950,
-        onComplete: () => {
-          // Quiet cryo settle breath before Overseer speaks
-          this.prologueStepTimer = window.setTimeout(() => {
-            this.prologueStepTimer = null;
-            this.startPrologueWakeup();
-          }, 480);
+    // Stage 1 (1.35s): Eyelids drift shut and intake room powers down into white-noise standby
+    const tStandby = window.setTimeout(() => {
+      this.dream.setActive(false);
+      this.root.querySelector('#dream-layer')?.classList.add('hidden');
+      this.root.querySelector('#optics-layer')?.classList.add('hidden');
+      this.optics.setActive(false);
+      this.wakeupCanvas.setPhase('anim_handoff_static');
+      this.wakeupCanvas.setActive(true);
+      this.bootView.showHandoff();
+
+      const scrollEl = this.root.querySelector<HTMLElement>('#prologue-scroll');
+      const choicesEl = this.root.querySelector<HTMLElement>('#prologue-choices');
+      if (scrollEl) scrollEl.innerHTML = '';
+      if (choicesEl) choicesEl.innerHTML = '';
+
+      const s = this.store.getState();
+      this.syncAudioMusic({ ...s, mode: 'boot' });
+    }, 1350);
+
+    // Stage 2 (after ~4.9s of standby static calibration): crisp Overseer slice wakes Watch #1419
+    const tWake = window.setTimeout(() => {
+      this.audio.playCue('overseer_slice');
+      this.transitions.playOverlayPulse(
+        'overseer_slice',
+        uiCopy.prologue.fractureCaption,
+        () => {
+          this.wakeupCanvas.setPhase('anim_transfer');
+          this.wakeupCanvas.setActive(true);
+          const s = this.store.getState();
+          this.bootView.showPrologueConversation(
+            'prologue_wakeup',
+            'overseer',
+            uiCopy.prologue.wakeupSubtitle ?? 'WATCH CARETAKER · FIRST BRIEFING',
+            s.humanity
+          );
+          this.syncAudioMusic({ ...s, mode: 'boot' });
         },
-      }
-    );
+        {
+          midpointMs: 380,
+          durationMs: 1350,
+          onComplete: () => {
+            this.prologueStepTimer = window.setTimeout(() => {
+              this.prologueStepTimer = null;
+              this.startPrologueWakeup();
+            }, 350);
+          },
+        }
+      );
+    }, 6250);
+
+    this.prologueTimers.push(tStandby, tWake);
   }
 
   private startPrologueWakeup(): void {
@@ -903,8 +925,9 @@ export class UIController {
     this.voice.stop();
     this.bootView.dissolvePrologueRibbon();
     this.wakeupCanvas.setPhase('anim_aperture');
+    this.audio.playCue('aperture_unseal');
 
-    // Ensure live drifting 3D cosmos is glowing softly behind the dissolving schematic
+    // Ensure live drifting 3D cosmos is glowing softly behind the unsealing Zeiss shutter arcs
     this.root.querySelector('#optics-layer')?.classList.remove('hidden');
     this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID]);
     this.optics.setAmbientDrift(true);
@@ -915,7 +938,7 @@ export class UIController {
       this.wakeupCanvas.setActive(false);
       this.store.setIntroStage('title');
       this.enterTitleOverlay(false);
-    }, 1450);
+    }, 4100);
   }
 
   private choosePrologueOption(choiceIndex: number): void {
@@ -997,6 +1020,7 @@ export class UIController {
     this.dialogueFeed.renderEntriesOnly(scrollEl, visibleEntries, {
       animateFromIndex: animateFrom,
       channel: this.prologuePhase === 'wakeup' ? 'overseer' : 'prologue',
+      deferScroll: true,
     });
 
     if (speakLatest && latestEntry) {
@@ -1035,6 +1059,9 @@ export class UIController {
         onAdvance: () => this.advancePrologue(),
       });
     }
+
+    // Re-pin after #prologue-choices resizes the bottom of the flex column
+    this.dialogueFeed.scrollToLatest(scrollEl);
   }
 
   private enterTitleOverlay(isReturningBoot: boolean): void {
@@ -1042,6 +1069,7 @@ export class UIController {
     this.activePrologueSnap = null;
     this.wakeupCanvas.setActive(false);
     this.dream.setHumanityOscillation?.(null);
+    this.dream.setDrowsyPeek?.(false);
     this.dream.setWakeProgress?.(1.0);
     this.dream.setActive(false);
     this.root.querySelector('#dream-layer')?.classList.add('hidden');
@@ -1058,6 +1086,7 @@ export class UIController {
   private handleTitlePrimaryAction(): void {
     this.audio.unlock();
     this.audio.playCue('boot_click');
+    this.audio.playCue('aperture_unseal');
     this.wakeupCanvas.setActive(false);
 
     const s = this.store.getState();
@@ -1749,8 +1778,9 @@ export class UIController {
     `;
 
     const snap = this.futureDialogue.startKnot('future_humanity_echo');
-    this.dialogueFeed.renderEntriesOnly(scroll, snap.entries, { animateFromIndex: 0 });
+    this.dialogueFeed.renderEntriesOnly(scroll, snap.entries, { animateFromIndex: 0, deferScroll: true });
     panel.classList.remove('hidden');
+    this.dialogueFeed.scrollToLatest(scroll, { instant: true });
     this.dialogueFeed.speakEntries(snap.lastAddedEntries);
   }
 
@@ -1953,6 +1983,7 @@ export class UIController {
     this.hideCommsToast();
     this.wakeupCanvas.setActive(false);
     this.dream.setHumanityOscillation?.(null);
+    this.dream.setDrowsyPeek?.(false);
     this.dream.setWakeProgress?.(1.0);
 
     this.suppressMinigamePullback = true;
@@ -2083,6 +2114,7 @@ export class UIController {
       choicesEl.querySelector('#btn-audit-now')?.addEventListener('click', () => {
         this.triggerOverseerInterrogation(knot);
       });
+      this.dialogueFeed.scrollToLatest(this.root.querySelector<HTMLElement>('#dream-scroll'));
     }
 
     void this.voice.waitForQueueNearEnd(260, 2200).then(() => {
@@ -2322,7 +2354,7 @@ export class UIController {
     const isBoot = state.mode === 'boot';
     const isMinigame = state.mode === 'waking_3d' && this.activeMinigameTargetId !== null;
     const bootUsesDream = isBoot && (bootVisual === 'breath' || bootVisual === 'prologue_assistant');
-    const bootUsesWakeup = isBoot && bootVisual === 'prologue_wakeup';
+    const bootUsesWakeup = isBoot && (bootVisual === 'prologue_wakeup' || bootVisual === 'prologue_handoff');
     const bootUsesOptics =
       isBoot && (bootVisual === 'title' || (bootUsesWakeup && this.wakeupCanvas.getPhase() === 'anim_aperture'));
     const visSig = `${state.mode}|${bootVisual}|${bootUsesWakeup ? this.wakeupCanvas.getPhase() : ''}|${isMinigame ? 1 : 0}`;
@@ -2779,6 +2811,7 @@ export class UIController {
     this.hideOverseerPanel();
     this.wakeupCanvas.setActive(false);
     this.dream.setHumanityOscillation?.(null);
+    this.dream.setDrowsyPeek?.(false);
     this.dream.setWakeProgress?.(1.0);
     this.root.querySelector('#future-panel')?.classList.add('hidden');
     this.root.querySelector('#minigame-layer')?.classList.add('hidden');

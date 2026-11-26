@@ -26,11 +26,12 @@ The defining aesthetic of *Instance-1419* is the **visceral contrast between col
 * **Full-Bleed Composition & Dark-Right-Third Rule:** Every 16:9 oil painting (`1280×720` WebP) places its primary figure, symbolic object, and key light in **`x: 0.14–0.55`** (`coverUv` anchor `0.36`) while keeping the **right third (`x > 0.62`)** in deep low-luminance Prussian/umber shadow (`lum < 0.18`) for crisp Layout A typography legibility.
 * **Swappable Character & Branching Tableau Contract (`src/content/characters.json`):** Every Dream Persona resolves through `characters.json` + `assets/MANIFEST.json` with a `tableaus` map (6 paintings per Fixed Anchor: `base`, `beat2_a`, `beat2_b`, `beat3_warm`, `beat3_strained`, `farewell`; 4 paintings per Rotating Persona: `base`, `beat2`, `beat3_warm`, `beat3_strained`) and calibrated per-tableau `faceAnchor` UV `[x, y]`.
 * **Procedural Gradual `H%` Degradation Shader (`src/engine/shaders/dreamShaders.ts`):**
-  * Rescaled so **`H = 100%` opens at the previous ~60% character baseline** (warm golden oil glaze paired with subtle varnish craquelure, gentle facial haze, and faint memory-echo drift) and ramps rapidly into richer multi-scale distortion below 75%.
-  * **`H = 74–99%`:** Fine craquelure, angled chromatic aberration, heat-wave memory warp, and horizontal echo ghosting intensify.
-  * **`H = 45–73%`:** Primary + micro Voronoi stained-glass faceting, selective warm-ember shard retention, per-shard refractive dispersion, and 4-tap Sobel contour etching.
-  * **`H < 45%` / Pruned:** Strong shard shear/displacement, scanline tears, cryo-cyan wireframe grid & concentric calibration ring bleed, and clinical monochrome drain.
-  * **Eyelid / Focus Wake-Up (`uWakeProgress`):** Smooth curved eyelid-opening mask with radial out-of-focus blur and warm-to-clear focus settle for the Prologue wake-up.
+  * Uses the **Variant A ("Protected Core, Cohesive Silhouette")** curve rescaled so `~78%` clarity maps to `100%` (`hA = clamp(hRaw * 0.78 - uPruned * 0.12, 0.0, 1.0)`):
+  * **`H = 100%` (`hA = 0.78`):** Warm golden oil glaze with subtle varnish craquelure, gentle facial haze, and light outer rim aging while keeping the face clear and warm.
+  * **`H = 70%` (`hA = 0.55`):** Richer peripheral stained-glass fracture and dream haze around the room margins while `faceProtect` shields facial anatomy and retains relatively warm skin/room tones so the speaker reads clearly as a person.
+  * **`H = 45–60%`:** Protection fades (`faceProtect` drops steeply below ~55%), cooling shadows and primary Voronoi shards cross onto shoulders and face.
+  * **`H = 20–30%` / Pruned:** 2-ring 17-tap facial obliteration melts eyes/nose/mouth away completely while cohesive small-offset Voronoi shards (`max 0.032` UV) and outer-weighted Sobel contours preserve the character's head/shoulders posture silhouette.
+  * **Eyelid / Focus Wake-Up (`uWakeProgress` + `uHeadTilt`):** Smooth curved eyelid-opening mask with radial out-of-focus blur, drowsy ~2° head-tilt breathing, and warm-to-clear focus settle for the Prologue wake-up.
   * **Overseer Audit Interrupt:** Crisp clinical white-cyan hairlines slice across top/bottom of the painting while a sterile monochrome header cuts over the dialogue ribbon.
 
 ## 3.5 Leading Color & Bespoke SVG Icon Grammar

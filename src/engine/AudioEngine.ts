@@ -777,6 +777,74 @@ export class AudioEngine {
       }
       this.playGlassNote(220.0, 0.052, 0.32, 2.0, now + 0.12, 'sine', this.sfxGain);
       this.playGlassNote(329.63, 0.042, 0.45, 2.1, now + 0.36, 'triangle', this.sfxGain);
+    } else if (cue === 'handoff_static') {
+      // ~6.2s shutdown hum -> textured analog white-noise sweep -> relay clicks -> cold carrier lock
+      this.sweepTone(220, 58, 1.25, 0.075, now);
+      if (this.ctx) {
+        const len = Math.floor(this.ctx.sampleRate * 5.4);
+        const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+        const ch = buf.getChannelData(0);
+        let b0 = 0;
+        for (let i = 0; i < len; i++) {
+          const white = Math.random() * 2 - 1;
+          b0 = b0 * 0.72 + white * 0.28;
+          ch[i] = b0 * 0.95;
+        }
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const bp = this.ctx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.Q.value = 1.1;
+        bp.frequency.setValueAtTime(320, now + 0.8);
+        bp.frequency.exponentialRampToValueAtTime(1450, now + 3.2);
+        bp.frequency.exponentialRampToValueAtTime(580, now + 5.8);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.setValueAtTime(0.0001, now + 0.75);
+        g.gain.linearRampToValueAtTime(0.075, now + 1.9);
+        g.gain.setValueAtTime(0.068, now + 4.2);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 6.05);
+        src.connect(bp);
+        bp.connect(g);
+        g.connect(this.sfxGain);
+        src.start(now + 0.75);
+        src.stop(now + 6.15);
+      }
+      this.shortClick(480, 0.04, 0.06, now + 2.4, 'triangle');
+      this.shortClick(640, 0.04, 0.065, now + 3.9, 'triangle');
+      this.playGlassNote(587.33, 0.055, 0.06, 1.5, now + 4.9, 'sine', this.sfxGain);
+      this.playGlassNote(880.0, 0.045, 0.08, 1.6, now + 5.08, 'sine', this.sfxGain);
+    } else if (cue === 'aperture_unseal') {
+      // Ceremonial optical shutter unlatch + 3.2s warm-to-clear air swell + starlight triad
+      this.shortClick(92, 0.16, 0.12, now, 'sine');
+      if (this.ctx) {
+        const len = Math.floor(this.ctx.sampleRate * 3.2);
+        const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+        const ch = buf.getChannelData(0);
+        let lp = 0;
+        for (let i = 0; i < len; i++) {
+          lp = lp * 0.92 + (Math.random() * 2 - 1) * 0.08;
+          ch[i] = lp * 1.25;
+        }
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const filt = this.ctx.createBiquadFilter();
+        filt.type = 'lowpass';
+        filt.frequency.setValueAtTime(160, now);
+        filt.frequency.exponentialRampToValueAtTime(1050, now + 2.8);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.linearRampToValueAtTime(0.06, now + 0.75);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 3.15);
+        src.connect(filt);
+        filt.connect(g);
+        g.connect(this.sfxGain);
+        src.start(now);
+        src.stop(now + 3.2);
+      }
+      this.playGlassNote(293.66, 0.055, 0.25, 2.2, now + 0.35, 'sine', this.sfxGain);
+      this.playGlassNote(440.0, 0.045, 0.35, 2.4, now + 0.68, 'triangle', this.sfxGain);
+      this.playGlassNote(659.25, 0.036, 0.45, 2.6, now + 1.05, 'sine', this.sfxGain);
     } else if (cue === 'iris_dive') {
       // Ascending optical iris dive + shimmering harmonic + crisp shutter latch
       this.sweepTone(165, 620, 0.42, 0.085, now);

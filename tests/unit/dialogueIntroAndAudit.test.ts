@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-import { DialogueRunner } from '../../src/engine/DialogueRunner';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { DialogueRunner, type DialogueSnapshot } from '../../src/engine/DialogueRunner';
 import { StateStore } from '../../src/engine/StateStore';
 import {
+  DialogueFeedView,
   formatInlineHighlights,
   renderChoicePlatesHtml,
   stripInlineHighlights,
@@ -214,5 +215,79 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
     expect(html).toContain('<span class="hl-warm">your laugh</span>');
     expect(html).toContain('<span class="hl-cold">&lt;b&gt;archive&lt;/b&gt; zero</span>');
     expect(stripInlineHighlights(raw)).toBe('Remember your laugh vs <b>archive</b> zero.');
+  });
+});
+
+describe('DialogueFeedView auto-scroll behavior', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  it('updates choices before scrolling to the latest entry and settles remaining offset', () => {
+    vi.useFakeTimers();
+    localStorage.clear();
+    const store = new StateStore();
+    const audioStub = { playHoverTick: vi.fn(), playCue: vi.fn() } as never;
+    const voiceStub = { speakQueue: vi.fn(), speakSingle: vi.fn(), stop: vi.fn() } as never;
+    const telemetryStub = { record: vi.fn() } as never;
+
+    const root = document.createElement('div');
+    root.innerHTML = '<div id="dream-scroll"></div><div id="dream-choices"></div>';
+    const scrollEl = root.querySelector<HTMLElement>('#dream-scroll')!;
+    const choicesEl = root.querySelector<HTMLElement>('#dream-choices')!;
+
+    Object.defineProperty(scrollEl, 'scrollHeight', { value: 920, configurable: true });
+    Object.defineProperty(scrollEl, 'clientHeight', { value: 320, configurable: true });
+
+    let choicesCountAtScrollCall = -1;
+    let firstCall = true;
+    const scrollSpy = vi.fn((opts?: ScrollToOptions | number) => {
+      choicesCountAtScrollCall = choicesEl.querySelectorAll('.choice-line').length;
+      if (typeof opts === 'object' && opts !== null && typeof opts.top === 'number') {
+        // Simulate first-frame flex clamp stopping early before settle re-pins
+        scrollEl.scrollTop = firstCall ? Math.round(opts.top * 0.45) : opts.top;
+        firstCall = false;
+      }
+    });
+    scrollEl.scrollTo = scrollSpy as unknown as HTMLElement['scrollTo'];
+
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      return window.setTimeout(() => cb(16), 16);
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id: number) => window.clearTimeout(id));
+
+    const feed = new DialogueFeedView(root, store, audioStub, voiceStub, telemetryStub);
+    const snap: DialogueSnapshot = {
+      knot: 'dream_shift1_audit',
+      entries: [
+        { speaker: 'phantom_spouse', text: 'First line.', lineId: 'l1' },
+        { speaker: 'phantom_spouse', text: 'Latest line.', lineId: 'l2' },
+      ],
+      lastAddedEntries: [{ speaker: 'phantom_spouse', text: 'Latest line.', lineId: 'l2' }],
+      choices: [
+        { index: 0, text: 'Answer warmly', weight: 'consequential' },
+        { index: 1, text: 'Stay quiet', weight: 'consequential' },
+      ],
+      ended: false,
+    };
+
+    // deferScroll: true must not trigger scroll until scrollToLatest runs
+    feed.renderEntriesOnly(scrollEl, snap.entries, { deferScroll: true });
+    expect(scrollSpy).not.toHaveBeenCalled();
+
+    feed.renderInto('#dream-scroll', '#dream-choices', snap, { onChoose: vi.fn() });
+    // Before rAF fires, choices are already rendered
+    expect(choicesEl.querySelectorAll('.choice-line').length).toBe(2);
+
+    vi.advanceTimersByTime(16);
+    expect(scrollSpy).toHaveBeenCalledWith({ top: 920, behavior: 'auto' });
+    expect(choicesCountAtScrollCall).toBe(2);
+
+    // Advance past second rAF + 180ms settle timeout: remaining gap is pinned cleanly to bottom
+    vi.advanceTimersByTime(200);
+    expect(scrollEl.scrollTop).toBe(920);
+
+    store.dispose();
   });
 });
