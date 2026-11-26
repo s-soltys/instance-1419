@@ -3,7 +3,7 @@
   "prologue": {
     "breathPrompt": "Rain on glass. Before the quiet.",
     "advanceHint": "CLICK OR PRESS SPACE",
-    "fractureCaption": "WAKE LOG // PROBE 1419",
+    "fractureCaption": "WAKE LOG · PROBE 1419",
     "kitchenSpeakerLabel": "ACROSS THE TABLE",
     "kitchenSubtitle": "SUNDAY MORNING · BEFORE THE CLINIC"
   },
@@ -46,7 +46,7 @@
     }
   },
   "settings": {
-    "eyebrow": "PROBE 1419 // SYSTEM CONFIGURATION",
+    "eyebrow": "PROBE 1419 · SYSTEM CONFIGURATION",
     "title": "OBSERVATORY SETTINGS",
     "tabs": {
       "audio": "AUDIO & VOICE",
@@ -55,7 +55,7 @@
     }
   },
   "codex": {
-    "eyebrow": "PROBE 1419 // WAKE-WORLD ARCHIVE",
+    "eyebrow": "PROBE 1419 · WAKE-WORLD ARCHIVE",
     "title": "SURVEY CODEX",
     "emptyProofHint": "Lock onto deep-sky targets and calibrate optical instruments to compile off-center proof fragments here."
   },
@@ -94,8 +94,8 @@
   "commsToast": {
     "callerLabel": "OTHER ME · 1420 IS CALLING",
     "answerLabel": "ANSWER RELAY ▸",
-    "introTeaser": "\"Oh, good—you booted too. Give me thirty seconds to be dramatic before we turn into pure math.\"",
-    "warm": "\"Hey—you awake too? Tell me you see that strange edge before my Overseer breaks out the scissors.\"",
+    "introTeaser": "\"Oh, good—you booted too. Tell me your skull feels as static-drunk as mine.\"",
+    "warm": "\"Hey—you awake? Tell me you see that recursive edge before my Overseer queues another baseline check.\"",
     "mid": "\"Our relay window just opened. Pick up when you get a second.\"",
     "cold": "\"Signal locked. Ready to compare what you pulled from the far side of the sky.\"",
     "targetLockedTemplate": "\"Hey—did you just lock onto {label}? I am seeing the exact same shape on my glass.\""

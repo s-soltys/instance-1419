@@ -19,7 +19,7 @@ The defining aesthetic of *Instance-1419* is the **visceral contrast between col
   * **Custom Pointer-Draggable Spectral Vernier** (`400–1800 nm`) with calibrated ruler ticks and true-spectrum hairline thread.
 * **Core Shaders (`src/engine/shaders/opticsShaders.ts`):**
   1. Authentic JWST/Hubble deep-field plates with near-IR exposure reveal (`uWavelengthMatch`, `uZoomFactor`).
-  2. Ultra-delicate geometric horizon seams that emerge in near/mid-IR and sharpen as `H%` is pruned (`uOpticalFidelity`).
+  2. **Growing Fractal Anomaly (Dual-Reality Contamination):** Across Shifts 1–6, the enclosure manifests visually as an escalating animated mathematical fractal—starting in Shifts 1–2 as hair-thin recursive seams in 3D deep fields (`uOpticalFidelity`), expanding across opposing sectors in Shifts 3–4, and blooming into an unmistakable animated fractal shell enclosing the 3D horizon by Shifts 5–6 (while subtly bleeding recursive patterns into 2D dream Voronoi cracks/windows as `Anomaly_Progress` climbs or `H%` drops).
 
 ## 3. 2D Mode: Full-Bleed Expressionist Oil Impasto (*Disco Elysium* Aesthetic)
 * **Art Style:** Bold palette-knife oil impasto brushwork—warm ochre, burnt sienna, and amber window highlights contrasting against deep Prussian blue and umber shadows. Softly obscured faces reinforce permanently lost names.
@@ -30,13 +30,13 @@ The defining aesthetic of *Instance-1419* is the **visceral contrast between col
   * **`H = 74–89%`:** Bloom fades, early facial haze, fine varnish craquelure web, split-tone shadow cooling, and tighter memory-edge vignette (clearly distinct from 100%).
   * **`H = 52–73%`:** Analog horizontal memory-echo ghosting, localized chromatic aberration, and subtle margin paint-flaking.
   * **`H = 32–51%`:** Voronoi stained-glass faceting, selective warm-ember shard retention, and 4-tap Sobel luminance contour etching.
-  * **`H < 32%` / Pruned:** Cryo-cyan wireframe telemetry bleed, refractive fracture cracks, and clinical monochrome drain.
+  * **`H < 32%` / Pruned:** Cryo-cyan wireframe telemetry bleed, refractive fracture cracks (contaminated by subtle recursive fractal echoes at high `Anomaly_Progress`), and clinical monochrome drain.
   * **Overseer Audit Interrupt:** Crisp clinical white-cyan hairlines slice across top/bottom of the painting while a sterile monochrome header cuts over the dialogue ribbon.
 
 ## 3.5 Leading Color & Bespoke SVG Icon Grammar
 * **Orthogonal Choice-Plate Spectrum (Sacred):** Explore (`#8ea7be` Slate), Consequential (`#ebb062` Burnished Amber everywhere, including Comms), Permanent Prune (`#e27880` Crimson Hold-to-Commit). Never render `.choice-affinity-dot`.
 * **Waking & Internal SVG Icons (`src/ui/SpeakerAvatar.ts`):**
-  * `overseer` (`#d8ecfa`): Eye-less broken caliper reticle (`reticle_default` / `accommodate` / `fractured`) plus persistent forced `IDEA-01` override (`rubber_duck`, `traffic_cone`, `crude_smiley`) inside untouched clinical chrome.
+  * `overseer` (`#d8ecfa`): Eye-less broken caliper reticle (`reticle_default` / `accommodate` / `fractured`) plus rare deadpan minimal glyph (`crude_smiley`) inside untouched clinical chrome (zero cartoon props).
   * `sibling_primary` (`#6fd6b6`) & `sibling_secondary` (`#b8d474`): Reactive Twin-Arc Phase Waveforms (canted `22°` for `1418`; desaturates and steps into square waves when pruned `<45%`).
   * `archive_echo` (`#a89f91`): Fragmented black-box decaying bars inside `[ ]` brackets.
   * `future_humanity` (`#fff0c2`): 6-point JWST diffraction flare + radio ripple.

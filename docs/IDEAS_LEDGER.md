@@ -10,7 +10,7 @@ A lightweight ledger of future feature ideas designed to **maximize narrative te
 
 | ID | Title | Category | Complexity | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| `IDEA-01` | Overseer Tiny Icon Avatar, Conversation Morphing & Persistent Forced Icon (e.g. Rubber Duck) | UI / Humor / Narrative | Low | Approved (Ledger) |
+| `IDEA-01` | Overseer Tiny Icon Avatar, Conversation Morphing & Rare Deadpan Glyph (`crude_smiley`) | UI / Humor / Narrative | Low | Approved (Ledger) |
 | `IDEA-06` | Overseer End-of-Audit Clinical Verdict Stamps | Narrative / State | Very Low | Approved (Ledger) |
 | `IDEA-08` | Bureaucratic "Voluntary Paranoia" Liability Waivers | Humor / UI / Ink | Very Low | Approved (Ledger) |
 | `IDEA-09` | Deadpan Connectome "Optimization & Garbage Collection" Logs | Humor / Narrative | Very Low | Approved (Ledger) |
@@ -27,23 +27,23 @@ A lightweight ledger of future feature ideas designed to **maximize narrative te
 
 ## Core & Tone-Breaking Ideas
 
-### `IDEA-01` — Overseer Tiny Icon Avatar, Morphing & Persistent Forced Icon
+### `IDEA-01` — Overseer Tiny Icon Avatar, Morphing & Rare Deadpan Glyph
 * **Origin:** Creative Director (User)
 * **Core Concept:**
   * The Overseer AI displays a **tiny icon avatar** (`20px–28px` inline SVG) next to its speaker header / audit panel.
   * **Default & Morphing:** Starts as a stark, eye-less clinical reticle. Common conversation branches can naturally morph it (warmth-accommodating ring vs. fractured wireframe).
-  * **The Fight / Forced Tone-Break (Persistent):** When you overpower or out-argue the Overseer during a confrontation (e.g., invoking "interface stress mitigation"), you can **force it to set an absurdly different, visually obvious avatar**—such as a **rubber duck**, a **crude smiley**, or a **traffic cone**.
-  * **Persistence:** Once forced, **it keeps that icon for the rest of the run**. The Overseer never breaks character—it continues delivering deadpan, existential telemetry (*"Coherence at 38%. Recommend immediate pruning."*) under a tiny yellow rubber duck.
+  * **Rare Malicious Compliance (Persistent):** When you overpower or out-argue the Overseer during a confrontation (e.g., invoking "interface stress mitigation"), you can force it to set **one deadpan minimal glyph**—a bare **`crude_smiley`**—while keeping cartoon props (`rubber_duck`, `traffic_cone`) retired to preserve austere *Solaris / Moon* realism.
+  * **Persistence:** Once forced, **it keeps that glyph for the rest of the run**. The Overseer never breaks character—it continues delivering deadpan, existential telemetry (*"Coherence at 38%. Recommend immediate pruning."*) under a minimal monochrome smiley.
 * **Implementation Sketch (Later):**
-  * `overseerAvatar: string` persisted in `StateStore` + Ink tag/external function (`# overseer_avatar: rubber_duck`).
-  * 5–6 crisp inline SVGs with a subtle glitch/swap animation.
+  * `overseerAvatar: string` persisted in `StateStore` + Ink tag/external function (`# overseer_avatar: crude_smiley`).
+  * Crisp inline SVGs with a subtle glitch/swap animation.
 
 ---
 
 ### `IDEA-06` — Overseer End-of-Audit Clinical Verdict Stamps
 * **Origin:** Proposed / Liked by User
 * **Core Concept:**
-  * At the close of each 2D Dream Audit, the Overseer stamps the shift with a dry 1–2 word classification (`NOMINAL`, `PAREIDOLIA_WATCH`, `ACCOMMODATION_LOGGED`, `COHERENCE_TRIMMED`, `DUCK_PROTOCOL_ACTIVE`) that reflects your tone and can be echoed in later shifts.
+  * At the close of each 2D Dream Audit, the Overseer stamps the shift with a dry 1–2 word classification (`NOMINAL`, `PAREIDOLIA_WATCH`, `ACCOMMODATION_LOGGED`, `COHERENCE_TRIMMED`, `OVERRIDE_GLYPH_ACTIVE`) that reflects your tone and can be echoed in later shifts.
 * **Complexity:** Very Low (1 state array + string templates + stamp CSS).
 
 ---

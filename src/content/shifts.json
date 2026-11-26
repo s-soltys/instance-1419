@@ -12,6 +12,8 @@
       ],
       "baseChaosPerShift": 16,
       "monthsPerShift": 4,
+      "realHibernationYearsAfter": 5.0,
+      "fractalStage": 1,
       "siblingDriftRange": [64, 72],
       "overseerAuditChaosThreshold": 28,
       "desyncSuspicionThreshold": 4,
@@ -28,6 +30,8 @@
       ],
       "baseChaosPerShift": 18,
       "monthsPerShift": 4,
+      "realHibernationYearsAfter": 5.2,
+      "fractalStage": 2,
       "siblingDriftRange": [56, 68],
       "overseerAuditChaosThreshold": 32,
       "desyncSuspicionThreshold": 4,
@@ -44,6 +48,8 @@
       ],
       "baseChaosPerShift": 20,
       "monthsPerShift": 4,
+      "realHibernationYearsAfter": 5.5,
+      "fractalStage": 3,
       "siblingDriftRange": [46, 62],
       "overseerAuditChaosThreshold": 35,
       "desyncSuspicionThreshold": 3,
@@ -59,6 +65,8 @@
       ],
       "baseChaosPerShift": 22,
       "monthsPerShift": 4,
+      "realHibernationYearsAfter": 5.8,
+      "fractalStage": 4,
       "siblingDriftRange": [34, 54],
       "overseerAuditChaosThreshold": 35,
       "desyncSuspicionThreshold": 3,
@@ -74,6 +82,8 @@
       ],
       "baseChaosPerShift": 24,
       "monthsPerShift": 4,
+      "realHibernationYearsAfter": 6.0,
+      "fractalStage": 5,
       "siblingDriftRange": [26, 48],
       "overseerAuditChaosThreshold": 38,
       "desyncSuspicionThreshold": 3,
@@ -89,6 +99,8 @@
       ],
       "baseChaosPerShift": 26,
       "monthsPerShift": 4,
+      "realHibernationYearsAfter": 20.0,
+      "fractalStage": 6,
       "siblingDriftRange": [20, 44],
       "overseerAuditChaosThreshold": 40,
       "desyncSuspicionThreshold": 3,
@@ -108,12 +120,12 @@
       {
         "id": "ending_cold_complete",
         "title": "Exact Geometry, Hollow Carrier",
-        "summary": "Your coordinates reach Sol–Centauri with mathematical perfection, stripped of any human register."
+        "summary": "Your coordinates reach Sol–Centauri with mathematical perfection, stripped of human cadence—and twenty years later, you wake to pure silence."
       },
       {
         "id": "ending_sweet_spot",
         "title": "The Off-Center Plea",
-        "summary": "You prove the shell centered ten light-years back on Earth—and wake to a small, unmistakable human echo."
+        "summary": "You prove the shell centered ten light-years back on Earth via the twenty-year causal phase lag—and wake to a small, uncanny human echo."
       }
     ]
   }
