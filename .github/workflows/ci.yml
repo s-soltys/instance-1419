@@ -1,19 +1,24 @@
-name: CI Verification
+name: CI
 
 on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches-ignore: [main]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  fast-gates:
+  verify:
+    name: 9-Gate Verify
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,40 +30,19 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Run Fast Gates (1-8)
         run: npm run verify:fast
 
-  e2e-visual:
-    needs: fast-gates
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build production bundle
-        run: npm run build
-
-      - name: Install Chromium for Playwright
-        run: npx playwright-core install --with-deps chromium
-
-      - name: Run Full Desktop & Mobile Visual E2E
+      - name: Run Full Visual E2E (Gate 9)
         run: npm run test:visual
 
-      - name: Upload E2E screenshots
+      - name: Upload visual E2E screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-visual-screenshots
           path: artifacts/e2e-visual
           retention-days: 7
+          if-no-files-found: ignore

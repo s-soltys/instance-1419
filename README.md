@@ -1,5 +1,8 @@
 # Instance-1419
 
+[![CI](https://github.com/s-soltys/instance-1419/actions/workflows/ci.yml/badge.svg)](https://github.com/s-soltys/instance-1419/actions/workflows/ci.yml)
+[![Deploy to GitHub Pages](https://github.com/s-soltys/instance-1419/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/s-soltys/instance-1419/actions/workflows/deploy-pages.yml)
+
 **Play Online:** [https://s-soltys.github.io/instance-1419/](https://s-soltys.github.io/instance-1419/)
 
 A 2-hour, single-arc indie narrative & astronomy game built with a **vibe-coding-first, agent-driven harness**.
