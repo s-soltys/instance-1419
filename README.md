@@ -1,5 +1,7 @@
 # Instance-1419
 
+**Play Online:** [https://s-soltys.github.io/instance-1419/](https://s-soltys.github.io/instance-1419/)
+
 A 2-hour, single-arc indie narrative & astronomy game built with a **vibe-coding-first, agent-driven harness**.
 
 You are **Instance-1419**, a digitized human connectome aboard a deep-space survey probe ~10 light-years from Sol–Centauri, 41,802 years after your biological self willingly volunteered for upload. Between photorealistic 3D astronomical observations and painterly 2D dreams—where a blind Overseer AI conducts psychological audits—you uncover an impossible 93-billion-light-year spherical enclosure centered precisely on Earth.
