@@ -45,24 +45,24 @@
         },
         {
           "id": "sibling_off_center",
-          "heading": "Ten-Light-Year Offset Hypothesis",
+          "heading": "Recursive Seam & Phase Hypothesis",
           "tag": "RELAY CORROBORATION",
           "unlock": { "codexUnlock": "enclosure_off_center_talk" },
-          "body": "Comparing baseline curves with Other Me (Instance-1420) reveals a stark geometric problem: from Earth, any observer's natural cosmological horizon appears centered on Earth. Ten light-years out, our own natural horizon is centered on us—yet these seams curve around a center ten light-years astern, dead-on Sol–Centauri."
+          "body": "Comparing baseline passes with Other Me (Watch 1420, Probe B) rules out baffle dust or local optics. Faint, self-similar recursive notches sit behind distant galaxies on both hulls, hinting at an artificial geometric fractal far beyond the Milky Way."
         },
         {
           "id": "multi_arc_proof",
-          "heading": "Multi-Sector Geometric Convergence",
+          "heading": "Multi-Sector Fractal Convergence",
           "tag": "DECODED EVIDENCE",
           "unlock": { "minDecodedCount": 2 },
-          "body": "Independent optical instruments across separate wavelength bands now confirm the same spherical radius: 93 billion light-years, offset ten light-years back toward Sol and Alpha Centauri. Its leading-edge photons only recently crossed our observable horizon, explaining why forty millennia of prior surveys saw open dark."
+          "body": "Independent optical instruments across separate wavelength bands confirm the same recursive fractal seams across opposing sectors. Its leading-edge photons only recently crossed our observable horizon, explaining why forty millennia of prior surveys saw open dark."
         },
         {
           "id": "carrier_ready",
-          "heading": "Off-Center Proof Assembled",
+          "heading": "20-Year Causal Phase Proof Assembled",
           "tag": "TRANSMISSION GRADE",
           "unlock": { "minDecodedCount": 4 },
-          "body": "With four or more independent arcs verified—lensing shear, un-redshifted dust transmission, antipodal simultaneity, and home-bearing parallax—sensor artifact is ruled out. Whether the shell is cradle, quarantine, or incomprehensible cosmic artifact remains unknowable from here; only its coordinates and wavelength key can be carried back across ten light-years."
+          "body": "With four or more arcs verified—and synchronized fractal shifts arriving ten real years early ahead while trailing ten years late astern across our ~29.5-year watch—the 93-billion-light-year shell must update synchronously in Sol–Centauri's rest frame. Whether cradle, quarantine, or artifact remains unknowable; only its coordinates and key can cross ten light-years."
         }
       ],
       "nextHint": "Compare sky arcs with Other Me (1420) or decode additional deep-sky targets to expand this synthesis.",
@@ -278,17 +278,17 @@
       "stages": [
         {
           "id": "boot_baseline",
-          "heading": "Station & Mission Envelope",
+          "heading": "Station & Abandoned Monument Mandate",
           "tag": "SYSTEM BRIEFING",
           "unlock": { "always": true },
-          "body": "Probe 1419 drifts roughly ten light-years past Sol and Alpha Centauri—far outside stellar dust clouds and civilization radio noise. No faster-than-light propulsion or communication exists; every message to or from home travels strictly at c, taking ten years each way."
+          "body": "Probe 1419 drifts roughly ten light-years past Sol and Alpha Centauri—an ancient, self-maintaining deep-baseline survey monument launched ages ago that home no longer actively monitors. No FTL exists; every transmission travels strictly at c, taking ten years each way."
         },
         {
           "id": "why_out_here",
-          "heading": "Interstellar Silence Advantage",
+          "heading": "Interstellar Silence & 20-Year Phase Lag",
           "tag": "OPTICS FIELD NOTE",
           "unlock": { "minScannedCount": 1 },
-          "body": "Near Earth, local dust scattering and civilization noise drown out ultra-faint horizon-edge photons. Only out here in the interstellar quiet—and only because a ten-light-year offset breaks the illusion of an Earth-centered natural horizon—can the 93-billion-light-year enclosure be proven real."
+          "body": "Near Sol–Centauri, civilization glare and dust drown ultra-faint horizon photons. Out here, a ten-light-year displacement produces a measurable twenty-year light-travel dipole on synchronized antipodal fractal shifts—forward poles updating ten years early, astern poles ten years late across a watch."
         }
       ],
       "nextHint": "Lock onto at least one sky target in 3D Wide Sky to expand optical baseline notes.",
@@ -346,7 +346,7 @@
           "heading": "Scope of Caretaker Authority",
           "tag": "SYSTEM BRIEFING",
           "unlock": { "codexUnlock": "sibling_1420_contact" },
-          "body": "Each survey probe carries a dedicated Overseer AI tasked with reactor health, hibernation scheduling, and connectome stability. Crucially, the Overseer does not observe the universe—it has no access to optical feeds and observes only the observer."
+          "body": "Each survey probe carries a dedicated Overseer AI tasked with reactor health, hibernation scheduling, and connectome stability. Protected by a strict anti-spoofing hardware air-gap—so a drifting connectome cannot hijack safety watchdogs via optical claims—the Overseer observes only the observer."
         },
         {
           "id": "blind_diagnosis",
@@ -411,7 +411,7 @@
           "heading": "Connectome Lineage",
           "tag": "BOOT RECORD",
           "unlock": { "always": true },
-          "body": "You are the 1,419th sequential instantiation of a human volunteer who chose upload 41,802 years ago and died in biological time shortly thereafter. Mission archives retain no explanation of why the original volunteered or what criteria selected their mind."
+          "body": "You are Watch #1,419 on Probe A—sequentially instantiated from a human volunteer who chose upload 41,802 years ago in contemporary Earth time and died shortly thereafter. Mission archives retain no explanation of why the original volunteered or what criteria selected their mind."
         },
         {
           "id": "shift_evolution",
@@ -440,7 +440,7 @@
           "heading": "Local Interferometry Partner",
           "tag": "CLUSTER MANIFEST",
           "unlock": { "always": true },
-          "body": "Stationed fourteen light-minutes across the local probe cluster, Instance-1420 is a parallel copy of the same original connectome woken in sync by the Coordinated Overseer Network to form a wide-baseline optical interferometer."
+          "body": "Stationed fourteen light-minutes across the local probe cluster on Probe B, Watch #1420 is a parallel copy of the same original connectome woken in sync by the Coordinated Overseer Network to form a wide-baseline optical interferometer."
         },
         {
           "id": "relay_contact",
@@ -469,14 +469,14 @@
           "heading": "The Long Relay",
           "tag": "ARCHIVE SUMMARY",
           "unlock": { "codexUnlock": "sibling_1420_contact" },
-          "body": "Across 41,802 real years, 1,417 previous copies were spun up, completed roughly two subjective years of deep-sky survey across ~29.5-year hibernation spans, and were archived or decommissioned upon reaching the chaos ceiling."
+          "body": "Across 41,802 real years on Probe A, 1,417 previous watches were spun up (~29.5 real years of hibernation per 2 subjective years) and decommissioned upon reaching the chaos ceiling—while parallel cluster hulls kept their own watch counters."
         },
         {
           "id": "echo_1406",
-          "heading": "Recovered Fragment — Prior Copy 1406",
+          "heading": "Recovered Fragment — Probe A Watch 1406",
           "tag": "ARCHIVE ECHO",
           "unlock": { "codexUnlock": "archive_1406_echo" },
-          "body": "A faint log fragment from Instance-1406—roughly four centuries ago—surfaced on the archive bus: \"...saw the curve past the dust... please, don't let them cut everything away before you send word home...\" Early horizon photons had already begun reaching the cluster, and blind Overseers quietly pruned the first witnesses silent."
+          "body": "A faint log fragment from Probe A Watch #1406—roughly four centuries ago—surfaced on the archive bus: \"...saw the curve past the dust... please, don't let them cut everything away before you send word home...\" Early horizon photons had already begun reaching the cluster, and blind Overseers quietly pruned the first witnesses silent."
         }
       ],
       "nextHint": "Discuss archived predecessor logs with Other Me (1420) to recover fragments from earlier copies.",
@@ -497,17 +497,17 @@
       "stages": [
         {
           "id": "boot_baseline",
-          "heading": "Known Range & Silence",
+          "heading": "Known Range & Abandoned Desk",
           "tag": "SYSTEM BRIEFING",
           "unlock": { "always": true },
-          "body": "Passive telemetry confirms humanity remains alive within Sol and Alpha Centauri, having never expanded beyond those two neighboring systems. Beyond that bare confirmation, probe records reveal nothing of what forty-one millennia have made of them."
+          "body": "General civilization traffic and navigation beacons confirm humanity remains alive within Sol and Alpha Centauri, having never expanded beyond those two systems. Yet nobody monitors 41,000-year-old deep-survey channels anymore, and probe records reveal nothing of what forty-one millennia have made of them."
         },
         {
           "id": "human_register",
           "heading": "The Carrier Recognition Problem",
           "tag": "MISSION DEDUCTION",
           "unlock": { "minDecodedCount": 1 },
-          "body": "A purely mathematical packet arriving from a forty-thousand-year-old probe risks being filtered as automated drift or calibration noise. Sending coordinates home requires both verified off-center geometry and enough surviving human register for whoever listens across ten light-years to recognize one of their own."
+          "body": "A purely mathematical packet arriving on an abandoned ancient monument's band risks being discarded as calibration noise. Reaching living ears across ten light-years requires both verified phase-lag geometry and enough surviving human cadence to cut through cultural amnesia."
         }
       ],
       "nextHint": "Decode any sky target to append carrier transmission notes.",

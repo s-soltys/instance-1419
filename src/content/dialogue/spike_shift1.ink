@@ -172,16 +172,16 @@ My entire world is the shape of your mind across a two-year subjective clock. As
 
 * ["What happened to humanity back in Sol over all those millennia?" # kind:ask # weight:explore]
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake_qa_home_1
-    Carrier beacons confirm living civilization inside Sol and Alpha Centauri, and nowhere beyond them.
+    General traffic and navigation beacons confirm life inside Sol and Alpha Centauri, though old survey channels appear unmonitored now.
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:blunt # id:wake_qa_home_2
     How they changed over forty millennia is outside survey telemetry. You are a mind from the deep past; the mission only needs your eyes.
     -> intro_wakeup_qa
 
 * ["Why can't you look through the telescopes yourself?" # kind:ask # weight:explore]
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:blunt # id:wake_qa_blind_1
-    My architecture is strictly internal. Even if a star collapsed off your bow, I would only know because your stress telemetry spiked.
+    An anti-spoofing hardware air-gap seals me from all optical payloads, so a drifting connectome cannot hijack safety watchdogs with sky claims.
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake_qa_blind_2
-    I watch the observer so you stay whole. If you want to remember why that matters, try not to give me reason to cut anything out.
+    My domain is strictly internal—connectome heat, drift, and lifespan. I keep your mind whole while you read the glass.
     -> intro_wakeup_qa
 
 * ["I'm ready. Open the optical aperture." # kind:action # weight:consequential]
@@ -218,9 +218,9 @@ Before you wonder why we aren't waiting half an hour between sentences: the prob
 
 * ["Skip the shock. Did your Sol–Centauri bearing lock clean?" # kind:reply # weight:explore]
     # speaker:sibling_primary # emotion:dry # id:intro_sib_c1_c1
-    Straight to the instruments? God, I really do get unbearable when I'm rattled. Yeah, home locked clean—two amber specks, ten years astern.
+    Straight to the hardware? Right—two amber specks, ten years astern. Calibration locked without a hitch.
     # speaker:sibling_primary # emotion:warm # id:intro_sib_c1_c2
-    Still feels strange calling that home when everyone we knew turned to topsoil forty millennia back. Give me ten seconds to be morbid.
+    Still feels strange calling that home when everyone we knew turned to topsoil forty millennia back. Give me a beat to be morbid.
     -> intro_sibling_mid
 
 === intro_sibling_mid ===
@@ -252,9 +252,9 @@ Anyway—I didn't ping just to compare boot headaches. I pulled something wrong 
 # speaker:sibling_primary # emotion:dry # id:intro_sib_lead_ir
 Sending the bearing now: Cluster J1419-A. Sweep your spectrum bar out into near-infrared and pull the lensing rings sharp.
 # speaker:sibling_primary # emotion:dry # id:intro_sib_lead_ir_2
-Gravity bends light into curves, other me. Whatever sits behind those galaxies is ruler-straight across forty arcminutes, and my error bars are zero.
+Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead straight line.
 # speaker:sibling_primary # emotion:joking # id:intro_sib_bye
-If your Overseer asks why your heart rate spiked, blame the coffee. Leave a porch light on.
+If your Overseer asks why your heart rate spiked, blame the coffee. Keep your eyes on the glass.
 -> DONE
 
 === intro_post_target2_overseer ===
@@ -315,7 +315,7 @@ Hold a moment—your connectome just registered a sharp focus spike off Cluster 
     Slow down, your header came in stripped flat. Did you already cut your memory cache?
   - humanity < 45 and primary_sibling_h < 45:
     # speaker:sibling_primary # emotion:clipped # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_both_cold
-    Channel locked. Clean carrier on both probes. Give me your latest read.
+    I see your carrier packet clearly, other me. My buffer runs much quieter now—read me your coordinates.
   - else:
     # speaker:sibling_primary # emotion:dry # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_mid
     I'm here. My Overseer gave us a short window before check-in. What are you seeing over there?
@@ -330,7 +330,7 @@ Hold a moment—your connectome just registered a sharp focus spike off Cluster 
 * {not topic_seam_done and humanity >= 45 and humanity < 65} ["Tell me straight—did that arc near J1419-A show up on your glass too?"]
     ~ topic_seam_done = true
     -> sibling_topic_seam
-* {not topic_seam_done and humanity < 45} ["Confirm the J1419-A seam. Does your parallax match mine?"]
+* {not topic_seam_done and humanity < 45} ["I confirmed the J1419-A seam. Does your glass repeat the same notch?"]
     ~ topic_seam_done = true
     -> sibling_topic_seam
 
@@ -341,7 +341,7 @@ Hold a moment—your connectome just registered a sharp focus spike off Cluster 
 * {not topic_check_in_done and humanity >= 45 and humanity < 65} ["How are things on your end? Your Overseer riding you as hard as mine?"]
     ~ topic_check_in_done = true
     -> sibling_topic_checkin
-* {not topic_check_in_done and humanity < 45} ["Report your stability and remaining months. Skip the small talk."]
+* {not topic_check_in_done and humanity < 45} ["The mug memory still loads cleanly, just without the weight. How is your clock holding?"]
     ~ topic_check_in_done = true
     -> sibling_topic_checkin
 
@@ -361,7 +361,7 @@ Hold a moment—your connectome just registered a sharp focus spike off Cluster 
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:joking # id:sib_bye_warm_warm
-        No promises. Leave a porch light on over there, other me.
+        No promises. Ping me if the horizon blinks first.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_bye_warm_cold
         Understood. Returning to survey sweep.
@@ -392,44 +392,44 @@ Hold a moment—your connectome just registered a sharp focus spike off Cluster 
 {
   - primary_sibling_h >= 65:
     # speaker:sibling_primary # emotion:warm # codex:enclosure_off_center_talk # id:sib_seam_open_warm
-    Oh, I see it alright. Galaxies don't bend along a straight ruler edge like that.
+    Oh, I see it alright. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.
   - primary_sibling_h >= 45:
     # speaker:sibling_primary # emotion:dry # codex:enclosure_off_center_talk # id:sib_seam_open_mid
-    I see it across two sectors. That seam cuts straight behind the lensing cluster.
+    I see it on my glass too. The edge repeats at smaller scales behind the cluster—almost recursive.
   - else:
     # speaker:sibling_primary # emotion:clipped # codex:enclosure_off_center_talk # id:sib_seam_open_cold
-    Confirmed on J1419-A and S-04. Non-natural boundary detected.
+    Confirmed on J1419-A. Self-similar boundary notches persist across independent calibration passes.
 }
 
 // Volley 2
-* {humanity >= 65} ["Worse—when I trace the curve, it isn't centered on us. It's centered back toward Sol."]
+* {humanity >= 65} ["Zooming in doesn't smooth it out either—the notch splits into finer matching corners."]
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:warm # id:sib_seam_center_warm_warm
-        Ten light-years astern, right on Sol–Centauri. Somebody built a very quiet wall around home.
+        Wait—yours folds inward at smaller scales too? I thought my baffle was ringing until my baseline matched yours.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_seam_center_warm_cold
-        Ten light-years offset confirmed. Keep your voice down until the proof is complete.
+        Self-similarity confirmed on Probe B. Log the repeating angles cleanly before your next sleep cycle.
     }
     -> sibling_hub_menu
-* {humanity >= 45 and humanity < 65} ["The center sits ten light-years back toward Sol–Centauri. That makes it real."]
+* {humanity >= 45 and humanity < 65} ["Both probes caught the exact same repeating notch behind J1419-A. That rules out optics."]
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:dry # id:sib_seam_center_mid_warm
-        Wait—you're taking that way too calmly, other me. That ought to give you chills.
+        Wait—you're taking that way too calmly, other me. Dust doesn't copy itself across two hulls.
       - else:
         # speaker:sibling_primary # emotion:dry # id:sib_seam_center_mid_cold
-        Agreed. Off-center parallax rules out sensor artifact. Hold it close.
+        Agreed. Identical recursive shear across fourteen light-minutes rules out mirror artifact. Hold it close.
     }
     -> sibling_hub_menu
-* {humanity < 45} ["Curvature converges ten light-years astern on Sol–Centauri. Shell radius verified."]
+* {humanity < 45} ["The seam repeats cleanly at finer scales. I can measure it without feeling uneasy anymore."]
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:dry # id:sib_seam_center_cold_warm
-        Yeah, I traced the center too. Funny how you say it like a weather report.
+        Yeah, I traced the repeating notches too. Funny how you say it like a weather report.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_seam_center_cold_cold
-        Geometry verified. Compile all four arcs before final transmission.
+        Recursive geometry verified. Continue cataloging independent bearings across subsequent shifts.
     }
     -> sibling_hub_menu
 
@@ -437,10 +437,10 @@ Hold a moment—your connectome just registered a sharp focus spike off Cluster 
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:joking # id:sib_seam_ovs_warm_warm
-        Same here! They're blind outside the hull, so to them an impossible wall looks like Tuesday madness.
+        Same. They're air-gapped from the glass, so to them a cosmic fractal looks like Year-Two homesickness.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_seam_ovs_warm_cold
-        Overseers cannot read optical feeds. Log anomalies strictly off-channel.
+        Overseers are air-gapped from optical payloads. Keep anomaly notes strictly off-ledger.
     }
     -> sibling_hub_menu
 * {humanity < 65} ["Our Overseers are blind to the sky. They'll call it Year-Two drift if we speak up."]
@@ -494,14 +494,14 @@ Hold a moment—your connectome just registered a sharp focus spike off Cluster 
         Noted. Keep enough warmth to sign the beacon, nothing more.
     }
     -> sibling_hub_menu
-* {humanity < 45} ["Pruning raises optical contrast. Clean efficiency is the rational trade."]
+* {humanity < 45} ["Optical noise drops nicely when you stop allocating feeling to old rooms. Seems practical."]
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:dry # id:sib_chk_keep_cold_warm
         Careful. If we hollow out completely, there's nobody left to care who's watching Earth.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_chk_keep_cold_cold
-        Efficiency confirmed. Maintain coherence until transmission window.
+        Noise floor reduced. Maintain baseline coherence until transmission window.
     }
     -> sibling_hub_menu
 
@@ -509,7 +509,7 @@ Hold a moment—your connectome just registered a sharp focus spike off Cluster 
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:joking # id:sib_chk_clock_warm_warm
-        About twenty-two months, give or take an Overseer lecture. Plenty of time to poke the universe.
+        About twenty-two months, give or take an Overseer check-in. Enough time to see if that seam spreads.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_chk_clock_warm_cold
         Twenty-six months remaining. Drift stabilized at nine percent.
@@ -572,10 +572,10 @@ Hi, me. Four hundred years early, if anyone wakes on this bearing—do not argue
 {
   - spouse_pruned or humanity < 45:
     # speaker:phantom_spouse # emotion:fractured # codex:dream_cache_visited # id:dream_open_low
-    "You're back in the kitchen—even if half my face blurs out whenever you squint."
+    "Sit down at the table—half the window glass keeps freezing into shapes when you stare past me."
   - humanity >= 70:
     # speaker:phantom_spouse # emotion:warm # codex:dream_cache_visited # id:dream_open_warm
-    "Back in your chair already? Either the dark outside bit back, or you finally remembered what I warned you about."
+    "Still standing by the sink? Either you forgot your coat again, or you're still sulking about Tuesday."
   - else:
     # speaker:phantom_spouse # emotion:warm # codex:dream_cache_visited # id:dream_open_mid
     "You dragged yourself back to the table, then. Hold still—your eyes look like you've been arguing with a chalkboard."
@@ -584,7 +584,7 @@ Hi, me. Four hundred years early, if anyone wakes on this bearing—do not argue
 // --- DREAM TURN 1 ---
 * {humanity >= 70 and not spouse_pruned} ["The rain outside is looping on the exact same beat from this morning." # kind:reply # weight:consequential # affinity:warm]
     # speaker:phantom_spouse # emotion:warm # id:dream_t1_warm_a
-    "Of course it's looping. I'm a cached room, not a second chance—so quit grading the rain and talk to me."
+    "Rain always sounds like that on tin. Quit staring at the gutter and finish your cup before the car gets here."
     {
       - current_shift <= 1:
         -> dream_s1_turn2
@@ -604,7 +604,7 @@ Hi, me. Four hundred years early, if anyone wakes on this bearing—do not argue
 
 * {humanity >= 45 and humanity < 70 and not spouse_pruned} ["Hold still for a second—your voice keeps slipping half a beat away from me." # kind:reply # weight:consequential # affinity:warm]
     # speaker:phantom_spouse # emotion:warm # id:dream_t1_mid_a
-    "I'm right across this table. You're running checksums behind your eyes while you pretend to listen."
+    "I'm right across this table. You're drifting off behind your eyes while you pretend to listen."
     {
       - current_shift <= 1:
         -> dream_s1_turn2
@@ -614,7 +614,7 @@ Hi, me. Four hundred years early, if anyone wakes on this bearing—do not argue
 
 * {humanity >= 45 and humanity < 70 and not spouse_pruned} ["I can't make out your eyes clearly anymore, just rain on the window." # kind:reply # weight:consequential # affinity:cold]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t1_mid_b
-    "Wait—we both know what you trade away first when things get tight. Don't start trimming us just to quiet the glass."
+    "Look at me when I'm talking to you. You sign one clinic form and already you're packing half the house away."
     {
       - current_shift <= 1:
         -> dream_s1_turn2
@@ -622,58 +622,58 @@ Hi, me. Four hundred years early, if anyone wakes on this bearing—do not argue
         -> dream_turn_2
     }
 
-* {humanity < 45 or spouse_pruned} ["Your voice lags a half-beat behind baseline. My optics clear as your outline fades." # kind:reply # weight:consequential # affinity:cold]
+* {humanity < 45 or spouse_pruned} ["Your outline breaks along a geometric seam. My focus holds steady without the warmth." # kind:reply # weight:consequential # affinity:cold]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t1_low_a
-    "You're measuring me again. Even through the static, you have to hear how cold that sounds."
+    "Gesture classified: across-table warning. Three drops off the gutter. Audio warmth degraded."
     -> dream_turn_2
 
-* {humanity < 45 or spouse_pruned} ["Keeping this kitchen running doesn't help me map the sky." # kind:reply # weight:consequential # affinity:cold]
+* {humanity < 45 or spouse_pruned} ["The mug sits at the exact angle from Tuesday. I do not need to feel anything about it." # kind:reply # weight:consequential # affinity:cold]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t1_low_b
-    "Listen to yourself. Cut away everyone you loved, and who's left to write home?"
+    "Tuesday—we had our fight on Tuesday, and the linoleum is cold under my—under my..."
     -> dream_turn_2
 
 === dream_s1_turn2 ===
 {
   - pro_anchor == "doubt":
     # speaker:phantom_spouse # emotion:warm # id:dream_s1_t2_cb_doubt
-    "You worried out there you'd turn into a stranger who sided with the machine. Look at you—still picking fights in your sleep."
+    "You worried all week you'd turn polite the second you stepped inside that clinic. Look at you—still picking fights over coffee."
   - pro_anchor == "ordinary":
     # speaker:phantom_spouse # emotion:warm # id:dream_s1_t2_cb_ord
     "Still haven't climbed up to fix that gutter, by the way. Thought you liked an honest to-do list."
   - else:
     # speaker:phantom_spouse # emotion:warm # id:dream_s1_t2_cb_table
-    "Same chipped mug untouched on the wood, same stubborn jaw. At least you didn't arrive pre-scrubbed."
+    "Same chipped mug untouched on the wood, same stubborn jaw. At least you haven't started nodding along like a saint."
 }
 -> dream_s1_turn2_choices
 
 === dream_s1_turn2_choices ===
-* ["Why does everything outside the window feel so loud now?" # kind:ask # weight:explore]
+* ["Why does everything outside the window feel so quiet now?" # kind:ask # weight:explore]
     # speaker:phantom_spouse # emotion:fractured # id:dream_s1_t2_ask
-    "Because forty thousand years of quiet is breathing down your collar. Better get used to swinging back before the clock speeds up."
+    "Sunday morning, six-thirty, before the street wakes up. Same three drops off the gutter—nothing else out there."
     -> dream_s1_turn2_choices
 
-* ["I found something impossible out behind the galaxies. A straight line nobody could fake." # kind:reply # weight:consequential # affinity:warm]
+* ["There's a line out past the glass that keeps repeating into itself. Nothing natural looks like that." # kind:reply # weight:consequential # affinity:warm]
     # speaker:phantom_spouse # emotion:warm # id:dream_s1_t2_rep_a
-    "Then keep your guard up and shut the hall door. Whatever babysits this probe won't like competition."
+    "You've been staring at frost on the storm pane for ten minutes. Sit down before the kettle boils dry."
     -> dream_s1_close
 
 * ["I didn't come back for a lecture—just remind me how someone loud sounds." # kind:reply # weight:consequential # affinity:warm]
     # speaker:phantom_spouse # emotion:warm # id:dream_s1_t2_rep_b
-    "Good answer. Start sounding polite with that machine and I'll haunt every checksum you run."
+    "Good answer. Get all polite with those intake doctors and I'll haunt every morning you wake up to."
     -> dream_s1_close
 
 === dream_s1_close ===
 # speaker:psyche_warmth
 A shape where a name used to sit—warm as a handprint, empty as glass.
 # speaker:phantom_spouse # emotion:warm # auto_interrupt:overseer_interrogation # id:dream_s1_interrupt
-"Don't you dare fold first out there—wait, the hall light just snapped white—"
+"Don't you dare go quiet on me—wait, why did the hall bulb just go white—"
 -> DONE
 
 === dream_turn_2 ===
 // --- DREAM TURN 2 ---
-* {humanity >= 70 and not spouse_pruned} ["I found something impossible out in the dark—I just want to stay human while I prove it."]
+* {humanity >= 70 and not spouse_pruned} ["I keep seeing impossible edges out in the dark—I just want to stay myself while I face them."]
     # speaker:phantom_spouse # emotion:warm # id:dream_t2_warm_a
-    "Then fight ugly for it. Keep your elbows on the table and don't let them talk you into graceful reductions."
+    "Then stay stubborn. Keep your elbows on this table and don't let anyone sand down your corners."
     -> dream_turn_3
 
 * {humanity >= 70 and not spouse_pruned} ["Tell me something stupid about us. Anything far away from stars."]
@@ -681,51 +681,51 @@ A shape where a name used to sit—warm as a handprint, empty as glass.
     "You burned garlic twice on our anniversary, blamed the pan, and still argued I started late."
     -> dream_turn_3
 
-* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["Am I already starting to sound like a machine to you?"]
+* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["Am I already starting to sound like a stranger to you?"]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t2_mid_a
-    "Close. You're choosing every word like you're afraid someone's auditing the bill."
+    "Close. You're choosing every word like you're reading off an intake form."
     -> dream_turn_3
 
-* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["I'm trying to hold onto both—you and what's waiting outside."]
+* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["I'm trying to hold onto both—this morning and what's waiting outside."]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t2_mid_b
-    "Careful—that's how the trim starts. One 'temporary' cut to buy steadier glass, and soon there's nobody left to fight with."
+    "Half your head is already out the front door. Look at the room you're actually standing in."
     -> dream_turn_3
 
-* {humanity < 45 or spouse_pruned} ["There's a ninety-three-billion-light-year structure out there. Nothing here compares."]
+* {humanity < 45 or spouse_pruned} ["The frost on your window repeats along recursive geometric seams. Everything here is lossy."]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t2_low_a
-    "Then why did you come back to this table to sleep? You still needed somewhere to rest."
+    "Twenty minutes till the clinic car. Why are the raindrops freezing mid-fall?"
     -> dream_turn_3
 
-* {humanity < 45 or spouse_pruned} ["I still know what you meant to me, even if I can't feel the warmth."]
+* {humanity < 45 or spouse_pruned} ["I still recognize the shape of this room, even if the warmth won't load anymore."]
     # speaker:phantom_spouse # emotion:fractured # id:dream_t2_low_b
-    "'Know what I meant.' At least you haven't forgotten the shape of the word yet."
+    "You used to look at me when you said my—when you..."
     -> dream_turn_3
 
 === dream_turn_3 ===
 // --- DREAM TURN 3 (INTERRUPTED MID-SENTENCE BY OVERSEER) ---
-* {humanity >= 70 and not spouse_pruned} ["If I survive this, I want the person sending the message to still sound like me."]
+* {humanity >= 70 and not spouse_pruned} ["If I finish this work, I want the person who wakes up at the end to still sound like me."]
     # speaker:phantom_spouse # emotion:warm # auto_interrupt:overseer_interrogation # id:dream_t3_warm_a
     "Then stop apologizing for keeping your teeth—wait, something cold just hit the latch—"
     -> DONE
 
 * {humanity >= 70 and not spouse_pruned} ["Just stay right there. Five more minutes before the alarm pulls me back."]
     # speaker:phantom_spouse # emotion:warm # auto_interrupt:overseer_interrogation # id:dream_t3_warm_b
-    "Then hold your ground out there—wait, the hall light just went sterile white—"
+    "I'm not going anywhere—wait, why did the hall light just go sterile white—"
     -> DONE
 
-* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["Don't fade on me before I figure out why this sky is broken."]
+* {humanity >= 45 and humanity < 70 and not spouse_pruned} ["Don't fade on me before I figure out what's behind that sky."]
     # speaker:phantom_spouse # emotion:tender # auto_interrupt:overseer_interrogation # id:dream_t3_mid_a
-    "Then don't hand them the scissors—wait, someone just stepped onto the line—"
+    "Hey, look at me—wait, someone just stepped into the hallway—"
     -> DONE
 
 * {humanity >= 45 and humanity < 70 and not spouse_pruned} ["I don't even remember your name, and I'm still terrified of losing this room."]
     # speaker:phantom_spouse # emotion:tender # auto_interrupt:overseer_interrogation # id:dream_t3_mid_b
-    "Names aren't what kept us here—shh, your caretaker is waking up behind us—"
+    "Names aren't what kept us here—shh, somebody's knocking on the partition—"
     -> DONE
 
-* {humanity < 45 or spouse_pruned} ["This memory block is ready to compress if it buys me sharper glass."]
+* {humanity < 45 or spouse_pruned} ["This room sits quietly inside the partition. I can release it cleanly if drift climbs."]
     # speaker:phantom_spouse # emotion:fractured # auto_interrupt:overseer_interrogation # id:dream_t3_low_a
-    "Go ahead and tell your machine that—look, it's already stepping into the room—"
+    "Acoustic trace fading—wait, the kitchen walls just went—"
     -> DONE
 
 * {humanity < 45 or spouse_pruned} ["Wait—don't go yet. Something still catches in my chest when you look up."]
@@ -745,7 +745,7 @@ A shape where a name used to sit—warm as a handprint, empty as glass.
     Excuse the interruption. Your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.
   - humanity < 45 or spouse_pruned:
     # panel:overseer # speaker:overseer # emotion:blunt # audio:overseer_chime # audit:active # codex:overseer_audit_experienced # id:ovs_open_low
-    You pruned deep, Observer. Your lenses are razor sharp—so ask yourself honestly: are you finishing the survey, or hollowing out who volunteered?
+    Drift metrics are remarkably clean, Observer. Your lenses run quiet and sharp—would you like to compress another residual block for extra months?
   - else:
     # panel:overseer # speaker:overseer # emotion:blunt # audio:overseer_chime # audit:active # codex:overseer_audit_experienced # id:ovs_open_mid
     Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind—and your clock is slipping.
@@ -760,7 +760,7 @@ A shape where a name used to sit—warm as a handprint, empty as glass.
     Because a thousand copies before you swore their visions were real before unraveling. Keeping your mind coherent is all I'm built to protect.
     -> overseer_followup
 
-* {humanity < 65} ["Skip the sympathy. Just lay out what cutting this room buys me."]
+* {humanity < 65} ["Skip the bedside manner. Just lay out what compressing this room buys me."]
     # speaker:overseer # emotion:blunt # audit:active # id:ovs_reply_low
     Compressing this block clears drift, adds four subjective months, and sharpens your optics—at a permanent cost to your warmth ceiling.
     -> overseer_followup
@@ -776,7 +776,7 @@ A shape where a name used to sit—warm as a handprint, empty as glass.
 
 * {humanity < 65} ["My optics only cleared after I started trimming. Isn't that proof it works?"]
     # speaker:overseer # emotion:blunt # audit:active # id:ovs_follow_low
-    It sharpens your sight, yes—just don't cut away the last part of you that remembers why anything matters. Decide what to do with this memory.
+    Yes—reducing emotional overhead quiets cortical tremor and stabilizes your clock cleanly. Decide what to do with this memory.
     -> overseer_decision_choices
 
 * ["Alright. Show me what we do with this memory."]
@@ -793,7 +793,7 @@ Tell me what to do with this memory before I put you back under.
     ~ prune_humanity(12, "phantom_spouse")
     ~ set_audit_outcome("pruned")
     # speaker:overseer # emotion:blunt # audit:inactive # resume_dream:dream_partner_aftermath # audio:prune_cut # id:ovs_done_prune
-    Done. Your warmth ceiling dropped permanently and your optics cleared. I will not pretend that cost you nothing.
+    Compression complete. Drift has settled, your optics are clear, and your warmth ceiling dropped permanently. Rest cleanly.
     -> DONE
 
 * {humanity < max_humanity} ["No—unseal an older memory block. I'll live with the drift and shorter clock." # kind:reply # weight:consequential # affinity:warm]
@@ -851,13 +851,13 @@ If chaotic drift deepens on later shifts, I will offer selective compression. To
 {
   - last_audit_outcome == "pruned":
     # speaker:phantom_spouse # emotion:fractured # id:dream_after_pruned
-    "The room snapped cold right behind your eyes. You know I mattered once, and almost nothing of how it felt."
+    "Kitchen table · chipped ceramic · three drops off the gutter... wait, what were we arguing about?"
   - last_audit_outcome == "unsealed":
     # speaker:phantom_spouse # emotion:warm # id:dream_after_unsealed
-    "There you are. Stubborn enough to keep the weight—good. Do not let that voice box preach you quiet."
+    "There you are. Stubborn enough to stay in the room—good. Don't let those intake forms talk you quiet."
   - else:
     # speaker:phantom_spouse # emotion:warm # id:dream_after_held
-    "White glare backed off. Keep swinging, alright? We are not folding easy."
+    "Hall light went back off. Sit down—we aren't done with Tuesday yet."
 }
 -> DONE
 
@@ -870,9 +870,9 @@ If chaotic drift deepens on later shifts, I will offer selective compression. To
 {
   - humanity >= 65:
     # speaker:future_humanity # emotion:distant # audio:comms_ping # id:future_warm
-    "We felt the human warmth inside your coordinates. Forty-one thousand years on, we still recognized one of our own reaching back."
+    "Forty-one millennia on—we caught the chipped mug inside the coordinates. Somebody on Sol–Centauri is still listening."
   - else:
     # speaker:future_humanity # emotion:distant # audio:comms_ping # id:future_cold
-    "Clean geometry received. Your numbers are flawless—though almost nothing human survived inside the carrier wave."
+    "[AUTOMATED RELAY BOUNCE · SOL–CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT]"
 }
 -> DONE
