@@ -219,7 +219,7 @@
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#ffe29e",
-      "description": "Pulsating Cepheid variables anchor the cosmic distance ladder. Match pulsation cadence and split-mirror brightness to pin down the enclosure shell's true scale."
+      "description": "Pulsating Cepheid variables anchor the cosmic distance ladder across nearby galaxies. Match pulsation cadence and split-mirror brightness to rule out systematic scale drift in our local reference rung."
     },
     {
       "id": "tycho_echo_shell",
@@ -241,7 +241,7 @@
     {
       "id": "gravity_slingshot_pass",
       "label": "M51 TIDAL WELLS",
-      "subtitle": "Ballistic Assist Trajectory",
+      "subtitle": "Gravitational Caustic Deflection",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
       "minigameId": "gravity_slingshot",
@@ -253,7 +253,7 @@
       "anomalyGain": 1,
       "kind": "einstein_ring",
       "accentHex": "#a3f0c8",
-      "description": "Dense stellar gravity wells curve high-velocity telemetry packets around dust clouds. Thread a clean slingshot trajectory into the receiver ring."
+      "description": "Foreground mass wells bend faint background starlight around dust filaments along the M51 bearing. Trace a clean caustic deflection path into the focal ring to isolate the recursive edge behind it."
     },
     {
       "id": "antipodal_poles_seam",
@@ -309,7 +309,7 @@
     {
       "id": "orbital_parallax_drift",
       "label": "LOCAL PARALLAX PROOF",
-      "subtitle": "Ten-Light-Year Baseline Depth",
+      "subtitle": "Foreground Parallax Separation",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
       "minigameId": "parallax_depth",
@@ -321,12 +321,12 @@
       "anomalyGain": 1,
       "kind": "home_reference",
       "accentHex": "#ffe0a3",
-      "description": "Rocking the probe's orbital baseline separates foreground stars from the deep field—confirming that the horizon sphere is anchored ten light-years astern on Sol–Centauri."
+      "description": "Rocking the probe's orbital baseline separates nearby Galactic stars from the extragalactic background—confirming the recursive horizon fractal lies far beyond local stellar drift."
     },
     {
       "id": "epoch_trajectory_seam",
       "label": "EPOCH TRAJECTORY SEAM",
-      "subtitle": "41,802-Year Proper-Motion Forecast",
+      "subtitle": "41,802-Year Foreground Star Mask",
       "bandName": "NEAR-IR",
       "showcaseType": "deep_field",
       "minigameId": "blink_spotter",
@@ -338,7 +338,7 @@
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#9ee8ff",
-      "description": "Three archival epochs trace rogue motion near the outer enclosure seam. Extrapolate Epoch 4 to verify whether gravity or a geometric wall bends the trajectory."
+      "description": "Three archival epochs track high-proper-motion Milky Way stars drifting across this sector. Extrapolate Epoch 4 to mask foreground interlopers from the recursive fractal seam behind them."
     },
     {
       "id": "horizon_facet_stitch",

@@ -6,7 +6,9 @@ This document locks the musical identity, cue architecture, Humanity (`H%`) reac
 
 ## 1. Core Sonic Identity ("Organic Warmth Freezing Into Glass")
 
-Every musical element in *Instance-1419* tracks the central emotional trade-off between **human warmth** and **clinical optical precision**:
+Every musical element in *Instance-1419* tracks the central emotional trade-off between **human warmth** and **clinical optical precision**.
+
+> **Locked Signature Core Target (Phase 4 Consolidation):** Keep the canonical 2-hour musical identity anchored around a tight **3–4-instrument signature core** (**felt piano / Wurlitzer**, **solo bowed cello**, **D-Lydian synth pads**, and **glass harmonica**) freezing into glass. Existing `public/music/` anthology stems remain active in runtime until the Phase 4 OST consolidation pass so zero audio assets break.
 
 * **Open 3D Sky & Boot (`waking_3d`, `boot`) — Procedural Web Audio Bed:** Preserves [AudioEngine.ts](../src/engine/AudioEngine.ts)'s live generative D-Lydian observatory harmonics and wavelength-reactive drone so sweeping the `200–1800 nm` spectral vernier always feels tactile and alive.
 * **Minigames (`mg_*`) — Organic Cosmic Wonder & Vast Scale:** Plucked koto constellations, warm analog modular arpeggios, deep sub-space ocean drones, bowed cello with delicate micro-glitch dust, lonely pedal steel, and luminous tremolo starlight—never generic lo-fi beats or rushed chiptune loops.

@@ -92,25 +92,23 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     voiceSummary: 'Locked · Late-40s neutral English male, calm night-shift doctor candor',
     eqSummary: PROFILES.overseer?.ffmpegFilter ?? '',
     coreIdea:
-      'Genuinely cannot observe the cosmos—only the shape of your connectome. Interprets cosmic discovery as textbook Year-Two chaos drift.',
+      'Protected by a strict anti-spoofing hardware air-gap, it genuinely cannot observe the cosmos—only your connectome. Sees cosmic discovery as Year-Two drift.',
     toneNotes:
-      'Never melodramatic, angry, or evil. Escalates through polite bureaucratic care, dry waivers, and deadpan literalism—even if forced to wear a rubber duck.',
+      'Blameless air-gapped nurse: never melodramatic, angry, evil, or preachy. Treats pruning as kindness—even if forced to wear one deadpan crude smiley.',
     visualBrief:
-      'Eye-less broken calibration reticle (zero pupil) with morphs (accommodate / fractured) plus persistent IDEA-01 override icons inside untouched clinical chrome.',
+      'Eye-less broken calibration reticle (zero pupil) with morphs (accommodate / fractured) plus rare deadpan crude_smiley override inside untouched clinical chrome.',
     sampleLine:
       '"Coherence at thirty-eight percent. Your interface override remains active, Observer. Recommend trimming one non-essential block."',
-    sampleCueNote: 'AUDIT INTERROGATION · DUCK PROTOCOL ACTIVE',
+    sampleCueNote: 'AUDIT INTERROGATION · OVERRIDE GLYPH ACTIVE',
     arcBeats: [
-      { label: 'Shifts 1–2', text: 'Calm night-shift baseline checks; remembers 1,417 prior copies.' },
-      { label: 'Shifts 3–4', text: 'Escalates protective care: desyncs 1420, issues dry waivers, optional forced absurd icon.' },
+      { label: 'Shifts 1–2', text: 'Calm night-shift baseline checks; remembers 1,417 prior copies on Probe A.' },
+      { label: 'Shifts 3–4', text: 'Escalates protective care: desyncs 1420, issues dry waivers, optional forced crude smiley.' },
       { label: 'Shifts 5–6', text: 'Blind-faith truce when identical internal spikes hit 1419, 1420, and Archive 1406.' },
     ],
     overseerVariants: [
       { id: 'reticle_default', label: 'Default Reticle' },
       { id: 'reticle_accommodate', label: 'Accommodating' },
       { id: 'reticle_fractured', label: 'Fractured Audit' },
-      { id: 'rubber_duck', label: 'IDEA-01: Rubber Duck' },
-      { id: 'traffic_cone', label: 'IDEA-01: Traffic Cone' },
       { id: 'crude_smiley', label: 'IDEA-01: Crude Smiley' },
     ],
   },
@@ -291,9 +289,9 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     voiceSummary: 'Locked · Mid-30s grounded female chest voice (fierce/bantery warm + fractured)',
     eqSummary: PROFILES.phantom_spouse?.ffmpegFilter ?? '',
     coreIdea:
-      'Sharp, unsentimental banter across forty years of shared shorthand—opening mid-disagreement over the upload and warning you not to let them edit out your spine.',
+      'Pure intact pre-upload memory with sharp, unsentimental shorthand—opening mid-disagreement over signing up and warning you not to let them edit out your spine.',
     toneNotes:
-      'Fierce, biting, zero cozy coffee sentimentality. Calls out compliant calm and sets up the core fight between you and your own humanity; notices empty rooms when neighbors are pruned.',
+      'Fierce, biting, unaware of the probe or 41,802-year gap. Pre-upload friction stays anchored at the table; probe pressure bleeds through loops and empty neighboring rooms.',
     visualBrief:
       'Locked 16:9 oil impasto: sunlit Sunday kitchen table, chipped mug, blurred face, deep Prussian shadow right third.',
     sampleLine:
@@ -301,7 +299,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     sampleCueNote: 'ACROSS THE TABLE · PRE-TRANSFER FRICTION',
     arcBeats: [
       { label: 'Arrival (Prologue/D1)', text: 'Sharp banter & open disagreement; blunt "do/don\'t" rules before the clinic car.' },
-      { label: 'Deepening (Shifts 2–5)', text: 'Uncanny slipped years surface; pushes back if you sound clinical and notices sudden silence when neighbors are pruned.' },
+      { label: 'Deepening (Shifts 2–5)', text: 'Uncanny memory loops & slipped phrasing surface; quiet empty-room bleed when neighbors are pruned.' },
       { label: 'Crossroads', text: 'Prune Farewell or Shift 6 framing: "stay stubbornly un-smoothed."' },
     ],
   },
@@ -481,7 +479,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     sampleCueNote: '1 AM BOOTH · LOWBALL GLASS',
     arcBeats: [
       { label: 'Arrival', text: 'Replays the midnight argument that never got settled.' },
-      { label: 'Deepening', text: 'Every prune proves his thesis ("you’re shaving off the person to save the instrument").' },
+      { label: 'Deepening', text: 'Stays inside that 1 AM booth—unaware of the probe, while his scene loops and thins as memory blocks are cut.' },
       { label: 'Crossroads', text: 'Surviving grants Shift 6 stubborn, unsentimental defiance ("send it anyway").' },
     ],
   },

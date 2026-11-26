@@ -4,8 +4,6 @@ export type OverseerAvatarVariant =
   | 'reticle_default'
   | 'reticle_accommodate'
   | 'reticle_fractured'
-  | 'rubber_duck'
-  | 'traffic_cone'
   | 'crude_smiley';
 
 interface CharacterEntry {
@@ -102,22 +100,6 @@ export function renderObjectGlyph(glyphId: string, color: string, size = 18): st
 }
 
 function renderOverseerSvg(variant: OverseerAvatarVariant, color: string): string {
-  if (variant === 'rubber_duck') {
-    return `
-      <circle cx="32" cy="32" r="27" fill="rgba(16,24,32,0.75)" stroke="rgba(216,236,250,0.28)" stroke-width="1.1" />
-      <path d="M18 37 C18 30, 26 31, 31 31 C32 23, 27 20, 27 17 C27 13, 31 11, 35 11 C39 11, 42 14, 42 18 C42 20, 41 22, 39 24 C45 25, 49 30, 48 36 C47 43, 40 46, 31 46 C23 46, 18 42, 18 37 Z" fill="#f7d046" stroke="#18222c" stroke-width="1.4" stroke-linejoin="round" />
-      <path d="M41.5 16.5 L49 18.5 L41.8 20.8 Z" fill="#e8843c" stroke="#18222c" stroke-width="1.1" stroke-linejoin="round" />
-      <circle cx="37.2" cy="15.8" r="1.5" fill="#18222c" />
-      <path d="M25 35 C29 33, 35 34, 38 38" fill="none" stroke="#d49e1c" stroke-width="1.4" stroke-linecap="round" />`;
-  }
-  if (variant === 'traffic_cone') {
-    return `
-      <circle cx="32" cy="32" r="27" fill="rgba(16,24,32,0.75)" stroke="rgba(216,236,250,0.28)" stroke-width="1.1" />
-      <polygon points="28,13 36,13 43,45 21,45" fill="#f07438" stroke="#18222c" stroke-width="1.4" stroke-linejoin="round" />
-      <polygon points="26.3,22 37.7,22 39.2,28.5 24.8,28.5" fill="#f4f7fa" />
-      <polygon points="24.2,32.5 39.8,32.5 41.2,38.5 22.8,38.5" fill="#f4f7fa" />
-      <rect x="16" y="45" width="32" height="4.5" rx="1.5" fill="#d45d28" stroke="#18222c" stroke-width="1.2" />`;
-  }
   if (variant === 'crude_smiley') {
     return `
       <circle cx="32" cy="32" r="27" fill="rgba(16,24,32,0.75)" stroke="rgba(216,236,250,0.28)" stroke-width="1.1" />

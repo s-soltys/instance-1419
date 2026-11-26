@@ -163,9 +163,9 @@ async function run() {
     for (let i = 0; i < 60; i++) {
       const visual = await page.evaluate(() => document.querySelector('#boot-screen')?.dataset.bootVisual ?? '');
       if (visual === 'title') break;
-      const continueBtn = page.locator('#prologue-choices .prologue-continue-bar').first();
-      const advChoiceBtn = page.locator('#prologue-choices .choice-line:not([data-choice-kind="ask"])').first();
-      const anyChoiceBtn = page.locator('#prologue-choices .choice-line').first();
+      const continueBtn = page.locator('#prologue-choices:not(.is-locked) .prologue-continue-bar').first();
+      const advChoiceBtn = page.locator('#prologue-choices:not(.is-locked) .choice-line:not([data-choice-kind="ask"])').first();
+      const anyChoiceBtn = page.locator('#prologue-choices:not(.is-locked) .choice-line').first();
       if ((await advChoiceBtn.count()) > 0 && (await advChoiceBtn.isVisible())) {
         await advChoiceBtn.click({ force: true });
       } else if ((await anyChoiceBtn.count()) > 0 && (await anyChoiceBtn.isVisible())) {
@@ -175,7 +175,7 @@ async function run() {
       } else {
         await page.mouse.click(640, 360);
       }
-      await page.waitForTimeout(320);
+      await page.waitForTimeout(380);
     }
     await page.waitForSelector('#title-overlay:not(.hidden)', { timeout: 6000 });
     await page.waitForTimeout(260);
@@ -433,7 +433,18 @@ async function run() {
       await mPage.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 8000 });
       await ensureQaClosed(mPage);
       await mPage.waitForSelector('#minigame-overlay:not(.is-entering)', { timeout: 2500 }).catch(() => {});
-      await mPage.waitForTimeout(220);
+      await mPage.waitForFunction(
+        () => {
+          const overlay = document.querySelector('#minigame-overlay');
+          const con = document.querySelector('.mg-bottom-console');
+          if (!overlay || !con) return false;
+          const t1 = getComputedStyle(overlay).transform;
+          const t2 = getComputedStyle(con).transform;
+          return (t1 === 'none' || t1 === 'matrix(1, 0, 0, 1, 0, 0)') && (t2 === 'none' || t2 === 'matrix(1, 0, 0, 1, 0, 0)');
+        },
+        { timeout: 2500 }
+      ).catch(() => {});
+      await mPage.waitForTimeout(120);
 
       const mConsoleBox = await mPage.locator('.mg-bottom-console').boundingBox();
       if (!mConsoleBox || mConsoleBox.y + mConsoleBox.height > 394) {
