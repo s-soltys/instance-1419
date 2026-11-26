@@ -325,7 +325,7 @@ function traverseRealInkKnot(knotName, rng, stateOverrides = {}) {
 
 const ENTRY_KNOTS = Array.from(
   new Set([
-    'intro_prologue_kitchen',
+    'intro_prologue_assistant',
     'intro_overseer_wakeup',
     'intro_sibling_first_call',
     'intro_post_target2_overseer',

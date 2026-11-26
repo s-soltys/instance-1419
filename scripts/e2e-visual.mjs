@@ -159,10 +159,16 @@ async function run() {
       throw new Error(`Expected removed #psyche-whisper count to be 0, found ${whisperCount}`);
     }
 
-    // Step through interactive Prologue into live-cosmos Title (Kitchen + 5-phase Wakeup Briefing)
-    for (let i = 0; i < 60; i++) {
+    // Step through interactive Prologue into live-cosmos Title (Intake Assistant + 5-phase Wakeup Briefing)
+    let capturedAssistant = false;
+    for (let i = 0; i < 140; i++) {
       const visual = await page.evaluate(() => document.querySelector('#boot-screen')?.dataset.bootVisual ?? '');
       if (visual === 'title') break;
+      if (!capturedAssistant && visual === 'prologue_assistant' && i >= 3) {
+        capturedAssistant = true;
+        await page.waitForTimeout(350);
+        await saveCheckedScreenshot(page, '00b_prologue_assistant.png');
+      }
       const continueBtn = page.locator('#prologue-choices:not(.is-locked) .prologue-continue-bar').first();
       const advChoiceBtn = page.locator('#prologue-choices:not(.is-locked) .choice-line:not([data-choice-kind="ask"])').first();
       const anyChoiceBtn = page.locator('#prologue-choices:not(.is-locked) .choice-line').first();
@@ -175,7 +181,7 @@ async function run() {
       } else {
         await page.mouse.click(640, 360);
       }
-      await page.waitForTimeout(380);
+      await page.waitForTimeout(420);
     }
     await page.waitForSelector('#title-overlay:not(.hidden)', { timeout: 6000 });
     await page.waitForTimeout(260);

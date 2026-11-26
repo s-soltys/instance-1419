@@ -19,7 +19,7 @@ interface CharacterInfo {
 
 const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
 
-export type BootVisualMode = 'breath' | 'prologue_kitchen' | 'prologue_wakeup' | 'title';
+export type BootVisualMode = 'breath' | 'prologue_assistant' | 'prologue_wakeup' | 'title';
 
 export interface BootViewCallbacks {
   onAdvancePrologue: () => void;
@@ -30,8 +30,8 @@ export interface BootViewCallbacks {
 
 /**
  * Manages the transparent Interactive Prologue + Live-Cosmos Integrated Title overlay:
- * - Frame 0 (`breath`): Sensory audio-unlock breath over softly veiled live kitchen canvas
- * - Beat A (`prologue_kitchen`): Interactive Sunday kitchen conversation with [RELATION:SPOUSE_01]
+ * - Frame 0 (`breath`): Sensory audio-unlock breath over softly veiled live intake suite canvas
+ * - Beat A (`prologue_assistant`): Interactive calibration conversation with Intake Assistant
  * - Beat B (`prologue_wakeup`): 5-phase WakeupBriefingCanvas schematic + interactive Overseer Q&A
  * - Beat C (`title`): Monumental title over live drifting 3D OpticsScene cosmos
  */
@@ -151,7 +151,7 @@ export class BootView {
   }
 
   showPrologueConversation(
-    mode: 'prologue_kitchen' | 'prologue_wakeup',
+    mode: 'prologue_assistant' | 'prologue_wakeup',
     headerSpeakerId: string,
     headerSubtitle: string,
     humanity: number,

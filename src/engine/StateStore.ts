@@ -19,8 +19,8 @@ export type MinigameGradeTier = 'clean';
 
 export const INTRO_TARGET_1_ID = 'sol_centauri_bearing';
 export const INTRO_TARGET_2_ID = 'cluster_j1419_a';
-export const INTRO_TARGET_1_MINIGAME = 'multiband_loupe';
-export const INTRO_TARGET_2_MINIGAME = 'lens_focus';
+export const INTRO_TARGET_1_MINIGAME = 'constellation_recall';
+export const INTRO_TARGET_2_MINIGAME = 'pulsar_echo';
 export const STARTER_POOL_1 = [INTRO_TARGET_1_MINIGAME] as const;
 export const STARTER_POOL_2 = [INTRO_TARGET_2_MINIGAME] as const;
 

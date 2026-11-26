@@ -12,34 +12,57 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
     localStorage.clear();
   });
 
-  it('runs interactive intro_prologue_kitchen with phantom_spouse, occasional psyche whispers, and tiered choices', () => {
+  it('runs interactive intro_prologue_assistant with phantom_upload_witness, calibration wave, Q&A hubs, and psyche whispers', () => {
     const store = new StateStore();
     const runner = new DialogueRunner(store, () => {});
 
-    let snap = runner.startKnot('intro_prologue_kitchen');
+    let snap = runner.startKnot('intro_prologue_assistant');
     expect(snap.entries.length).toBeGreaterThanOrEqual(2);
-    expect(snap.entries.some((e) => e.visualCue === 'prologue_kitchen')).toBe(true);
+    expect(snap.entries.some((e) => e.visualCue === 'prologue_assistant')).toBe(true);
 
     let choiceTurns = 0;
     const allSpeakers = new Set<string>(snap.entries.map((e) => e.speaker));
     const seenWeights = new Set<string>();
+    const seenHWaves = new Set<string>();
+    const seenTableaus = new Set<string>();
 
-    while (!snap.ended && snap.choices.length > 0 && choiceTurns < 8) {
+    const collectMeta = (entries: typeof snap.entries) => {
+      for (const e of entries) {
+        allSpeakers.add(e.speaker);
+        if (e.hWaveCue) seenHWaves.add(e.hWaveCue);
+        if (e.tableauCue) seenTableaus.add(e.tableauCue);
+      }
+    };
+    collectMeta(snap.entries);
+
+    while (!snap.ended && snap.choices.length > 0 && choiceTurns < 14) {
       choiceTurns++;
       for (const ch of snap.choices) {
         if (ch.weight) seenWeights.add(ch.weight);
       }
-      snap = runner.choose(snap.choices[0].index);
-      for (const e of snap.lastAddedEntries) allSpeakers.add(e.speaker);
+      const ask = choiceTurns === 2 ? snap.choices.find((c) => c.kind === 'ask') : undefined;
+      const pick =
+        ask ??
+        snap.choices.find((c) => c.kind !== 'ask') ??
+        snap.choices[0];
+      snap = runner.choose(pick.index);
+      collectMeta(snap.lastAddedEntries);
     }
 
     expect(snap.ended).toBe(true);
-    expect(choiceTurns).toBe(2);
-    expect(allSpeakers.has('phantom_spouse')).toBe(true);
+    expect(choiceTurns).toBeGreaterThanOrEqual(4);
+    expect(allSpeakers.has('phantom_upload_witness')).toBe(true);
     expect(allSpeakers.has('psyche_warmth')).toBe(true);
     expect(allSpeakers.has('psyche_clinical')).toBe(true);
     expect(seenWeights.has('explore')).toBe(true);
     expect(seenWeights.has('consequential')).toBe(true);
+    expect(seenHWaves.has('hold_100')).toBe(true);
+    expect(seenHWaves.has('sweep')).toBe(true);
+    expect(seenHWaves.has('settle_70')).toBe(true);
+    expect(seenTableaus.has('base')).toBe(true);
+    expect(seenTableaus.has('beat2')).toBe(true);
+    expect(seenTableaus.has('beat3_strained')).toBe(true);
+    expect(seenTableaus.has('beat3_warm')).toBe(true);
     store.dispose();
   });
 

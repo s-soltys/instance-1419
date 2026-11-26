@@ -8,12 +8,11 @@ void main() {
 
 /**
  * Full-bleed 2D Expressionist Oil Impasto Degradation Shader.
- * Unfolds gradually across 5 distinct artistic stages from 100% -> 80% -> 65% -> 45% -> 20%:
- *  1. 90-100%: Luminous golden oil bloom, saturated glaze, zero haze/craquelure.
- *  2. 74-89%:  Bloom fades, early facial haze, fine varnish craquelure & split-tone shadow cooling.
- *  3. 52-73%:  Horizontal analog memory-echo ghosting, localized chromatic aberration, flaking margins.
- *  4. 32-51%:  Voronoi stained-glass faceting, selective warm-ember shard memory, 4-tap Sobel contour etching.
- *  5. <32%:    Cryo-cyan schematic wireframe bleed, refractive fracture seams, clinical monochrome drain.
+ * Rescaled so uHumanity = 1.0 (100%) starts at the previous ~60% character baseline
+ * (warm oil glaze + already-present fine varnish craquelure, subtle echo & haze)
+ * and accelerates into rich, diverse multi-scale Voronoi fractures, heat-wave memory
+ * warping, dual-axis chromatic aberration, Sobel contours, and cryo wireframe bleed
+ * at lower Humanity levels. Also supports organic eyelid/focus wake-up (uWakeProgress).
  */
 export const DREAM_FRAGMENT = /* glsl */ `
 precision highp float;
@@ -25,6 +24,7 @@ uniform float uHumanity;    // 0.0..1.0
 uniform float uPruned;      // 0.0..1.0
 uniform float uOverseer;    // 0.0..1.0
 uniform float uReveal;      // 0.0..1.0 entrance reveal
+uniform float uWakeProgress;// 0.0..1.0 eyelid/focus wake-up curve
 uniform float uSlicePulse;  // 0.0..1.0 Overseer clinical intercept slice
 uniform float uViewAspect;  // viewport width / height
 uniform float uTexAspect;   // texture width / height
@@ -95,58 +95,88 @@ float luma(vec3 c) {
 }
 
 void main() {
-  float h = clamp(uHumanity, 0.0, 1.0);
+  float hRaw = clamp(uHumanity, 0.0, 1.0);
+  // Rescaled clarity curve: old ~60% becomes new 100%, ramping faster into diverse distortion below 75%
+  float hEff = 0.62 * pow(hRaw, 1.18);
   float reveal = clamp(uReveal, 0.0, 1.0);
-  float decay = clamp(1.0 - h + uPruned * 0.22, 0.0, 1.0);
+  float wake = clamp(uWakeProgress, 0.0, 1.0);
+  float wakeFocus = smoothstep(0.10, 0.96, wake);
+  float decay = clamp(1.0 - hEff + uPruned * 0.24, 0.0, 1.0);
 
-  // Gradual layer ramps starting immediately below 100%
-  float bloomAmt = smoothstep(0.82, 1.0, h) * (1.0 - uPruned * 0.85);
-  float earlyDecay = smoothstep(0.96, 0.68, h);
-  float midDrift = smoothstep(0.82, 0.36, h);
-  float shardAmt = smoothstep(0.26, 0.86, decay);
-  float edgeAmt = smoothstep(0.62, 0.18, h);
-  float wireAmt = smoothstep(0.45, 0.92, decay);
+  // Warm oil glaze remains at high H% while subtle craquelure, haze & echo are already alive at 100%
+  float bloomAmt = smoothstep(0.68, 1.0, hRaw) * (1.0 - uPruned * 0.85);
+  float earlyDecay = smoothstep(1.05, 0.45, hEff);
+  float midDrift = smoothstep(0.78, 0.16, hEff);
+  float shardAmt = smoothstep(0.30, 0.92, decay);
+  float microShardAmt = smoothstep(0.55, 0.08, hRaw);
+  float edgeAmt = smoothstep(0.60, 0.08, hEff);
+  float wireAmt = smoothstep(0.52, 0.94, decay);
 
   vec2 uv = coverUv(vUv, uViewAspect, uTexAspect);
   if (reveal < 0.999) {
     float zoomScale = mix(1.09, 1.0, reveal);
     uv = clamp((uv - vec2(0.42, 0.5)) / zoomScale + vec2(0.42, 0.5), 0.002, 0.998);
   }
-
-  // Subtle organic impasto warmth breathing at high H%
-  float warmFactor = smoothstep(0.42, 0.94, h);
-  uv.x += sin(uv.y * 9.0 + uTime * 0.38) * 0.0015 * warmFactor;
-  uv.y += cos(uv.x * 8.0 + uTime * 0.30) * 0.0012 * warmFactor;
-
-  // Voronoi stained-glass / cracked-varnish shards (begins gently ~62% H%)
-  vec4 vor = vec4(0.0, 0.0, 0.0, 1.0);
-  vec2 sampleUv = uv;
-  float cellKeep = 0.0;
-  if (shardAmt > 0.001) {
-    vor = voronoi(uv * mix(7.2, 14.5, shardAmt));
-    vec2 cellRnd = hash22(vor.yz);
-    cellKeep = cellRnd.x;
-    vec2 cellOffset = (cellRnd - 0.5) * 0.048 * pow(shardAmt, 1.15);
-    sampleUv = clamp(uv + cellOffset, 0.002, 0.998);
+  if (wake < 0.999) {
+    float wakeZoom = mix(1.07, 1.0, wakeFocus);
+    uv = clamp((uv - vec2(0.42, 0.5)) / wakeZoom + vec2(0.42, 0.5), 0.002, 0.998);
   }
 
-  // Glitch tear bands at deep low H%, Overseer audit, or live slice pulse
-  float glitchBand = step(0.974, sin(uv.y * 48.0 + uTime * 1.9)) * (pow(shardAmt, 1.4) * 0.015 + uOverseer * 0.006);
+  // Organic impasto breathing at high H% vs faster heat/memory wave warp as H% drops
+  float warmFactor = smoothstep(0.35, 0.95, hRaw);
+  float warpAmp = 0.0014 * warmFactor + (1.0 - hRaw) * 0.0068;
+  float warpSpeed = mix(1.65, 0.42, hRaw);
+  uv.x += sin(uv.y * mix(16.0, 8.5, hRaw) + uTime * warpSpeed) * warpAmp;
+  uv.y += cos(uv.x * mix(14.0, 7.5, hRaw) + uTime * (warpSpeed * 0.82)) * (warpAmp * 0.84);
+
+  // Two-scale Voronoi stained-glass fracture (primary facets + secondary micro-fractures below 55% H%)
+  vec4 vor = vec4(0.0, 0.0, 0.0, 1.0);
+  vec4 vorMicro = vec4(0.0, 0.0, 0.0, 1.0);
+  vec2 sampleUv = uv;
+  float cellKeep = 0.0;
+  float cellChroma = 0.0;
+  if (shardAmt > 0.001) {
+    vor = voronoi(uv * mix(7.0, 15.5, shardAmt));
+    vec2 cellRnd = hash22(vor.yz);
+    cellKeep = cellRnd.x;
+    cellChroma = (cellRnd.y - 0.5) * 2.0;
+
+    // Subtle per-shard shear/rotation at low H%
+    float shearAng = (cellRnd.y - 0.5) * 0.14 * pow(shardAmt, 1.3);
+    float sA = sin(shearAng);
+    float cA = cos(shearAng);
+    vec2 rel = uv - uFaceAnchor;
+    vec2 sheared = uFaceAnchor + vec2(rel.x * cA - rel.y * sA, rel.x * sA + rel.y * cA);
+
+    vec2 cellOffset = (cellRnd - 0.5) * 0.085 * pow(shardAmt, 1.15);
+    sampleUv = clamp(mix(uv, sheared, 0.35 * shardAmt) + cellOffset, 0.002, 0.998);
+  }
+  if (microShardAmt > 0.005) {
+    vorMicro = voronoi(uv * 24.0 + vec2(4.2, 1.9));
+    vec2 microRnd = hash22(vorMicro.yz + vec2(9.1, 3.7));
+    sampleUv = clamp(sampleUv + (microRnd - 0.5) * 0.018 * microShardAmt, 0.002, 0.998);
+  }
+
+  // Glitch tear bands ramping up at lower H%, Overseer audit, or slice pulse
+  float tearFreq = mix(64.0, 42.0, hRaw);
+  float glitchBand = step(0.962 - (1.0 - hRaw) * 0.035, sin(uv.y * tearFreq + uTime * (1.8 + (1.0 - hRaw) * 2.2))) *
+    (pow(shardAmt, 1.25) * 0.024 + uOverseer * 0.008);
   if (uSlicePulse > 0.005) {
     float sliceRow = sin(uv.y * 92.0 + uSlicePulse * 18.0);
-    glitchBand += step(0.72, sliceRow) * (0.022 * uSlicePulse) * sign(cos(uv.y * 37.0));
+    glitchBand += step(0.72, sliceRow) * (0.024 * uSlicePulse) * sign(cos(uv.y * 37.0));
   }
   sampleUv.x = clamp(sampleUv.x + glitchBand, 0.002, 0.998);
 
-  // Early facial haze starting at 92% H%, scaling smoothly into deeper defocus
+  // Facial haze + wake-up out-of-focus blur
   float faceDist = length((sampleUv - uFaceAnchor) * vec2(1.05, 0.85));
-  float faceMask = smoothstep(0.30, 0.04, faceDist);
-  float earlyFaceBlur = smoothstep(0.93, 0.54, h) * 0.0062 * faceMask;
-  float deepBlur = smoothstep(0.56, 0.14, h) * (0.0042 + 0.0145 * faceMask);
-  float blurRadius = earlyFaceBlur + deepBlur + (1.0 - reveal) * 0.022;
+  float faceMask = smoothstep(0.32, 0.04, faceDist);
+  float earlyFaceBlur = smoothstep(0.92, 0.28, hEff) * 0.0072 * faceMask;
+  float deepBlur = smoothstep(0.50, 0.05, hEff) * (0.0052 + 0.0165 * faceMask);
+  float wakeBlur = (1.0 - wakeFocus) * 0.032;
+  float blurRadius = earlyFaceBlur + deepBlur + wakeBlur + (1.0 - reveal) * 0.022;
   vec3 baseCol = sampleBlurred(uTexture, sampleUv, blurRadius);
 
-  // Stage 1: Lightweight 4-tap golden oil highlight bloom at peak 82-100% H%
+  // Stage 1: Warm oil highlight bloom at higher H% so 100% stays rich and inviting
   if (bloomAmt > 0.005) {
     vec2 bOff = vec2(0.0085, 0.0085 * uViewAspect);
     vec3 bGather = (
@@ -156,100 +186,119 @@ void main() {
       texture2D(uTexture, clamp(sampleUv + vec2( 0.0, -bOff.y), 0.002, 0.998)).rgb
     ) * 0.25;
     float hiMask = smoothstep(0.46, 0.88, luma(bGather));
-    baseCol += bGather * vec3(1.18, 0.95, 0.62) * hiMask * bloomAmt * 0.30;
+    baseCol += bGather * vec3(1.18, 0.95, 0.62) * hiMask * bloomAmt * 0.28;
   }
 
-  // Stage 3: Analog horizontal memory-echo ghosting (52-82% H% ramp)
+  // Analog horizontal memory-echo ghosting (active subtly at 100%, stronger as H% drops)
   if (midDrift > 0.01) {
-    float ghostShift = (0.007 + 0.011 * midDrift) * sin(uTime * 0.55 + sampleUv.y * 4.5);
+    float ghostSpeed = mix(1.35, 0.55, hRaw);
+    float ghostShift = (0.006 + 0.015 * midDrift) * sin(uTime * ghostSpeed + sampleUv.y * 5.2);
     vec3 ghostCol = texture2D(uTexture, clamp(sampleUv + vec2(ghostShift, 0.0), 0.002, 0.998)).rgb;
-    baseCol = mix(baseCol, ghostCol, midDrift * (0.14 + 0.12 * faceMask));
+    baseCol = mix(baseCol, ghostCol, midDrift * (0.14 + 0.14 * faceMask));
   }
 
-  // Localized chromatic split ramping smoothly from 82% H% downward
-  float chromaAmt = smoothstep(0.82, 0.22, h);
-  if (chromaAmt > 0.01 || uSlicePulse > 0.02) {
-    float chroma = chromaAmt * (0.0014 + 0.0044 * faceMask) + uSlicePulse * 0.006;
-    float rCh = texture2D(uTexture, clamp(sampleUv + vec2(chroma, 0.0), 0.002, 0.998)).r;
-    float bCh = texture2D(uTexture, clamp(sampleUv - vec2(chroma, 0.0), 0.002, 0.998)).b;
-    float chMix = clamp(0.45 + chromaAmt * 0.40 + uSlicePulse * 0.25, 0.0, 1.0);
+  // Dual-axis angled chromatic aberration + per-shard refractive dispersion
+  float chromaAmt = smoothstep(0.88, 0.06, hEff);
+  if (chromaAmt > 0.01 || uSlicePulse > 0.02 || wake < 0.99) {
+    float chroma = chromaAmt * (0.0018 + 0.0062 * faceMask) + abs(cellChroma) * shardAmt * 0.0045 + uSlicePulse * 0.006 + (1.0 - wakeFocus) * 0.005;
+    vec2 chromaVec = vec2(chroma, chroma * 0.42 * (1.0 - hRaw + 0.2));
+    float rCh = texture2D(uTexture, clamp(sampleUv + chromaVec, 0.002, 0.998)).r;
+    float bCh = texture2D(uTexture, clamp(sampleUv - chromaVec, 0.002, 0.998)).b;
+    float chMix = clamp(0.42 + chromaAmt * 0.48 + uSlicePulse * 0.25, 0.0, 1.0);
     baseCol = vec3(mix(baseCol.r, rCh, chMix), baseCol.g, mix(baseCol.b, bCh, chMix));
   }
 
-  // Continuous saturation & split-tone progression: vibrant warm glaze -> aged split-tone -> cryo silver-cyan
+  // Continuous saturation & split-tone progression
   float lum = luma(baseCol);
-  float sat = mix(0.18, 1.18, pow(h, 0.78));
+  float sat = mix(0.16, 1.14, pow(hRaw, 0.68));
   vec3 satCol = mix(vec3(lum), baseCol, sat);
 
-  // Split-tone cooling in shadows starts early (at 80% H% shadows cool visibly vs 100%)
   float shadowMask = 1.0 - smoothstep(0.14, 0.56, lum);
-  vec3 agedCol = mix(satCol, satCol * vec3(0.84, 0.93, 1.08), shadowMask * earlyDecay * 0.58);
+  vec3 agedCol = mix(satCol, satCol * vec3(0.84, 0.93, 1.08), shadowMask * earlyDecay * 0.56);
   vec3 peakWarm = satCol * vec3(1.06, 1.01, 0.93) + vec3(0.024, 0.011, 0.0) * bloomAmt;
   vec3 warmToAged = mix(peakWarm, agedCol, earlyDecay);
 
-  vec3 coldGrade = mix(vec3(lum), vec3(lum * 0.74, lum * 0.94, lum * 1.15), 0.80) * 0.88;
+  vec3 coldGrade = mix(vec3(lum), vec3(lum * 0.72, lum * 0.94, lum * 1.18), 0.84) * 0.86;
 
-  // Stage 4: Selective warm-ember shard memory (a few stubborn shards keep warm pigment around 35-60% H%)
-  float emberThreshold = mix(0.95, 0.20, smoothstep(0.22, 0.62, h));
+  // Selective warm-ember shard retention in mid/low bands
+  float emberThreshold = mix(0.95, 0.22, smoothstep(0.14, 0.55, hRaw));
   float shardRetention = shardAmt > 0.02
-    ? smoothstep(emberThreshold - 0.14, emberThreshold + 0.14, cellKeep) * (1.0 - uPruned) * smoothstep(0.18, 0.34, h)
+    ? smoothstep(emberThreshold - 0.14, emberThreshold + 0.14, cellKeep) * (1.0 - uPruned) * smoothstep(0.12, 0.34, hRaw)
     : 0.0;
-  float coldMix = clamp(smoothstep(0.22, 0.84, decay) * (1.0 - shardRetention * 0.68), 0.0, 1.0);
+  float coldMix = clamp(smoothstep(0.32, 0.90, decay) * (1.0 - shardRetention * 0.65), 0.0, 1.0);
   vec3 col = mix(warmToAged, coldGrade, coldMix);
 
-  // Stage 2: Fine oil-varnish craquelure web appearing around 74-89% H%
-  if (earlyDecay > 0.02 && shardAmt < 0.75) {
+  // Fine oil-varnish craquelure web (already faintly present at 100%, fading into full shard cracks)
+  if (earlyDecay > 0.02 && shardAmt < 0.82) {
     vec4 crackVor = voronoi(uv * 28.0 + vec2(1.7, 3.1));
     float crackLine = 1.0 - smoothstep(0.0, 0.032, crackVor.w);
     float craquelureFade = earlyDecay * (1.0 - smoothstep(0.55, 0.95, shardAmt));
     col = mix(col, col * 0.68 + vec3(0.03, 0.04, 0.055), crackLine * craquelureFade * 0.48);
   }
 
-  // Softly smudge/wash facial region toward cool static as memory erodes
-  col = mix(col, vec3(lum * 0.72, lum * 0.86, lum * 1.02), faceMask * smoothstep(0.84, 0.20, h) * 0.28);
+  // Softly smudge facial region toward cool static as memory erodes
+  col = mix(col, vec3(lum * 0.70, lum * 0.85, lum * 1.04), faceMask * smoothstep(0.75, 0.10, hEff) * 0.34);
 
-  // Stage 4/5: 4-tap Sobel luminance contour etching (painting silhouettes emerge as blueprint lines)
+  // 4-tap Sobel luminance contour etching
   if (edgeAmt > 0.01) {
-    vec2 eStep = vec2(0.0022, 0.0022 * uViewAspect);
+    vec2 eStep = vec2(0.0024, 0.0024 * uViewAspect);
     float lR = luma(texture2D(uTexture, clamp(sampleUv + vec2( eStep.x, 0.0), 0.002, 0.998)).rgb);
     float lL = luma(texture2D(uTexture, clamp(sampleUv - vec2( eStep.x, 0.0), 0.002, 0.998)).rgb);
     float lU = luma(texture2D(uTexture, clamp(sampleUv + vec2(0.0,  eStep.y), 0.002, 0.998)).rgb);
     float lD = luma(texture2D(uTexture, clamp(sampleUv - vec2(0.0,  eStep.y), 0.002, 0.998)).rgb);
-    float sobel = clamp((abs(lR - lL) + abs(lU - lD)) * 3.2, 0.0, 1.0);
-    float contour = smoothstep(0.18, 0.65, sobel);
-    col = mix(col, vec3(0.46, 0.82, 0.98), contour * edgeAmt * 0.44);
+    float sobel = clamp((abs(lR - lL) + abs(lU - lD)) * 3.4, 0.0, 1.0);
+    float contour = smoothstep(0.16, 0.62, sobel);
+    col = mix(col, vec3(0.48, 0.85, 1.0), contour * edgeAmt * 0.52);
   }
 
-  // Shard fracture cracks & subtle paint-flaking dropout in margins
+  // Primary & micro Voronoi fracture cracks + edge flaking
   if (shardAmt > 0.001) {
     float crack = (1.0 - smoothstep(0.0, 0.055, vor.w)) * shardAmt;
-    col = mix(col, vec3(0.035, 0.07, 0.12), crack * 0.72);
+    col = mix(col, vec3(0.03, 0.065, 0.12), crack * 0.78);
+  }
+  if (microShardAmt > 0.005) {
+    float microCrack = (1.0 - smoothstep(0.0, 0.04, vorMicro.w)) * microShardAmt;
+    col = mix(col, vec3(0.18, 0.42, 0.56), microCrack * 0.36);
   }
 
   if (midDrift > 0.05) {
     float edgeDist = smoothstep(0.32, 0.82, length((vUv - vec2(0.42, 0.5)) * vec2(1.1, 1.0)));
-    float speckle = step(0.988 - midDrift * 0.018, fract(sin(dot(floor(vUv * 260.0), vec2(12.9898, 78.233))) * 43758.5453));
-    col = mix(col, vec3(0.04, 0.06, 0.09), speckle * edgeDist * midDrift * 0.55);
+    float speckle = step(0.986 - midDrift * 0.022, fract(sin(dot(floor(vUv * 260.0), vec2(12.9898, 78.233))) * 43758.5453));
+    col = mix(col, vec3(0.04, 0.06, 0.09), speckle * edgeDist * midDrift * 0.58);
   }
 
-  // Cryo wireframe telemetry grid at low H%
+  // Cryo wireframe telemetry grid & subtle concentric calibration rings below ~35% H%
   if (wireAmt > 0.005) {
     vec2 gridUv = abs(fract(vUv * vec2(22.0, 12.0)) - 0.5);
     float wire = (1.0 - smoothstep(0.0, 0.018, min(gridUv.x, gridUv.y))) * wireAmt;
-    col += vec3(0.44, 0.80, 0.96) * wire * 0.20;
+    float ringDist = length((vUv - vec2(0.38, 0.5)) * vec2(uViewAspect, 1.0));
+    float ringWave = 1.0 - smoothstep(0.0, 0.012, abs(fract(ringDist * 4.5) - 0.5));
+    col += vec3(0.44, 0.82, 0.98) * (wire * 0.22 + ringWave * wireAmt * 0.14);
   }
 
-  // Gradual peripheral memory-edge darkening (subtle at 100%, visibly tighter by 80%)
-  float vigOuter = mix(1.16, 0.90, earlyDecay);
-  float vigStrength = mix(0.72, 0.44, earlyDecay);
+  // Gradual peripheral memory-edge darkening
+  float vigOuter = mix(1.12, 0.86, earlyDecay);
+  float vigStrength = mix(0.68, 0.40, earlyDecay);
   float vig = smoothstep(vigOuter, 0.30, length((vUv - vec2(0.42, 0.5)) * vec2(1.15, 1.05)));
   col *= mix(vigStrength, 1.0, vig);
 
   if (reveal < 0.999) {
     vec3 warmVeil = vec3(0.24, 0.14, 0.055);
     vec3 coldVeil = vec3(0.06, 0.14, 0.22);
-    vec3 veilCol = mix(coldVeil, warmVeil, smoothstep(0.25, 0.72, h));
+    vec3 veilCol = mix(coldVeil, warmVeil, smoothstep(0.25, 0.72, hRaw));
     col = mix(veilCol, col, smoothstep(0.0, 0.92, reveal));
+  }
+
+  // Organic curved eyelid / optical-iris wake-up veil (active when uWakeProgress < 1.0)
+  if (wake < 0.999) {
+    float xCurve = pow(abs(vUv.x - 0.5) * 2.0, 1.75) * 0.14;
+    float halfOpen = mix(0.035, 0.68, smoothstep(0.0, 0.94, wake));
+    float lidDist = abs(vUv.y - 0.5) + xCurve;
+    float lidMask = 1.0 - smoothstep(halfOpen - 0.13, halfOpen + 0.08, lidDist);
+    float scanShimmer = sin(vUv.y * 220.0 + uTime * 3.2) * 0.016 * (1.0 - wakeFocus);
+    vec3 sleepShadow = vec3(0.02, 0.03, 0.05);
+    vec3 warmBleed = vec3(0.22, 0.14, 0.07) * (1.0 - wakeFocus) * 0.45;
+    col = mix(sleepShadow, col + warmBleed + scanShimmer, lidMask);
   }
 
   // Overseer Audit interrogation dimming, clinical desaturation & razor-thin telemetry bars

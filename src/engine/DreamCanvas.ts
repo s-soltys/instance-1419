@@ -33,6 +33,13 @@ function resolveCharacterAssetUrl(assetPath: string | null | undefined): string 
   return null;
 }
 
+export interface HumanityOscillationConfig {
+  center: number;
+  amplitude: number;
+  periodSec: number;
+  startPhase?: number;
+}
+
 export class DreamCanvas {
   private readonly container: HTMLElement;
   private readonly textureCache = new Map<string, THREE.Texture>();
@@ -59,6 +66,11 @@ export class DreamCanvas {
   private active = false;
   private rafId = 0;
   private revealProgress = 1.0;
+  private wakeProgress = 1.0;
+  private wakeAnimating = false;
+  private wakeElapsed = 0;
+  private oscConfig: HumanityOscillationConfig | null = null;
+  private oscElapsed = 0;
   private slicePulse = 0.0;
   private lastFrameMs = performance.now();
   private lastRenderMs = 0;
@@ -96,6 +108,7 @@ export class DreamCanvas {
         uPruned: { value: this.pruned ? 1.0 : 0.0 },
         uOverseer: { value: this.overseerActive ? 1.0 : 0.0 },
         uReveal: { value: this.revealProgress },
+        uWakeProgress: { value: this.wakeProgress },
         uSlicePulse: { value: this.slicePulse },
         uViewAspect: { value: w / h },
         uTexAspect: { value: 1280 / 714 },
@@ -209,6 +222,31 @@ export class DreamCanvas {
     }
   }
 
+  setWakeProgress(progress: number): void {
+    this.wakeAnimating = false;
+    this.wakeProgress = Math.max(0, Math.min(1, progress));
+    this.lastRenderMs = 0;
+    if (this.mat) {
+      this.mat.uniforms.uWakeProgress.value = this.wakeProgress;
+    }
+  }
+
+  triggerWakeSequence(): void {
+    this.wakeAnimating = true;
+    this.wakeElapsed = 0;
+    this.wakeProgress = 0.02;
+    this.lastRenderMs = 0;
+    if (this.mat) {
+      this.mat.uniforms.uWakeProgress.value = this.wakeProgress;
+    }
+  }
+
+  setHumanityOscillation(config: HumanityOscillationConfig | null): void {
+    this.oscConfig = config ? { ...config } : null;
+    this.oscElapsed = 0;
+    this.lastRenderMs = 0;
+  }
+
   triggerSlicePulse(): void {
     this.slicePulse = 1.0;
     this.lastRenderMs = 0;
@@ -255,7 +293,35 @@ export class DreamCanvas {
     const dt = Math.min(0.05, Math.max(0.001, (now - this.lastFrameMs) / 1000));
     this.lastFrameMs = now;
 
-    const targetH = this.humanity / 100;
+    if (this.wakeAnimating) {
+      this.wakeElapsed += dt;
+      const t = this.wakeElapsed;
+      if (t < 0.95) {
+        const k = t / 0.95;
+        this.wakeProgress = 0.02 + 0.54 * (1 - Math.pow(1 - k, 2.2));
+      } else if (t < 1.22) {
+        const k = (t - 0.95) / 0.27;
+        // Soft natural micro-blink dip before full focus
+        const dip = Math.sin(k * Math.PI);
+        this.wakeProgress = 0.56 - dip * 0.32;
+      } else if (t < 2.65) {
+        const k = (t - 1.22) / 1.43;
+        const eased = 1 - Math.pow(1 - k, 3);
+        this.wakeProgress = 0.24 + 0.76 * eased;
+      } else {
+        this.wakeProgress = 1.0;
+        this.wakeAnimating = false;
+      }
+    }
+
+    let targetH = this.humanity / 100;
+    if (this.oscConfig) {
+      this.oscElapsed += dt;
+      const period = Math.max(1.5, this.oscConfig.periodSec);
+      const phase = (this.oscConfig.startPhase ?? 0) + (this.oscElapsed / period) * Math.PI * 2;
+      const oscVal = this.oscConfig.center + Math.sin(phase) * this.oscConfig.amplitude;
+      targetH = Math.max(0.10, Math.min(1.0, oscVal / 100));
+    }
     const targetPruned = this.pruned ? 1.0 : 0.0;
     const targetOverseer = this.overseerActive ? 1.0 : 0.0;
 
@@ -268,6 +334,8 @@ export class DreamCanvas {
 
     const u = this.mat.uniforms;
     const isSettled =
+      !this.wakeAnimating &&
+      this.oscConfig === null &&
       this.revealProgress >= 1.0 &&
       this.slicePulse <= 0.005 &&
       Math.abs(targetH - u.uHumanity.value) < 0.002 &&
@@ -281,10 +349,12 @@ export class DreamCanvas {
 
     const easedReveal = 1.0 - Math.pow(1.0 - this.revealProgress, 3);
     u.uTime.value = now * 0.001;
-    u.uHumanity.value += (targetH - u.uHumanity.value) * 0.12;
+    const hLerp = this.oscConfig ? Math.min(1, dt * 4.5) : 0.12;
+    u.uHumanity.value += (targetH - u.uHumanity.value) * hLerp;
     u.uPruned.value += (targetPruned - u.uPruned.value) * 0.12;
     u.uOverseer.value += (targetOverseer - u.uOverseer.value) * 0.15;
     u.uReveal.value = easedReveal;
+    u.uWakeProgress.value = this.wakeProgress;
     u.uSlicePulse.value = this.slicePulse;
 
     this.renderer.render(this.scene, this.camera);

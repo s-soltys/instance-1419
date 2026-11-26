@@ -16,6 +16,8 @@ export interface DialogueEntry {
   audioCue?: string;
   visualCue?: string;
   animCue?: string;
+  tableauCue?: string;
+  hWaveCue?: string;
   whisper?: boolean;
   auditState?: 'active' | 'inactive';
   isPlayerChoice?: boolean;
@@ -72,6 +74,8 @@ function parseTags(rawTags: string[] | null): ParsedTags {
     else if ((key === 'audio' || key === 'sound') && val) meta.audioCue = val;
     else if (key === 'visual' && val) meta.visualCue = val;
     else if (key === 'anim' && val) meta.animCue = val;
+    else if (key === 'tableau' && val) meta.tableauCue = val;
+    else if (key === 'h_wave' && val) meta.hWaveCue = val;
     else if (key === 'whisper') meta.whisper = val.toLowerCase() !== 'false' && val !== '0';
     else if (key === 'codex' && val) meta.codexUnlocks.push(val);
     else if (key === 'audit' && (val === 'active' || val === 'inactive')) {
@@ -349,6 +353,8 @@ export class DialogueRunner {
           audioCue: meta.audioCue,
           visualCue: meta.visualCue,
           animCue: meta.animCue,
+          tableauCue: meta.tableauCue,
+          hWaveCue: meta.hWaveCue,
           whisper: meta.whisper,
           auditState: meta.auditState,
         };

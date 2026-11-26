@@ -434,8 +434,8 @@ export class DialogueFeedView {
       : '';
 
     const displayName =
-      channel === 'prologue' && entry.speaker === 'phantom_spouse'
-        ? 'ACROSS THE TABLE'
+      channel === 'prologue' && entry.speaker === 'phantom_upload_witness'
+        ? 'INTAKE ASSISTANT'
         : ch.displayName;
     const headHtml = isContinuation
       ? replayBtn

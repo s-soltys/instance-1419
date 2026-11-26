@@ -748,6 +748,35 @@ export class AudioEngine {
       // Soft painterly warm swell
       this.playGlassNote(174.61, 0.08, 0.35, 1.8, now, 'triangle', this.sfxGain);
       this.playGlassNote(261.63, 0.06, 0.45, 2.0, now + 0.1, 'sine', this.sfxGain);
+    } else if (cue === 'wake_up') {
+      // Calm 2.2s sensory wake-up: muffled room tone opening into warm clarity + gentle resonant fifth
+      if (this.ctx) {
+        const len = Math.floor(this.ctx.sampleRate * 2.2);
+        const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+        const ch = buf.getChannelData(0);
+        let lp = 0;
+        for (let i = 0; i < len; i++) {
+          lp = lp * 0.94 + (Math.random() * 2 - 1) * 0.06;
+          ch[i] = lp * 1.4;
+        }
+        const src = this.ctx.createBufferSource();
+        src.buffer = buf;
+        const filt = this.ctx.createBiquadFilter();
+        filt.type = 'lowpass';
+        filt.frequency.setValueAtTime(140, now);
+        filt.frequency.exponentialRampToValueAtTime(950, now + 1.9);
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.linearRampToValueAtTime(0.075, now + 0.55);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 2.15);
+        src.connect(filt);
+        filt.connect(g);
+        g.connect(this.sfxGain);
+        src.start(now);
+        src.stop(now + 2.2);
+      }
+      this.playGlassNote(220.0, 0.052, 0.32, 2.0, now + 0.12, 'sine', this.sfxGain);
+      this.playGlassNote(329.63, 0.042, 0.45, 2.1, now + 0.36, 'triangle', this.sfxGain);
     } else if (cue === 'iris_dive') {
       // Ascending optical iris dive + shimmering harmonic + crisp shutter latch
       this.sweepTone(165, 620, 0.42, 0.085, now);

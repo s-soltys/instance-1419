@@ -190,6 +190,9 @@ export function createMockDreamCanvas() {
     setState: vi.fn(),
     triggerEntranceReveal: vi.fn(),
     triggerSlicePulse: vi.fn(),
+    setWakeProgress: vi.fn(),
+    triggerWakeSequence: vi.fn(),
+    setHumanityOscillation: vi.fn(),
     getPerfInfo: vi.fn(() => ({ active: false, calls: 0, triangles: 0, geometries: 0, textures: 0, dpr: 1 })),
   };
 }

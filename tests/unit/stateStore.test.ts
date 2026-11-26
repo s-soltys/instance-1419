@@ -20,8 +20,8 @@ describe('StateStore invariants & economy', () => {
     expect(s.saveSchemaVersion).toBe(7);
     expect(s.introStage).toBe('prologue');
     expect(store.hasSavedProgress()).toBe(false);
-    expect(s.introTarget1Minigame).toBe('multiband_loupe');
-    expect(s.introTarget2Minigame).toBe('lens_focus');
+    expect(s.introTarget1Minigame).toBe('constellation_recall');
+    expect(s.introTarget2Minigame).toBe('pulsar_echo');
     expect(store.getMinigameIdForTarget(INTRO_TARGET_1_ID, 'fallback_mg')).toBe(INTRO_TARGET_1_MINIGAME);
     expect(store.getMinigameIdForTarget(INTRO_TARGET_2_ID, 'fallback_mg')).toBe(INTRO_TARGET_2_MINIGAME);
     expect(store.getMinigameIdForTarget('carina_rift_nebula', 'wave_shaper')).toBe('wave_shaper');
@@ -40,8 +40,8 @@ describe('StateStore invariants & economy', () => {
   it('locks fixed optics starter pair across seeds and persists introStage transitions cleanly', () => {
     for (let seed = 1; seed <= 10; seed++) {
       const st = createInitialState(seed * 97);
-      expect(st.introTarget1Minigame).toBe('multiband_loupe');
-      expect(st.introTarget2Minigame).toBe('lens_focus');
+      expect(st.introTarget1Minigame).toBe('constellation_recall');
+      expect(st.introTarget2Minigame).toBe('pulsar_echo');
     }
 
     const store = new StateStore();
@@ -53,8 +53,8 @@ describe('StateStore invariants & economy', () => {
 
     const reloaded = new StateStore();
     expect(reloaded.getState().introStage).toBe('scan_target_1');
-    expect(reloaded.getState().introTarget1Minigame).toBe('multiband_loupe');
-    expect(reloaded.getState().introTarget2Minigame).toBe('lens_focus');
+    expect(reloaded.getState().introTarget1Minigame).toBe('constellation_recall');
+    expect(reloaded.getState().introTarget2Minigame).toBe('pulsar_echo');
     store.dispose();
     reloaded.dispose();
   });
@@ -79,8 +79,8 @@ describe('StateStore invariants & economy', () => {
     expect(s.introStage).toBe('complete');
     expect(s.shift).toBe(3);
     expect(s.humanity).toBe(62);
-    expect(s.introTarget1Minigame).toBe('multiband_loupe');
-    expect(s.introTarget2Minigame).toBe('lens_focus');
+    expect(s.introTarget1Minigame).toBe('constellation_recall');
+    expect(s.introTarget2Minigame).toBe('pulsar_echo');
     expect(s.minigameRunCounts).toEqual({});
     expect(s.codexUnlocks).toEqual([]);
     expect(s.codexSeenStages).toEqual({});

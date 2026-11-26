@@ -6,7 +6,7 @@
       "subtitle": "Home System · Twin Golden Reference",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
-      "minigameId": "multiband_loupe",
+      "minigameId": "constellation_recall",
       "raDeg": 46.0,
       "decDeg": -16.0,
       "optimalWavelengthNm": 560,
@@ -15,15 +15,15 @@
       "anomalyGain": 1,
       "kind": "home_reference",
       "accentHex": "#ffd88a",
-      "description": "Ten light-years astern, Sol and Alpha Centauri burn steady in visible light. Sweep the multi-band loupe across your home stars to calibrate the probe's optical baseline."
+      "description": "Ten light-years astern, Sol and Alpha Centauri burn steady in visible light. Trace and recall the anchor star sequence around your home stars to calibrate the probe's optical baseline."
     },
     {
       "id": "cluster_j1419_a",
       "label": "CLUSTER J1419-A",
-      "subtitle": "Deep-Field Lens & Horizon Edge",
+      "subtitle": "Deep-Field Pulsar & Horizon Edge",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
-      "minigameId": "lens_focus",
+      "minigameId": "pulsar_echo",
       "raDeg": 14.0,
       "decDeg": 6.0,
       "optimalWavelengthNm": 1180,
@@ -32,7 +32,7 @@
       "anomalyGain": 1,
       "kind": "einstein_ring",
       "accentHex": "#f4b96a",
-      "description": "A massive foreground galaxy cluster bends ancient starlight into bright arcs in near-infrared. Align the concentric lens rings to pull the warped galaxies sharp and expose the impossibly straight edge behind them."
+      "description": "A spinning neutron star pulses beside a massive foreground galaxy cluster in near-infrared. Time your catch to the sweeping beacon to expose the impossibly straight edge behind the galaxies."
     },
     {
       "id": "carina_rift_nebula",
@@ -54,10 +54,10 @@
     {
       "id": "asterism_drift_01",
       "label": "SMACS ASTERISM K-01",
-      "subtitle": "Wide-Field Star Pattern Anchor",
+      "subtitle": "Multi-Band Dust Veil Sector",
       "bandName": "VISIBLE",
       "showcaseType": "deep_field",
-      "minigameId": "constellation_recall",
+      "minigameId": "multiband_loupe",
       "raDeg": 78.0,
       "decDeg": 22.0,
       "optimalWavelengthNm": 540,
@@ -66,7 +66,7 @@
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#ffe0a3",
-      "description": "Six-point diffraction anchors form a faint geometric chain across the forward sector. Lock the recalled stellar lattice to establish a local astrometric baseline."
+      "description": "Dense dust pillars shroud faint embedded stellar cores across the forward sector. Sweep the Optical, Infrared, and X-Ray loupe to isolate the true local anchors."
     },
     {
       "id": "fomalhaut_glare_well",
@@ -139,10 +139,10 @@
     {
       "id": "sector_s04_seam",
       "label": "PULSAR RIFT S-04",
-      "subtitle": "High-Energy Shock & Repeating Facet",
+      "subtitle": "Deep-Field Lensing & Repeating Facet",
       "bandName": "UV / X-RAY",
       "showcaseType": "deep_field",
-      "minigameId": "pulsar_echo",
+      "minigameId": "lens_focus",
       "raDeg": -42.0,
       "decDeg": -18.0,
       "optimalWavelengthNm": 260,
@@ -151,7 +151,7 @@
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#9cc8ff",
-      "description": "Violent ultraviolet and X-ray jets flare along Sector S-04. Sync your timing aperture to the spinning neutron star's synchrotron beam to expose the repeating boundary facet."
+      "description": "Violent ultraviolet and X-ray filaments flare behind warped cluster arcs along Sector S-04. Align the concentric gravitational lens shells to expose the repeating boundary facet."
     },
     {
       "id": "fraunhofer_prism_knot",
