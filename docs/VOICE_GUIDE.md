@@ -48,3 +48,36 @@ Every `.ink` script must obey this guide. The `consistency-auditor` checks all d
 ### E. Archived Prior Copies (`archive_echo`)
 * Used sparingly (2–4 brief fragments across the whole 2-hour run).
 * *Style:* Timestamped, truncated, impersonal probe logs from copies like `Instance-0412` or `Instance-1104`—hinting others brushed the edge of the sphere before drifting or being decommissioned.
+
+---
+
+## 3. Local Voice Generation Setup & Reproduction
+
+All character voice lines are synthesized locally using **Qwen3-TTS** (Apache-2.0, quantized 4-bit) running through Apple Silicon / MLX (or Kokoro as a CPU fallback). Everything required to configure, anchor, and generate lines is committed to the repository:
+
+* **Configuration:** [`src/content/voice_profiles.json`](../src/content/voice_profiles.json) holds the cast seeds, prompt directives (`voiceDesignInstruct`), anchor reference lines, and post-processing audio EQ/compression filters.
+* **Orchestration Script:** [`scripts/generate-voices.mjs`](../scripts/generate-voices.mjs) extracts all dialogue lines from Ink stories, strips inline emotional markup (`[[warm:...]]`, `[[cold:...]]`), assigns unique deterministic IDs, and invokes the Python batch worker.
+* **MLX Worker:** [`scripts/generate-voices-qwen3.py`](../scripts/generate-voices-qwen3.py) loads models from HuggingFace (`mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-4bit` and `Base-4bit`), synthesizes missing anchors deterministically using cast seeds, batch-generates audio clips via In-Context Learning (ICL), and runs automated duration/loudness sanity checks.
+
+### Running on a New Machine
+
+1. **Prerequisites:**
+   * Python 3.10+ (Apple Silicon Mac recommended for MLX acceleration).
+   * `ffmpeg` installed on the system path (`brew install ffmpeg` on macOS, `apt install ffmpeg` on Ubuntu).
+   * Node.js 20+.
+2. **Environment Setup:**
+   ```bash
+   python3 -m venv .venv-voice
+   source .venv-voice/bin/activate
+   pip install mlx mlx-audio soundfile numpy
+   ```
+3. **Generate Voices:**
+   ```bash
+   # From project root:
+   npm run generate:voices
+   ```
+   * *Regenerating all anchors:* `npm run generate:voices -- --force-anchors`
+   * *Forcing complete regeneration:* `npm run generate:voices -- --force`
+   * *Generating specific lines:* `npm run generate:voices -- --ids=overseer_xxxx,sibling_yyyy`
+   * *Fallback provider (no GPU/MLX):* `npm run generate:voices -- --provider=kokoro`
+
