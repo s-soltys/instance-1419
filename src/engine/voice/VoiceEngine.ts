@@ -1,6 +1,7 @@
 import pacing from '../../content/pacing.json';
+import pronunciationJson from '../../content/pronunciation.json';
 import voiceProfilesJson from '../../content/voice_profiles.json';
-import voiceScriptJson from '../../content/dialogue/compiled/voice_script.json';
+import voiceRuntimeJson from '../../content/dialogue/compiled/voice_runtime.json';
 import type { AudioEngine } from '../AudioEngine';
 
 export interface VoiceLineRecord {
@@ -11,6 +12,12 @@ export interface VoiceLineRecord {
   text: string;
   spokenText: string;
   audioFile: string;
+}
+
+interface VoiceRuntimeEntry {
+  f: string;
+  s: string | null;
+  m: string;
 }
 
 export interface VoiceRequest {
@@ -42,11 +49,35 @@ export interface VoiceProfile {
   webSpeech?: { pitch: number; rate: number };
 }
 
+interface ResolvedRuntimeClip {
+  lineId: string;
+  audioFile: string;
+  sha: string | null;
+  matchKey: string;
+}
+
 const PROFILES = voiceProfilesJson.profiles as Record<string, VoiceProfile>;
-const SCRIPT_LINES = (voiceScriptJson.lines ?? []) as VoiceLineRecord[];
-const SCRIPT_BY_ID = new Map<string, VoiceLineRecord>(SCRIPT_LINES.map((l) => [l.lineId, l]));
-const SCRIPT_VERSION = encodeURIComponent(voiceScriptJson.generated_at ?? '1');
+const SCRIPT_VERSION = encodeURIComponent(voiceRuntimeJson.version ?? '1');
+const RUNTIME_BY_ID = new Map<string, ResolvedRuntimeClip>();
+const RUNTIME_BY_MATCH_KEY = new Map<string, ResolvedRuntimeClip>();
+for (const [lineId, entry] of Object.entries(
+  (voiceRuntimeJson.byId ?? {}) as Record<string, VoiceRuntimeEntry>
+)) {
+  const clip: ResolvedRuntimeClip = {
+    lineId,
+    audioFile: entry.f,
+    sha: entry.s ?? null,
+    matchKey: entry.m,
+  };
+  RUNTIME_BY_ID.set(lineId, clip);
+  if (clip.matchKey && !RUNTIME_BY_MATCH_KEY.has(clip.matchKey)) {
+    RUNTIME_BY_MATCH_KEY.set(clip.matchKey, clip);
+  }
+}
 const MAX_BUFFER_CACHE = 24;
+const COMPILED_PRONUNCIATION_RULES = (pronunciationJson.replacements ?? []).map(
+  ([pattern, replacement]) => [new RegExp(pattern, 'g'), replacement] as const
+);
 
 function stripInlineMarkup(text: string): string {
   return text.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
@@ -62,32 +93,39 @@ export function normalizeVoiceMatchKey(speaker: string, text: string): string {
   return `${speaker}|${cleaned}`;
 }
 
-function findScriptRecord(req: VoiceRequest): VoiceLineRecord | undefined {
+function findRuntimeClip(req: VoiceRequest): ResolvedRuntimeClip | undefined {
   if (req.lineId) {
-    const byId = SCRIPT_BY_ID.get(req.lineId);
+    const byId = RUNTIME_BY_ID.get(req.lineId);
     if (byId) {
       if (
         import.meta.env?.DEV &&
         normalizeVoiceMatchKey(req.speaker, req.text) !== byId.matchKey
       ) {
         console.warn(
-          `[VoiceEngine] Spoken/text mismatch for lineId "${req.lineId}": runtime="${req.text}" vs script="${byId.text}"`
+          `[VoiceEngine] Spoken/text mismatch for lineId "${req.lineId}": runtime="${req.text}" (expected "${byId.matchKey}")`
         );
       }
       return byId;
     }
   }
-  const key = normalizeVoiceMatchKey(req.speaker, req.text);
-  return SCRIPT_LINES.find((l) => l.matchKey === key);
+  return RUNTIME_BY_MATCH_KEY.get(normalizeVoiceMatchKey(req.speaker, req.text));
 }
 
 function sanitizeForSpeech(text: string): string {
-  return stripInlineMarkup(text)
-    .replace(/\[RELATION:SPOUSE_01\]'s/g, 'their')
-    .replace(/\[RELATION:SPOUSE_01\]/g, 'your partner')
-    .replace(/—(["']?)$/g, '...$1')
-    .replace(/—/g, ', ')
-    .trim();
+  let out = stripInlineMarkup(text);
+  for (const [relKey, relSpec] of Object.entries(
+    (pronunciationJson.relations ?? {}) as Record<string, { possessive: string; noun: string }>
+  )) {
+    const token = `[RELATION:${relKey}]`;
+    const esc = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out
+      .replace(new RegExp(`${esc}['’]s\\b`, 'g'), relSpec.possessive ?? 'their')
+      .replace(new RegExp(esc, 'g'), relSpec.noun ?? 'them');
+  }
+  for (const [rx, replacement] of COMPILED_PRONUNCIATION_RULES) {
+    out = out.replace(rx, replacement);
+  }
+  return out.replace(/—(["']?)$/g, '...$1').replace(/—/g, ', ').trim();
 }
 
 /**
@@ -104,6 +142,7 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
   private activeClipGain: GainNode | null = null;
   private freqData: Uint8Array<ArrayBuffer> | null = null;
   private bufferCache = new Map<string, AudioBuffer>();
+  private inflightLoads = new Map<string, Promise<AudioBuffer | null>>();
   private volume = 0.92;
   private activeResolve: ((ok: boolean) => void) | null = null;
   private playing = false;
@@ -165,11 +204,51 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
     return this.volume;
   }
 
+  private async loadOrGetBuffer(
+    rec: ResolvedRuntimeClip,
+    ctx: AudioContext
+  ): Promise<AudioBuffer | null> {
+    const cached = this.getCachedBuffer(rec.audioFile);
+    if (cached) return cached;
+
+    const existing = this.inflightLoads.get(rec.audioFile);
+    if (existing) return existing;
+
+    const vTag = encodeURIComponent(rec.sha ?? SCRIPT_VERSION);
+    const loadPromise = (async (): Promise<AudioBuffer | null> => {
+      try {
+        const res = await fetch(`./${rec.audioFile}?v=${vTag}`);
+        if (!res.ok) return null;
+        const arr = await res.arrayBuffer();
+        const buf = await ctx.decodeAudioData(arr);
+        this.putCachedBuffer(rec.audioFile, buf);
+        return buf;
+      } catch {
+        return null;
+      } finally {
+        this.inflightLoads.delete(rec.audioFile);
+      }
+    })();
+
+    this.inflightLoads.set(rec.audioFile, loadPromise);
+    return loadPromise;
+  }
+
+  prefetch(req: VoiceRequest): void {
+    const rec = findRuntimeClip(req);
+    if (!rec || this.getCachedBuffer(rec.audioFile) || this.inflightLoads.has(rec.audioFile)) {
+      return;
+    }
+    const ctx = this.audio.getAudioContext();
+    if (!ctx) return;
+    void this.loadOrGetBuffer(rec, ctx);
+  }
+
   async speak(
     req: VoiceRequest,
     onPlaybackStart?: (durationSec: number) => void
   ): Promise<boolean> {
-    const rec = findScriptRecord(req);
+    const rec = findRuntimeClip(req);
     if (!rec) {
       console.warn('[VoiceEngine] Missing prebaked line:', req.lineId ?? req.text);
       return false;
@@ -179,21 +258,15 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
     if (!ctx || !this.analyser) return false;
 
     try {
-      let buf = this.getCachedBuffer(rec.audioFile);
-      if (!buf) {
-        const res = await fetch(`./${rec.audioFile}?v=${SCRIPT_VERSION}`);
-        if (!res.ok) return false;
-        const arr = await res.arrayBuffer();
-        buf = await ctx.decodeAudioData(arr);
-        this.putCachedBuffer(rec.audioFile, buf);
-      }
+      const buf = await this.loadOrGetBuffer(rec, ctx);
+      if (!buf) return false;
 
       this.stop();
       return await new Promise<boolean>((resolve) => {
         const src = ctx.createBufferSource();
         const clipGain = ctx.createGain();
         clipGain.gain.setValueAtTime(1.0, ctx.currentTime);
-        src.buffer = buf!;
+        src.buffer = buf;
         src.connect(clipGain);
         clipGain.connect(this.analyser!);
         this.activeSource = src;
@@ -201,7 +274,7 @@ export class PrebakedVoiceProvider implements IVoiceProvider {
         this.activeResolve = resolve;
         this.playing = true;
 
-        onPlaybackStart?.(buf!.duration);
+        onPlaybackStart?.(buf.duration);
 
         src.onended = () => {
           if (this.activeSource === src) {
@@ -585,6 +658,10 @@ export class VoiceEngine {
           }
         }
       };
+
+      if (this.queue.length > 0 && !this.remoteProvider) {
+        this.prebaked.prefetch(this.queue[0]);
+      }
 
       if (this.remoteProvider) {
         this.activeProvider = this.remoteProvider;

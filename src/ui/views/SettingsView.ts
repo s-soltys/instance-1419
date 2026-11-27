@@ -260,6 +260,7 @@ export class SettingsView {
     const items: string[] = [];
 
     for (const a of assets) {
+      if (a.internal_prototype_only) continue;
       const key = `${a.attribution}|${a.license}`;
       if (seen.has(key)) continue;
       seen.add(key);

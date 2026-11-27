@@ -44,23 +44,42 @@ describe('MusicDirector catalog integrity & Hybrid H% routing', () => {
     expect(resolveMusicCueId(baseCtx({ mode: 'waking_3d', activeMinigameId: null }))).toBeNull();
   });
 
-  it('routes Dream personas and Shift 6 Epilogue cleanly', () => {
+  it('routes Dream personas and endings cleanly', () => {
     expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_spouse' }))).toBe(
       'dream_wurlitzer_rain'
     );
-    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'pet' }))).toBe(
+    expect(
+      resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_afternoon_stranger' }))
+    ).toBe('dream_nylon_sunbeam');
+    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_technician' }))).toBe(
       'dream_nylon_sunbeam'
     );
-    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'parent' }))).toBe(
+    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_parent' }))).toBe(
       'dream_harmonium_breath'
     );
-    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'wronged_person' }))).toBe(
+    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_waiting_room' }))).toBe(
+      'dream_harmonium_breath'
+    );
+    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_upload_witness' }))).toBe(
       'dream_rhodes_cello'
     );
-    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'old_teacher' }))).toBe(
+    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_younger_self' }))).toBe(
+      'dream_rhodes_cello'
+    );
+    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_rival' }))).toBe(
+      'dream_vibraphone_nocturne'
+    );
+    expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', activePersonaId: 'phantom_skeptic' }))).toBe(
       'dream_vibraphone_nocturne'
     );
     expect(resolveMusicCueId(baseCtx({ mode: 'dream_2d', shift: 6 }))).toBe('dream_epilogue_dawn');
+    expect(resolveMusicCueId(baseCtx({ mode: 'ending', endingId: 'ending_cold_complete' }))).toBeNull();
+    expect(resolveMusicCueId(baseCtx({ mode: 'ending', endingId: 'ending_sweet_spot' }))).toBe(
+      'dream_epilogue_dawn'
+    );
+    expect(resolveMusicCueId(baseCtx({ mode: 'ending', endingId: 'ending_whole_incomplete' }))).toBe(
+      'dream_epilogue_dawn'
+    );
   });
 
   it('escalates Overseer Audit cues across baseline, elevated suspicion/chaos, and high-stakes ultimatum', () => {

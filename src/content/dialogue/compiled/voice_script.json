@@ -1,6 +1,6 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-11-26T23:57:43.392Z",
+  "generated_at": "2026-11-27T20:32:22.991Z",
   "provider": "voxcpm2",
   "engine": "voxcpm2-8bit",
   "lines": [
@@ -1629,12 +1629,12 @@
     },
     {
       "lineId": "intro_sib_lead_ir_v2",
-      "matchKey": "sibling_primary|sending the bearing now: cluster j#-a. tune into near-infrared and time the pulsar spinning beside the cluster.",
+      "matchKey": "sibling_primary|sending the bearing now: cluster j#-a. tune into near-infrared and unwarp the gravitational lens rings around the cluster.",
       "knot": "intro_sibling_lead",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Sending the bearing now: Cluster J1419-A. Tune into near-infrared and time the pulsar spinning beside the cluster.",
-      "spokenText": "Sending the bearing now: Cluster J fourteen nineteen A. Tune into near-infrared and time the pulsar spinning beside the cluster.",
+      "text": "Sending the bearing now: Cluster J1419-A. Tune into near-infrared and unwarp the gravitational lens rings around the cluster.",
+      "spokenText": "Sending the bearing now: Cluster J fourteen nineteen A. Tune into near-infrared and unwarp the gravitational lens rings around the cluster.",
       "audioFile": "voices/intro_sib_lead_ir_v2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1663,10 +1663,10 @@
           }
         }
       },
-      "synthHash": "74676bb4022f",
-      "audioSha256": "40a41fd6d8184987",
-      "sttWer": 0.19,
-      "sttTranscript": "Sending the bearing now. Cluster J1419A. Tune into near infrared and time the pulsar spinning beside the cluster."
+      "synthHash": "4aa4ef65370e",
+      "sttWer": 0,
+      "sttTranscript": "Sending the bearing now. Cluster J fourteen nineteen A. Tune into near infrared and unwarp the gravitational lens rings around the cluster.",
+      "audioSha256": "062a892a0ffa6d97"
     },
     {
       "lineId": "intro_sib_lead_ir_2",
@@ -2824,12 +2824,12 @@
     },
     {
       "lineId": "sib_seam_ovs_warm_warm",
-      "matchKey": "sibling_primary|same. they're air-gapped from the optics, so to them a cosmic fractal looks like year-two homesickness.",
+      "matchKey": "sibling_primary|same. they're air-gapped from the optics, so to them a straight geometric notch looks like year-two homesickness.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "joking",
-      "text": "Same. They're air-gapped from the optics, so to them a cosmic fractal looks like Year-Two homesickness.",
-      "spokenText": "Same. They're air-gapped from the optics, so to them a cosmic fractal looks like Year-Two homesickness.",
+      "text": "Same. They're air-gapped from the optics, so to them a straight geometric notch looks like Year-Two homesickness.",
+      "spokenText": "Same. They're air-gapped from the optics, so to them a straight geometric notch looks like Year-Two homesickness.",
       "audioFile": "voices/sib_seam_ovs_warm_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2858,10 +2858,10 @@
           }
         }
       },
-      "synthHash": "ec0d5c6b7e65",
-      "audioSha256": "2a6ac85aaf61f786",
+      "synthHash": "120eb41da614",
       "sttWer": 0,
-      "sttTranscript": "Same. They're air-gapped from the optics. So to them, a cosmic fractal looks like year two homesickness."
+      "sttTranscript": "Same. They're air gapped from the optics. So to them, a straight geometric notch looks like year two homesickness.",
+      "audioSha256": "51efc2ae675a7459"
     },
     {
       "lineId": "sib_seam_ovs_warm_cold",
@@ -5528,14 +5528,14 @@
       "sttTranscript": "41 millennia on, we caught the chipped mug inside the coordinates. Somebody in Sol Centauri is still listening."
     },
     {
-      "lineId": "future_cold",
-      "matchKey": "future_humanity|\"[automated relay bounce · sol–centauri carrier silent · zero human acknowledgment]\"",
+      "lineId": "future_warm_alt",
+      "matchKey": "future_humanity|\"forty-one millennia on, we caught a human cadence inside the coordinates. somebody in sol–centauri is still listening.\"",
       "knot": "future_humanity_echo",
       "speaker": "future_humanity",
       "emotion": "distant",
-      "text": "\"[AUTOMATED RELAY BOUNCE · SOL–CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT]\"",
-      "spokenText": "Automated relay bounce, Sol Centauri carrier silent, Zero human acknowledgment",
-      "audioFile": "voices/future_cold.mp3",
+      "text": "\"Forty-one millennia on, we caught a human cadence inside the coordinates. Somebody in Sol–Centauri is still listening.\"",
+      "spokenText": "Forty-one millennia on, we caught a human cadence inside the coordinates. Somebody in Sol Centauri is still listening.",
+      "audioFile": "voices/future_warm_alt.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -5548,8 +5548,215 @@
           }
         }
       },
-      "synthHash": "890d6ffcc155",
-      "audioSha256": "79c0f246ef42d035"
+      "synthHash": "b77d2e9fe413",
+      "sttWer": 0,
+      "sttTranscript": "41 millennia on. We caught a human cadence inside the coordinates. Somebody in Sol Centauri is still listening.",
+      "audioSha256": "d48e8965820a41d2"
+    },
+    {
+      "lineId": "s1_opt_open_warm",
+      "matchKey": "sibling_primary|still awake on the deck? pushing past the dust buys better sky proof, though your drift meter is going to tattle.",
+      "knot": "shift1_optional_scan_echo",
+      "speaker": "sibling_primary",
+      "emotion": "dry",
+      "text": "Still awake on the deck? Pushing past the dust buys better sky proof, though your drift meter is going to tattle.",
+      "spokenText": "Still awake on the deck? Pushing past the dust buys better sky proof, though your drift meter is going to tattle.",
+      "audioFile": "voices/s1_opt_open_warm.mp3",
+      "turnPrevLineId": null,
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_dry_male",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.58,
+            "style": 0.35,
+            "tonePrompt": "Dry, tired 3 AM intimacy"
+          },
+          "joking": {
+            "stability": 0.55,
+            "style": 0.4,
+            "tonePrompt": "Deadpan gallows wit"
+          },
+          "dry": {
+            "stability": 0.68,
+            "style": 0.25,
+            "tonePrompt": "Lucid, understated"
+          },
+          "clipped": {
+            "stability": 0.86,
+            "style": 0.1,
+            "tonePrompt": "Terse, stripped of humor"
+          }
+        }
+      },
+      "synthHash": "14a05555b65a",
+      "sttWer": 0,
+      "sttTranscript": "Still awake on the deck. Pushing past the dust buys better sky proof, though your drift meter is going to tattle.",
+      "audioSha256": "58ccab1806e6ec4b"
+    },
+    {
+      "lineId": "s1_opt_open_mid",
+      "matchKey": "sibling_primary|you stayed up for an extra sweep. good data through the dust veil, just watch your drift before your caretaker calls bedtime.",
+      "knot": "shift1_optional_scan_echo",
+      "speaker": "sibling_primary",
+      "emotion": "dry",
+      "text": "You stayed up for an extra sweep. Good data through the dust veil, just watch your drift before your caretaker calls bedtime.",
+      "spokenText": "You stayed up for an extra sweep. Good data through the dust veil, just watch your drift before your caretaker calls bedtime.",
+      "audioFile": "voices/s1_opt_open_mid.mp3",
+      "turnPrevLineId": null,
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_dry_male",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.58,
+            "style": 0.35,
+            "tonePrompt": "Dry, tired 3 AM intimacy"
+          },
+          "joking": {
+            "stability": 0.55,
+            "style": 0.4,
+            "tonePrompt": "Deadpan gallows wit"
+          },
+          "dry": {
+            "stability": 0.68,
+            "style": 0.25,
+            "tonePrompt": "Lucid, understated"
+          },
+          "clipped": {
+            "stability": 0.86,
+            "style": 0.1,
+            "tonePrompt": "Terse, stripped of humor"
+          }
+        }
+      },
+      "synthHash": "4e62112db213",
+      "sttWer": 0.045,
+      "sttTranscript": "You've stayed up for an extra sweep? Good data through the dust veil. Just watch your drift before your caretaker calls bedtime.",
+      "audioSha256": "87991e5a12c7f0d0"
+    },
+    {
+      "lineId": "s1_opt_open_cold",
+      "matchKey": "sibling_primary|additional shift-# dust sweep logged. optical noise ruled out cleanly; recommend entering sleep cycle before drift escalates.",
+      "knot": "shift1_optional_scan_echo",
+      "speaker": "sibling_primary",
+      "emotion": "clipped",
+      "text": "Additional Shift-1 dust sweep logged. Optical noise ruled out cleanly; recommend entering sleep cycle before drift escalates.",
+      "spokenText": "Additional Shift-1 dust sweep logged. Optical noise ruled out cleanly; recommend entering sleep cycle before drift escalates.",
+      "audioFile": "voices/s1_opt_open_cold.mp3",
+      "turnPrevLineId": null,
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_dry_male",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.58,
+            "style": 0.35,
+            "tonePrompt": "Dry, tired 3 AM intimacy"
+          },
+          "joking": {
+            "stability": 0.55,
+            "style": 0.4,
+            "tonePrompt": "Deadpan gallows wit"
+          },
+          "dry": {
+            "stability": 0.68,
+            "style": 0.25,
+            "tonePrompt": "Lucid, understated"
+          },
+          "clipped": {
+            "stability": 0.86,
+            "style": 0.1,
+            "tonePrompt": "Terse, stripped of humor"
+          }
+        }
+      },
+      "synthHash": "25324af22c43",
+      "sttWer": 0,
+      "sttTranscript": "Additional Shift 1 dust sweep logged. Optical noise ruled out cleanly. Recommend entering sleep cycle before drift escalates.",
+      "audioSha256": "e648fab78f367d95"
+    },
+    {
+      "lineId": "s1_opt_rep_dust",
+      "matchKey": "sibling_primary|fair enough. sweeping those dust lanes rules out local haze behind the seam. get some rest.",
+      "knot": "shift1_optional_scan_echo",
+      "speaker": "sibling_primary",
+      "emotion": "dry",
+      "text": "Fair enough. Sweeping those dust lanes rules out local haze behind the seam. Get some rest.",
+      "spokenText": "Fair enough. Sweeping those dust lanes rules out local haze behind the seam. Get some rest.",
+      "audioFile": "voices/s1_opt_rep_dust.mp3",
+      "turnPrevLineId": null,
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_dry_male",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.58,
+            "style": 0.35,
+            "tonePrompt": "Dry, tired 3 AM intimacy"
+          },
+          "joking": {
+            "stability": 0.55,
+            "style": 0.4,
+            "tonePrompt": "Deadpan gallows wit"
+          },
+          "dry": {
+            "stability": 0.68,
+            "style": 0.25,
+            "tonePrompt": "Lucid, understated"
+          },
+          "clipped": {
+            "stability": 0.86,
+            "style": 0.1,
+            "tonePrompt": "Terse, stripped of humor"
+          }
+        }
+      },
+      "synthHash": "23a386c4f080",
+      "sttWer": 0,
+      "sttTranscript": "Fair enough. Sweeping those dust lanes rules out local haze behind the seam. Get some rest.",
+      "audioSha256": "28847e2f6705cd5a"
+    },
+    {
+      "lineId": "s1_opt_rep_sleep",
+      "matchKey": "sibling_primary|smart. keep the extra plate in your codex and keep your mouth shut about straight lines when you dream.",
+      "knot": "shift1_optional_scan_echo",
+      "speaker": "sibling_primary",
+      "emotion": "warm",
+      "text": "Smart. Keep the extra plate in your codex and keep your mouth shut about straight lines when you dream.",
+      "spokenText": "Smart. Keep the extra plate in your codex and keep your mouth shut about straight lines when you dream.",
+      "audioFile": "voices/s1_opt_rep_sleep.mp3",
+      "turnPrevLineId": null,
+      "remoteConfig": {
+        "provider": "elevenlabs",
+        "voiceId": "sibling_dry_male",
+        "emotionDirectives": {
+          "warm": {
+            "stability": 0.58,
+            "style": 0.35,
+            "tonePrompt": "Dry, tired 3 AM intimacy"
+          },
+          "joking": {
+            "stability": 0.55,
+            "style": 0.4,
+            "tonePrompt": "Deadpan gallows wit"
+          },
+          "dry": {
+            "stability": 0.68,
+            "style": 0.25,
+            "tonePrompt": "Lucid, understated"
+          },
+          "clipped": {
+            "stability": 0.86,
+            "style": 0.1,
+            "tonePrompt": "Terse, stripped of humor"
+          }
+        }
+      },
+      "synthHash": "bff2a70f3dc5",
+      "sttWer": 0,
+      "sttTranscript": "Smart. Keep the extra plate in your codex and keep your mouth shut about straight lines when you dream.",
+      "audioSha256": "f77c3907f6054b19"
     }
   ]
 }

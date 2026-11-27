@@ -8,45 +8,53 @@ const OUT_DIR = path.join(DIALOGUE_DIR, 'compiled');
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
-const inkFiles = fs
-  .readdirSync(DIALOGUE_DIR)
-  .filter((file) => file.endsWith('.ink'));
+const MAIN_FILE = path.join(DIALOGUE_DIR, 'main.ink');
+const OUT_PATH = path.join(OUT_DIR, 'story.ink.json');
+const OBSOLETE_SPIKE_JSON = path.join(OUT_DIR, 'spike_shift1.ink.json');
 
-if (inkFiles.length === 0) {
-  console.error('No .ink files found in', DIALOGUE_DIR);
+if (!fs.existsSync(MAIN_FILE)) {
+  console.error('Missing entrypoint:', MAIN_FILE);
   process.exit(1);
 }
 
-for (const file of inkFiles) {
-  const fullPath = path.join(DIALOGUE_DIR, file);
-  const source = fs.readFileSync(fullPath, 'utf8');
-  const diagnostics = [];
-  const options = new CompilerOptions(
-    null,
-    [],
-    false,
-    (msg, type) => diagnostics.push({ msg, type }),
-    null
-  );
-  const compiler = new Compiler(source, options);
-  let story = null;
-  try {
-    story = compiler.Compile();
-  } catch (err) {
-    for (const d of diagnostics) {
-      console.error(`[ink:${file}] ${d.msg}`);
-    }
-    console.error(`[ink:${file}] ${err instanceof Error ? err.message : String(err)}`);
-    process.exit(1);
+const source = fs.readFileSync(MAIN_FILE, 'utf8');
+const diagnostics = [];
+const fileHandler = {
+  ResolveInkFilename: (filename) => {
+    if (path.isAbsolute(filename)) return filename;
+    return path.resolve(DIALOGUE_DIR, filename);
+  },
+  LoadInkFileContents: (fullPath) => fs.readFileSync(fullPath, 'utf8'),
+};
+
+const options = new CompilerOptions(
+  'main.ink',
+  [],
+  false,
+  (msg, type) => diagnostics.push({ msg, type }),
+  fileHandler
+);
+const compiler = new Compiler(source, options);
+let story = null;
+try {
+  story = compiler.Compile();
+} catch (err) {
+  for (const d of diagnostics) {
+    console.error(`[ink:main.ink] ${d.msg}`);
   }
-  if (!story) {
-    for (const d of diagnostics) {
-      console.error(`[ink:${file}] ${d.msg}`);
-    }
-    process.exit(1);
-  }
-  const outName = file.replace(/\.ink$/, '.ink.json');
-  const outPath = path.join(OUT_DIR, outName);
-  fs.writeFileSync(outPath, story.ToJson(), 'utf8');
-  console.log(`Compiled ${file} -> ${path.relative(ROOT, outPath)}`);
+  console.error(`[ink:main.ink] ${err instanceof Error ? err.message : String(err)}`);
+  process.exit(1);
 }
+if (!story) {
+  for (const d of diagnostics) {
+    console.error(`[ink:main.ink] ${d.msg}`);
+  }
+  process.exit(1);
+}
+
+if (fs.existsSync(OBSOLETE_SPIKE_JSON)) {
+  fs.unlinkSync(OBSOLETE_SPIKE_JSON);
+}
+
+fs.writeFileSync(OUT_PATH, story.ToJson(), 'utf8');
+console.log(`Compiled main.ink -> ${path.relative(ROOT, OUT_PATH)}`);

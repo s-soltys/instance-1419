@@ -549,4 +549,20 @@ Each agent session reads the latest entries here before starting work and append
   * Fixed `STAR_VERTEX` Shift 1→6 floor (`~913 -> 18,000`), added `uAnomalyRole` gating on target plates, plumbed `uShellCoverage`/`uConstellationGuideAlpha`/`uDreamCrackBleed`, and added Shift 5–6 Sol–Centauri Antipode meridian etch.
 * **Verified:** `node scripts/verify.mjs --fast` PASS (13 test files / 183 tests) + `node scripts/e2e-visual.mjs --flows=prologue,sky,dream,mobile` PASS (0 errors).
 
+---
+
+## Session 34 (Prep Sprint 4) — 2026-11-27 — Production Tooling, Voice/Music Pipeline & Release Gates
+* **Modular Ink `INCLUDE` Pipeline (`main.ink`, `shared/vars.ink`, `spike_shift1.ink`, `scripts/compile-ink.mjs`, `DialogueRunner.ts`):**
+  * Centralized all shared `VAR`s, `EXTERNAL`s, and fallback Ink functions inside `src/content/dialogue/shared/vars.ink` and added `src/content/dialogue/main.ink` entrypoint compiling via custom `fileHandler` into `src/content/dialogue/compiled/story.ink.json` (removing obsolete single-file `spike_shift1.ink.json`).
+  * Moved dev Cast Studio audition MP3s/manifests out of `public/auditions/` into `.dev-auditions/` (gitignored) served solely via `vite.config.ts` dev middleware (`apply: 'serve'`), keeping `dist/` free of dev audition audio.
+* **Pronunciation, Lean `voice_runtime.json`, `64k`/24kHz Delivery & Ending Music (`pronunciation.json`, `voice_profiles.json`, `scripts/voice-extract.mjs`, `scripts/generate-voices.mjs`, `scripts/generate-voices-voxcpm2.py`, `VoiceEngine.ts`, `music_catalog.json`, `MusicDirector.ts`):**
+  * Moved all 9 `[RELATION:*]` tags and astronomical/Instance number pronunciations into `src/content/pronunciation.json` shared by `voice-extract.mjs` and `VoiceEngine.ts`; configured VoxCPM2 delivery defaults (`deliveryBitrate: "64k"`, `deliverySampleRate: 24000`) while keeping existing Shift 1 `synthHash` parity.
+  * Upgraded `scripts/generate-voices.mjs` with recursive `.ink` walk (`walkInkFiles`), `--extract-only`, `--shift`, `--file`, `--speaker`, and `--knot` filters, incremental checkpoints, slim `voice_runtime.json`, SHA `?v=` cache-busting, and 1-line lookahead prefetch in `VoiceEngine.ts`.
+  * Synthesized the 8 updated/new Shift 1 voice lines via local VoxCPM2-8bit + Parakeet STT QA (`avg_wer=0.006`, 0 above threshold), cleaned `music_catalog.json` to the 9 canonical `phantom_*` keys, and routed `mode === 'ending'` cleanly (`ending_cold_complete` -> pure silence `null`, warm/incomplete -> `dream_epilogue_dawn`).
+* **Hardened Tooling, Playscript Export, Credits & DevHarness (`lint-narrative.mjs`, `sim-playthroughs.mjs`, `export-playscript.mjs`, `SettingsView.ts`, `DevHarness.ts`, `UIController.ts`, `verify.mjs`):**
+  * Upgraded `lint-narrative.mjs` with recursive `.ink` discovery, per-module `150..8000` word bounds (`45,000` project budget ceiling), `# codex:` tag + spoiler checks, `--release` strict voice-sync + `voice_runtime.json` verification, and `--release` hook in `scripts/verify.mjs`.
+  * Bound all 9 multi-shift `EXTERNAL`s & v8 variables in `scripts/sim-playthroughs.mjs`, added `scripts/export-playscript.mjs` (`npm run export:playscript` -> `artifacts/playscript.md`), filtered `internal_prototype_only` entries from `SettingsView` Credits, and upgraded `DevHarness` with Shift 1–6 quick-jump, Signal Composer & Ending previews, 9-persona selector, independent `Max_H` slider, arbitrary Ink knot launcher, `"VOXCPM2-8BIT"` voice badge, and flex-safe drawer CSS.
+* **Verified:** `node scripts/export-playscript.mjs` PASS (170 lines, 2,956 words); `node scripts/verify.mjs --release --fast` PASS (all 8 gates, 13 test files / 183 tests, `--release` strict voice-sync); `node scripts/e2e-visual.mjs --flows=prologue,sky,dream,mobile` PASS (0 errors).
+
+
 

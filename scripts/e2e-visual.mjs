@@ -141,6 +141,7 @@ async function ensureQaOpen(page) {
   if (!isOpen) {
     await page.click('#qa-pull-tab');
     await page.waitForSelector('#qa-drawer.open');
+    await page.waitForTimeout(320);
   }
 }
 
@@ -286,8 +287,8 @@ async function run() {
         }
         await ensureQaOpen(page);
         await page.click('[data-qa-tab="scenes"]');
-        await page.click('[data-intro-jump="complete"]');
         await page.click('[data-wave="1180"]');
+        await page.click('[data-intro-jump="complete"]');
         await ensureQaClosed(page);
         await page.waitForSelector('#optics-layer:not(.hidden)', { timeout: 6000 });
         skyReady = true;
@@ -380,6 +381,7 @@ async function run() {
         await ensureQaOpen(page);
         await page.click('[data-qa-tab="scenes"]');
         await page.click('[data-shift-jump="1"]');
+        await ensureQaOpen(page);
         await page.click('[data-intro-jump="complete"]');
         await ensureQaClosed(page);
       }

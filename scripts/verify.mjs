@@ -57,12 +57,13 @@ function verifyAssetManifest() {
 const args = new Set(process.argv.slice(2));
 const isFast = args.has('--fast');
 const isSmoke = args.has('--smoke');
+const isRelease = args.has('--release');
 
 run('node scripts/compile-ink.mjs');
 run('./node_modules/.bin/tsc --noEmit');
 run('./node_modules/.bin/vitest run');
 run('node scripts/sim-playthroughs.mjs');
-run('node scripts/lint-narrative.mjs');
+run(isRelease ? 'node scripts/lint-narrative.mjs --release' : 'node scripts/lint-narrative.mjs');
 run('node scripts/check-hygiene.mjs');
 verifyAssetManifest();
 run('./node_modules/.bin/vite build');

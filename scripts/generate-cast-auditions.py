@@ -4,9 +4,9 @@ Generate local Qwen3-TTS voice audition candidates (Takes A/B/C + fractured) for
 and package existing locked Cast 2 reference clips for the Character Casting Studio (?studio=1).
 
 Outputs:
-  public/auditions/<speaker>_<take>.mp3
-  public/auditions/ref_<id>.mp3
-  public/auditions/manifest.json
+  .dev-auditions/<speaker>_<take>.mp3
+  .dev-auditions/ref_<id>.mp3
+  .dev-auditions/manifest.json
 """
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PROFILES_PATH = ROOT / "src" / "content" / "voice_profiles.json"
 VOICES_DIR = ROOT / "public" / "voices"
 ANCHORS_DIR = ROOT / ".voice-anchors"
-OUT_DIR = ROOT / "public" / "auditions"
+OUT_DIR = ROOT / ".dev-auditions"
 
 # Import shared encode/analyze helpers from scripts/generate-voices-qwen3.py without modifying it
 _worker_path = ROOT / "scripts" / "generate-voices-qwen3.py"

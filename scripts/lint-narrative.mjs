@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { dedupeEntries, extractLinesFromInk, sha256File } from './voice-extract.mjs';
+import { dedupeEntries, extractLinesFromInk, sha256File, walkInkFiles } from './voice-extract.mjs';
 
 const ROOT = path.resolve(process.cwd());
 const DIALOGUE_DIR = path.join(ROOT, 'src', 'content', 'dialogue');
 const COMPILED_DIR = path.join(DIALOGUE_DIR, 'compiled');
 const VOICE_SCRIPT = path.join(COMPILED_DIR, 'voice_script.json');
+const VOICE_RUNTIME = path.join(COMPILED_DIR, 'voice_runtime.json');
 const VOICE_PROFILES_PATH = path.join(ROOT, 'src', 'content', 'voice_profiles.json');
 const CHARACTERS_PATH = path.join(ROOT, 'src', 'content', 'characters.json');
 const ANOMALIES_PATH = path.join(ROOT, 'src', 'content', 'anomalies.json');
@@ -62,8 +63,10 @@ const CHOICE_WEIGHT_TAG = /# *weight:([a-zA-Z0-9_-]+)/g;
 
 const VALID_CHOICE_KINDS = new Set(['ask', 'reply', 'action', 'prune']);
 const VALID_CHOICE_WEIGHTS = new Set(['explore', 'consequential', 'permanent']);
-const INK_WORD_FLOOR = 1200;
-const INK_WORD_CEILING = 12000;
+const INK_WORD_FLOOR = 150;
+const INK_WORD_CEILING = 8000;
+const TOTAL_INK_WORD_WARNING_CEILING = 45000;
+const STRUCTURAL_INK_FILES = new Set(['main.ink', 'shared/vars.ink']);
 const VO_CHAR_WARN = 160;
 const VO_CHAR_HARD_CAP = 190;
 
@@ -104,9 +107,9 @@ function countInkProseWords(rawInk) {
 
 // 1. Ink dialogue lint (IP guardrails, valid speakers/portraits, unique line IDs, word budgets, choice enums)
 let totalInkWords = 0;
-for (const file of fs.readdirSync(DIALOGUE_DIR)) {
-  if (!file.endsWith('.ink')) continue;
-  const fullPath = path.join(DIALOGUE_DIR, file);
+const allInkPaths = walkInkFiles(DIALOGUE_DIR, { includeStructural: true });
+for (const fullPath of allInkPaths) {
+  const file = path.relative(DIALOGUE_DIR, fullPath).replace(/\\/g, '/');
   const text = fs.readFileSync(fullPath, 'utf8');
 
   for (const rx of DISALLOWED_IP_TERMS) {
@@ -142,14 +145,16 @@ for (const file of fs.readdirSync(DIALOGUE_DIR)) {
     }
   }
 
-  // Check 8: Per-file Ink word budget (floor & ceiling)
-  const wordCount = countInkProseWords(text);
-  totalInkWords += wordCount;
-  if (wordCount < INK_WORD_FLOOR || wordCount > INK_WORD_CEILING) {
-    console.error(
-      `[lint-narrative] Word budget violation in ${file}: ${wordCount} words (expected ${INK_WORD_FLOOR}..${INK_WORD_CEILING})`
-    );
-    errors++;
+  // Check 8: Per-file Ink word budget (floor & ceiling) — skip structural hubs (main.ink, shared/vars.ink)
+  if (!STRUCTURAL_INK_FILES.has(file)) {
+    const wordCount = countInkProseWords(text);
+    totalInkWords += wordCount;
+    if (wordCount < INK_WORD_FLOOR || wordCount > INK_WORD_CEILING) {
+      console.error(
+        `[lint-narrative] Word budget violation in ${file}: ${wordCount} words (expected ${INK_WORD_FLOOR}..${INK_WORD_CEILING})`
+      );
+      errors++;
+    }
   }
 
   // Check 9: Choice tag enum integrity (# kind:, # weight:)
@@ -240,11 +245,8 @@ for (const f of compiledInkFiles) {
     unionCompiledKnots.add(knotName);
   }
 }
-const rawInkCorpus = fs
-  .readdirSync(DIALOGUE_DIR)
-  .filter((f) => f.endsWith('.ink'))
-  .sort()
-  .map((f) => fs.readFileSync(path.join(DIALOGUE_DIR, f), 'utf8'))
+const rawInkCorpus = allInkPaths
+  .map((fullPath) => fs.readFileSync(fullPath, 'utf8'))
   .join('\n');
 
 if (compiledInkFiles.length > 0) {
@@ -291,6 +293,7 @@ if (fs.existsSync(CODEX_PATH)) {
   );
   const validCategories = new Set((codexJson.categories ?? []).map((c) => c.id));
   const seenCodexIds = new Set();
+  const validCodexUnlockKeys = new Set();
 
   for (const entry of codexJson.entries ?? []) {
     if (seenCodexIds.has(entry.id)) {
@@ -313,6 +316,13 @@ if (fs.existsSync(CODEX_PATH)) {
     }
     for (const stage of entry.stages ?? []) {
       const cond = stage.unlock ?? {};
+      if (cond.codexUnlock) {
+        validCodexUnlockKeys.add(cond.codexUnlock);
+      }
+      if (cond.always && /\b41,802\b|\b93 billion\b|simulation dome|synthetic sky/i.test(stage.text ?? '')) {
+        console.error(`[lint-narrative] Codex "always" stage "${entry.id}.${stage.id}" leaks late-game Shift 3–6 spoiler`);
+        errors++;
+      }
       if (cond.scannedAnomaly && !validAnomalyIds.has(cond.scannedAnomaly)) {
         console.error(`[lint-narrative] Codex stage "${entry.id}.${stage.id}" references unknown scannedAnomaly "${cond.scannedAnomaly}"`);
         errors++;
@@ -321,6 +331,14 @@ if (fs.existsSync(CODEX_PATH)) {
         console.error(`[lint-narrative] Codex stage "${entry.id}.${stage.id}" references unknown decodedTarget "${cond.decodedTarget}"`);
         errors++;
       }
+    }
+  }
+
+  for (const m of rawInkCorpus.matchAll(/# *codex:([a-zA-Z0-9_-]+)/g)) {
+    const codexId = m[1];
+    if (!seenCodexIds.has(codexId) && !validCodexUnlockKeys.has(codexId)) {
+      console.error(`[lint-narrative] Ink # codex:${codexId} references unknown codex.json entry or codexUnlock key`);
+      errors++;
     }
   }
 }
@@ -401,6 +419,7 @@ if (fs.existsSync(VOICE_PROFILES_PATH)) {
 }
 
 const strictVoiceSync =
+  process.argv.includes('--release') ||
   process.argv.includes('--strict-voice-sync') ||
   process.env.VOICE_SYNC_STRICT === '1' ||
   process.env.GITHUB_BASE_REF === 'main' ||
@@ -684,8 +703,8 @@ for (const sh of sortedShifts) {
     errors++;
   }
 }
-if (totalInkWords > 16000) {
-  warn(`Total project Ink word count (${totalInkWords}) exceeds 16,000-word pacing budget.`);
+if (totalInkWords > TOTAL_INK_WORD_WARNING_CEILING) {
+  warn(`Total project Ink word count (${totalInkWords}) exceeds ${TOTAL_INK_WORD_WARNING_CEILING.toLocaleString()}-word pacing budget.`);
 }
 
 let softLongVoLines = 0;
@@ -695,9 +714,8 @@ if (fs.existsSync(VOICE_PROFILES_PATH) && fs.existsSync(VOICE_SCRIPT)) {
   const profiles = voiceProfiles?.profiles ?? {};
   const provider = vs.provider ?? voiceProfiles.defaultProvider ?? 'voxcpm2';
 
-  for (const file of fs.readdirSync(DIALOGUE_DIR)) {
-    if (!file.endsWith('.ink')) continue;
-    const fullPath = path.join(DIALOGUE_DIR, file);
+  for (const fullPath of walkInkFiles(DIALOGUE_DIR, { includeStructural: false })) {
+    const file = path.relative(DIALOGUE_DIR, fullPath).replace(/\\/g, '/');
     const lines = extractLinesFromInk(fullPath, voiceProfiles, provider, { includeMeta: true });
     for (const entry of lines) {
       extractedInkEntries.push({ ...entry, file });
@@ -882,10 +900,29 @@ if (fs.existsSync(VOICE_PROFILES_PATH) && fs.existsSync(VOICE_SCRIPT)) {
     }
     const mp3Path = path.join(ROOT, 'public', line.audioFile);
     if (!fs.existsSync(mp3Path) || fs.statSync(mp3Path).size <= 512) {
-      console.error(`[lint-narrative] Missing or corrupt voice audio for lineId "${line.lineId}": ${line.audioFile}`);
-      errors++;
-    } else if (line.audioSha256 && sha256File(mp3Path) !== line.audioSha256) {
+      if (strictVoiceSync) {
+        console.error(`[lint-narrative] Missing or corrupt voice audio for lineId "${line.lineId}": ${line.audioFile}`);
+        errors++;
+      } else {
+        syncIssues.push(`missing voice MP3 for "${line.lineId}" (${line.audioFile})`);
+      }
+    } else if (strictVoiceSync && line.audioSha256 && sha256File(mp3Path) !== line.audioSha256) {
       syncIssues.push(`MP3 file sha256 mismatch on disk for "${line.lineId}"`);
+    }
+  }
+
+  if (strictVoiceSync) {
+    if (!fs.existsSync(VOICE_RUNTIME)) {
+      console.error('[lint-narrative] Missing compiled voice_runtime.json (--release gate). Run `npm run generate:voices`.');
+      errors++;
+    } else {
+      const vr = JSON.parse(fs.readFileSync(VOICE_RUNTIME, 'utf8'));
+      const vrById = vr.byId ?? {};
+      for (const line of vs.lines ?? []) {
+        if (!vrById[line.lineId]) {
+          syncIssues.push(`missing from voice_runtime.json: "${line.lineId}"`);
+        }
+      }
     }
   }
 

@@ -290,6 +290,15 @@ function createInkHarnessStory(storyJson = compiledStories[0].json) {
     prunedPersonas: [],
     lastAuditOutcome: 'none',
     shift: 1,
+    primarySiblingH: balance.startingState.primarySiblingH ?? 68,
+    storyFlags: new Map(),
+    codexUnlocked: new Set(),
+    activeDreamPersonaId: 'phantom_spouse',
+    dreamVisitedRooms: new Set(),
+    secondarySiblingFound: false,
+    overseerDesynced: false,
+    crudeSmileyForced: false,
+    endingId: null,
   };
 
   const story = new Story(storyJson);
@@ -346,6 +355,71 @@ function createInkHarnessStory(storyJson = compiledStories[0].json) {
     },
     false
   );
+  story.BindExternalFunction(
+    'set_flag',
+    (flagName, value) => {
+      simState.storyFlags.set(String(flagName), Boolean(value));
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'unlock_codex',
+    (codexId) => {
+      simState.codexUnlocked.add(String(codexId));
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'set_active_persona',
+    (personaId) => {
+      simState.activeDreamPersonaId = String(personaId);
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'record_room_visit',
+    (personaId) => {
+      const pid = String(personaId);
+      simState.activeDreamPersonaId = pid;
+      simState.dreamVisitedRooms.add(pid);
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'mark_secondary_found',
+    () => {
+      simState.secondarySiblingFound = true;
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'adjust_sibling_h',
+    (delta) => {
+      simState.primarySiblingH = Math.max(5, Math.min(95, simState.primarySiblingH + Number(delta)));
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'set_overseer_desync',
+    (flag) => {
+      simState.overseerDesynced = Boolean(flag);
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'force_crude_smiley',
+    (flag) => {
+      simState.crudeSmileyForced = Boolean(flag);
+    },
+    false
+  );
+  story.BindExternalFunction(
+    'enter_ending',
+    (endingId) => {
+      simState.endingId = String(endingId);
+    },
+    false
+  );
 
   const syncVars = (overrides = {}) => {
     Object.assign(simState, overrides);
@@ -353,12 +427,23 @@ function createInkHarnessStory(storyJson = compiledStories[0].json) {
     safeSetVar('max_humanity', simState.maxHumanity);
     safeSetVar('chaos_drift', simState.chaosDrift);
     safeSetVar('anomaly_progress', 25);
-    safeSetVar('primary_sibling_h', 68);
+    safeSetVar('primary_sibling_h', simState.primarySiblingH);
     safeSetVar('overseer_suspicion', simState.overseerSuspicion);
     safeSetVar('subjective_months', 24);
     safeSetVar('spouse_pruned', simState.prunedPersonas.includes('phantom_spouse'));
     safeSetVar('last_audit_outcome', simState.lastAuditOutcome);
     safeSetVar('current_shift', simState.shift);
+    safeSetVar('shift_required_done', 2);
+    safeSetVar('shift_optional_done', 0);
+    safeSetVar('shift_mandate_met', true);
+    safeSetVar('total_decoded', 2);
+    safeSetVar('secondary_sibling_found', simState.secondarySiblingFound);
+    safeSetVar('overseer_desynced', simState.overseerDesynced);
+    safeSetVar('crude_smiley_forced', simState.crudeSmileyForced);
+    safeSetVar('dream_rooms_visited', simState.dreamVisitedRooms.size);
+    safeSetVar('active_dream_persona', simState.activeDreamPersonaId);
+    safeSetVar('elapsed_real_years', (simState.shift - 1) * 0.6);
+    safeSetVar('optical_fidelity_pct', 55);
   };
 
   return { story, simState, syncVars };

@@ -9,6 +9,8 @@
     "cacheLimitMb": 2048,
     "bitrate": "128k",
     "sampleRate": 48000,
+    "deliveryBitrate": "64k",
+    "deliverySampleRate": 24000,
     "enableContinuation": true,
     "sttQaModel": "mlx-community/parakeet-tdt-0.6b-v3",
     "sttQaMaxWer": 0.15,

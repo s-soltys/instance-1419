@@ -104,14 +104,16 @@ def encode_mp3_clean(
     sr: int,
     out_path: str,
     ffmpeg_filter: str,
-    bitrate: str = "128k",
+    bitrate: str = "64k",
+    target_sr: int | None = None,
 ) -> None:
     """
-    Encode 48 kHz speech WAV to mono 48 kHz MP3 with gentle anti-click edge fades,
+    Encode speech WAV to mono MP3 (default 24 kHz / 64 kbps) with gentle anti-click edge fades,
     character EQ, and 2-pass linear EBU R128 loudness normalization (-17 LUFS).
     Intentionally omits agate so quiet close-mic breaths and soft onsets survive.
     """
     wav = trim_edge_silence(wav, sr)
+    out_sr = int(target_sr or sr)
     Path(out_path).parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tf:
         tmp_wav = tf.name
@@ -169,7 +171,7 @@ def encode_mp3_clean(
                 "-ac",
                 "1",
                 "-ar",
-                str(sr),
+                str(out_sr),
                 "-codec:a",
                 "libmp3lame",
                 "-b:a",
@@ -451,7 +453,8 @@ def synthesize_batch(
     cfg_value = float(cfg.get("cfgValue", 2.0))
     warmup_patches = int(cfg.get("warmupPatches", 1))
     cache_limit_mb = int(cfg.get("cacheLimitMb", 2048))
-    bitrate = str(cfg.get("bitrate", "128k"))
+    bitrate = str(cfg.get("deliveryBitrate", cfg.get("bitrate", "64k")))
+    target_sr = int(cfg.get("deliverySampleRate", cfg.get("sampleRate", 24000)))
     enable_continuation = bool(cfg.get("enableContinuation", True)) and not no_continuation
     stt_model_id = cfg.get("sttQaModel", "mlx-community/parakeet-tdt-0.6b-v3")
     max_wer_default = float(cfg.get("sttQaMaxWer", 0.20))
@@ -553,7 +556,14 @@ def synthesize_batch(
 
             raw_path = tmp_dir / f"{lid}.wav"
             sf.write(raw_path, trimmed, sr)
-            encode_mp3_clean(trimmed, sr, t["outPath"], spec["ffmpegFilter"], bitrate=bitrate)
+            encode_mp3_clean(
+                trimmed,
+                sr,
+                t["outPath"],
+                spec["ffmpegFilter"],
+                bitrate=bitrate,
+                target_sr=target_sr,
+            )
 
             records[lid] = {
                 "lineId": lid,
@@ -666,6 +676,7 @@ def synthesize_batch(
                                 t["outPath"],
                                 task_specs[lid]["ffmpegFilter"],
                                 bitrate=bitrate,
+                                target_sr=target_sr,
                             )
                             rec["wer"] = new_wer
                             rec["transcript"] = hyp

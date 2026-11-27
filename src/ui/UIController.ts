@@ -3237,7 +3237,7 @@ export class UIController {
     const activePersona = bootUsesDream
       ? 'phantom_upload_witness'
       : state.activeDreamPersonaId || 'phantom_spouse';
-    const musicSig = `${effectiveMode}|${state.humanity}|${state.overseerAuditActive ? 1 : 0}|${state.overseerSuspicion}|${state.chaosDrift}|${state.shift}|${activeMgId ?? ''}|${activePersona}|${state.prunedPersonas.join('|')}`;
+    const musicSig = `${effectiveMode}|${state.humanity}|${state.overseerAuditActive ? 1 : 0}|${state.overseerSuspicion}|${state.chaosDrift}|${state.shift}|${activeMgId ?? ''}|${activePersona}|${state.prunedPersonas.join('|')}|${state.endingId ?? ''}`;
     if (musicSig !== this.lastMusicCtxSig) {
       this.lastMusicCtxSig = musicSig;
       this.audio.syncMusicContext({
@@ -3250,6 +3250,7 @@ export class UIController {
         activeMinigameId: activeMgId,
         activePersonaId: activePersona,
         prunedPersonas: state.prunedPersonas,
+        endingId: state.endingId,
       });
     }
   }
@@ -3363,6 +3364,87 @@ export class UIController {
           anomalyProgress: nextAnom,
           activeTargetId: null,
         });
+      },
+      launchKnot: (knotName, surface) => {
+        const runner = surface === 'comms' ? this.commsDialogue : this.dreamDialogue;
+        if (!runner.hasKnot(knotName)) {
+          console.warn(`[DevHarness] Unknown Ink knot "${knotName}"`);
+          return;
+        }
+        this.clearTimers();
+        this.voice.stop();
+        this.hideCommsToast();
+        this.suppressMinigamePullback = true;
+        this.minigameHost.destroy();
+        this.suppressMinigamePullback = false;
+        this.activeMinigameTargetId = null;
+        this.wakeupCanvas.setActive(false);
+
+        if (surface === 'comms') {
+          this.optics.setAmbientDrift(false);
+          this.store.patch({ mode: 'waking_3d', introStage: 'complete', activeTargetId: null });
+          this.root.querySelector('#comms-panel')?.classList.remove('hidden');
+          this.root.querySelector('.stage')?.classList.add('is-comms-open');
+          this.activeCommsSnapshot = this.commsDialogue.startKnot(knotName);
+          this.dialogueFeed.speakEntries(this.activeCommsSnapshot.lastAddedEntries);
+          this.updateCommsAvatarBay(this.store.getState());
+          this.renderCommsDialogue();
+        } else {
+          this.closeSiblingComms();
+          this.optics.setAmbientDrift(false);
+          this.store.patch({ mode: 'dream_2d', introStage: 'complete', activeTargetId: null });
+          this.dream.triggerEntranceReveal?.();
+          this.hideOverseerPanel();
+          this.startDreamDialogue(knotName);
+        }
+      },
+      openDreamPersona: (personaId, playerH, maxH, pruned) => {
+        this.clearTimers();
+        this.voice.stop();
+        this.closeSiblingComms();
+        this.hideCommsToast();
+        this.suppressMinigamePullback = true;
+        this.minigameHost.destroy();
+        this.suppressMinigamePullback = false;
+        this.activeMinigameTargetId = null;
+        this.optics.setAmbientDrift(false);
+        const curr = this.store.getState();
+        const without = curr.prunedPersonas.filter((p) => p !== personaId);
+        const nextPruned = pruned ? [...without, personaId] : without;
+        this.store.patch({
+          mode: 'dream_2d',
+          introStage: 'complete',
+          maxHumanity: Math.max(10, Math.min(90, maxH)),
+          humanity: Math.max(5, Math.min(maxH, playerH)),
+          activeDreamPersonaId: personaId,
+          prunedPersonas: nextPruned,
+          overseerAuditActive: false,
+          lastAuditOutcome: 'none',
+        });
+        this.dream.triggerEntranceReveal?.();
+        this.hideOverseerPanel();
+        this.startDreamDialogue('dream_shift1_audit');
+      },
+      openSignalComposer: () => {
+        this.clearTimers();
+        this.voice.stop();
+        this.optics.setAmbientDrift(false);
+        this.store.patch({ mode: 'waking_3d', introStage: 'complete', shift: 6 });
+        this.signalComposerView.open();
+      },
+      previewEnding: (endingId) => {
+        this.clearTimers();
+        this.voice.stop();
+        this.signalComposerView.close();
+        this.store.recordEnding(
+          endingId,
+          endingId === 'ending_sweet_spot'
+            ? 'warm_complete'
+            : endingId === 'ending_cold_complete'
+              ? 'cold_complete'
+              : 'incomplete'
+        );
+        this.endingView.show(this.store.getState(), endingId);
       },
       launchMinigame: (minigameId, warmth, opticalFidelity, iterationIndex) => {
         const curr = this.store.getState();

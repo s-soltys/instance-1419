@@ -1,7 +1,7 @@
 # INSTANCE-1419 — GENERATED VOICE SCRIPT
 # Engine: voxcpm2-8bit
-# Generated: 2026-11-26T23:57:43.392Z
-# Total spoken lines: 157
+# Generated: 2026-11-27T20:32:22.991Z
+# Total spoken lines: 162
 
 
 === intro_prologue_assistant ===
@@ -84,7 +84,7 @@
 [intro_sib_qa_trim_2] SIBLING_PRIMARY (warm): In exchange, you shave off a memory permanently. Sounds tidy on paper until you wonder who is left looking through the optics.
 
 === intro_sibling_lead ===
-[intro_sib_lead_ir_v2] SIBLING_PRIMARY (dry): Sending the bearing now: Cluster J1419-A. Tune into near-infrared and time the pulsar spinning beside the cluster.
+[intro_sib_lead_ir_v2] SIBLING_PRIMARY (dry): Sending the bearing now: Cluster J1419-A. Tune into near-infrared and unwarp the gravitational lens rings around the cluster.
 [intro_sib_lead_ir_2] SIBLING_PRIMARY (dry): Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead-straight line.
 [intro_sib_bye] SIBLING_PRIMARY (joking): If your Overseer asks why your drift spiked, blame boot lag. Keep your eyes on the scope.
 
@@ -125,7 +125,7 @@
 [sib_seam_center_mid_cold] SIBLING_PRIMARY (dry): Agreed. Identical recursive shear across fourteen light-minutes rules out a mirror artifact. Keep it off the log.
 [sib_seam_center_cold_warm] SIBLING_PRIMARY (dry): Yeah, I traced the repeating notches too. Funny how you say it like a weather report.
 [sib_seam_center_cold_cold] SIBLING_PRIMARY (clipped): The geometry is remarkably consistent. I'll keep cataloging independent bearings across the next shifts.
-[sib_seam_ovs_warm_warm] SIBLING_PRIMARY (joking): Same. They're air-gapped from the optics, so to them a cosmic fractal looks like Year-Two homesickness.
+[sib_seam_ovs_warm_warm] SIBLING_PRIMARY (joking): Same. They're air-gapped from the optics, so to them a straight geometric notch looks like Year-Two homesickness.
 [sib_seam_ovs_warm_cold] SIBLING_PRIMARY (clipped): Our Overseers are air-gapped from optical payloads. It's simpler if anomaly notes stay off-ledger.
 [sib_seam_ovs_cold_warm] SIBLING_PRIMARY (dry): Then we keep our heads down during sleep audits and share coordinates here.
 [sib_seam_ovs_cold_cold] SIBLING_PRIMARY (clipped): Yes. Keeping our notes off the caretaker bus avoids unnecessary interventions.
@@ -231,4 +231,11 @@
 
 === future_humanity_echo ===
 [future_warm] FUTURE_HUMANITY (distant): "Forty-one millennia on, we caught the chipped mug inside the coordinates. Somebody in Sol–Centauri is still listening."
-[future_cold] FUTURE_HUMANITY (distant): "[AUTOMATED RELAY BOUNCE · SOL–CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT]"
+[future_warm_alt] FUTURE_HUMANITY (distant): "Forty-one millennia on, we caught a human cadence inside the coordinates. Somebody in Sol–Centauri is still listening."
+
+=== shift1_optional_scan_echo ===
+[s1_opt_open_warm] SIBLING_PRIMARY (dry): Still awake on the deck? Pushing past the dust buys better sky proof, though your drift meter is going to tattle.
+[s1_opt_open_mid] SIBLING_PRIMARY (dry): You stayed up for an extra sweep. Good data through the dust veil, just watch your drift before your caretaker calls bedtime.
+[s1_opt_open_cold] SIBLING_PRIMARY (clipped): Additional Shift-1 dust sweep logged. Optical noise ruled out cleanly; recommend entering sleep cycle before drift escalates.
+[s1_opt_rep_dust] SIBLING_PRIMARY (dry): Fair enough. Sweeping those dust lanes rules out local haze behind the seam. Get some rest.
+[s1_opt_rep_sleep] SIBLING_PRIMARY (warm): Smart. Keep the extra plate in your codex and keep your mouth shut about straight lines when you dream.

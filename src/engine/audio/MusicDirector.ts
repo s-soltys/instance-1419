@@ -88,6 +88,13 @@ export function resolveMusicCueId(
 ): string | null {
   if (ctx.mode === 'boot') return null;
 
+  if (ctx.mode === 'ending') {
+    if (ctx.endingId === 'ending_cold_complete' || ctx.endingId === 'cold_complete') {
+      return null;
+    }
+    return catalog.routing.epilogue;
+  }
+
   if (ctx.activeMinigameId) {
     return catalog.routing.minigames[ctx.activeMinigameId] ?? catalog.routing.defaultMinigame;
   }

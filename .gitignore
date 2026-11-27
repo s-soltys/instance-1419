@@ -7,6 +7,7 @@ playwright-report/
 test-results/
 artifacts/visual-check/
 artifacts/e2e-visual/
+artifacts/playscript.md
 *.local
 .env
 .env.*
@@ -16,5 +17,6 @@ Thumbs.db
 .tmp-music-gen/
 .venv-voice/
 .voice-anchors/
+.dev-auditions/
 __pycache__/
 

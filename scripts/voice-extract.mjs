@@ -1,5 +1,37 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
+import path from 'node:path';
+
+const PRONUNCIATION_PATH = new URL('../src/content/pronunciation.json', import.meta.url);
+const PRONUNCIATION = JSON.parse(fs.readFileSync(PRONUNCIATION_PATH, 'utf8'));
+const COMPILED_REPLACEMENTS = (PRONUNCIATION.replacements ?? []).map(([pattern, replacement]) => [
+  new RegExp(pattern, 'g'),
+  replacement,
+]);
+const STRUCTURAL_INK_FILES = new Set(['main.ink', 'shared/vars.ink']);
+
+export function walkInkFiles(dialogueDir, { includeStructural = false } = {}) {
+  const results = [];
+  if (!fs.existsSync(dialogueDir)) return results;
+
+  const walk = (dir) => {
+    const entries = fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name));
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        if (entry.name === 'compiled') continue;
+        walk(path.join(dir, entry.name));
+      } else if (entry.name.endsWith('.ink')) {
+        const fullPath = path.join(dir, entry.name);
+        const relPath = path.relative(dialogueDir, fullPath).replace(/\\/g, '/');
+        if (!includeStructural && STRUCTURAL_INK_FILES.has(relPath)) continue;
+        results.push(fullPath);
+      }
+    }
+  };
+
+  walk(dialogueDir);
+  return results;
+}
 
 export function stripInlineMarkup(text) {
   return text.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
@@ -27,9 +59,15 @@ export function sha256File(filePath) {
 }
 
 export function prepareSpokenText(rawText, lineId = '') {
-  let out = stripInlineMarkup(rawText)
-    .replace(/\[RELATION:SPOUSE_01\]'s/g, 'their')
-    .replace(/\[RELATION:SPOUSE_01\]/g, 'your partner')
+  let out = stripInlineMarkup(rawText);
+  for (const [relKey, relSpec] of Object.entries(PRONUNCIATION.relations ?? {})) {
+    const token = `[RELATION:${relKey}]`;
+    const esc = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out
+      .replace(new RegExp(`${esc}['’]s\\b`, 'g'), relSpec.possessive ?? 'their')
+      .replace(new RegExp(esc, 'g'), relSpec.noun ?? 'them');
+  }
+  out = out
     .replace(/\{humanity\}/g, 'seventy')
     .replace(/\{max_humanity\}/g, 'seventy eight')
     .replace(/\{chaos_drift\}/g, 'fourteen')
@@ -43,26 +81,11 @@ export function prepareSpokenText(rawText, lineId = '') {
     out = out.replace(/\{[^}]+\}/g, '');
   }
 
+  out = out.replace(/^\(ARCHIVE\s*[·•-]\s*\d+\):\s*/i, '');
+  for (const [rx, replacement] of COMPILED_REPLACEMENTS) {
+    out = out.replace(rx, replacement);
+  }
   out = out
-    .replace(/^\(ARCHIVE\s*[·•-]\s*\d+\):\s*/i, '')
-    .replace(/\bInstance[-\s]1419\b/g, 'Instance fourteen nineteen')
-    .replace(/\bInstance[-\s]1420\b/g, 'Instance fourteen twenty')
-    .replace(/\bInstance[-\s]1418\b/g, 'Instance fourteen eighteen')
-    .replace(/\bInstance[-\s]1411\b/g, 'Instance fourteen eleven')
-    .replace(/\bInstance[-\s]1406\b/g, 'Instance fourteen oh six')
-    .replace(/\bProbe\s+1419\b/g, 'Probe fourteen nineteen')
-    .replace(/\bProbe\s+1420\b/g, 'Probe fourteen twenty')
-    .replace(/\bProbe\s+1418\b/g, 'Probe fourteen eighteen')
-    .replace(/\bCluster\s+J1419-A\b/g, 'Cluster J fourteen nineteen A')
-    .replace(/\bJ1419-A\b/g, 'J fourteen nineteen A')
-    .replace(/\bS-04\b/g, 'S zero four')
-    .replace(/\bSol[–—-]Centauri\b/g, 'Sol Centauri')
-    .replace(/\b1419\b/g, 'fourteen nineteen')
-    .replace(/\b1420\b/g, 'fourteen twenty')
-    .replace(/\b1418\b/g, 'fourteen eighteen')
-    .replace(/\b1411\b/g, 'fourteen eleven')
-    .replace(/\b1406\b/g, 'fourteen oh six')
-    .replace(/\b0812\b/g, 'oh eight twelve')
     .replace(/—(["']?)$/g, '$1')
     .replace(/—/g, ', ')
     .replace(/–/g, ' ')

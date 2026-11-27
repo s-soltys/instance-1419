@@ -1,6 +1,6 @@
 import type { AudioEngine } from '../engine/AudioEngine';
 import type { MinigameRegistry } from '../engine/minigames/MinigameRegistry';
-import type { GameMode, GameState, IntroStage, StateStore } from '../engine/StateStore';
+import type { EndingId, GameMode, GameState, IntroStage, StateStore } from '../engine/StateStore';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { renderSpeakerAvatar } from './SpeakerAvatar';
 import type { TransitionKind } from './TransitionDirector';
@@ -19,6 +19,10 @@ export interface DevHarnessBridge {
   openMode(mode: GameMode): void;
   jumpToIntroStage(stage: IntroStage): void;
   jumpToShift?(shift: number): void;
+  launchKnot?(knotName: string, surface: 'dream' | 'comms'): void;
+  openDreamPersona?(personaId: string, playerH: number, maxH: number, pruned: boolean): void;
+  openSignalComposer?(): void;
+  previewEnding?(endingId: EndingId): void;
   launchMinigame(
     minigameId: string,
     warmth?: number,
@@ -111,7 +115,9 @@ export class DevHarness {
   private isOpen: boolean;
   private autoHide = true;
   private customPlayerH = 70;
+  private customMaxH = 90;
   private customPeerH = 68;
+  private customPersonaId = 'phantom_spouse';
   private minigameWarmth = 70;
   private minigameFidelity = 0.55;
   private minigameVariantOverride: number | undefined = undefined;
@@ -215,6 +221,19 @@ export class DevHarness {
                   <button class="qa-btn" data-shift-jump="5" type="button">Shift 5</button>
                   <button class="qa-btn" data-shift-jump="6" type="button">Shift 6</button>
                 </div>
+                <div class="qa-card-title" style="margin-top:12px;">SHIFT 6 SIGNAL &amp; ENDINGS</div>
+                <div class="qa-btn-row">
+                  <button class="qa-btn primary" id="qa-open-signal-composer" type="button">Signal Composer</button>
+                  <button class="qa-btn" data-preview-ending="ending_sweet_spot" type="button">Warm Proof</button>
+                  <button class="qa-btn" data-preview-ending="ending_cold_complete" type="button">Cold Proof</button>
+                  <button class="qa-btn" data-preview-ending="ending_whole_incomplete" type="button">Incomplete</button>
+                </div>
+                <div class="qa-card-title" style="margin-top:12px;">ARBITRARY INK KNOT LAUNCHER</div>
+                <div class="qa-btn-row">
+                  <input id="qa-knot-input" type="text" placeholder="e.g. dream_shift1_audit" style="flex:1;min-width:150px;padding:4px 8px;border-radius:4px;background:rgba(12,18,28,0.9);color:#e2e8f0;border:1px solid rgba(148,163,184,0.28);font-size:12px;" />
+                  <button class="qa-btn primary" data-launch-knot-surface="dream" type="button">Dream</button>
+                  <button class="qa-btn" data-launch-knot-surface="comms" type="button">Comms</button>
+                </div>
               </div>
 
               <div class="qa-card">
@@ -247,6 +266,8 @@ export class DevHarness {
               <div class="qa-slider-inline">
                 <span>Your Warmth: <strong id="qa-npc-player-val">70%</strong></span>
                 <input id="qa-npc-player-slider" type="range" min="15" max="88" value="70" />
+                <span>Max_H Ceiling: <strong id="qa-npc-maxh-val">90%</strong></span>
+                <input id="qa-npc-maxh-slider" type="range" min="10" max="90" value="90" />
                 <button class="qa-chip" data-set-npc-h="84" type="button">84% Warm</button>
                 <button class="qa-chip" data-set-npc-h="58" type="button">58% Mid</button>
                 <button class="qa-chip" data-set-npc-h="24" type="button">24% Cold</button>
@@ -276,12 +297,25 @@ export class DevHarness {
                 </div>
 
                 <div class="qa-subblock">
-                  <div class="qa-subblock-label">FORMER PARTNER · [RELATION:SPOUSE_01] (2D DREAM)</div>
+                  <div class="qa-subblock-label">DREAM PERSONA CACHE (9 CANONICAL PERSONAS · 2D DREAM)</div>
+                  <div class="qa-slider-row" style="margin-bottom:6px;">
+                    <select id="qa-persona-select" style="width:100%;padding:5px 8px;border-radius:4px;background:rgba(12,18,28,0.9);color:#e2e8f0;border:1px solid rgba(148,163,184,0.28);font-size:12px;">
+                      <option value="phantom_spouse">Former Partner · [RELATION:SPOUSE_01]</option>
+                      <option value="phantom_parent">Elder Parent · [RELATION:PARENT_01]</option>
+                      <option value="phantom_afternoon_stranger">Afternoon Stranger · [RELATION:STRANGER_01]</option>
+                      <option value="phantom_rival">Academic Rival · [RELATION:RIVAL_01]</option>
+                      <option value="phantom_younger_self">Younger Self · [RELATION:YOUNGER_SELF_01]</option>
+                      <option value="phantom_skeptic">Old Skeptic · [RELATION:SKEPTIC_01]</option>
+                      <option value="phantom_technician">Lab Technician · [RELATION:TECHNICIAN_01]</option>
+                      <option value="phantom_waiting_room">Clinic Acquaintance · [RELATION:WAITING_ROOM_01]</option>
+                      <option value="phantom_upload_witness">Intake Assistant · [RELATION:WITNESS_01]</option>
+                    </select>
+                  </div>
                   <div class="qa-btn-row">
                     <button class="qa-btn" data-dream-preset="84,0" type="button">Warm Intact (84%)</button>
                     <button class="qa-btn" data-dream-preset="58,0" type="button">Thinning Mid (58%)</button>
                     <button class="qa-btn" data-dream-preset="24,1" type="button">Blurred &amp; Fractured (24%)</button>
-                    <button class="qa-btn primary" id="qa-dream-custom" type="button">Launch With Custom Slider</button>
+                    <button class="qa-btn primary" id="qa-dream-custom" type="button">Launch Persona + Max_H</button>
                   </div>
                 </div>
 
@@ -443,7 +477,7 @@ export class DevHarness {
               </div>
 
               <div class="qa-card">
-                <div class="qa-card-title">KOKORO-82M NEURAL VOICE CAST</div>
+                <div class="qa-card-title">VOXCPM2-8BIT NEURAL VOICE CAST</div>
                 <div class="qa-voice-list">
                   ${VOICE_AUDITIONS.map(
                     (v, i) => `
@@ -595,6 +629,25 @@ export class DevHarness {
         this.maybeAutoHide();
       });
     });
+    this.host.querySelector('#qa-open-signal-composer')?.addEventListener('click', () => {
+      this.bridge.openSignalComposer?.();
+      this.maybeAutoHide();
+    });
+    this.host.querySelectorAll<HTMLButtonElement>('[data-preview-ending]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        this.bridge.previewEnding?.(btn.dataset.previewEnding as EndingId);
+        this.maybeAutoHide();
+      });
+    });
+    const knotInput = this.host.querySelector<HTMLInputElement>('#qa-knot-input');
+    this.host.querySelectorAll<HTMLButtonElement>('[data-launch-knot-surface]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const knot = knotInput?.value.trim() || 'dream_shift1_audit';
+        const surface = btn.dataset.launchKnotSurface as 'dream' | 'comms';
+        this.bridge.launchKnot?.(knot, surface);
+        this.maybeAutoHide();
+      });
+    });
     this.host.querySelectorAll<HTMLButtonElement>('[data-wave]').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.store.patch({ wavelengthNm: Number(btn.dataset.wave) });
@@ -623,9 +676,19 @@ export class DevHarness {
     // Tab 2: NPCs & Overseer
     const npcPlayerSlider = this.host.querySelector<HTMLInputElement>('#qa-npc-player-slider')!;
     const npcPlayerVal = this.host.querySelector<HTMLElement>('#qa-npc-player-val')!;
+    const npcMaxHSlider = this.host.querySelector<HTMLInputElement>('#qa-npc-maxh-slider');
+    const npcMaxHVal = this.host.querySelector<HTMLElement>('#qa-npc-maxh-val');
     npcPlayerSlider.addEventListener('input', () => {
       this.customPlayerH = Number(npcPlayerSlider.value);
       npcPlayerVal.textContent = `${this.customPlayerH}%`;
+    });
+    npcMaxHSlider?.addEventListener('input', () => {
+      this.customMaxH = Number(npcMaxHSlider.value);
+      if (npcMaxHVal) npcMaxHVal.textContent = `${this.customMaxH}%`;
+    });
+    const personaSelect = this.host.querySelector<HTMLSelectElement>('#qa-persona-select');
+    personaSelect?.addEventListener('change', () => {
+      this.customPersonaId = personaSelect.value;
     });
     this.host.querySelectorAll<HTMLButtonElement>('[data-set-npc-h]').forEach((b) => {
       b.addEventListener('click', () => {
@@ -664,12 +727,26 @@ export class DevHarness {
     this.host.querySelectorAll<HTMLButtonElement>('[data-dream-preset]').forEach((b) => {
       b.addEventListener('click', () => {
         const [h, p] = b.dataset.dreamPreset!.split(',').map(Number);
-        this.bridge.openDreamWithWarmth(h, p === 1);
+        if (this.bridge.openDreamPersona) {
+          this.bridge.openDreamPersona(this.customPersonaId, h, Math.max(this.customMaxH, h), p === 1);
+        } else {
+          this.bridge.openDreamWithWarmth(h, p === 1);
+        }
         this.maybeAutoHide();
       });
     });
     this.host.querySelector('#qa-dream-custom')?.addEventListener('click', () => {
-      this.bridge.openDreamWithWarmth(this.customPlayerH, this.customPlayerH < 45);
+      const clampedH = Math.min(this.customPlayerH, this.customMaxH);
+      if (this.bridge.openDreamPersona) {
+        this.bridge.openDreamPersona(
+          this.customPersonaId,
+          clampedH,
+          this.customMaxH,
+          clampedH < 45
+        );
+      } else {
+        this.bridge.openDreamWithWarmth(this.customPlayerH, this.customPlayerH < 45);
+      }
       this.maybeAutoHide();
     });
 

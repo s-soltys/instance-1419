@@ -1,6 +1,6 @@
 import { Story } from 'inkjs';
 import anomaliesData from '../content/anomalies.json';
-import compiledSpikeStory from '../content/dialogue/compiled/spike_shift1.ink.json';
+import compiledSpikeStory from '../content/dialogue/compiled/story.ink.json';
 import pacing from '../content/pacing.json';
 import type { AuditOutcome, StateStore } from './StateStore';
 
