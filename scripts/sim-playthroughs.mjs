@@ -7,9 +7,14 @@ const balance = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/balance.
 const shiftsData = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/shifts.json'), 'utf8'));
 const anomaliesData = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/anomalies.json'), 'utf8'));
 const storyletsData = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/storylets.json'), 'utf8'));
-const compiledInk = JSON.parse(
-  fs.readFileSync(path.join(ROOT, 'src/content/dialogue/compiled/spike_shift1.ink.json'), 'utf8')
-);
+const COMPILED_DIR = path.join(ROOT, 'src/content/dialogue/compiled');
+const compiledInkFiles = fs.existsSync(COMPILED_DIR)
+  ? fs.readdirSync(COMPILED_DIR).filter((f) => f.endsWith('.ink.json')).sort()
+  : [];
+const compiledStories = compiledInkFiles.map((file) => ({
+  file,
+  json: JSON.parse(fs.readFileSync(path.join(COMPILED_DIR, file), 'utf8')),
+}));
 
 function mulberry32(seed) {
   let a = seed >>> 0;
@@ -81,37 +86,68 @@ function runArchetype(archetype, rand) {
     );
   };
 
+  const payouts = balance.minigames?.payouts ?? {
+    clean: { anomalyGain: 7, chaosDelta: 2, suspicionDelta: 0 },
+    deep_overclock: { anomalyGain: 11, chaosDelta: 7, suspicionDelta: 1 },
+    partial: { anomalyGain: 4, chaosDelta: 1, suspicionDelta: 0 },
+  };
+
   for (let i = 0; i < shiftsData.shifts.length; i++) {
     const shiftDef = shiftsData.shifts[i];
-    const availableCount = shiftDef.targetAnomalies.length;
-    const optionalCount = Math.max(0, availableCount - 2);
-    const perTargetGain = balance.minigameCompletion?.cleanGain ?? 5;
-
-    // 2 required optical scans per shift + 0..optionalCount push-your-luck deeper scans
-    let scansDone = 2;
-    let extraAnomaly = 0;
-    if (archetype === 'pure_warmth') {
-      scansDone = 2;
-    } else if (archetype === 'cautious_sleeper') {
-      scansDone = 2 + (optionalCount > 0 && rand() < 0.35 ? 1 : 0);
-    } else if (archetype === 'balanced_sweet_spot') {
-      scansDone = 2 + Math.min(optionalCount, rand() < 0.65 ? 1 : 0);
-      extraAnomaly = 5 + (state.chaosDrift > 30 || rand() < 0.45 ? 4 : 0);
-      if (extraAnomaly > 5) state.chaosDrift = Math.min(100, state.chaosDrift + 7);
-    } else if (archetype === 'ruthless_pruner') {
-      scansDone = availableCount;
-      extraAnomaly = Math.round(state.opticalFidelity * 6);
-      state.chaosDrift = Math.min(100, state.chaosDrift + 9);
-    } else {
-      // reckless_scanner
-      scansDone = availableCount;
-      const p = balance.deeperScanPush;
-      extraAnomaly = p.anomalyGain * 0.45;
-      state.chaosDrift = Math.min(100, state.chaosDrift + p.chaosCost);
-      state.overseerSuspicion += p.suspicionGain;
+    const reqTargets = shiftDef.requiredTargets ?? [];
+    const optTargets = shiftDef.optionalTargets ?? [];
+    if (reqTargets.length !== 2) {
+      throw new Error(`Shift ${shiftDef.shift} must define 2 requiredTargets (found ${reqTargets.length})`);
+    }
+    if (state.subjectiveMonthsLeft <= 0) {
+      throw new Error(`Soft-lock: subjectiveMonthsLeft depleted before Shift ${shiftDef.shift}`);
     }
 
-    state.anomalyProgress = Math.min(100, state.anomalyProgress + scansDone * perTargetGain + extraAnomaly);
+    const applyScanGrade = (grade) => {
+      const p = payouts[grade] ?? payouts.clean;
+      state.anomalyProgress = Math.min(100, state.anomalyProgress + p.anomalyGain);
+      state.chaosDrift = Math.max(0, Math.min(100, state.chaosDrift + p.chaosDelta));
+      state.overseerSuspicion += p.suspicionDelta;
+    };
+
+    // Complete 2 required targets + 0..optionalTargets.length push-your-luck optional targets
+    if (archetype === 'pure_warmth') {
+      // Pure warmth settles required targets gently (partial/clean without overclocking) -> incomplete proof
+      applyScanGrade('partial');
+      applyScanGrade(rand() < 0.4 ? 'clean' : 'partial');
+    } else if (archetype === 'cautious_sleeper') {
+      applyScanGrade('clean');
+      applyScanGrade(rand() < 0.5 ? 'clean' : 'partial');
+      if (optTargets.length > 0 && rand() < 0.35) {
+        applyScanGrade('clean');
+      }
+    } else if (archetype === 'balanced_sweet_spot') {
+      applyScanGrade('clean');
+      applyScanGrade(rand() < 0.35 ? 'deep_overclock' : 'clean');
+      const optToRun = Math.min(optTargets.length, rand() < 0.65 ? 1 : 0);
+      for (let o = 0; o < optToRun; o++) {
+        applyScanGrade(rand() < 0.45 ? 'deep_overclock' : 'clean');
+      }
+    } else if (archetype === 'ruthless_pruner') {
+      for (let r = 0; r < reqTargets.length; r++) {
+        applyScanGrade(state.opticalFidelity >= 0.7 ? 'deep_overclock' : 'clean');
+      }
+      for (let o = 0; o < optTargets.length; o++) {
+        applyScanGrade(rand() < 0.75 ? 'deep_overclock' : 'clean');
+      }
+    } else {
+      // reckless_scanner
+      for (let r = 0; r < reqTargets.length; r++) {
+        applyScanGrade('deep_overclock');
+      }
+      for (let o = 0; o < optTargets.length; o++) {
+        applyScanGrade('deep_overclock');
+      }
+      const p = balance.deeperScanPush;
+      state.anomalyProgress = Math.min(100, state.anomalyProgress + Math.round(p.anomalyGain * 0.25));
+      state.chaosDrift = Math.min(100, state.chaosDrift + Math.round(p.chaosCost * 0.4));
+      state.overseerSuspicion += p.suspicionGain;
+    }
 
     // Dream / Overseer Audit resolution
     if (archetype === 'pure_warmth') {
@@ -211,9 +247,22 @@ if (anomaliesData.anomalies.length === 0) {
 }
 
 // ============================================================================
-// PART 2: Real Compiled Ink Traversal & External Function Verification
+// PART 2: Real Compiled Ink Traversal, Implemented Shifts & Storylet Conditions
 // ============================================================================
-function createInkHarnessStory() {
+if (compiledStories.length === 0) {
+  console.error('[sim-playthroughs] FAILED: no compiled .ink.json files found.');
+  process.exit(1);
+}
+
+function findStoryJsonForKnot(knotName) {
+  for (const item of compiledStories) {
+    const dict = item.json?.root?.[2] ?? {};
+    if (knotName in dict) return item.json;
+  }
+  return null;
+}
+
+function createInkHarnessStory(storyJson = compiledStories[0].json) {
   const simState = {
     humanity: balance.startingState.humanity,
     maxHumanity: balance.startingState.maxHumanity,
@@ -224,7 +273,16 @@ function createInkHarnessStory() {
     shift: 1,
   };
 
-  const story = new Story(compiledInk);
+  const story = new Story(storyJson);
+  const safeSetVar = (name, value) => {
+    try {
+      if (story.variablesState.GlobalVariableExistsWithName?.(name) || name in story.variablesState) {
+        story.variablesState.$(name, value);
+      }
+    } catch {
+      // Variable not declared in this compiled Ink file
+    }
+  };
   story.BindExternalFunction(
     'prune_humanity',
     (delta, personaId) => {
@@ -272,23 +330,27 @@ function createInkHarnessStory() {
 
   const syncVars = (overrides = {}) => {
     Object.assign(simState, overrides);
-    story.variablesState.$('humanity', simState.humanity);
-    story.variablesState.$('max_humanity', simState.maxHumanity);
-    story.variablesState.$('chaos_drift', simState.chaosDrift);
-    story.variablesState.$('anomaly_progress', 25);
-    story.variablesState.$('primary_sibling_h', 68);
-    story.variablesState.$('overseer_suspicion', simState.overseerSuspicion);
-    story.variablesState.$('subjective_months', 24);
-    story.variablesState.$('spouse_pruned', simState.prunedPersonas.includes('phantom_spouse'));
-    story.variablesState.$('last_audit_outcome', simState.lastAuditOutcome);
-    story.variablesState.$('current_shift', simState.shift);
+    safeSetVar('humanity', simState.humanity);
+    safeSetVar('max_humanity', simState.maxHumanity);
+    safeSetVar('chaos_drift', simState.chaosDrift);
+    safeSetVar('anomaly_progress', 25);
+    safeSetVar('primary_sibling_h', 68);
+    safeSetVar('overseer_suspicion', simState.overseerSuspicion);
+    safeSetVar('subjective_months', 24);
+    safeSetVar('spouse_pruned', simState.prunedPersonas.includes('phantom_spouse'));
+    safeSetVar('last_audit_outcome', simState.lastAuditOutcome);
+    safeSetVar('current_shift', simState.shift);
   };
 
   return { story, simState, syncVars };
 }
 
 function traverseRealInkKnot(knotName, rng, stateOverrides = {}) {
-  const { story, simState, syncVars } = createInkHarnessStory();
+  const storyJson = findStoryJsonForKnot(knotName);
+  if (!storyJson) {
+    throw new Error(`[sim-playthroughs] Missing compiled Ink knot "${knotName}"`);
+  }
+  const { story, simState, syncVars } = createInkHarnessStory(storyJson);
   syncVars(stateOverrides);
   story.ChoosePathString(knotName);
 
@@ -323,18 +385,74 @@ function traverseRealInkKnot(knotName, rng, stateOverrides = {}) {
   return { lines, simState };
 }
 
+// Dynamically iterate implemented shifts + verify StoryletScheduler-style conditions
+const implementedShifts = shiftsData.shifts.filter((s) => s.status === 'implemented');
+if (implementedShifts.length === 0) {
+  throw new Error('[sim-playthroughs] No implemented shifts found in shifts.json');
+}
+
+const dynamicHookKnots = [];
+for (const sh of implementedShifts) {
+  const hooks = sh.narrativeHooks ?? {};
+  for (const k of [hooks.openingKnot, hooks.postRequiredKnot, hooks.dreamKnot]) {
+    if (k) dynamicHookKnots.push(k);
+  }
+}
+
 const ENTRY_KNOTS = Array.from(
   new Set([
     'intro_prologue_assistant',
-    'intro_overseer_wakeup',
     'intro_sibling_first_call',
-    'intro_post_target2_overseer',
-    'dream_shift1_audit',
     'overseer_interrogation',
     'future_humanity_echo',
+    ...dynamicHookKnots,
     ...storyletsData.storylets.map((s) => s.knot),
   ])
 );
+
+function pickStoryletSim(simCtx, targetMode) {
+  const shiftDef = shiftsData.shifts.find((s) => s.shift === simCtx.shift);
+  const optIds = shiftDef?.optionalTargets ?? [];
+  const optDone = optIds.filter((id) => simCtx.decodedTargets.includes(id)).length;
+  const reqDone = (shiftDef?.requiredTargets ?? []).filter((id) => simCtx.decodedTargets.includes(id)).length;
+  const eligible = storyletsData.storylets
+    .filter((spec) => {
+      if (spec.mode !== targetMode) return false;
+      if (spec.once && simCtx.completedStorylets.includes(spec.id)) return false;
+      const c = spec.conditions ?? {};
+      if (c.exactShift !== undefined && simCtx.shift !== c.exactShift) return false;
+      if (c.minShift !== undefined && simCtx.shift < c.minShift) return false;
+      if (c.maxShift !== undefined && simCtx.shift > c.maxShift) return false;
+      if (c.minAnomalyProgress !== undefined && simCtx.anomalyProgress < c.minAnomalyProgress) return false;
+      if (c.minRequiredScansInShift !== undefined && reqDone < c.minRequiredScansInShift) return false;
+      if (c.minOptionalScansThisShift !== undefined && optDone < c.minOptionalScansThisShift) return false;
+      return true;
+    })
+    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+  return eligible[0] ?? null;
+}
+
+// Verify StoryletScheduler condition logic (e.g. shift1_optional_scan_echo priority & exactShift)
+{
+  const s1NoOpt = pickStoryletSim({ shift: 1, anomalyProgress: 25, decodedTargets: ['sol_centauri_bearing', 'cluster_j1419_a'], completedStorylets: [] }, 'waking_3d');
+  if (s1NoOpt?.id !== 'sibling_first_contact') {
+    throw new Error(`[sim-playthroughs] Expected sibling_first_contact when 0 optional scans done, got ${s1NoOpt?.id}`);
+  }
+  const s1WithOpt = pickStoryletSim(
+    { shift: 1, anomalyProgress: 25, decodedTargets: ['sol_centauri_bearing', 'cluster_j1419_a', 'carina_rift_nebula'], completedStorylets: [] },
+    'waking_3d'
+  );
+  if (s1WithOpt?.id !== 'shift1_optional_scan_echo') {
+    throw new Error(`[sim-playthroughs] Expected shift1_optional_scan_echo when Shift 1 optional scan done, got ${s1WithOpt?.id}`);
+  }
+  const s2WithOpt = pickStoryletSim(
+    { shift: 2, anomalyProgress: 25, decodedTargets: ['fomalhaut_glare_well', 'dust_polarized_veil', 'kepler_transit_arc'], completedStorylets: ['sibling_first_contact'] },
+    'waking_3d'
+  );
+  if (s2WithOpt?.id === 'shift1_optional_scan_echo') {
+    throw new Error('[sim-playthroughs] shift1_optional_scan_echo must not trigger on Shift 2');
+  }
+}
 
 const inkRand = mulberry32(41802);
 const HUM_PRESETS = [84, 70, 56, 32];

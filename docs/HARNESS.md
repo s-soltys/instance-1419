@@ -23,6 +23,28 @@ Locked Creative Director rulings governing this harness:
 
 ---
 
+## 1.6 Shift Expansion & Cohesion Methodology (Harness 3.0)
+
+Every Shift `2–6` expansion and target revision follows a fixed cross-persona sequence so no target, instrument, shader, or storylet ever ships as an unmotivated standalone widget:
+
+1. **Shift Vertical Slice Order (Per Shift Milestone):**
+   * **Step 1 — `narrative-director` (Shift Cohesion Packet):** Locks `shifts.json` v2 (`shiftMandate`, `requiredTargets` [2] + `optionalTargets` [1–2], `anomalyPhase`, `narrativeHooks`), `storylets.json` trigger rules, and the narrative fields of `anomalies.json` v2 (`scaleClass` sign-off, `anomalyRole`, `preScanBrief`, `postScanEcho`, `proofContribution`, `spoilerFloorShift`).
+   * **Step 2 — `visual-shader-director` + `astro-asset-curator`:** Supplies commercial-safe real-sky coordinates (`realCatalogRef` + `star_catalog_10ly.bin`), 15-plate `plateId` wiring, 6-class Zeiss SVG scale markers, `skyRevealTier`, and `fractalStage` / Voronoi crack bleed shaders (`docs/ART_DIRECTION.md` §2.5).
+   * **Step 3 — `ink-dialogue-writer` (+ Mandatory Prose Critic Subagent):** Authors target-reactive `.ink` scenes referencing `storyFlag` / scan-quota Ink variables, adhering to `docs/VOICE_GUIDE.md` §1.5–1.7 (unvoiced pre/post-scan micro-lines; VoxCPM2-8bit reserved for wakes, comms, dreams, and archives).
+   * **Step 4 — `game-systems-engineer`:** Wires `MinigameRegistry.supportedScales`, `anomalyBleed` on `MinigameStateVector`, `StoryletScheduler` conditions, optical-dive callout + `#mg-finale-snippet` + `.sky-marker.decoded`, and flips the shift's `shifts.json` `status` from `"planned"` to `"implemented"`.
+   * **Step 5 — `consistency-auditor` + `playtest-verifier`:** Runs independent SSOT + mechanical cohesion gates (`npm run verify:fast` + targeted Playwright `--flows=` / `--mg=`) before `showrunner` marks the milestone `"passing"` in `features.json`.
+
+2. **Split Write Ownership on `src/content/anomalies.json`:**
+   * **`visual-shader-director` owns** spatial, optical, and catalog fields (`raDeg`, `decDeg`, `optimalWavelengthNm`, `wavelengthToleranceNm`, `recommendedFovMax`, `kind`, `plateId`, `preferredVariantIndex`, `accentHex`, `realCatalogRef`).
+   * **`narrative-director` owns** narrative & taxonomy fields (`scaleClass` sign-off, `anomalyRole`, `preScanBrief`, `postScanEcho`, `proofContribution`, `spoilerFloorShift`, `label`, `subtitle`, `distanceLabel`, `actionVerb`, `description`).
+
+3. **Mechanical Cohesion Gates (Enforced Automatically):**
+   * `scripts/lint-narrative.mjs`: Validates `scaleClass`↔`MinigameRegistry.supportedScales` compatibility, `preScanBrief`/`postScanEcho` word/char caps and `BAD_COLLOCATIONS`, unique `storyFlag`, `proofContribution.phase === shift`, `requiredTargets` (2) + `optionalTargets` (1–2) 1:1 coverage of all 21 anomalies, monotonic `skyRevealTier` and `anomalyPhase`, Shift 1–2 spoiler-floor regex guard, and multi-file compiled Ink + `storylets.json` coverage for every shift with `status: "implemented"`.
+   * `scripts/sim-playthroughs.mjs`: Validates required/optional target economy and dynamically traverses every `implemented` shift's Ink knots and `StoryletScheduler` unlocks.
+   * `tests/unit/targetCohesionContract.test.ts` & `minigame3AxisContract.test.ts`: Asserts registry scale compatibility, catalog bounds, and live `anomalyBleed` vector updates.
+
+---
+
 ## 1.5 Creative Director Taste Compass & 1-by-1 Calibration Protocol
 
 ### The 4-Point Taste Compass
@@ -101,12 +123,12 @@ instance-1419/
 
 | Persona | Owns (Write Scope) | Core Mandate | Hard Boundary |
 | :--- | :--- | :--- | :--- |
-| **1. Showrunner** | `features.json`, `PROGRESS.md`, `AGENTS.md` | Translates direction via 1-by-1 calibration into single-feature tickets, protects 2-hour scope, enforces atomic ledger updates. | Never writes engine code, prose, or shaders directly. |
-| **2. Narrative Director** | `CANON.md`, `BEAT_SHEET.md`, `VOICE_GUIDE.md`, `shifts.json`, `storylets.json`, `balance.json` | Architects the 6-shift arc, Overseer desync timeline, 8–12 Dream Persona pool (`2 Fixed + 2 rotating`), `2+optional` scans/shift, and `H%`/Chaos math. | Never explains volunteer motive or human evolution; never writes engine code. |
-| **3. Ink Dialogue Writer** | `src/content/dialogue/*.ink` | Drafts grounded, non-abrupt `.ink` scenes honoring `VOICE_GUIDE.md` and `ART_DIRECTION.md` choice tags (`# kind:`, `# weight:`). | Never names loved ones; keeps voiced lines within TTS cadence limits; never alters `balance.json`. |
-| **4. Visual & Shader Director** | `ART_DIRECTION.md`, `src/engine/shaders/*`, `characters.json`, `anomalies.json`, `assets/*` | Authors 3D/2D GLSL shaders, swappable Dream Persona oil paintings, Zeiss optics craft, and NASA/ESA `MANIFEST.json` curation. | Must keep 2D portraits swappable via `characters.json` and log 100% of assets in `MANIFEST.json`. |
-| **5. Game Systems Engineer** | `src/engine/*`, `src/platform/*`, `src/ui/*` | Builds strict TS runtime systems, Lean 3-Axis instruments, Layout A UI, Web Audio + `VoiceEngine`, `?dev=1`, and `PlatformAdapter`. | Zero hardcoded prose/balance in `src/engine/`; zero Electron/Capacitor until Phase 6. |
-| **6. Consistency & QA Auditor** | `docs/audits/*`, `scripts/*` (read-only on `src/`) | **Independent critic.** Runs `npm run verify:fast` + targeted Playwright visual checks (`--smoke`/`--flows=...`) and qualitative SSOT audits, deferring full 21-game sweeps to CI. | Never silently edits creative work; files line-referenced fix tickets. |
+| **1. Showrunner** | `features.json`, `PROGRESS.md`, `AGENTS.md` | Translates direction via 1-by-1 calibration into single-feature tickets, enforces Shift Vertical Slice Order (§1.6) & atomic ledger updates. | Never writes engine code, prose, or shaders directly; marks `"passing"` only after independent verification. |
+| **2. Narrative Director** | `CANON.md`, `BEAT_SHEET.md`, `VOICE_GUIDE.md`, `shifts.json`, `storylets.json`, `balance.json`, `anomalies.json` (narrative/taxonomy fields) | Architects the 6-shift arc & Shift Cohesion Packets, Overseer desync timeline, 9-Persona pool (`2 Fixed + 2 rotating`), `2+optional` scans/shift, `spoilerFloorShift`, and `H%`/Chaos math. | Never explains volunteer motive or human evolution; never writes engine code or edits optical/catalog fields in `anomalies.json`. |
+| **3. Ink Dialogue Writer** | `src/content/dialogue/*.ink` | Drafts grounded, non-abrupt `.ink` scenes honoring `VOICE_GUIDE.md` (§1.5–§1.7) and target-flag reactivity (`decoded_*`, `anomalyPhase`) with unvoiced micro-echoes. | Never names loved ones; keeps voiced lines within TTS cadence limits; never alters `balance.json`. |
+| **4. Visual & Shader Director** | `ART_DIRECTION.md`, `src/engine/shaders/*`, `characters.json`, `anomalies.json` (spatial/optical/catalog fields), `assets/*` | Authors 3D/2D GLSL shaders, 6-stage filigree fractal shell, 6-class Zeiss scale markers, real-sky 10-ly catalog (`star_catalog_10ly.bin`), swappable Dream Persona paintings, and `MANIFEST.json` curation. | Must keep 2D portraits swappable via `characters.json`, log 100% of assets in `MANIFEST.json` (zero `CC BY-SA`), and preserve `narrative-director` fields in `anomalies.json`. |
+| **5. Game Systems Engineer** | `src/engine/*`, `src/platform/*`, `src/ui/*` | Builds strict TS runtime systems, `MinigameRegistry.supportedScales` & `anomalyBleed`, extended `StoryletScheduler`, 2.2s optical-dive callout + `#mg-finale-snippet` closure, `.sky-marker.decoded`, Web Audio + `VoiceEngine`, `?dev=1`, and `PlatformAdapter`. | Zero hardcoded prose/balance in `src/engine/`; zero Electron/Capacitor until Phase 6. |
+| **6. Consistency & QA Auditor** | `docs/audits/*`, `scripts/*`, `tests/*` (read-only on `src/`) | **Independent critic.** Runs `npm run verify:fast` (including mechanical cohesion gates) + targeted Playwright (`--smoke`/`--flows=`) and qualitative SSOT audits, deferring full 21-game sweeps to CI. | Never silently edits creative work; files line-referenced fix tickets; blocks orphan targets, scale mismatches, spoiler leaks, or unwired `implemented` shifts. |
 
 ---
 

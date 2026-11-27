@@ -63,6 +63,8 @@ export class DreamCanvas {
   private humanity = 70;
   private pruned = false;
   private overseerActive = false;
+  private anomalyProgress = 0;
+  private fractalStage = 1;
   private active = false;
   private rafId = 0;
   private revealProgress = 1.0;
@@ -121,6 +123,8 @@ export class DreamCanvas {
         uViewAspect: { value: w / h },
         uTexAspect: { value: 1280 / 714 },
         uFaceAnchor: { value: new THREE.Vector2(initialAnchor[0], initialAnchor[1]) },
+        uAnomalyProgress: { value: this.anomalyProgress },
+        uFractalStage: { value: this.fractalStage },
       },
     });
 
@@ -205,6 +209,15 @@ export class DreamCanvas {
     ) {
       this.setPersona(personaId ?? this.currentPersonaId, nextVariant);
     }
+    this.lastRenderMs = 0;
+  }
+
+  setAnomalyState(anomalyProgress: number, fractalStage: number): void {
+    this.anomalyProgress =
+      anomalyProgress > 1
+        ? Math.max(0, Math.min(1, anomalyProgress / 100))
+        : Math.max(0, Math.min(1, anomalyProgress));
+    this.fractalStage = Math.max(1, Math.min(6, fractalStage));
     this.lastRenderMs = 0;
   }
 
@@ -402,7 +415,9 @@ export class DreamCanvas {
       this.slicePulse <= 0.005 &&
       Math.abs(targetH - u.uHumanity.value) < 0.002 &&
       Math.abs(targetPruned - u.uPruned.value) < 0.002 &&
-      Math.abs(targetOverseer - u.uOverseer.value) < 0.002;
+      Math.abs(targetOverseer - u.uOverseer.value) < 0.002 &&
+      Math.abs(this.anomalyProgress - u.uAnomalyProgress.value) < 0.002 &&
+      Math.abs(this.fractalStage - u.uFractalStage.value) < 0.01;
 
     if (isSettled && this.lastRenderMs > 0 && now - this.lastRenderMs < 32) {
       return;
@@ -415,6 +430,8 @@ export class DreamCanvas {
     u.uHumanity.value += (targetH - u.uHumanity.value) * hLerp;
     u.uPruned.value += (targetPruned - u.uPruned.value) * 0.12;
     u.uOverseer.value += (targetOverseer - u.uOverseer.value) * 0.15;
+    u.uAnomalyProgress.value += (this.anomalyProgress - u.uAnomalyProgress.value) * 0.12;
+    u.uFractalStage.value += (this.fractalStage - u.uFractalStage.value) * 0.12;
     u.uReveal.value = easedReveal;
     u.uWakeProgress.value = this.wakeProgress;
     u.uHeadTilt.value = this.headTiltRad;

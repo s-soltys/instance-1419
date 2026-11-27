@@ -29,6 +29,17 @@ Before any `.ink` edit or `ui_copy.json` change is considered ready, both the wr
 * **No Dynamic `{var}` in Voiced Lines:** Never embed `{humanity}` or other Ink variables inside voiced dialogue (use static conditional branches with separate `# id:` tags).
 * **Warn on Drafts, Hard-Block on `main`:** `scripts/lint-narrative.mjs` warns on `.ink` ↔ `voice_script.json` drift on local dev and draft branches, and **hard-fails** on PRs to `main`, pushes to `main`, releases, or when `VOICE_SYNC_STRICT=1` is set.
 
+## 1.7 Pre-Scan Brief & Post-Scan Echo Prose Rules
+Every target entry in `src/content/anomalies.json` carries diegetic framing text authored to the same §1.5 native-English, hard-sci-fi bar as `.ink` dialogue:
+* **`preScanBrief` (`objective`, `instrumentAction`, `whyNow`):**
+  * **Length Cap:** `<= 16` words per field (`objective` settles over the 2.2s `optical_dive` callout; `whyNow` sits under the 3D reticle; `instrumentAction` labels the physical optical action).
+  * **Register:** Concrete astronomical/engineering phrasing (never tutorialese like *"Click the circles to win"* or *"Unlock the next level"*).
+  * **Spoiler-Floor Discipline (`spoilerFloorShift`):** Targets with `spoilerFloorShift <= 2` must **never** leak Sol–Centauri centering, artificiality, or the 93-billion-light-year enclosure—frame routine controls as genuine calibration or foreground dust checks.
+* **`postScanEcho` (`dossierFinding`, `psycheVoice`, `psycheLine`):**
+  * **`dossierFinding`:** `<= 110` characters; crisp single-sentence observational deduction surfaced in `#mg-finale-snippet` and the Proof Dossier (matching `spoilerFloorShift`).
+  * **`psycheLine`:** `<= 22` words of **unvoiced** (`"voiced": false`) internal marginalia attributed to `psyche_warmth`, `psyche_clinical`, or `psyche_horizon`, floated briefly on pullback to the 3D sky.
+* **Reserved VoxCPM2-8bit Budget:** Keep all 21 `preScanBrief` and `postScanEcho` micro-lines **unvoiced** (`0` TTS clips). Reserve VoxCPM2-8bit strictly for Shift wakes, Sibling `1420`/`1418` comms, Overseer audits, Dream Personas, and the 3 Archive tapes so total spoken runtime and voice cadence remain tight.
+
 ---
 
 ## 2. Cast Archetypes

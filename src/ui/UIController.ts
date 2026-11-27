@@ -1,12 +1,14 @@
 import charactersData from '../content/characters.json';
+import codexData from '../content/codex.json';
 import shiftsData from '../content/shifts.json';
 import uiCopy from '../content/ui_copy.json';
 import type { AudioEngine } from '../engine/AudioEngine';
-import { CodexEngine } from '../engine/CodexEngine';
+import { CodexEngine, type CodexCategoryId } from '../engine/CodexEngine';
 import { DialogueRunner, type DialogueSnapshot } from '../engine/DialogueRunner';
 import type { DreamCanvas } from '../engine/DreamCanvas';
 import type { MinigameRegistry } from '../engine/minigames/MinigameRegistry';
-import type { AnomalySpec, OpticsScene, OpticsTelemetry } from '../engine/OpticsScene';
+import type { CosmicPlateId } from '../engine/minigames/types';
+import type { AnomalySpec, OpticsScene, OpticsTelemetry, ScaleClass } from '../engine/OpticsScene';
 import { SettingsStore, type UserSettings } from '../engine/SettingsStore';
 import {
   INTRO_TARGET_1_ID,
@@ -16,7 +18,7 @@ import {
   type IntroStage,
   type StateStore,
 } from '../engine/StateStore';
-import type { StoryletScheduler } from '../engine/StoryletScheduler';
+import type { StoryletScheduler, StoryletSpec } from '../engine/StoryletScheduler';
 import type { TargetShowcaseScene } from '../engine/TargetShowcaseScene';
 import { TelemetryLogger } from '../engine/TelemetryLogger';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
@@ -48,14 +50,77 @@ const CHAR_MAP = charactersData.characters as Record<string, CharacterInfo>;
 const MIN_WAVE = 200;
 const MAX_WAVE = 1800;
 
+const SCALE_ETCH_PREFIX: Record<ScaleClass, string> = {
+  planet: 'AU',
+  star_system: 'LY',
+  nebula: 'KLY',
+  galaxy: 'MLY',
+  galaxy_cluster: 'BLY',
+  horizon_anomaly: '93 BLY',
+};
+
+function getScaleLabel(scaleClass: ScaleClass | undefined): string {
+  const key = scaleClass ?? 'star_system';
+  const labels = uiCopy.sky.scaleLabels as Record<string, string>;
+  return labels[key] ?? 'STAR SYSTEM';
+}
+
+function getScaleMicroEtch(scaleClass: ScaleClass): string {
+  return `${SCALE_ETCH_PREFIX[scaleClass]} · ${getScaleLabel(scaleClass)}`;
+}
+
+function renderScaleGlyphSvg(scaleClass: ScaleClass): string {
+  let core = '';
+  switch (scaleClass) {
+    case 'planet':
+      core =
+        '<circle cx="10" cy="10" r="2.7" /><ellipse cx="10" cy="10" rx="6.2" ry="2.0" transform="rotate(-24 10 10)" />';
+      break;
+    case 'nebula':
+      core =
+        '<path d="M5.6 11.4 C4.8 8.4 7.0 6.0 9.8 6.4 C12.4 5.2 15.2 7.5 14.3 10.4 C15.2 12.8 12.4 14.6 9.5 13.8 C7.0 14.6 5.0 13.2 5.6 11.4 Z" /><circle cx="10" cy="10" r="1.2" />';
+      break;
+    case 'galaxy':
+      core =
+        '<path d="M10 10 C12.6 7.5 14.8 8.6 14.2 11.4 M10 10 C7.4 12.5 5.2 11.4 5.8 8.6" /><ellipse cx="10" cy="10" rx="5.5" ry="2.5" transform="rotate(-28 10 10)" stroke-dasharray="1.6 1.8" /><circle cx="10" cy="10" r="1.2" />';
+      break;
+    case 'galaxy_cluster':
+      core =
+        '<circle cx="7.4" cy="8.4" r="1.3" /><circle cx="12.6" cy="8.7" r="1.1" /><circle cx="10.2" cy="12.9" r="1.2" /><path d="M4.8 11.4 A 6.2 6.2 0 0 1 13.6 5.2" />';
+      break;
+    case 'horizon_anomaly':
+      core =
+        '<polygon points="10,4.2 15.6,10 10,15.8 4.4,10" /><polygon points="10,7.0 12.8,10 10,13.0 7.2,10" /><line x1="3.4" y1="10" x2="6.0" y2="10" /><line x1="14.0" y1="10" x2="16.6" y2="10" />';
+      break;
+    case 'star_system':
+    default:
+      core =
+        '<path d="M10 3.8 L11.0 9.0 L16.2 10 L11.0 11.0 L10 16.2 L9.0 11.0 L3.8 10 L9.0 9.0 Z" /><circle cx="13.6" cy="6.4" r="1.0" />';
+      break;
+  }
+
+  return `<svg class="sky-glyph" viewBox="0 0 20 20" width="14" height="14" aria-hidden="true">
+    <polygon class="glyph-bleed-hex" points="10,0.9 18.1,5.4 18.1,14.6 10,19.1 1.9,14.6 1.9,5.4" fill="none" />
+    <circle class="glyph-ring" cx="10" cy="10" r="8.2" fill="none" />
+    <g class="glyph-core" fill="none">${core}</g>
+    <path class="glyph-decoded-arc" d="M 4.4 10.6 A 6.4 6.4 0 0 0 15.6 7.4" fill="none" />
+    <path class="glyph-decoded-check" d="M 7.3 10.2 L 9.4 12.3 L 13.5 7.9" fill="none" />
+  </svg>`;
+}
+
 interface CachedShellRefs {
   stage: HTMLElement | null;
   warmthPill: HTMLElement | null;
   warmthFill: HTMLElement | null;
   warmthQual: HTMLElement | null;
+  horizonArcHud: HTMLElement | null;
+  horizonArcFill: SVGCircleElement | null;
   surveyDots: HTMLElement | null;
   driftFlag: HTMLElement | null;
   codexUnreadDot: HTMLElement | null;
+  skyPsycheWhisper: HTMLElement | null;
+  skyPsycheVoice: HTMLElement | null;
+  skyPsycheLine: HTMLElement | null;
   vernierNeedle: HTMLElement | null;
   waveLabel: HTMLElement | null;
   vernierTrack: HTMLElement | null;
@@ -77,12 +142,16 @@ interface CachedShellRefs {
 
 interface CachedOpticsHudRefs {
   target: HTMLElement | null;
+  reticleBrief: HTMLElement | null;
+  reticleBriefMeta: HTMLElement | null;
+  reticleBriefWhy: HTMLElement | null;
   zoomLabel: HTMLElement | null;
   stageLabel: HTMLElement | null;
   zoomFill: HTMLElement | null;
   zoomNeedle: HTMLElement | null;
   zoomTrack: HTMLElement | null;
   reticleEl: HTMLElement | null;
+  reticleScaleEtch: SVGTextElement | null;
   lockRing: SVGCircleElement | null;
   raTicks: HTMLElement | null;
   decTicks: HTMLElement | null;
@@ -184,12 +253,22 @@ export class UIController {
   private lastMgProfileSig = '';
   private lastDreamCaptionSig = '';
   private lastOpticsParamSig = '';
+  private lastOpticsDecodedSig = '';
   private lastOpticsFidelity = -1;
   private lastDreamStateSig = '';
+  private lastDreamAnomalySig = '';
+  private lastHorizonArcPct = -1;
+  private lastReticleScaleClass = '';
+  private lastReticleBriefSig = '';
+  private lastInspectLabel = '';
   private lastAudioMoodSig = '';
   private lastMusicCtxSig = '';
   private avatarAnimRaf = 0;
   private unbindVoiceSub: (() => void) | null = null;
+
+  private pendingCodexTargetId: string | null = null;
+  private pendingCommsStorylet: StoryletSpec | null = null;
+  private isWakingFromDream = false;
 
   private hasDraggedSkyInIntro = false;
   private skyDragAccumPx = 0;
@@ -204,6 +283,7 @@ export class UIController {
   private proactiveCommsSent = false;
   private proactiveCommsTimer: number | null = null;
   private postTarget2Timer: number | null = null;
+  private skyPsycheTimer: number | null = null;
   private dreamSettleTimer: number | null = null;
   private overseerInterruptTimer: number | null = null;
   private overseerInterruptToken = 0;
@@ -271,6 +351,9 @@ export class UIController {
       } else {
         this.minigameHost.destroy(preserveDecoded);
       }
+    });
+    this.minigameHost.setOpenCodexCallback((targetId) => {
+      this.pendingCodexTargetId = targetId;
     });
     this.minigameHost.setActiveChangeCallback((mgId) => {
       if (this.shellRefs?.stage) {
@@ -391,6 +474,13 @@ export class UIController {
               <span class="warmth-track"><i id="hud-warmth-fill" style="width:70%"></i></span>
               <span class="warmth-qual" id="hud-warmth-qual">STEADY</span>
             </div>
+            <div class="horizon-arc-hud" id="hud-horizon-arc" title="Horizon Proof · 0%">
+              <svg viewBox="0 0 22 22" width="18" height="18" aria-hidden="true">
+                <circle class="hud-arc-track" cx="11" cy="11" r="8.5" fill="none" />
+                <circle class="hud-arc-fill" id="hud-horizon-arc-fill" cx="11" cy="11" r="8.5" fill="none"
+                  stroke-dasharray="53.41" stroke-dashoffset="53.41" transform="rotate(-90 11 11)" />
+              </svg>
+            </div>
             <div class="survey-dots" id="hud-survey-dots" title="Sky targets decoded"></div>
             <span class="drift-flag hidden" id="hud-drift-flag" title="Psychic drift rising">DRIFT ELEVATED</span>
           </div>
@@ -435,6 +525,28 @@ export class UIController {
             <path d="M 52 52 A 110 110 0 0 1 208 52" fill="none" stroke="rgba(195,220,242,0.20)" stroke-width="0.9" />
             <path d="M 208 208 A 110 110 0 0 1 52 208" fill="none" stroke="rgba(195,220,242,0.20)" stroke-width="0.9" />
             <circle cx="130" cy="130" r="76" fill="none" stroke="rgba(195,220,242,0.14)" stroke-width="0.8" stroke-dasharray="2 6" />
+            <g class="reticle-scale-ticks reticle-scale-planet" fill="none">
+              <ellipse cx="130" cy="130" rx="90" ry="30" transform="rotate(-18 130 130)" />
+            </g>
+            <g class="reticle-scale-ticks reticle-scale-star_system" fill="none">
+              <line x1="130" y1="36" x2="130" y2="48" /><line x1="130" y1="212" x2="130" y2="224" />
+              <line x1="36" y1="130" x2="48" y2="130" /><line x1="212" y1="130" x2="224" y2="130" />
+            </g>
+            <g class="reticle-scale-ticks reticle-scale-nebula" fill="none">
+              <circle cx="130" cy="130" r="94" stroke-dasharray="4 8" />
+            </g>
+            <g class="reticle-scale-ticks reticle-scale-galaxy" fill="none">
+              <path d="M 60 116 A 72 34 -22 0 1 198 144" stroke-dasharray="3 4" />
+              <path d="M 200 144 A 72 34 -22 0 1 62 116" stroke-dasharray="3 4" />
+            </g>
+            <g class="reticle-scale-ticks reticle-scale-galaxy_cluster" fill="none">
+              <path d="M 44 102 A 92 92 0 0 1 158 42" />
+              <path d="M 216 158 A 92 92 0 0 1 102 218" />
+            </g>
+            <g class="reticle-scale-ticks reticle-scale-horizon_anomaly" fill="none">
+              <polygon points="130,36 211,83 211,177 130,224 49,177 49,83" stroke-dasharray="6 10" />
+            </g>
+            <text class="reticle-scale-etch" id="reticle-scale-etch" x="130" y="34" text-anchor="middle"></text>
             <circle id="reticle-lock-ring" cx="130" cy="130" r="76" fill="none" stroke="#7ec8e8" stroke-width="1.7"
               stroke-dasharray="477.52" stroke-dashoffset="477.52" transform="rotate(-90 130 130)" />
             <circle cx="130" cy="130" r="1.8" fill="#ebb062" />
@@ -442,7 +554,16 @@ export class UIController {
 
           <div class="reticle-readout">
             <div class="reticle-main" id="reticle-target"></div>
+            <div class="reticle-brief hidden" id="reticle-brief">
+              <div class="reticle-brief-meta" id="reticle-brief-meta"></div>
+              <div class="reticle-brief-why" id="reticle-brief-why"></div>
+            </div>
             <button class="inspect-cta hidden" id="btn-enter-inspect" type="button">${uiCopy.sky.calibrateCtaFallback}</button>
+          </div>
+
+          <div class="sky-psyche-whisper hidden" id="sky-psyche-whisper" aria-live="polite">
+            <span class="sky-psyche-voice" id="sky-psyche-voice"></span>
+            <p class="sky-psyche-line" id="sky-psyche-line"></p>
           </div>
 
           <div class="sky-markers" id="sky-markers"></div>
@@ -523,7 +644,8 @@ export class UIController {
             <div class="mg-top-hud">
               <div class="mg-top-left">
                 <span class="mg-code-pill" id="mg-instrument-code">WAV-01</span>
-                <span class="mg-title-inline" id="mg-instrument-title">CARINA WAVE TUNER</span>
+                <span class="mg-title-inline" id="mg-instrument-title">CARINA RIFT NURSERY</span>
+                <span class="mg-instrument-sub" id="mg-instrument-sub">Carina Wave Tuner</span>
                 <div class="mg-stage-group" aria-label="Stage progress">
                   <div class="mg-stage-pips" id="mg-stage-pips">
                     <span class="mg-pip active" data-stage="1"></span>
@@ -543,6 +665,7 @@ export class UIController {
                 <strong id="mg-guide-title">INSTRUMENT GUIDE</strong>
                 <button class="mg-console-btn" id="mg-btn-guide-close" type="button">CLOSE</button>
               </div>
+              <p class="mg-guide-target-action hidden" id="mg-guide-target-action-wrap"><strong>TARGET ACTION:</strong> <span id="mg-guide-target-action"></span></p>
               <p><strong>PHYSICAL PRINCIPLE:</strong> <span id="mg-guide-principle"></span></p>
               <p><strong>VISUAL GOAL:</strong> <span id="mg-guide-goal"></span></p>
               <p><strong>COGNITIVE EFFECT:</strong> <span id="mg-guide-warmth"></span></p>
@@ -552,11 +675,16 @@ export class UIController {
             <div class="mg-capture-finale hidden" id="mg-capture-finale">
               <div class="mg-finale-grade" id="mg-finale-grade">SHIFT 1</div>
               <div class="mg-finale-gain" id="mg-finale-gain">TARGET CALIBRATED</div>
+              <div class="mg-finale-outcome" id="mg-finale-outcome"></div>
               <div class="mg-finale-visual" id="mg-finale-visual" aria-hidden="true"></div>
+              <div class="mg-finale-mandate" id="mg-finale-mandate"></div>
               <div class="mg-finale-snippet hidden" id="mg-finale-snippet"></div>
               <div class="mg-finale-principle hidden" id="mg-finale-principle"></div>
               <div class="mg-finale-timer" aria-hidden="true"><span class="mg-finale-timer-fill" id="mg-finale-timer-fill"></span></div>
-              <button class="etched-action amber" id="mg-btn-log-dossier" type="button">RETURN TO SKY</button>
+              <div class="mg-finale-actions">
+                <button class="etched-action amber" id="mg-btn-log-dossier" type="button">RETURN TO SKY</button>
+                <button class="etched-action mint" id="mg-btn-open-codex" type="button">OPEN IN CODEX ▸</button>
+              </div>
             </div>
             <div class="mg-bottom-console">
               <div class="mg-cue-line" id="mg-cue-whisper">Inspect optical field to begin</div>
@@ -615,9 +743,14 @@ export class UIController {
       warmthPill: q('#hud-warmth-pill'),
       warmthFill: q('#hud-warmth-fill'),
       warmthQual: q('#hud-warmth-qual'),
+      horizonArcHud: q('#hud-horizon-arc'),
+      horizonArcFill: q<SVGCircleElement>('#hud-horizon-arc-fill'),
       surveyDots: q('#hud-survey-dots'),
       driftFlag: q('#hud-drift-flag'),
       codexUnreadDot: q('#codex-unread-dot'),
+      skyPsycheWhisper: q('#sky-psyche-whisper'),
+      skyPsycheVoice: q('#sky-psyche-voice'),
+      skyPsycheLine: q('#sky-psyche-line'),
       vernierNeedle: q('#vernier-needle'),
       waveLabel: q('#wave-label'),
       vernierTrack: q('#vernier-track'),
@@ -638,12 +771,16 @@ export class UIController {
     };
     this.opticsRefs = {
       target: q('#reticle-target'),
+      reticleBrief: q('#reticle-brief'),
+      reticleBriefMeta: q('#reticle-brief-meta'),
+      reticleBriefWhy: q('#reticle-brief-why'),
       zoomLabel: q('#zoom-label'),
       stageLabel: q('#sky-zoom-stage-label'),
       zoomFill: skyFill,
       zoomNeedle: q('#sky-zoom-needle'),
       zoomTrack: skyFill?.parentElement ?? null,
       reticleEl: q('.reticle'),
+      reticleScaleEtch: q<SVGTextElement>('#reticle-scale-etch'),
       lockRing: q<SVGCircleElement>('#reticle-lock-ring'),
       raTicks: q('#ra-ruler-ticks'),
       decTicks: q('#dec-ruler-ticks'),
@@ -712,6 +849,11 @@ export class UIController {
       window.clearTimeout(this.postTarget2Timer);
       this.postTarget2Timer = null;
     }
+    if (this.skyPsycheTimer !== null) {
+      window.clearTimeout(this.skyPsycheTimer);
+      this.skyPsycheTimer = null;
+    }
+    this.hideSkyPsycheWhisper();
     if (this.dreamSettleTimer !== null) {
       window.clearTimeout(this.dreamSettleTimer);
       this.dreamSettleTimer = null;
@@ -1139,10 +1281,15 @@ export class UIController {
   }
 
   private getUnlockedAnomalyIds(state: GameState): string[] {
-    if (state.introStage === 'prologue' || state.introStage === 'title' || state.introStage === 'scan_target_1' || state.introStage === 'mg_1_done') {
+    if (
+      state.introStage === 'prologue' ||
+      state.introStage === 'title' ||
+      state.introStage === 'scan_target_1' ||
+      state.introStage === 'mg_1_done'
+    ) {
       return [INTRO_TARGET_1_ID];
     }
-    if (state.introStage === 'scan_target_2' || state.introStage === 'mg_2_done') {
+    if (state.introStage === 'scan_target_2') {
       return [INTRO_TARGET_1_ID, INTRO_TARGET_2_ID];
     }
     const unlocked = new Set<string>();
@@ -1164,7 +1311,7 @@ export class UIController {
     } else if (stage === 'mg_1_done') {
       this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID]);
       this.optics.setMagneticDetentTarget(null);
-    } else if (stage === 'scan_target_2' || stage === 'mg_2_done') {
+    } else if (stage === 'scan_target_2') {
       this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID, INTRO_TARGET_2_ID]);
       this.optics.setMagneticDetentTarget(null);
     } else {
@@ -1191,13 +1338,15 @@ export class UIController {
     this.markerCache.clear();
 
     for (const spec of this.optics.getAnomalySpecs()) {
+      const scaleClass: ScaleClass = spec.scaleClass ?? 'star_system';
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'sky-marker';
       btn.style.display = 'flex';
       btn.dataset.anomalyId = spec.id;
+      btn.dataset.scaleClass = scaleClass;
       btn.innerHTML = `
-        <span class="diamond"></span>
+        ${renderScaleGlyphSvg(scaleClass)}
         <span class="m-tag">${spec.label}<span class="m-nm">${spec.bandName}</span></span>
       `;
       btn.addEventListener('click', () => {
@@ -1216,21 +1365,47 @@ export class UIController {
     const scanned = new Set(s.scannedAnomalyIds);
     const decoded = new Set(s.decodedMinigameTargets);
     const unlockedSet = new Set(this.getUnlockedAnomalyIds(s));
+    const shiftDef = shiftsData.shifts.find((sh) => sh.shift === s.shift) ?? shiftsData.shifts[0];
+    const reqSet = new Set(shiftDef?.requiredTargets ?? []);
+    const optSet = new Set(shiftDef?.optionalTargets ?? []);
 
-    nav.innerHTML = this.optics
+    const headerHtml =
+      shiftDef?.shiftMandate && (s.introStage === 'complete' || s.introStage === 'mg_2_done')
+        ? `<div class="bearing-index-head"><span class="bearing-shift-tag">SHIFT ${s.shift} SURVEY</span><span class="bearing-mandate">${shiftDef.shiftMandate}</span></div>`
+        : '';
+
+    const itemsHtml = this.optics
       .getAnomalySpecs()
       .filter((spec) => unlockedSet.has(spec.id))
       .map((spec) => {
         const isDecoded = decoded.has(spec.id);
         const isScanned = scanned.has(spec.id);
-        const badge = isDecoded ? 'DECODED' : isScanned ? 'CALIBRATE ▸' : spec.bandName;
+        const isReq = reqSet.has(spec.id);
+        const isOpt = optSet.has(spec.id);
+        const roleTag = isReq ? 'REQ' : isOpt ? 'OPT' : '';
+        const badge = isDecoded
+          ? 'DECODED'
+          : isScanned
+            ? `${spec.actionVerb ?? 'CALIBRATE'} ▸`
+            : roleTag
+              ? `${roleTag} · ${spec.bandName}`
+              : spec.bandName;
+        const cls = [
+          'bearing-link',
+          isReq ? 'is-required' : isOpt ? 'is-optional' : '',
+          isDecoded ? 'decoded' : isScanned ? 'scanned' : '',
+        ]
+          .filter(Boolean)
+          .join(' ');
         return `
-          <button class="bearing-link ${isDecoded ? 'decoded' : isScanned ? 'scanned' : ''}" data-bearing-id="${spec.id}" type="button">
+          <button class="${cls}" data-bearing-id="${spec.id}" type="button">
             ${spec.label}<span>${badge}</span>
           </button>
         `;
       })
       .join('');
+
+    nav.innerHTML = headerHtml + itemsHtml;
 
     nav.querySelectorAll<HTMLButtonElement>('.bearing-link').forEach((btn) => {
       btn.addEventListener('mouseenter', () => this.audio.playHoverTick());
@@ -1246,7 +1421,12 @@ export class UIController {
     });
 
     for (const [id, el] of this.markerEls.entries()) {
+      const isReq = reqSet.has(id);
+      const isOpt = optSet.has(id);
       el.classList.toggle('scanned', scanned.has(id));
+      el.classList.toggle('decoded', decoded.has(id));
+      el.classList.toggle('is-required', isReq);
+      el.classList.toggle('is-optional', isOpt || !isReq);
     }
   }
 
@@ -1503,6 +1683,8 @@ export class UIController {
       }
     }
 
+    const decodedSet = new Set(state.decodedMinigameTargets);
+    const scannedSet = new Set(state.scannedAnomalyIds);
     const vp = this.optics.getViewportSize?.() ?? {
       width: window.innerWidth || 1280,
       height: window.innerHeight || 720,
@@ -1512,15 +1694,24 @@ export class UIController {
       const el = this.markerEls.get(m.id);
       const cache = this.markerCache.get(m.id);
       if (!el || !cache) continue;
+
+      const isDecoded = m.isDecoded || decodedSet.has(m.id);
+      const isScanned = scannedSet.has(m.id);
+      el.classList.toggle('scanned', isScanned);
+      el.classList.toggle('decoded', isDecoded);
+      el.classList.toggle('is-required', m.isRequired);
+      el.classList.toggle('is-optional', !m.isRequired);
+      el.classList.toggle('is-anomaly-bleed', m.anomalyBleed >= 0.3);
+
       const inSafeLens = m.inView && m.x > 0.14 && m.x < 0.86 && m.y > 0.14 && m.y < 0.76;
       let nx = m.x;
       let ny = m.y;
-      let op = '0.88';
+      let op = isDecoded ? '0.45' : '0.88';
       const isOffscreen = !inSafeLens;
       if (isOffscreen) {
         nx = Math.max(0.08, Math.min(0.92, 0.5 + Math.cos(m.edgeAngleRad) * 0.42));
         ny = Math.max(0.14, Math.min(0.8, 0.5 + Math.sin(m.edgeAngleRad) * 0.34));
-        op = '0.45';
+        op = isDecoded ? '0.32' : '0.45';
       } else {
         const distCenter = Math.hypot(m.x - 0.5, m.y - 0.5);
         if (distCenter < 0.09) op = '0';
@@ -1569,34 +1760,62 @@ export class UIController {
       }
     }
 
+    const focusedScale: ScaleClass | '' = t.focusedAnomaly
+      ? (t.focusedAnomaly.scaleClass ?? 'star_system')
+      : '';
+    if (focusedScale !== this.lastReticleScaleClass) {
+      this.lastReticleScaleClass = focusedScale;
+      if (refs.reticleEl) {
+        if (focusedScale) refs.reticleEl.dataset.scaleClass = focusedScale;
+        else delete refs.reticleEl.dataset.scaleClass;
+      }
+      if (refs.reticleScaleEtch) {
+        refs.reticleScaleEtch.textContent = focusedScale ? getScaleMicroEtch(focusedScale) : '';
+      }
+    }
+
     if (refs.target) {
       let nextPrompt = '';
       let stateKey = 'idle';
       let hideInspect = true;
+      let briefMeta = '';
+      let briefWhy = '';
 
       if (t.focusedAnomaly) {
-        const scanned = state.scannedAnomalyIds.includes(t.focusedAnomaly.id);
+        const spec = t.focusedAnomaly;
+        const scanned = scannedSet.has(spec.id);
         hideInspect = !scanned;
         if (refs.inspectBtn && scanned) {
-          const ctaText = uiCopy.sky.calibrateCtaTemplate.replace('{label}', t.focusedAnomaly.label);
-          if (refs.inspectBtn.textContent !== ctaText) refs.inspectBtn.textContent = ctaText;
+          const chosenMgId = this.store.getMinigameIdForTarget(spec.id, spec.minigameId);
+          const entry = this.minigames.getEntry(chosenMgId);
+          const verb = spec.actionVerb ?? 'CALIBRATE';
+          const code = entry?.instrumentCode ?? 'OPT';
+          const ctaText = `${verb} · ${code} ▸`;
+          if (ctaText !== this.lastInspectLabel) {
+            this.lastInspectLabel = ctaText;
+            refs.inspectBtn.textContent = ctaText;
+          }
         }
         if (scanned) {
-          nextPrompt = `${t.focusedAnomaly.label} · LOCKED`;
-          stateKey = `ready:${t.focusedAnomaly.id}`;
-        } else if (t.fovDeg > t.focusedAnomaly.recommendedFovMax + 10) {
+          const scaleLabel = getScaleLabel(spec.scaleClass);
+          const distLabel = spec.distanceLabel ?? spec.bandName;
+          briefMeta = `${scaleLabel} · ${distLabel} — ${spec.label}`;
+          briefWhy = spec.preScanBrief?.whyNow ?? spec.subtitle;
+          nextPrompt = `${spec.label} · LOCKED`;
+          stateKey = `ready:${spec.id}`;
+        } else if (t.fovDeg > spec.recommendedFovMax + 10) {
           nextPrompt =
             state.introStage === 'scan_target_1'
-              ? `${t.focusedAnomaly.label} · ${uiCopy.sky.zoomCue.toUpperCase()}`
-              : `${t.focusedAnomaly.label} · ZOOM CLOSER`;
-          stateKey = `zoom:${t.focusedAnomaly.id}`;
+              ? `${spec.label} · ${uiCopy.sky.zoomCue.toUpperCase()}`
+              : `${spec.label} · ZOOM CLOSER`;
+          stateKey = `zoom:${spec.id}`;
         } else if (t.wavelengthMatch < 0.48) {
-          nextPrompt = `${t.focusedAnomaly.label} · TUNE SPECTRUM TO ${t.focusedAnomaly.bandName}`;
-          stateKey = `tune:${t.focusedAnomaly.id}`;
+          nextPrompt = `${spec.label} · TUNE SPECTRUM TO ${spec.bandName}`;
+          stateKey = `tune:${spec.id}`;
         } else {
-          nextPrompt = `${t.focusedAnomaly.label} · LOCKING ${Math.round(t.lockProgress * 100)}%`;
+          nextPrompt = `${spec.label} · LOCKING ${Math.round(t.lockProgress * 100)}%`;
           // Constant semantic key while locking -> fixes 1% tick CSS fade flicker!
-          stateKey = `locking:${t.focusedAnomaly.id}`;
+          stateKey = `locking:${spec.id}`;
         }
       } else {
         if (state.introStage === 'scan_target_1') {
@@ -1605,6 +1824,9 @@ export class UIController {
         } else if (state.introStage === 'scan_target_2') {
           nextPrompt = `${uiCopy.sky.irCue.toUpperCase()} · CLUSTER J1419-A`;
           stateKey = 'idle_t2';
+        } else if (state.introStage === 'mg_2_done') {
+          nextPrompt = 'SLEEP WHEN READY · OR SWEEP OPTIONAL TARGETS';
+          stateKey = 'idle_m2_done';
         } else if (state.introStage === 'complete') {
           nextPrompt = 'DRAG TO LOOK AROUND · SWEEP LIGHT SPECTRUM BELOW';
           stateKey = 'idle_open';
@@ -1613,6 +1835,15 @@ export class UIController {
           stateKey = 'idle_quiet';
         }
       }
+
+      const briefSig = `${hideInspect ? '0' : '1'}|${briefMeta}|${briefWhy}`;
+      if (refs.reticleBrief && briefSig !== this.lastReticleBriefSig) {
+        this.lastReticleBriefSig = briefSig;
+        refs.reticleBrief.classList.toggle('hidden', hideInspect || !briefMeta);
+        if (refs.reticleBriefMeta) refs.reticleBriefMeta.textContent = briefMeta;
+        if (refs.reticleBriefWhy) refs.reticleBriefWhy.textContent = briefWhy;
+      }
+
       if (refs.inspectBtn && hideInspect !== this.lastInspectHidden) {
         this.lastInspectHidden = hideInspect;
         refs.inspectBtn.classList.toggle('hidden', hideInspect);
@@ -1629,7 +1860,8 @@ export class UIController {
     this.audio.playCue('scan_lock');
     this.renderBearingIndex();
 
-    if (this.store.getState().introStage === 'complete') {
+    const stage = this.store.getState().introStage;
+    if (stage === 'complete' || stage === 'mg_2_done') {
       this.maybeTriggerProactiveComms(spec);
     }
   }
@@ -1647,6 +1879,11 @@ export class UIController {
 
     this.closeSiblingComms();
     this.hideCommsToast();
+    this.hideSkyPsycheWhisper();
+    if (this.proactiveCommsTimer !== null) {
+      window.clearTimeout(this.proactiveCommsTimer);
+      this.proactiveCommsTimer = null;
+    }
     this.voice.stop();
 
     this.suppressMinigamePullback = true;
@@ -1655,16 +1892,27 @@ export class UIController {
 
     const state = this.store.getState();
     const chosenId = overrideMinigameId ?? this.store.getMinigameIdForTarget(spec.id, spec.minigameId);
+    const entry = this.minigames.getEntry(chosenId);
+    const resolvedIter = iterationIndex ?? spec.preferredVariantIndex;
+    const scaleLabel = getScaleLabel(spec.scaleClass);
 
     // Preload dynamic JS chunk + plate image during optical_dive so frame 1 is live
-    void this.minigameHost.preload(chosenId, iterationIndex);
+    void this.minigameHost.preload(
+      chosenId,
+      resolvedIter,
+      spec.plateId as CosmicPlateId | undefined
+    );
 
     this.audio.playCue('iris_dive');
     this.optics.triggerTransitionDive?.(spec.id);
 
     this.transitions.play({
       kind: 'optical_dive',
-      label: `CALIBRATING ${spec.label}…`,
+      label: `${entry?.instrumentCode ?? chosenId.toUpperCase()} · ${entry?.title ?? spec.label}`,
+      eyebrow: `${scaleLabel} · ${spec.label}`,
+      instrument: `${entry?.instrumentCode ?? chosenId.toUpperCase()} · ${entry?.title ?? spec.subtitle}`,
+      sublabel: spec.preScanBrief?.objective ?? spec.subtitle,
+      skippable: true,
       tone: state.humanity >= 45 ? 'warm' : 'cold',
       fromSelector: '#optics-layer',
       toSelector: '#minigame-layer',
@@ -1682,7 +1930,10 @@ export class UIController {
             (decodedSpec) => {
               this.lastMinigameDecodedSpec = decodedSpec;
             },
-            iterationIndex !== undefined ? { iterationIndex } : undefined
+            {
+              iterationIndex: resolvedIter,
+              briefingHoldMs: 1650,
+            }
           );
         } finally {
           this.suppressMinigamePullback = false;
@@ -1692,12 +1943,15 @@ export class UIController {
         if (this.activeMinigameTargetId !== null) {
           this.optics.setActive(false);
         }
+        this.minigameHost.setBriefingHold(false);
       },
     });
   }
 
   private exitTargetMinigame(decodedSpec: AnomalySpec | null, preserveDecoded = true): void {
     const resolvedDecoded = decodedSpec ?? this.lastMinigameDecodedSpec;
+    const openCodexTarget = this.pendingCodexTargetId;
+    this.pendingCodexTargetId = null;
     this.activeMinigameTargetId = null;
     this.lastMinigameDecodedSpec = null;
 
@@ -1716,6 +1970,12 @@ export class UIController {
         this.renderBearingIndex();
 
         const updatedState = this.store.getState();
+        this.lastOpticsDecodedSig = updatedState.decodedMinigameTargets.join('|');
+        this.optics.setDecodedTargetIds?.(
+          new Set(updatedState.decodedMinigameTargets),
+          resolvedDecoded?.id
+        );
+
         const stage = updatedState.introStage;
         const decodedTargets = updatedState.decodedMinigameTargets;
         const completedTarget1 =
@@ -1749,16 +2009,70 @@ export class UIController {
               this.openPostTarget2Transmission();
             }
           }, 950);
-        } else if (resolvedDecoded && stage === 'complete') {
-          this.maybeTriggerProactiveComms(resolvedDecoded);
+        } else if (resolvedDecoded && (stage === 'complete' || stage === 'mg_2_done')) {
+          const commsTriggered = this.maybeTriggerProactiveComms(resolvedDecoded);
+          if (!commsTriggered) {
+            this.showSkyPsycheWhisper(resolvedDecoded);
+          }
         }
       },
       onComplete: () => {
         this.minigameHost.destroy(preserveDecoded);
         this.showcase.setMinigameBackdropMode(null);
         this.showcase.setActive(false);
+        if (openCodexTarget) {
+          this.openCodexForTarget(openCodexTarget);
+        }
       },
     });
+  }
+
+  private openCodexForTarget(targetId: string): void {
+    const entries = codexData.entries as Array<{
+      id: string;
+      category: CodexCategoryId;
+      targetId?: string;
+    }>;
+    const match = entries.find((e) => e.targetId === targetId);
+    if (match) {
+      this.codexView.open(match.category, match.id);
+    } else {
+      this.codexView.open('evidence');
+    }
+  }
+
+  private showSkyPsycheWhisper(spec: AnomalySpec): void {
+    const echo = spec.postScanEcho;
+    if (!echo?.psycheLine) return;
+    const box = this.shellRefs?.skyPsycheWhisper;
+    const voiceEl = this.shellRefs?.skyPsycheVoice;
+    const lineEl = this.shellRefs?.skyPsycheLine;
+    if (!box || !voiceEl || !lineEl) return;
+
+    if (this.skyPsycheTimer !== null) {
+      window.clearTimeout(this.skyPsycheTimer);
+      this.skyPsycheTimer = null;
+    }
+
+    const charMeta = CHAR_MAP[echo.psycheVoice];
+    voiceEl.textContent =
+      charMeta?.displayName ?? echo.psycheVoice.replace(/^psyche_/, '').toUpperCase();
+    box.dataset.psycheVoice = echo.psycheVoice;
+    lineEl.textContent = echo.psycheLine;
+    box.classList.remove('hidden');
+
+    this.skyPsycheTimer = window.setTimeout(() => {
+      this.skyPsycheTimer = null;
+      this.hideSkyPsycheWhisper();
+    }, 5000);
+  }
+
+  private hideSkyPsycheWhisper(): void {
+    if (this.skyPsycheTimer !== null) {
+      window.clearTimeout(this.skyPsycheTimer);
+      this.skyPsycheTimer = null;
+    }
+    this.shellRefs?.skyPsycheWhisper?.classList.add('hidden');
   }
 
   private openFutureHumanityEcho(): void {
@@ -1790,26 +2104,36 @@ export class UIController {
     if (this.proactiveCommsSent || this.proactiveCommsTimer !== null) return;
     this.proactiveCommsTimer = window.setTimeout(() => {
       this.proactiveCommsTimer = null;
-      if (this.store.getState().mode !== 'waking_3d') return;
-      if (this.store.getState().introStage !== 'complete') return;
+      const st = this.store.getState();
+      if (st.mode !== 'waking_3d' || st.introStage !== 'complete') return;
+      if (this.activeMinigameTargetId !== null || this.minigameHost.isActive()) return;
       const panelOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
-      if (!panelOpen && !this.proactiveCommsSent) {
+      const overseerOpen = !this.root.querySelector('#overseer-panel')?.classList.contains('hidden');
+      if (!panelOpen && !overseerOpen && !this.proactiveCommsSent) {
         this.proactiveCommsSent = true;
         this.showProactiveCommsToast();
       }
     }, 6200);
   }
 
-  private maybeTriggerProactiveComms(spec?: AnomalySpec): void {
-    if (this.store.getState().introStage !== 'complete') return;
-    const storylet = this.scheduler.pickAvailable(this.store.getState(), 'waking_3d');
-    if (storylet && storylet.id === 'sibling_first_contact') {
-      this.proactiveCommsSent = true;
-      const msg = spec
-        ? uiCopy.commsToast.targetLockedTemplate.replace('{label}', spec.label)
-        : undefined;
-      this.showProactiveCommsToast(msg);
-    }
+  private maybeTriggerProactiveComms(spec?: AnomalySpec): boolean {
+    const state = this.store.getState();
+    if (state.introStage !== 'complete' && state.introStage !== 'mg_2_done') return false;
+    const storylet = this.scheduler.pickAvailable(state, 'waking_3d');
+    if (!storylet) return false;
+    this.pendingCommsStorylet = storylet;
+    this.proactiveCommsSent = true;
+    const optTemplate =
+      (uiCopy.commsToast as { optionalScanTemplate?: string }).optionalScanTemplate ??
+      uiCopy.commsToast.targetLockedTemplate;
+    const msg =
+      storylet.id === 'shift1_optional_scan_echo'
+        ? optTemplate.replace('{label}', spec?.label ?? '')
+        : spec
+          ? uiCopy.commsToast.targetLockedTemplate.replace('{label}', spec.label)
+          : undefined;
+    this.showProactiveCommsToast(msg);
+    return true;
   }
 
   private showProactiveCommsToast(customText?: string): void {
@@ -1842,6 +2166,7 @@ export class UIController {
 
   private openSiblingComms(): void {
     this.hideCommsToast();
+    this.hideSkyPsycheWhisper();
     this.proactiveCommsSent = true;
     this.activeCommsMode = 'sibling';
 
@@ -1852,12 +2177,21 @@ export class UIController {
     this.root.querySelector('.stage')?.classList.add('is-comms-open');
 
     const state = this.store.getState();
-    const desiredKnot = state.introStage === 'mg_1_done' ? 'intro_sibling_first_call' : 'sibling_comms_hub';
+    const pending =
+      this.pendingCommsStorylet &&
+      !state.completedStorylets.includes(this.pendingCommsStorylet.id)
+        ? this.pendingCommsStorylet
+        : null;
+    const desiredKnot =
+      state.introStage === 'mg_1_done'
+        ? 'intro_sibling_first_call'
+        : pending?.knot ?? 'sibling_comms_hub';
 
     if (
       !this.activeCommsSnapshot ||
       this.activeCommsSnapshot.ended ||
       this.activeCommsSnapshot.knot === 'intro_post_target2_overseer' ||
+      (pending && this.activeCommsSnapshot.knot !== pending.knot) ||
       (desiredKnot === 'intro_sibling_first_call' && this.activeCommsSnapshot.knot !== 'intro_sibling_first_call')
     ) {
       this.activeCommsSnapshot = this.commsDialogue.startKnot(desiredKnot);
@@ -1869,6 +2203,7 @@ export class UIController {
 
   private openPostTarget2Transmission(): void {
     this.hideCommsToast();
+    this.hideSkyPsycheWhisper();
     this.activeCommsMode = 'post_target2';
 
     const panel = this.root.querySelector<HTMLElement>('#comms-panel')!;
@@ -1898,6 +2233,12 @@ export class UIController {
       return;
     }
 
+    if (wasOpen && this.pendingCommsStorylet) {
+      this.store.markStoryletDone(this.pendingCommsStorylet.id);
+      this.pendingCommsStorylet = null;
+      this.activeCommsSnapshot = null;
+    }
+
     if (wasOpen && this.store.getState().introStage === 'mg_1_done') {
       this.activeCommsSnapshot = null;
       this.store.markStoryletDone('sibling_first_contact');
@@ -1914,7 +2255,12 @@ export class UIController {
         this.dialogueFeed.handleChoice('#comms-scroll', '#comms-choices', this.commsDialogue, idx, (snap) => {
           this.activeCommsSnapshot = snap;
           if (snap.ended) {
-            this.store.markStoryletDone('sibling_first_contact');
+            if (this.pendingCommsStorylet) {
+              this.store.markStoryletDone(this.pendingCommsStorylet.id);
+              this.pendingCommsStorylet = null;
+            } else {
+              this.store.markStoryletDone('sibling_first_contact');
+            }
           }
           this.renderCommsDialogue();
         });
@@ -1978,9 +2324,11 @@ export class UIController {
 
   private enterDreamVariant(variant: 'current' | 'high' | 'low', afterStart?: () => void): void {
     this.clearTimers();
+    this.isWakingFromDream = false;
     this.voice.stop();
     this.closeSiblingComms();
     this.hideCommsToast();
+    this.hideSkyPsycheWhisper();
     this.wakeupCanvas.setActive(false);
     this.dream.setHumanityOscillation?.(null);
     this.dream.setDrowsyPeek?.(false);
@@ -2044,8 +2392,10 @@ export class UIController {
         if (this.dreamSettleTimer !== null) window.clearTimeout(this.dreamSettleTimer);
         this.dreamSettleTimer = window.setTimeout(() => {
           this.dreamSettleTimer = null;
-          if (this.store.getState().mode === 'dream_2d') {
-            this.startDreamDialogue('dream_shift1_audit');
+          const st = this.store.getState();
+          if (st.mode === 'dream_2d') {
+            const dreamStorylet = this.scheduler.pickAvailable(st, 'dream_2d');
+            this.startDreamDialogue(dreamStorylet?.knot ?? 'dream_shift1_audit');
             afterStart?.();
           }
         }, 480);
@@ -2072,6 +2422,8 @@ export class UIController {
         });
       },
       onWakeToSky: () => {
+        if (this.isWakingFromDream) return;
+        this.isWakingFromDream = true;
         this.audio.playCue('dream_wake');
         this.transitions.play({
           kind: 'dream_wake',
@@ -2081,15 +2433,19 @@ export class UIController {
           toSelector: '#optics-layer',
           onMidpoint: () => {
             this.hideOverseerPanel();
-            if (this.store.getState().introStage !== 'complete') {
+            const prev = this.store.getState();
+            if (prev.introStage !== 'complete') {
               this.store.setIntroStage('complete');
             }
-            if (this.store.getState().shift < 6) {
+            if (prev.shift < 6) {
               this.store.advanceShift();
             }
             this.optics.setAmbientDrift(false);
             this.optics.triggerPullbackArrival?.();
             this.store.patch({ mode: 'waking_3d', overseerAuditActive: false });
+          },
+          onComplete: () => {
+            this.isWakingFromDream = false;
           },
         });
       },
@@ -2303,21 +2659,40 @@ export class UIController {
       }
     }
 
-    // Only show dots for currently visible/unlocked targets during intro
+    // Horizon arc ring + required/optional survey pips for current shift
+    if (state.anomalyProgress !== this.lastHorizonArcPct) {
+      this.lastHorizonArcPct = state.anomalyProgress;
+      if (refs.horizonArcFill) {
+        const arcCirc = 53.41;
+        const dash = (arcCirc * (1 - Math.max(0, Math.min(100, state.anomalyProgress)) / 100)).toFixed(2);
+        refs.horizonArcFill.setAttribute('stroke-dashoffset', dash);
+      }
+      if (refs.horizonArcHud) {
+        refs.horizonArcHud.title = `Horizon Proof · ${state.anomalyProgress}%`;
+      }
+    }
+
     const scannedSig = state.scannedAnomalyIds.join('|');
     const decodedSig = state.decodedMinigameTargets.join('|');
     const surveyDotsSig = `${state.introStage}::${state.shift}::${scannedSig}::${decodedSig}`;
     if (surveyDotsSig !== this.lastSurveyDotsSig) {
       this.lastSurveyDotsSig = surveyDotsSig;
       if (refs.surveyDots) {
+        const shiftDef = shiftsData.shifts.find((sh) => sh.shift === state.shift) ?? shiftsData.shifts[0];
+        const reqSet = new Set(shiftDef?.requiredTargets ?? []);
+        const optSet = new Set(shiftDef?.optionalTargets ?? []);
+        const shiftTargetSet = new Set(shiftDef?.targetAnomalies ?? []);
         const unlockedSet = new Set(this.getUnlockedAnomalyIds(state));
-        const filteredSpecs = this.optics.getAnomalySpecs().filter((sp) => unlockedSet.has(sp.id));
+        const filteredSpecs = this.optics
+          .getAnomalySpecs()
+          .filter((sp) => unlockedSet.has(sp.id) && (shiftTargetSet.size === 0 || shiftTargetSet.has(sp.id)));
 
         refs.surveyDots.innerHTML = filteredSpecs
           .map((sp) => {
             const dec = state.decodedMinigameTargets.includes(sp.id);
             const sc = state.scannedAnomalyIds.includes(sp.id);
-            return `<i class="s-dot ${dec ? 'decoded' : sc ? 'scanned' : ''}" title="${sp.label}"></i>`;
+            const roleCls = reqSet.has(sp.id) ? 'is-required' : optSet.has(sp.id) ? 'is-optional' : '';
+            return `<i class="s-dot ${roleCls} ${dec ? 'decoded' : sc ? 'scanned' : ''}" title="${sp.label}"></i>`;
           })
           .join('');
       }
@@ -2439,15 +2814,37 @@ export class UIController {
       }
     }
 
-    const opticsParamSig = `${state.wavelengthNm}|${state.opticalFidelity.toFixed(2)}|${state.anomalyProgress}`;
+    const shiftDef = shiftsData.shifts.find((sh) => sh.shift === state.shift) ?? shiftsData.shifts[0];
+    const fractalStage = shiftDef?.anomalyPhase?.fractalStage ?? shiftDef?.fractalStage ?? state.shift;
+    const anomalyBleed = shiftDef?.anomalyPhase?.skyShellOpacity ?? 0;
+
+    const opticsParamSig = `${state.wavelengthNm}|${state.opticalFidelity.toFixed(2)}|${state.anomalyProgress}|${state.shift}|${fractalStage}|${anomalyBleed.toFixed(2)}`;
     if (opticsParamSig !== this.lastOpticsParamSig) {
       this.lastOpticsParamSig = opticsParamSig;
-      this.optics.setParameters(state.wavelengthNm, state.opticalFidelity, state.anomalyProgress);
+      this.optics.setParameters(
+        state.wavelengthNm,
+        state.opticalFidelity,
+        state.anomalyProgress,
+        state.shift,
+        fractalStage,
+        anomalyBleed
+      );
+    }
+
+    if (decodedSig !== this.lastOpticsDecodedSig) {
+      this.lastOpticsDecodedSig = decodedSig;
+      this.optics.setDecodedTargetIds?.(new Set(state.decodedMinigameTargets));
     }
 
     if (state.opticalFidelity !== this.lastOpticsFidelity) {
       this.lastOpticsFidelity = state.opticalFidelity;
       this.showcase.setOpticalFidelity(state.opticalFidelity);
+    }
+
+    const dreamAnomalySig = `${state.anomalyProgress}|${fractalStage}`;
+    if (dreamAnomalySig !== this.lastDreamAnomalySig) {
+      this.lastDreamAnomalySig = dreamAnomalySig;
+      this.dream.setAnomalyState?.(state.anomalyProgress, fractalStage);
     }
 
     const dreamStateSig = `${state.humanity}|${personaPruned ? 1 : 0}|${state.overseerAuditActive ? 1 : 0}|${activePersona}`;
@@ -2583,6 +2980,34 @@ export class UIController {
           this.optics.setAmbientDrift(false);
           this.store.patch({ mode: 'waking_3d', introStage: 'complete', activeTargetId: null });
         }
+      },
+      jumpToShift: (shift: number) => {
+        const clamped = Math.max(1, Math.min(shiftsData.shifts.length, Math.round(shift)));
+        this.clearTimers();
+        this.voice.stop();
+        this.suppressMinigamePullback = true;
+        this.minigameHost.destroy();
+        this.suppressMinigamePullback = false;
+        this.activeMinigameTargetId = null;
+        this.closeSiblingComms();
+        this.hideCommsToast();
+        this.wakeupCanvas.setActive(false);
+
+        const curr = this.store.getState();
+        const prevDef = shiftsData.shifts.find((sh) => sh.shift === clamped - 1);
+        const minAnomFloor = clamped === 1 ? 0 : prevDef?.minAnomalyForNextShift ?? (clamped - 1) * 15;
+        const nextAnom = clamped === 1 ? curr.anomalyProgress : Math.max(curr.anomalyProgress, minAnomFloor);
+        const targetMode = curr.mode === 'dream_2d' ? 'dream_2d' : 'waking_3d';
+        if (targetMode === 'waking_3d') {
+          this.optics.setAmbientDrift(false);
+        }
+        this.store.patch({
+          mode: targetMode,
+          introStage: 'complete',
+          shift: clamped,
+          anomalyProgress: nextAnom,
+          activeTargetId: null,
+        });
       },
       launchMinigame: (minigameId, warmth, opticalFidelity, iterationIndex) => {
         const curr = this.store.getState();
@@ -2821,11 +3246,20 @@ export class UIController {
     this.activeCommsMode = 'sibling';
     this.activeDreamSnapshot = null;
     this.activeOverseerSnapshot = null;
+    this.pendingCodexTargetId = null;
+    this.pendingCommsStorylet = null;
+    this.isWakingFromDream = false;
     this.proactiveCommsSent = false;
     this.hasDraggedSkyInIntro = false;
     this.zoomHintUnlocked = false;
     this.vernierNudgeActive = false;
     this.lastPromptKey = '';
+    this.lastOpticsDecodedSig = '';
+    this.lastDreamAnomalySig = '';
+    this.lastHorizonArcPct = -1;
+    this.lastReticleScaleClass = '';
+    this.lastReticleBriefSig = '';
+    this.lastInspectLabel = '';
     this.resumeModeAfterTitle = 'waking_3d';
     this.store.reset();
     this.renderBearingIndex();

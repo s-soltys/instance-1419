@@ -19,7 +19,24 @@ The defining aesthetic of *Instance-1419* is the **visceral contrast between col
   * **Custom Pointer-Draggable Spectral Vernier** (`400–1800 nm`) with calibrated ruler ticks and true-spectrum hairline thread.
 * **Core Shaders (`src/engine/shaders/opticsShaders.ts`):**
   1. Authentic JWST/Hubble deep-field plates with near-IR exposure reveal (`uWavelengthMatch`, `uZoomFactor`).
-  2. **Growing Fractal Anomaly (Dual-Reality Contamination):** Across Shifts 1–6, the enclosure manifests visually as an escalating animated mathematical fractal—starting in Shifts 1–2 as hair-thin recursive seams in 3D deep fields (`uOpticalFidelity`), expanding across opposing sectors in Shifts 3–4, and blooming into an unmistakable animated fractal shell enclosing the 3D horizon by Shifts 5–6 (while subtly bleeding recursive patterns into 2D dream Voronoi cracks/windows as `Anomaly_Progress` climbs or `H%` drops).
+  2. **Growing Fractal Anomaly (Dual-Reality Contamination):** Escalates across Shifts 1–6 via a 3D spherical recursive fold shader (`SKY_FRAGMENT`) and `ANOMALY_FRAGMENT` (`uFractalStage`, `uAnomalyProgress`), bleeding into 2D dream Voronoi cracks (`DREAM_FRAGMENT`) as `Anomaly_Progress` climbs or `H%` drops.
+
+## 2.5 Target Scale Markers, Progressive Real-Sky, Fractal Filigree & Scan Closure UX
+* **6 Diegetic 14px Zeiss SVG Scale Markers & Reticle Etches:** Replace the uniform `.diamond` sky marker with 6 bare etched SVG glyphs mapped 1:1 to `scaleClass` (`docs/CANON.md` §2.5), paired with matching reticle inner ring etches (`AU · PLANETARY`, `LY · STELLAR`, `KLY · NEBULAR`, `MLY · GALACTIC`, `GLY · DEEP FIELD`, `93 BLY · HORIZON`):
+  * `planet`: circle + tilted orbital arc & transit dot.
+  * `star_system`: 4-point optical star + twin binary offset dot.
+  * `nebula`: 3 nested dashed organic cloud arcs.
+  * `galaxy`: twin logarithmic spiral arms.
+  * `galaxy_cluster`: 3 clustered dots inside a split lensing ring.
+  * `horizon_anomaly`: recursive nested double-hairline hexagon.
+  * **Marker & Pullback States:** Unscanned (open hairline) → Locked (muted amber fill + rotating tick) → **`.sky-marker.decoded`** (mint hairline check-dot dimmed to `0.42` opacity after a **1.2s arrival confirmation pulse** on pullback) → Anomaly-Coupled (hairline outer hex tick in Shifts 3–6). Also distinguish Shift Mandate (**solid ring**) vs. Optional Push-Your-Luck (**dashed ring**) pips in the HUD and mini Horizon Arc Ring.
+* **15 NASA/ESA Plate Lazy-Loading & Angular Scaling:** `OpticsScene` maps every target's `plateId` across all 15 commercial-safe `CosmicPlateId` textures via a bounded LRU GPU pool (`<= 6` active WebGL textures for mobile VRAM hygiene), scaled in angular diameter by `scaleClass` (`planet`/`star_system` `10–14°`, `galaxy` `18–24°`, `galaxy_cluster` `26–32°`, `nebula` `30–38°`).
+* **Progressive Real-Sky Density + ~30° Local Sector Deepening:** Single `THREE.Points` draw call (`star_catalog_10ly.bin`) expands monotonically via `uSkySurveyTier` across Shifts 1–6 (Shift 1 `V <= 4.5`, ~900 anchor stars + Sol–Centauri → Shift 6 `V <= 7.8`, 18,000 stars), while each decoded target locally deepens starfield/plate density inside a **~30° cone** around its bearing so surveyed sky visibly fills in.
+* **Razor-Thin Mathematical Filigree 6-Stage Fractal Shell + 2D Voronoi Crack Bleed:** `SKY_FRAGMENT` renders a branch-free 3D spherical recursive fold in Sol–Centauri's rest frame (`uSolDir`) with 20-year causal phase-lag wave modulation (`sin(uTime * 0.45 + dot(d, uSolDir) * PI - ...)`): invisible on wide sky in Shift 1 (`opacity: 0.0`), antipodal IR hairlines in Shift 2, pulsing geodesic seams in Shifts 3–4, and a delicate Zeiss-etched 5-octave crystalline filigree shell preserving deep-space blackness by Shifts 5–6, paired with matching hairline Voronoi border bleed in `DREAM_FRAGMENT`.
+* **Seamless 2.2s Optical-Dive Callout (`A1`) & `#mg-finale-snippet` Closure:**
+  * On reticle lock, render a bare 2-line Zeiss-etched intent preview beneath the reticle (`[GLYPH] SCALE · DISTANCE — LABEL` + `preScanBrief.whyNow`) and action-verb CTA (`TRACE BASELINE · CON-02 ▸`).
+  * During `optical_dive` (~2.2s, click/tap skippable), remove `.sr-only` from `#transition-label` to show a bare etched callout (Target · Instrument · `preScanBrief.objective`, zero modal box) while `briefingHoldSec` pauses Stage-1 instrument timers until the dive settles; keep target + instrument breadcrumb visible in `.mg-top-left`.
+  * On completion, un-hide `#mg-finale-snippet` with `postScanEcho.dossierFinding` (`CLEAN LOCK` / `DEEP OVERCLOCK` / `PARTIAL`), show Mandate vs. Optional status, link Codex updates, and float unvoiced `psyche_*` marginalia (`postScanEcho.psycheLine`) on the 3D sky glass for ~5s after pullback.
 
 ## 3. 2D Mode: Full-Bleed Expressionist Oil Impasto (*Disco Elysium* Aesthetic)
 * **Art Style:** Bold palette-knife oil impasto brushwork—warm ochre, burnt sienna, and amber window highlights contrasting against deep Prussian blue and umber shadows. Softly obscured faces reinforce permanently lost names.

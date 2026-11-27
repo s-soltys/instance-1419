@@ -278,10 +278,19 @@ export function resolveInstrumentPayout(
       telemetrySummary,
     };
   }
-  const table = balance.minigames.payouts.clean;
+  const payouts = balance.minigames?.payouts as
+    | Record<string, { anomalyGain: number; chaosDelta: number; suspicionDelta: number }>
+    | undefined;
+  const table =
+    payouts?.[grade] ??
+    payouts?.clean ?? {
+      anomalyGain: 7,
+      chaosDelta: 2,
+      suspicionDelta: 0,
+    };
   return {
     success: true,
-    grade: 'clean',
+    grade,
     anomalyGain: table.anomalyGain,
     chaosDelta: table.chaosDelta,
     suspicionDelta: table.suspicionDelta,

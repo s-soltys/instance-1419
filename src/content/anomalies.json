@@ -1,4 +1,5 @@
 {
+  "schema_version": 2,
   "anomalies": [
     {
       "id": "sol_centauri_bearing",
@@ -6,33 +7,97 @@
       "subtitle": "Home System · Twin Golden Reference",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
+      "scaleClass": "star_system",
       "minigameId": "constellation_recall",
+      "plateId": "smacs",
+      "preferredVariantIndex": 3,
       "raDeg": 46.0,
       "decDeg": -16.0,
+      "distanceLabel": "10.0 LY",
+      "actionVerb": "TRACE BASELINE",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 1,
       "optimalWavelengthNm": 560,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 34,
       "anomalyGain": 1,
       "kind": "home_reference",
       "accentHex": "#ffd88a",
-      "description": "Ten light-years astern, Sol and Alpha Centauri burn steady in visible light. Trace and recall the anchor star sequence around your home stars to calibrate the probe's optical baseline."
+      "description": "Ten light-years astern, Sol and Alpha Centauri burn steady in visible light. Trace and recall the anchor star sequence around your home stars to calibrate the probe's optical baseline.",
+      "realCatalogRef": {
+        "catalog": "ESA Hipparcos-2",
+        "designation": "Sol / Alpha Centauri AB (10.0 ly astern)",
+        "raJ2000Deg": 46.0,
+        "decJ2000Deg": -16.0,
+        "distanceLy": 10.0,
+        "sourceLicense": "CC BY 3.0 IGO (ESA Hipparcos-2)"
+      },
+      "preScanBrief": {
+        "objective": "Anchor the optical deck on Sol and Alpha Centauri, ten light-years astern.",
+        "instrumentAction": "Trace and recall the reference star sequence around your home stars.",
+        "whyNow": "Verifying your astrometric zero-point opens Probe 1420's cluster relay."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Optical baseline anchored 10.0 light-years astern on Sol and Alpha Centauri.",
+        "psycheVoice": "psyche_warmth",
+        "psycheLine": "Two steady amber specks astern. Ten light-years of quiet dark between this glass and everything home used to mean.",
+        "storyFlag": "decoded_sol_centauri_bearing",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 1,
+        "proofThread": "baseline_anchor",
+        "weight": 1
+      }
     },
     {
       "id": "cluster_j1419_a",
       "label": "CLUSTER J1419-A",
-      "subtitle": "Deep-Field Pulsar & Horizon Edge",
+      "subtitle": "Deep-Field Lensing & Horizon Edge",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
-      "minigameId": "pulsar_echo",
+      "scaleClass": "galaxy_cluster",
+      "minigameId": "lens_focus",
+      "plateId": "smacs",
+      "preferredVariantIndex": 0,
       "raDeg": 14.0,
       "decDeg": 6.0,
+      "distanceLabel": "4.6 BLY",
+      "actionVerb": "UNWARP LENS",
+      "anomalyRole": "boundary_bleed",
+      "spoilerFloorShift": 1,
       "optimalWavelengthNm": 1180,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "einstein_ring",
       "accentHex": "#f4b96a",
-      "description": "A spinning neutron star pulses beside a massive foreground galaxy cluster in near-infrared. Time your catch to the sweeping beacon to expose the impossibly straight edge behind the galaxies."
+      "description": "A massive foreground galaxy cluster bends distant starlight into Einstein arcs in near-infrared. Align the concentric gravitational lens shells to expose the straight discontinuity behind the galaxies.",
+      "realCatalogRef": {
+        "catalog": "NASA/STScI JWST",
+        "designation": "SMACS J0723.3-7327 (J1419-A Field)",
+        "raJ2000Deg": 110.83,
+        "decJ2000Deg": -73.45,
+        "distanceLy": 4600000000,
+        "sourceLicense": "Public Domain (NASA/STScI)"
+      },
+      "preScanBrief": {
+        "objective": "Inspect the faint straight notch behind Cluster J1419-A's distorted galaxy arcs.",
+        "instrumentAction": "Rotate concentric lens shells until the warped background snaps into crisp focus.",
+        "whyNow": "Probe 1420 flagged an unbent line here; rule out mirror error."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Quadrupole lensing inverted; straight nested notches persist behind Cluster J1419-A.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "Gravity only bends light into curves. Nothing in a fourteen-billion-year sky draws with a ruler edge.",
+        "storyFlag": "decoded_cluster_j1419_a",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 1,
+        "proofThread": "lensing_discontinuity",
+        "weight": 2
+      }
     },
     {
       "id": "carina_rift_nebula",
@@ -40,33 +105,97 @@
       "subtitle": "Dust-Veiled Stellar Cliffs",
       "bandName": "MID-IR",
       "showcaseType": "nebula",
+      "scaleClass": "nebula",
       "minigameId": "wave_shaper",
-      "raDeg": -34.0,
-      "decDeg": 14.0,
+      "plateId": "carina",
+      "preferredVariantIndex": 0,
+      "raDeg": -16.0,
+      "decDeg": 10.0,
+      "distanceLabel": "7,600 LY",
+      "actionVerb": "TUNE WAVE",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 1,
       "optimalWavelengthNm": 1580,
       "wavelengthToleranceNm": 260,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "nebula_cloud",
       "accentHex": "#f49d6a",
-      "description": "Opaque molecular dust hides this stellar nursery in visible light. Tune into mid-infrared to slice past the dark cliffs and shape the resonant emission wave emerging behind them."
+      "description": "Opaque molecular dust hides this stellar nursery in visible light. Tune into mid-infrared to slice past the dark cliffs and shape the resonant emission wave emerging behind them.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA JWST",
+        "designation": "NGC 3324 (Carina Cosmic Cliffs)",
+        "raJ2000Deg": 159.35,
+        "decJ2000Deg": -58.62,
+        "distanceLy": 7600,
+        "sourceLicense": "Public Domain (NASA/ESA/CSA/STScI)"
+      },
+      "preScanBrief": {
+        "objective": "Test whether molecular dust clouds scatter false edges into the mid-infrared band.",
+        "instrumentAction": "Shape harmonic wave amplitudes to isolate emission emerging behind the dust cliff.",
+        "whyNow": "Ruling out local Milky Way haze confirms J1419-A wasn't foreground dust."
+      },
+      "postScanEcho": {
+        "dossierFinding": "1580 nm dust extinction bypassed; background signal sits cleanly behind Carina.",
+        "psycheVoice": "psyche_warmth",
+        "psycheLine": "Dark cliffs melt into warm amber surf, and still the distant background line refuses to blur.",
+        "storyFlag": "decoded_carina_rift_nebula",
+        "unlocksStoryletId": "shift1_optional_scan_echo"
+      },
+      "proofContribution": {
+        "phase": 1,
+        "proofThread": "dust_extinction_control",
+        "weight": 1
+      }
     },
     {
       "id": "asterism_drift_01",
-      "label": "SMACS ASTERISM K-01",
+      "label": "EAGLE DUST PILLARS K-01",
       "subtitle": "Multi-Band Dust Veil Sector",
       "bandName": "VISIBLE",
-      "showcaseType": "deep_field",
+      "showcaseType": "nebula",
+      "scaleClass": "nebula",
       "minigameId": "multiband_loupe",
-      "raDeg": 78.0,
-      "decDeg": 22.0,
+      "plateId": "pillars",
+      "preferredVariantIndex": 0,
+      "raDeg": 70.0,
+      "decDeg": 14.0,
+      "distanceLabel": "6,500 LY",
+      "actionVerb": "SWEEP BANDS",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 1,
       "optimalWavelengthNm": 540,
       "wavelengthToleranceNm": 220,
       "recommendedFovMax": 32,
       "anomalyGain": 1,
-      "kind": "horizon_lattice",
+      "kind": "nebula_cloud",
       "accentHex": "#ffe0a3",
-      "description": "Dense dust pillars shroud faint embedded stellar cores across the forward sector. Sweep the Optical, Infrared, and X-Ray loupe to isolate the true local anchors."
+      "description": "Dense dust pillars shroud faint embedded stellar cores across the forward sector. Sweep the Optical, Infrared, and X-Ray loupe to isolate the true local anchors.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA JWST",
+        "designation": "M16 / NGC 6611 (Pillars of Creation)",
+        "raJ2000Deg": 274.7,
+        "decJ2000Deg": -13.79,
+        "distanceLy": 6500,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
+      },
+      "preScanBrief": {
+        "objective": "Separate embedded protostars from cold dust knots across three spectral bands.",
+        "instrumentAction": "Sweep the Optical, Infrared, and X-Ray loupe to tag local cores.",
+        "whyNow": "Cross-band filtering rules out dense pillar knots masquerading as distant arcs."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Multi-band loupe isolated M16 protostars; zero dust-pillar contamination on baseline.",
+        "psycheVoice": "psyche_clinical",
+        "psycheLine": "Optical obscures, infrared reveals, X-ray cuts clean. Foreground dust columns behave strictly by physics.",
+        "storyFlag": "decoded_asterism_drift_01",
+        "unlocksStoryletId": "shift1_optional_scan_echo"
+      },
+      "proofContribution": {
+        "phase": 1,
+        "proofThread": "dust_extinction_control",
+        "weight": 1
+      }
     },
     {
       "id": "fomalhaut_glare_well",
@@ -74,16 +203,48 @@
       "subtitle": "High-Contrast Coronagraph Ring",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
+      "scaleClass": "planet",
       "minigameId": "coronagraph_mask",
-      "raDeg": -72.0,
-      "decDeg": -24.0,
+      "plateId": "sombrero",
+      "preferredVariantIndex": 0,
+      "raDeg": 344.41,
+      "decDeg": -29.62,
+      "distanceLabel": "25.1 LY",
+      "actionVerb": "MASK GLARE",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 2,
       "optimalWavelengthNm": 620,
       "wavelengthToleranceNm": 220,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "home_reference",
       "accentHex": "#f6c98e",
-      "description": "Fierce photospheric glare conceals faint companions inside an icy debris disk. Center the Lyot occulting mask to unmask the hidden planetary orbits."
+      "description": "Fierce photospheric glare conceals faint companions inside an icy debris disk. Center the Lyot occulting mask to unmask the hidden planetary orbits.",
+      "realCatalogRef": {
+        "catalog": "ESA Hipparcos-2",
+        "designation": "Fomalhaut (Alpha Piscis Austrini)",
+        "raJ2000Deg": 344.41,
+        "decJ2000Deg": -29.62,
+        "distanceLy": 25.1,
+        "sourceLicense": "CC BY 3.0 IGO (ESA Hipparcos-2)"
+      },
+      "preScanBrief": {
+        "objective": "Null bright stellar diffraction to check whether coronagraph ghosts cause straight seams.",
+        "instrumentAction": "Center the Lyot occulting mask over Fomalhaut to expose orbital companions.",
+        "whyNow": "Shift 2 requires ruling out internal stray-light diffraction from nearby bright stars."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Fomalhaut glare nulled cleanly; optical diffraction rules out local ghosting.",
+        "psycheVoice": "psyche_clinical",
+        "psycheLine": "Stray starlight suppresses cleanly when centered. Whatever cut across J1419-A was not lens flare.",
+        "storyFlag": "decoded_fomalhaut_glare_well",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 2,
+        "proofThread": "foreground_occlusion",
+        "weight": 1
+      }
     },
     {
       "id": "dust_polarized_veil",
@@ -91,16 +252,48 @@
       "subtitle": "Cross-Polarized Filament Plane",
       "bandName": "MID-IR",
       "showcaseType": "nebula",
+      "scaleClass": "nebula",
       "minigameId": "polarization_filter",
-      "raDeg": -96.0,
-      "decDeg": 34.0,
+      "plateId": "horsehead",
+      "preferredVariantIndex": 0,
+      "raDeg": 85.25,
+      "decDeg": -2.46,
+      "distanceLabel": "1,375 LY",
+      "actionVerb": "ALIGN ANALYZER",
+      "anomalyRole": "boundary_bleed",
+      "spoilerFloorShift": 2,
       "optimalWavelengthNm": 1480,
       "wavelengthToleranceNm": 250,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "nebula_cloud",
       "accentHex": "#e6a77e",
-      "description": "Aligned interstellar dust grains scatter polarized glare across the ridge. Rotate the optical analyzer to extinguish foreground scatter and expose embedded beacons."
+      "description": "Aligned interstellar dust grains scatter polarized glare across the ridge. Rotate the optical analyzer to extinguish foreground scatter and expose embedded beacons.",
+      "realCatalogRef": {
+        "catalog": "ESA/Webb NASA/CSA",
+        "designation": "Barnard 33 (Horsehead Nebula)",
+        "raJ2000Deg": 85.25,
+        "decJ2000Deg": -2.46,
+        "distanceLy": 1375,
+        "sourceLicense": "CC BY 4.0 (ESA/Webb, NASA, CSA)"
+      },
+      "preScanBrief": {
+        "objective": "Extinguish polarized dust scatter along Barnard 33 to inspect the background sky.",
+        "instrumentAction": "Rotate the polarization analyzer until foreground glare drops out cleanly.",
+        "whyNow": "Confirm whether the faint straight-edge signature survives polarized dust extinction."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Polarized Horsehead scatter nulled; faint background hairline persists behind dust.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "Strip away magnetic dust glare and the same quiet notch waits behind Orion's ridge.",
+        "storyFlag": "decoded_dust_polarized_veil",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 2,
+        "proofThread": "dust_extinction_control",
+        "weight": 2
+      }
     },
     {
       "id": "kepler_transit_arc",
@@ -108,16 +301,48 @@
       "subtitle": "Photometric Resonance System",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
+      "scaleClass": "planet",
       "minigameId": "exoplanet_transit",
-      "raDeg": 112.0,
-      "decDeg": -12.0,
+      "plateId": "rho_ophiuchi",
+      "preferredVariantIndex": 2,
+      "raDeg": 298.65,
+      "decDeg": 43.95,
+      "distanceLabel": "579 LY",
+      "actionVerb": "FIT TRANSIT",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 2,
       "optimalWavelengthNm": 580,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "home_reference",
       "accentHex": "#ffd699",
-      "description": "Periodic micro-dips interrupt a quiet main-sequence light curve. Match orbital periods and transit depths to confirm whether unseen worlds or boundary shimmer cause the signal."
+      "description": "Periodic micro-dips interrupt a quiet main-sequence light curve. Match orbital periods and transit depths to confirm whether unseen worlds or stellar noise cause the signal.",
+      "realCatalogRef": {
+        "catalog": "NASA Kepler / ESA Gaia DR3",
+        "designation": "Kepler-186 (Cygnus Transit Field)",
+        "raJ2000Deg": 298.65,
+        "decJ2000Deg": 43.95,
+        "distanceLy": 579,
+        "sourceLicense": "Public Domain (NASA) / CC BY 3.0 IGO (ESA Gaia DR3)"
+      },
+      "preScanBrief": {
+        "objective": "Verify photometric shutter stability on a known resonant exoplanet transit.",
+        "instrumentAction": "Align orbital periods and radius ratios to match the observed light-curve dips.",
+        "whyNow": "Rules out periodic CCD shutter flicker as the cause of deep-field glitches."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Kepler-186 photometry locked cleanly; zero periodic detector flicker present.",
+        "psycheVoice": "psyche_warmth",
+        "psycheLine": "Small dark worlds crossing distant suns—ordinary clockwork that reminds you how big real sky is.",
+        "storyFlag": "decoded_kepler_transit_arc",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 2,
+        "proofThread": "foreground_occlusion",
+        "weight": 1
+      }
     },
     {
       "id": "deep_exposure_window",
@@ -125,33 +350,97 @@
       "subtitle": "Variable-Iris Deep Integration",
       "bandName": "NEAR-IR",
       "showcaseType": "deep_field",
+      "scaleClass": "galaxy_cluster",
       "minigameId": "exposure_stacker",
-      "raDeg": 146.0,
-      "decDeg": 28.0,
+      "plateId": "hudf",
+      "preferredVariantIndex": 0,
+      "raDeg": 53.16,
+      "decDeg": -27.79,
+      "distanceLabel": "13.0 BLY",
+      "actionVerb": "STACK EXPOSURE",
+      "anomalyRole": "boundary_bleed",
+      "spoilerFloorShift": 2,
       "optimalWavelengthNm": 1240,
       "wavelengthToleranceNm": 230,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#b5dcff",
-      "description": "Ultra-faint background galaxies emerge only through patient photon stacking. Modulate the iris aperture around passing cosmic-ray streaks to clear the sub-frame."
+      "description": "Ultra-faint background galaxies emerge only through patient photon stacking. Modulate the iris aperture around passing cosmic-ray streaks to clear the sub-frame.",
+      "realCatalogRef": {
+        "catalog": "NASA/STScI Hubble",
+        "designation": "HUDF (Fornax Ultra Deep Field)",
+        "raJ2000Deg": 53.16,
+        "decJ2000Deg": -27.79,
+        "distanceLy": 13000000000,
+        "sourceLicense": "Public Domain (NASA/STScI)"
+      },
+      "preScanBrief": {
+        "objective": "Stack deep Fornax sub-frames to check whether hairline seams appear outside J1419-A.",
+        "instrumentAction": "Modulate the iris shutter between cosmic-ray streaks to build clean signal.",
+        "whyNow": "A second deep-field hemisphere check tests whether the notch repeats elsewhere."
+      },
+      "postScanEcho": {
+        "dossierFinding": "HUDF stack clear of cosmic-ray artifacts; faint straight seam appears at 13 BLY.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "Different telescope bearing, thirteen billion years out, and the same hair-thin cut waits behind the galaxies.",
+        "storyFlag": "decoded_deep_exposure_window",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 2,
+        "proofThread": "lensing_discontinuity",
+        "weight": 2
+      }
     },
     {
       "id": "sector_s04_seam",
       "label": "PULSAR RIFT S-04",
-      "subtitle": "Deep-Field Lensing & Repeating Facet",
+      "subtitle": "Synchrotron Beacon & Repeating Facet",
       "bandName": "UV / X-RAY",
-      "showcaseType": "deep_field",
-      "minigameId": "lens_focus",
-      "raDeg": -42.0,
-      "decDeg": -18.0,
+      "showcaseType": "star_system",
+      "scaleClass": "star_system",
+      "minigameId": "pulsar_echo",
+      "plateId": "crab",
+      "preferredVariantIndex": 0,
+      "raDeg": 83.63,
+      "decDeg": 22.01,
+      "distanceLabel": "6,500 LY",
+      "actionVerb": "TIME PULSAR",
+      "anomalyRole": "boundary_bleed",
+      "spoilerFloorShift": 3,
       "optimalWavelengthNm": 260,
       "wavelengthToleranceNm": 180,
       "recommendedFovMax": 26,
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#9cc8ff",
-      "description": "Violent ultraviolet and X-ray filaments flare behind warped cluster arcs along Sector S-04. Align the concentric gravitational lens shells to expose the repeating boundary facet."
+      "description": "Violent ultraviolet and X-ray synchrotron sweeps pulse from a magnetized neutron star along Sector S-04. Time your catch to the sweeping beacon to isolate the repeating boundary facet.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA JWST",
+        "designation": "M1 / PSR B0531+21 (Crab Pulsar)",
+        "raJ2000Deg": 83.63,
+        "decJ2000Deg": 22.01,
+        "distanceLy": 6500,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
+      },
+      "preScanBrief": {
+        "objective": "Time the Crab Pulsar synchrotron sweep in UV/X-ray to verify broadband seam parity.",
+        "instrumentAction": "Catch the rotating neutron-star beacon cleanly across phase glitches.",
+        "whyNow": "Confirming the facet at 260 nm rules out thermal infrared emission quirks."
+      },
+      "postScanEcho": {
+        "dossierFinding": "260 nm synchrotron timing locked; facet scale matches J1419-A within arcseconds.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "A dead star spinning like a lighthouse, catching the exact same glass facet in ultraviolet.",
+        "storyFlag": "decoded_sector_s04_seam",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 3,
+        "proofThread": "broadband_parity",
+        "weight": 2
+      }
     },
     {
       "id": "fraunhofer_prism_knot",
@@ -159,16 +448,48 @@
       "subtitle": "Ionized Emission & Doppler Knot",
       "bandName": "VISIBLE",
       "showcaseType": "nebula",
+      "scaleClass": "nebula",
       "minigameId": "spectral_prism",
-      "raDeg": -130.0,
-      "decDeg": -36.0,
+      "plateId": "ring_m57",
+      "preferredVariantIndex": 0,
+      "raDeg": 283.4,
+      "decDeg": 33.03,
+      "distanceLabel": "2,570 LY",
+      "actionVerb": "SPLIT SPECTRUM",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 3,
       "optimalWavelengthNm": 510,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "nebula_cloud",
       "accentHex": "#9ee8ff",
-      "description": "An expanding planetary nebula glows in crisp atomic emission lines. Reconstruct its elemental barcode and cosmological shift to rule out thermal instrument drift."
+      "description": "An expanding planetary nebula glows in crisp atomic emission lines. Reconstruct its elemental barcode and cosmological shift to rule out thermal instrument drift.",
+      "realCatalogRef": {
+        "catalog": "ESA/Webb NASA/CSA",
+        "designation": "M57 / NGC 6720 (Ring Nebula)",
+        "raJ2000Deg": 283.4,
+        "decJ2000Deg": 33.03,
+        "distanceLy": 2570,
+        "sourceLicense": "CC BY 4.0 (ESA/Webb, NASA, CSA)"
+      },
+      "preScanBrief": {
+        "objective": "Calibrate atomic emission lines on M57 to rule out spectrograph thermal drift.",
+        "instrumentAction": "Mix ionized emission elements and tune cosmological redshift to match reference lines.",
+        "whyNow": "Independent wavelength calibration anchors all broadband anomaly comparisons."
+      },
+      "postScanEcho": {
+        "dossierFinding": "M57 emission barcode calibrated; spectrograph wavelength zero-point confirmed.",
+        "psycheVoice": "psyche_clinical",
+        "psycheLine": "Hydrogen, oxygen, nitrogen lines hold to four decimals. The spectrograph is not drifting.",
+        "storyFlag": "decoded_fraunhofer_prism_knot",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 3,
+        "proofThread": "broadband_parity",
+        "weight": 1
+      }
     },
     {
       "id": "vlbi_quad_beacon",
@@ -176,16 +497,48 @@
       "subtitle": "Wide-Cluster Radio Triangulation",
       "bandName": "MID-IR",
       "showcaseType": "deep_field",
+      "scaleClass": "galaxy_cluster",
       "minigameId": "radio_triangulation",
-      "raDeg": 168.0,
-      "decDeg": -28.0,
+      "plateId": "stephans_quintet",
+      "preferredVariantIndex": 0,
+      "raDeg": 338.99,
+      "decDeg": 33.96,
+      "distanceLabel": "290 MLY",
+      "actionVerb": "TRIANGULATE",
+      "anomalyRole": "boundary_bleed",
+      "spoilerFloorShift": 3,
       "optimalWavelengthNm": 1620,
       "wavelengthToleranceNm": 250,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#8bd4ff",
-      "description": "Long-baseline receivers pick up ghost multipath echoes beside a sharp synchrotron beacon. Steer the perimeter dishes to reject decoys and triangulate the true source."
+      "description": "Long-baseline receivers pick up ghost multipath echoes beside a sharp synchrotron beacon. Steer the perimeter dishes to reject decoys and triangulate the true source.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA JWST",
+        "designation": "HCG 92 (Stephan's Quintet)",
+        "raJ2000Deg": 338.99,
+        "decJ2000Deg": 33.96,
+        "distanceLy": 290000000,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
+      },
+      "preScanBrief": {
+        "objective": "Triangulate shock-front radio echoes across Stephan's Quintet against cluster decoys.",
+        "instrumentAction": "Steer perimeter radio dishes onto the true interferometric intersection.",
+        "whyNow": "Multi-dish triangulation tests whether boundary reflections carry radio structure."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Stephan's Quintet VLBI fix locked; ghost echoes align with background seam.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "Four dishes across the cluster point to one sharp corner that refuses to behave like shock gas.",
+        "storyFlag": "decoded_vlbi_quad_beacon",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 3,
+        "proofThread": "broadband_parity",
+        "weight": 2
+      }
     },
     {
       "id": "compact_binary_scale",
@@ -193,16 +546,48 @@
       "subtitle": "Barycentric Remnant Equilibrium",
       "bandName": "UV / X-RAY",
       "showcaseType": "star_system",
+      "scaleClass": "star_system",
       "minigameId": "binary_mass_scale",
-      "raDeg": 28.0,
-      "decDeg": -44.0,
+      "plateId": "southern_ring",
+      "preferredVariantIndex": 0,
+      "raDeg": 151.76,
+      "decDeg": -40.44,
+      "distanceLabel": "2,500 LY",
+      "actionVerb": "WEIGH BINARY",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 3,
       "optimalWavelengthNm": 280,
       "wavelengthToleranceNm": 190,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "einstein_ring",
       "accentHex": "#b0d9ff",
-      "description": "A luminous star whips around an unseen compact remnant. Balance orbital radius and companion mass on the barycenter to weigh the dark partner."
+      "description": "A luminous star whips around an unseen compact remnant. Balance orbital radius and companion mass on the barycenter to weigh the dark partner.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA JWST",
+        "designation": "NGC 3132 (Southern Ring Binary)",
+        "raJ2000Deg": 151.76,
+        "decJ2000Deg": -40.44,
+        "distanceLy": 2500,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
+      },
+      "preScanBrief": {
+        "objective": "Weigh the Southern Ring central binary to confirm local clockwork timing.",
+        "instrumentAction": "Balance orbital radius and mass ratio across the common barycenter.",
+        "whyNow": "Rules out local timing wobble in the probe's orbital ephemeris."
+      },
+      "postScanEcho": {
+        "dossierFinding": "NGC 3132 binary barycenter solved; probe ephemeris clockwork verified nominal.",
+        "psycheVoice": "psyche_warmth",
+        "psycheLine": "Two dead and dying stars circling a quiet center—ordinary gravity still keeps its promises.",
+        "storyFlag": "decoded_compact_binary_scale",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 3,
+        "proofThread": "broadband_parity",
+        "weight": 1
+      }
     },
     {
       "id": "cepheid_candle_field",
@@ -210,16 +595,48 @@
       "subtitle": "Standard-Candle Photometer",
       "bandName": "VISIBLE",
       "showcaseType": "deep_field",
+      "scaleClass": "galaxy",
       "minigameId": "cepheid_ladder",
-      "raDeg": -15.0,
-      "decDeg": 48.0,
+      "plateId": "whirlpool",
+      "preferredVariantIndex": 0,
+      "raDeg": 184.74,
+      "decDeg": 47.3,
+      "distanceLabel": "24.8 MLY",
+      "actionVerb": "GAUGE CEPHEID",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 4,
       "optimalWavelengthNm": 550,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#ffe29e",
-      "description": "Pulsating Cepheid variables anchor the cosmic distance ladder across nearby galaxies. Match pulsation cadence and split-mirror brightness to rule out systematic scale drift in our local reference rung."
+      "description": "Pulsating Cepheid variables anchor the cosmic distance ladder across nearby galaxies. Match pulsation cadence and split-mirror brightness to rule out systematic scale drift in our local reference rung.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA Hubble",
+        "designation": "M106 / NGC 4258 (Cepheid Anchor)",
+        "raJ2000Deg": 184.74,
+        "decJ2000Deg": 47.3,
+        "distanceLy": 24800000,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Hubble)"
+      },
+      "preScanBrief": {
+        "objective": "Anchor extragalactic Cepheid distances on M106 before testing far-horizon timing.",
+        "instrumentAction": "Match variable-star pulsation cadence and split-mirror luminosity.",
+        "whyNow": "Proves cosmic scale bars hold true before measuring the enclosure's radius."
+      },
+      "postScanEcho": {
+        "dossierFinding": "M106 Cepheid rung locked; cosmic distance ladder free of systematic scale bias.",
+        "psycheVoice": "psyche_clinical",
+        "psycheLine": "Twenty-four million light-years holds to the decimal. The ruler works; only the wall beyond it breaks.",
+        "storyFlag": "decoded_cepheid_candle_field",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 4,
+        "proofThread": "causal_horizon_lag",
+        "weight": 1
+      }
     },
     {
       "id": "tycho_echo_shell",
@@ -227,16 +644,48 @@
       "subtitle": "Light-Echo Wavefront Rewind",
       "bandName": "UV / X-RAY",
       "showcaseType": "nebula",
+      "scaleClass": "nebula",
       "minigameId": "supernova_echoes",
-      "raDeg": 92.0,
-      "decDeg": 52.0,
+      "plateId": "cas_a",
+      "preferredVariantIndex": 0,
+      "raDeg": 6.33,
+      "decDeg": 64.14,
+      "distanceLabel": "8,000 LY",
+      "actionVerb": "REWIND ECHO",
+      "anomalyRole": "boundary_bleed",
+      "spoilerFloorShift": 4,
       "optimalWavelengthNm": 240,
       "wavelengthToleranceNm": 190,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "nebula_cloud",
       "accentHex": "#ff9e75",
-      "description": "Ancient supernova flash rings sweep outward across dust sheets. Trace tangent wavefronts and rewind time to the detonation focus to calibrate interstellar dust geometry."
+      "description": "Ancient supernova flash rings sweep outward across dust sheets. Trace tangent wavefronts and rewind time to the detonation focus to calibrate interstellar dust geometry.",
+      "realCatalogRef": {
+        "catalog": "NASA/CXC/STScI",
+        "designation": "SN 1572 / 3C 10 (Tycho Remnant)",
+        "raJ2000Deg": 6.33,
+        "decJ2000Deg": 64.14,
+        "distanceLy": 8000,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
+      },
+      "preScanBrief": {
+        "objective": "Rewind Tycho supernova light-echoes to test whether straight seams are dust-sheet flares.",
+        "instrumentAction": "Align spherical wavefront tangents back to the remnant's detonation center.",
+        "whyNow": "Light-echo geometry separates expanding blast shells from static horizon seams."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Tycho light-echoes converge radially; ruled facets lie far beyond Galactic dust.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "Real blast light expands in honest circles. The straight lattice waits silently behind every ring.",
+        "storyFlag": "decoded_tycho_echo_shell",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 4,
+        "proofThread": "dust_extinction_control",
+        "weight": 2
+      }
     },
     {
       "id": "gravity_slingshot_pass",
@@ -244,16 +693,48 @@
       "subtitle": "Gravitational Caustic Deflection",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
+      "scaleClass": "galaxy",
       "minigameId": "gravity_slingshot",
-      "raDeg": -138.0,
-      "decDeg": 18.0,
+      "plateId": "whirlpool",
+      "preferredVariantIndex": 0,
+      "raDeg": 202.47,
+      "decDeg": 47.2,
+      "distanceLabel": "23.2 MLY",
+      "actionVerb": "PLOT CAUSTIC",
+      "anomalyRole": "boundary_bleed",
+      "spoilerFloorShift": 4,
       "optimalWavelengthNm": 1120,
       "wavelengthToleranceNm": 230,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "einstein_ring",
       "accentHex": "#a3f0c8",
-      "description": "Foreground mass wells bend faint background starlight around dust filaments along the M51 bearing. Trace a clean caustic deflection path into the focal ring to isolate the recursive edge behind it."
+      "description": "Foreground mass wells bend faint background starlight around dust filaments along the M51 bearing. Trace a clean caustic deflection path into the focal ring to isolate the recursive edge behind it.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA Hubble",
+        "designation": "M51 / NGC 5194 (Whirlpool Galaxy)",
+        "raJ2000Deg": 202.47,
+        "decJ2000Deg": 47.2,
+        "distanceLy": 23200000,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Hubble)"
+      },
+      "preScanBrief": {
+        "objective": "Trace photon deflection past M51's tidal gravity wells to isolate deep background facets.",
+        "instrumentAction": "Launch a ballistic ray around twin mass wells into the focal target ring.",
+        "whyNow": "Confirm how spiral galaxy potentials distort—yet fail to erase—the fractal seam."
+      },
+      "postScanEcho": {
+        "dossierFinding": "M51 caustic trajectory solved; recursive boundary shear persists behind spiral arms.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "Even a spiral galaxy bending light around its companion cannot smooth out those repeating corners.",
+        "storyFlag": "decoded_gravity_slingshot_pass",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 4,
+        "proofThread": "lensing_discontinuity",
+        "weight": 2
+      }
     },
     {
       "id": "antipodal_poles_seam",
@@ -261,16 +742,48 @@
       "subtitle": "180° Dual-Epoch Horizon Check",
       "bandName": "VISIBLE",
       "showcaseType": "antipodal_poles",
+      "scaleClass": "horizon_anomaly",
       "minigameId": "light_dispersion",
-      "raDeg": -166.0,
+      "plateId": "hudf",
+      "preferredVariantIndex": 0,
+      "raDeg": 194.0,
       "decDeg": -6.0,
+      "distanceLabel": "46.5 BLY",
+      "actionVerb": "DISPERSE BEAM",
+      "anomalyRole": "direct_anomaly",
+      "spoilerFloorShift": 5,
       "optimalWavelengthNm": 520,
       "wavelengthToleranceNm": 220,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#a8e6ff",
-      "description": "Directly opposite Cluster J1419-A across the sky, dispersive multi-band checks reveal synchronized boundary shifts faster than light could ever carry a signal."
+      "description": "Directly opposite Cluster J1419-A across the sky, dispersive multi-band checks reveal synchronized boundary shifts faster than light could ever carry a signal.",
+      "realCatalogRef": {
+        "catalog": "Probe 1419 Survey",
+        "designation": "Antipodal Pole Control (Opp. J1419-A)",
+        "raJ2000Deg": 194.0,
+        "decJ2000Deg": -6.0,
+        "distanceLy": 46500000000,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
+      },
+      "preScanBrief": {
+        "objective": "Check the exact antipode 180° opposite J1419-A for synchronized boundary shifts.",
+        "instrumentAction": "Disperse multi-wavelength beams through the prism array onto target detectors.",
+        "whyNow": "Opposing poles shifting together breaks light-cone independence across 93 billion light-years."
+      },
+      "postScanEcho": {
+        "dossierFinding": "180° antipodal phase shift logged; causal violation across 93 BLY confirmed.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "Opposite edges of the universe blinking in time, like two panes in the same quiet window.",
+        "storyFlag": "decoded_antipodal_poles_seam",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 5,
+        "proofThread": "causal_horizon_lag",
+        "weight": 3
+      }
     },
     {
       "id": "michelson_delay_node",
@@ -278,16 +791,48 @@
       "subtitle": "Sub-Micron Fringe Equalization",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
+      "scaleClass": "horizon_anomaly",
       "minigameId": "michelson_fringe",
-      "raDeg": 132.0,
-      "decDeg": -46.0,
+      "plateId": "cartwheel",
+      "preferredVariantIndex": 2,
+      "raDeg": 9.42,
+      "decDeg": -33.72,
+      "distanceLabel": "500 MLY",
+      "actionVerb": "LOCK FRINGES",
+      "anomalyRole": "direct_anomaly",
+      "spoilerFloorShift": 5,
       "optimalWavelengthNm": 1340,
       "wavelengthToleranceNm": 220,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "einstein_ring",
       "accentHex": "#9ee8ff",
-      "description": "Twin optical delay rails split faint boundary photons across the probe bench. Equalize path lengths until Haidinger interference rings lock crisp and silent."
+      "description": "Twin optical delay rails split faint boundary photons across the probe bench. Equalize path lengths until Haidinger interference rings lock crisp and silent.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA JWST",
+        "designation": "ESO 350-40 (Cartwheel Wide Baseline)",
+        "raJ2000Deg": 9.42,
+        "decJ2000Deg": -33.72,
+        "distanceLy": 500000000,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
+      },
+      "preScanBrief": {
+        "objective": "Measure sub-micron arrival lag across opposing fractal shifts on the delay bench.",
+        "instrumentAction": "Equalize mirror delay rails until Haidinger interference fringes lock silent.",
+        "whyNow": "Quantifies the 20-year causal dipole proving the enclosure centers astern on Sol."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Delay fringe locked; 20-year causal dipole centers the shell 10.0 ly astern.",
+        "psycheVoice": "psyche_clinical",
+        "psycheLine": "Ten years early ahead, ten years late astern. The geometry only solves from Earth's doorstep.",
+        "storyFlag": "decoded_michelson_delay_node",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 5,
+        "proofThread": "causal_horizon_lag",
+        "weight": 3
+      }
     },
     {
       "id": "einstein_cross_quasar",
@@ -295,16 +840,48 @@
       "subtitle": "Time-Delayed Lensing Mirage",
       "bandName": "NEAR-IR",
       "showcaseType": "grav_lens",
+      "scaleClass": "galaxy_cluster",
       "minigameId": "einstein_cross",
-      "raDeg": -64.0,
-      "decDeg": 56.0,
+      "plateId": "smacs",
+      "preferredVariantIndex": 0,
+      "raDeg": 340.13,
+      "decDeg": 3.36,
+      "distanceLabel": "8.0 BLY",
+      "actionVerb": "SYNC MIRAGE",
+      "anomalyRole": "direct_anomaly",
+      "spoilerFloorShift": 5,
       "optimalWavelengthNm": 1220,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "einstein_ring",
       "accentHex": "#ffd38a",
-      "description": "Strong lensing splits one distant quasar into four time-staggered mirages. Match their delayed flare cadence to separate real lensing from boundary reflection."
+      "description": "Strong lensing splits one distant quasar into four time-staggered mirages. Match their delayed flare cadence to separate real lensing from boundary reflection.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA Hubble/JWST",
+        "designation": "Q2237+0305 (Einstein Cross Quasar)",
+        "raJ2000Deg": 340.13,
+        "decJ2000Deg": 3.36,
+        "distanceLy": 8000000000,
+        "sourceLicense": "Public Domain (NASA/STScI)"
+      },
+      "preScanBrief": {
+        "objective": "Separate real gravitational time delays on Q2237+0305 from enclosure facet reflections.",
+        "instrumentAction": "Synchronize the four staggered quasar flare cadences to their optical paths.",
+        "whyNow": "Rules out lensed mirage confusion before assembling the final Sol–Centauri packet."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Q2237+0305 quasar delays isolated; enclosure reflection separated from true lensing.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "Four images of one quasar, staggered in time—and behind them, one seamless shell that refuses to split.",
+        "storyFlag": "decoded_einstein_cross_quasar",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 5,
+        "proofThread": "lensing_discontinuity",
+        "weight": 2
+      }
     },
     {
       "id": "orbital_parallax_drift",
@@ -312,16 +889,48 @@
       "subtitle": "Foreground Parallax Separation",
       "bandName": "VISIBLE",
       "showcaseType": "star_system",
+      "scaleClass": "star_system",
       "minigameId": "parallax_depth",
-      "raDeg": -108.0,
-      "decDeg": -54.0,
+      "plateId": "tarantula",
+      "preferredVariantIndex": 0,
+      "raDeg": 84.66,
+      "decDeg": -69.1,
+      "distanceLabel": "160 KLY",
+      "actionVerb": "SORT PARALLAX",
+      "anomalyRole": "baseline",
+      "spoilerFloorShift": 6,
       "optimalWavelengthNm": 590,
       "wavelengthToleranceNm": 220,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "home_reference",
       "accentHex": "#ffe0a3",
-      "description": "Rocking the probe's orbital baseline separates nearby Galactic stars from the extragalactic background—confirming the recursive horizon fractal lies far beyond local stellar drift."
+      "description": "Rocking the probe's orbital baseline separates nearby Galactic stars from the extragalactic background—confirming the recursive horizon fractal lies far beyond local stellar drift.",
+      "realCatalogRef": {
+        "catalog": "NASA/ESA JWST",
+        "designation": "NGC 2070 / 30 Doradus (Tarantula)",
+        "raJ2000Deg": 84.66,
+        "decJ2000Deg": -69.1,
+        "distanceLy": 160000,
+        "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
+      },
+      "preScanBrief": {
+        "objective": "Sort foreground stellar parallax from zero-parallax extragalactic walls.",
+        "instrumentAction": "Swing the baseline lever and tag near, mid, and infinite-depth stars.",
+        "whyNow": "Final astrometric check proving the fractal enclosure sits at cosmological depth."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Zero orbital parallax confirmed on horizon shell; enclosure lies at cosmological edge.",
+        "psycheVoice": "psyche_clinical",
+        "psycheLine": "Near stars rock cleanly against the dark. The enclosure never shifts a microarcsecond.",
+        "storyFlag": "decoded_orbital_parallax_drift",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 6,
+        "proofThread": "parallax_separation",
+        "weight": 2
+      }
     },
     {
       "id": "epoch_trajectory_seam",
@@ -329,16 +938,48 @@
       "subtitle": "41,802-Year Foreground Star Mask",
       "bandName": "NEAR-IR",
       "showcaseType": "deep_field",
+      "scaleClass": "star_system",
       "minigameId": "blink_spotter",
-      "raDeg": 62.0,
-      "decDeg": -52.0,
+      "plateId": "hudf",
+      "preferredVariantIndex": 0,
+      "raDeg": 269.45,
+      "decDeg": 4.69,
+      "distanceLabel": "6.0 LY / BLY",
+      "actionVerb": "TRACK EPOCHS",
+      "anomalyRole": "direct_anomaly",
+      "spoilerFloorShift": 6,
       "optimalWavelengthNm": 1080,
       "wavelengthToleranceNm": 220,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#9ee8ff",
-      "description": "Three archival epochs track high-proper-motion Milky Way stars drifting across this sector. Extrapolate Epoch 4 to mask foreground interlopers from the recursive fractal seam behind them."
+      "description": "Three archival epochs track high-proper-motion Milky Way stars drifting across this sector. Extrapolate Epoch 4 to mask foreground interlopers from the recursive fractal seam behind them.",
+      "realCatalogRef": {
+        "catalog": "ESA Hipparcos-2 / Gaia DR3",
+        "designation": "HIP 87937 (Barnard's Star Sector)",
+        "raJ2000Deg": 269.45,
+        "decJ2000Deg": 4.69,
+        "distanceLy": 5.96,
+        "sourceLicense": "CC BY 3.0 IGO (ESA Hipparcos-2 / Gaia DR3)"
+      },
+      "preScanBrief": {
+        "objective": "Mask 41,802-year proper-motion interlopers crossing the final horizon seam.",
+        "instrumentAction": "Blink archival epochs and predict Epoch 4 positions for drifting stars.",
+        "whyNow": "Cleans foreground star crossings from the coordinates sent home to Sol–Centauri."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Archival star crossings masked; clean seam coordinates locked for carrier packet.",
+        "psycheVoice": "psyche_warmth",
+        "psycheLine": "Forty-one thousand years of wandering stars, brushed gently aside so home can read the wall behind them.",
+        "storyFlag": "decoded_epoch_trajectory_seam",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 6,
+        "proofThread": "parallax_separation",
+        "weight": 2
+      }
     },
     {
       "id": "horizon_facet_stitch",
@@ -346,16 +987,48 @@
       "subtitle": "Antipodal Sky-Tile Overlap",
       "bandName": "MID-IR",
       "showcaseType": "antipodal_poles",
+      "scaleClass": "horizon_anomaly",
       "minigameId": "horizon_seam_stitcher",
-      "raDeg": -18.0,
-      "decDeg": -58.0,
+      "plateId": "hudf",
+      "preferredVariantIndex": 3,
+      "raDeg": 226.0,
+      "decDeg": 16.0,
+      "distanceLabel": "46.5 BLY",
+      "actionVerb": "STITCH SEAM",
+      "anomalyRole": "direct_anomaly",
+      "spoilerFloorShift": 6,
       "optimalWavelengthNm": 1460,
       "wavelengthToleranceNm": 240,
       "recommendedFovMax": 28,
       "anomalyGain": 1,
       "kind": "horizon_lattice",
       "accentHex": "#9ee8ff",
-      "description": "Opposing sky tiles meet along a ruled 93-billion-light-year facet seam. Translate, rotate, and invert the survey plate to prove the enclosure closes into a sphere."
+      "description": "Opposing sky tiles meet along a ruled 93-billion-light-year facet seam. Translate, rotate, and invert the survey plate to prove the enclosure closes into a sphere.",
+      "realCatalogRef": {
+        "catalog": "Probe 1419 Survey",
+        "designation": "Forward Horizon Apex (Opp. Sol–Centauri)",
+        "raJ2000Deg": 226.0,
+        "decJ2000Deg": 16.0,
+        "distanceLy": 46500000000,
+        "sourceLicense": "Public Domain (NASA/STScI)"
+      },
+      "preScanBrief": {
+        "objective": "Close opposing sky tiles across the 93-billion-light-year enclosure seam.",
+        "instrumentAction": "Translate, rotate, and invert the survey plate until opposing facets lock continuous.",
+        "whyNow": "Completes the geometric sphere key before composing your twenty-year broadcast."
+      },
+      "postScanEcho": {
+        "dossierFinding": "Antipodal enclosure seam closed; 93-BLY spherical key ready for transmission.",
+        "psycheVoice": "psyche_horizon",
+        "psycheLine": "The last edge clicks shut across forty-six billion light-years. Someone built a quiet room around home.",
+        "storyFlag": "decoded_horizon_facet_stitch",
+        "unlocksStoryletId": null
+      },
+      "proofContribution": {
+        "phase": 6,
+        "proofThread": "enclosure_closure",
+        "weight": 3
+      }
     }
   ]
 }

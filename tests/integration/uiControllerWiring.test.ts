@@ -51,9 +51,13 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
       minigames
     );
 
-    const optics = createMockOpticsScene();
+    const optics = Object.assign(createMockOpticsScene(), {
+      setDecodedTargetIds: vi.fn(),
+    });
     const showcase = createMockShowcaseScene();
-    const dream = createMockDreamCanvas();
+    const dream = Object.assign(createMockDreamCanvas(), {
+      setAnomalyState: vi.fn(),
+    });
 
     ui.attachRenderers(optics as never, showcase as never, dream as never);
     await vi.waitFor(() => {
@@ -64,13 +68,28 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(appRoot.querySelector('#inspect-layer')).toBeNull();
     expect(appRoot.querySelector('#minigame-layer')).not.toBeNull();
 
-    // Clicking DevHarness launch button reproduces the direct sky -> minigame path
+    // Verify all 6 scale marker glyphs exist in #sky-markers
+    const scaleSet = new Set(
+      Array.from(appRoot.querySelectorAll<HTMLElement>('#sky-markers .sky-marker')).map(
+        (el) => el.dataset.scaleClass
+      )
+    );
+    expect(scaleSet).toEqual(
+      new Set(['planet', 'star_system', 'nebula', 'galaxy', 'galaxy_cluster', 'horizon_anomaly'])
+    );
+    expect(appRoot.querySelectorAll('#sky-markers .sky-marker svg.sky-glyph').length).toBe(21);
+
+    // Clicking DevHarness launch button reproduces the direct sky -> minigame path with 2.2s optical_dive brief
     const lensBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="lens_focus"]');
     expect(lensBtn).not.toBeNull();
     lensBtn!.click();
 
-    // Advance optical_dive transition & dynamic import microtasks cleanly
-    await vi.advanceTimersByTimeAsync(1000);
+    const transLabel = appRoot.querySelector('#transition-label');
+    expect(transLabel?.classList.contains('sr-only')).toBe(false);
+    expect(appRoot.querySelector('#transition-stage')?.classList.contains('is-dive-brief')).toBe(true);
+
+    // Advance optical_dive transition (2200ms) & dynamic import microtasks cleanly
+    await vi.advanceTimersByTimeAsync(2300);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });
@@ -85,7 +104,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     const waveBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="wave_shaper"]');
     expect(waveBtn).not.toBeNull();
     waveBtn!.click();
-    await vi.advanceTimersByTimeAsync(1000);
+    await vi.advanceTimersByTimeAsync(2300);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
     });
@@ -119,9 +138,13 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
       minigames
     );
 
-    const optics = createMockOpticsScene();
+    const optics = Object.assign(createMockOpticsScene(), {
+      setDecodedTargetIds: vi.fn(),
+    });
     const showcase = createMockShowcaseScene();
-    const dream = createMockDreamCanvas();
+    const dream = Object.assign(createMockDreamCanvas(), {
+      setAnomalyState: vi.fn(),
+    });
     ui.attachRenderers(optics as never, showcase as never, dream as never);
 
     // Top-right HUD exposes single SETTINGS button (old VOICE ON / AUDIO ON buttons removed)
@@ -178,9 +201,13 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
       minigames
     );
 
-    const optics = createMockOpticsScene();
+    const optics = Object.assign(createMockOpticsScene(), {
+      setDecodedTargetIds: vi.fn(),
+    });
     const showcase = createMockShowcaseScene();
-    const dream = createMockDreamCanvas();
+    const dream = Object.assign(createMockDreamCanvas(), {
+      setAnomalyState: vi.fn(),
+    });
     ui.attachRenderers(optics as never, showcase as never, dream as never);
     await vi.waitFor(() => {
       expect(document.querySelector('[data-intro-jump="complete"]')).not.toBeNull();
@@ -264,10 +291,17 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     const calibrateBtn = appRoot.querySelector<HTMLButtonElement>('#btn-enter-inspect')!;
     expect(calibrateBtn.classList.contains('hidden')).toBe(false);
+    expect(calibrateBtn.textContent).toContain('CON-02');
+    expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(false);
+    expect(appRoot.querySelector('#reticle-brief-meta')?.textContent).toContain('STAR SYSTEM');
+    expect(appRoot.querySelector('#reticle-scale-etch')?.textContent).toContain('STAR SYSTEM');
+    expect(appRoot.querySelector('.reticle')?.getAttribute('data-scale-class')).toBe('star_system');
+
     calibrateBtn.click();
     expect(stageEl.dataset.kind).toBe('optical_dive');
+    expect(stageEl.classList.contains('is-dive-brief')).toBe(true);
     expect(optics.triggerTransitionDive).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
-    await vi.advanceTimersByTimeAsync(2100);
+    await vi.advanceTimersByTimeAsync(2300);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });
@@ -278,16 +312,35 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(store.getMinigameIdForTarget(INTRO_TARGET_2_ID, 'fallback')).toBe(INTRO_TARGET_2_MINIGAME);
     expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('CON-02');
 
-    // 4. Completing Target #1 and returning to sky advances scan_target_1 -> mg_1_done cleanly
+    // 4. Completing Target #1 and returning to sky advances scan_target_1 -> mg_1_done and marks .sky-marker.decoded
     store.recordMinigameCompletion(INTRO_TARGET_1_ID, target1Spec.label, { grade: 'clean' });
     appRoot.querySelector<HTMLButtonElement>('#mg-btn-close')!.click();
     expect(stageEl.dataset.kind).toBe('optical_pullback');
     await vi.advanceTimersByTimeAsync(2100);
     expect(optics.triggerPullbackArrival).toHaveBeenCalled();
+    expect(optics.setDecodedTargetIds).toHaveBeenCalledWith(new Set([INTRO_TARGET_1_ID]));
+    expect(
+      appRoot
+        .querySelector(`.sky-marker[data-anomaly-id="${INTRO_TARGET_1_ID}"]`)
+        ?.classList.contains('decoded')
+    ).toBe(true);
     expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(false);
     expect(store.getState().mode).toBe('waking_3d');
     expect(store.getState().introStage).toBe('mg_1_done');
+
+    // 4b. Shift 1 mg_2_done keeps shift === 1 and unlocks Shift 1 optional targets until Dream 1 wake advances to Shift 2
+    store.patch({
+      introStage: 'mg_2_done',
+      decodedMinigameTargets: [INTRO_TARGET_1_ID, INTRO_TARGET_2_ID],
+    });
+    expect(store.getState().shift).toBe(1);
+    expect(optics.setVisibleTargetIds).toHaveBeenLastCalledWith([
+      INTRO_TARGET_1_ID,
+      INTRO_TARGET_2_ID,
+      'carina_rift_nebula',
+      'asterism_drift_01',
+    ]);
 
     // 5. Entering 2D Dream uses dream_submerge + DreamCanvas entrance reveal + soft Shift-1 audit
     document.querySelector<HTMLButtonElement>('[data-intro-jump="complete"]')!.click();
@@ -296,6 +349,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(stageEl.dataset.kind).toBe('dream_submerge');
     await vi.advanceTimersByTimeAsync(2700);
     expect(dream.triggerEntranceReveal).toHaveBeenCalled();
+    expect(dream.setAnomalyState).toHaveBeenCalled();
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#dream-scroll .dialogue-entry')?.getAttribute('data-channel')).toBe('dream');
 

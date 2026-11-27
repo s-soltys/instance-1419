@@ -147,6 +147,10 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   private activePointerId: number | null = null;
   private lastHudSig = '';
   private lastHudSentMs = 0;
+  private briefingHold = false;
+  private briefingHoldRemainingSec = 0;
+  protected overclockEngaged = false;
+  private overclockPointerId: number | null = null;
 
   mount(ctx: MinigameContext): void {
     this.ctx = ctx;
@@ -172,6 +176,10 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     this.pointerNormY = 0;
     this.lastHudSig = '';
     this.lastHudSentMs = 0;
+    this.overclockEngaged = false;
+    this.overclockPointerId = null;
+    this.briefingHold = Boolean(ctx.briefingHoldMs && ctx.briefingHoldMs > 0);
+    this.briefingHoldRemainingSec = this.briefingHold ? (ctx.briefingHoldMs ?? 0) / 1000 : 0;
 
     this.palette = getCosmicPalette(ctx.state.humanity);
     this.profile = computeInstrumentProfile(ctx.state);
@@ -251,12 +259,63 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   updateState(nextState: MinigameStateVector): void {
     if (!this.ctx || this.completed) return;
     this.ctx.state = nextState;
+    if ((nextState.anomalyBleed ?? 0) < 0.3 && this.overclockEngaged) {
+      this.overclockEngaged = false;
+    }
     this.palette = getCosmicPalette(nextState.humanity);
     this.profile = computeInstrumentProfile(nextState);
     this.clarity01 = this.profile.clarity01;
     this.particles.configureVibe(this.palette.mode);
     this.bridge3D?.setVibe(nextState.humanity);
     this.onProfileUpdated();
+    this.emitHud(true);
+  }
+
+  setBriefingHold(active: boolean): void {
+    this.briefingHold = active;
+    if (!active) {
+      this.briefingHoldRemainingSec = 0;
+    }
+  }
+
+  protected isOverclockAvailable(): boolean {
+    return this.stage === 3 && !this.completed && (this.ctx?.state?.anomalyBleed ?? 0) >= 0.3;
+  }
+
+  private getOverclockPillBounds(): { x: number; y: number; w: number; h: number } {
+    const pillW = this.compact ? 176 : 204;
+    const pillH = this.compact ? 24 : 26;
+    return {
+      x: Math.max(12, this.width - pillW - 16),
+      y: this.compact ? 44 : 52,
+      w: pillW,
+      h: pillH,
+    };
+  }
+
+  private hitOverclockPill(x: number, y: number): boolean {
+    if (!this.isOverclockAvailable()) return false;
+    const b = this.getOverclockPillBounds();
+    const pad = 6;
+    return x >= b.x - pad && x <= b.x + b.w + pad && y >= b.y - pad && y <= b.y + b.h + pad;
+  }
+
+  private toggleOverclock(): void {
+    if (!this.isOverclockAvailable()) return;
+    this.overclockEngaged = !this.overclockEngaged;
+    this.ctx.audio?.playSolenoidClack(this.overclockEngaged);
+    this.ctx.audio?.playHapticThump?.(this.overclockEngaged ? 0.78 : 0.35);
+    if (this.overclockEngaged) {
+      this.ctx.audio?.updateBeatSynth({
+        beatHz: 2.4,
+        harmonicLock: 0.72,
+        warmth: this.profile.warmth01,
+        strain: 0.85,
+      });
+      platform.triggerHaptic('overclockHeartbeat', 0.85);
+    } else {
+      platform.triggerHaptic('vernierTick', 0.5);
+    }
     this.emitHud(true);
   }
 
@@ -351,6 +410,11 @@ export abstract class BaseCosmicMinigame implements IMinigame {
       const ev = this.toPointerEvent(e);
       this.pointerNormX = ev.nx;
       this.pointerNormY = ev.ny;
+      if (this.hitOverclockPill(ev.x, ev.y)) {
+        this.overclockPointerId = e.pointerId;
+        this.toggleOverclock();
+        return;
+      }
       this.onPointerDown(ev);
     };
 
@@ -378,6 +442,10 @@ export abstract class BaseCosmicMinigame implements IMinigame {
           // Ignore synthetic pointer ids
         }
       }
+      if (this.overclockPointerId === e.pointerId) {
+        this.overclockPointerId = null;
+        return;
+      }
       const ev = this.toPointerEvent(e);
       if (e.type === 'pointercancel') {
         this.onPointerCancel(ev);
@@ -395,6 +463,11 @@ export abstract class BaseCosmicMinigame implements IMinigame {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (this.completed) return;
+      if (!e.repeat && (e.key === 'o' || e.key === 'O') && this.isOverclockAvailable()) {
+        e.preventDefault();
+        this.toggleOverclock();
+        return;
+      }
       this.onKeyDown(e);
     };
 
@@ -426,6 +499,25 @@ export abstract class BaseCosmicMinigame implements IMinigame {
 
   private stepFrame(dt: number): void {
     if (this.completed) return;
+    if (this.briefingHold) {
+      if (this.briefingHoldRemainingSec > 0) {
+        this.briefingHoldRemainingSec -= dt;
+        if (this.briefingHoldRemainingSec <= 0) {
+          this.briefingHold = false;
+          this.briefingHoldRemainingSec = 0;
+        }
+      }
+      if (this.briefingHold) {
+        this.particles.update(dt * 0.25, this.width, this.height);
+        this.bridge3D?.updateParallax(
+          this.pointerNormX * 0.35,
+          this.pointerNormY * 0.35,
+          this.getStageProgress01()
+        );
+        this.emitHud(false);
+        return;
+      }
+    }
     this.elapsedSec += dt;
     this.stageFlash = Math.max(0, this.stageFlash - dt * 0.78);
     if (this.stageEnterT < 1) {
@@ -520,6 +612,9 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   private renderFrame(): void {
     this.lockRingRequestedThisFrame = false;
     this.onRender(this.c2d, this.width, this.height);
+    if (this.isOverclockAvailable()) {
+      this.renderOverclockOverlay(this.c2d, this.width, this.height);
+    }
     const veilAlpha = Math.max(
       this.stageVeilAlpha,
       this.stageEnterT < 0.995
@@ -650,8 +745,90 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     }
   }
 
+  private renderOverclockOverlay(c2d: CanvasRenderingContext2D, w: number, h: number): void {
+    const b = this.getOverclockPillBounds();
+    const bleed = clamp(this.ctx?.state?.anomalyBleed ?? 0, 0.3, 1);
+    const engaged = this.overclockEngaged;
+    const pulse = 0.72 + 0.28 * Math.sin(this.elapsedSec * (engaged ? 4.2 : 2.1));
+
+    c2d.save();
+
+    // Outer bezel recursive filigree seam fracture when Overclock is engaged
+    if (engaged) {
+      const inset = this.compact ? 8 : 11;
+      const notch = this.compact ? 9 : 13;
+      const subNotch = notch * 0.42;
+      const cx = w * 0.5;
+      const cy = h * 0.5;
+
+      c2d.strokeStyle = `rgba(158, 232, 255, ${(0.34 + bleed * 0.24 * pulse).toFixed(3)})`;
+      c2d.lineWidth = 1.05;
+      c2d.beginPath();
+      // Top edge with centered recursive right-angle notch
+      c2d.moveTo(inset, inset);
+      c2d.lineTo(cx - notch * 2, inset);
+      c2d.lineTo(cx - notch * 2, inset + subNotch);
+      c2d.lineTo(cx - notch, inset + subNotch);
+      c2d.lineTo(cx - notch, inset + notch);
+      c2d.lineTo(cx + notch, inset + notch);
+      c2d.lineTo(cx + notch, inset + subNotch);
+      c2d.lineTo(cx + notch * 2, inset + subNotch);
+      c2d.lineTo(cx + notch * 2, inset);
+      c2d.lineTo(w - inset, inset);
+      // Right edge
+      c2d.lineTo(w - inset, cy - notch);
+      c2d.lineTo(w - inset - subNotch, cy - notch);
+      c2d.lineTo(w - inset - subNotch, cy + notch);
+      c2d.lineTo(w - inset, cy + notch);
+      c2d.lineTo(w - inset, h - inset);
+      // Bottom edge
+      c2d.lineTo(cx + notch * 2, h - inset);
+      c2d.lineTo(cx + notch * 2, h - inset - subNotch);
+      c2d.lineTo(cx + notch, h - inset - subNotch);
+      c2d.lineTo(cx + notch, h - inset - notch);
+      c2d.lineTo(cx - notch, h - inset - notch);
+      c2d.lineTo(cx - notch, h - inset - subNotch);
+      c2d.lineTo(cx - notch * 2, h - inset - subNotch);
+      c2d.lineTo(cx - notch * 2, h - inset);
+      c2d.lineTo(inset, h - inset);
+      // Left edge
+      c2d.lineTo(inset, cy + notch);
+      c2d.lineTo(inset + subNotch, cy + notch);
+      c2d.lineTo(inset + subNotch, cy - notch);
+      c2d.lineTo(inset, cy - notch);
+      c2d.closePath();
+      c2d.stroke();
+    }
+
+    // Subtle etched bezel toggle pill in safe top-right corner
+    c2d.fillStyle = engaged ? 'rgba(12, 28, 38, 0.84)' : 'rgba(8, 12, 20, 0.72)';
+    c2d.fillRect(b.x, b.y, b.w, b.h);
+    c2d.strokeStyle = engaged
+      ? `rgba(158, 232, 255, ${(0.78 + 0.18 * pulse).toFixed(3)})`
+      : `rgba(${this.palette.accentRgb}, ${(0.42 + 0.18 * pulse).toFixed(3)})`;
+    c2d.lineWidth = engaged ? 1.25 : 0.9;
+    c2d.strokeRect(b.x, b.y, b.w, b.h);
+
+    // Tiny Zeiss corner ticks on pill
+    c2d.fillStyle = engaged ? '#9ee8ff' : this.palette.accentHex;
+    c2d.fillRect(b.x, b.y, 4, 1.5);
+    c2d.fillRect(b.x + b.w - 4, b.y + b.h - 1.5, 4, 1.5);
+
+    c2d.font = `${this.compact ? 9 : 10}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+    c2d.textAlign = 'center';
+    c2d.textBaseline = 'middle';
+    c2d.fillStyle = engaged ? '#e6f7ff' : this.palette.secondaryHex;
+    const label = engaged ? '[O] SEAM OVERCLOCK ARMED' : '[O] CAPTURE SEAM BLEED';
+    c2d.fillText(label, b.x + b.w * 0.5, b.y + b.h * 0.5 + 0.5);
+
+    c2d.restore();
+  }
+
   protected setupStage(stage: 1 | 2 | 3): void {
     this.stage = stage;
+    if (stage !== 3) {
+      this.overclockEngaged = false;
+    }
     this.stageEnterT = stage === 1 ? 1 : 0;
     this.lockHoldSec = 0;
     this.stageClearTimer = 0;
@@ -734,14 +911,19 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     if (this.completed) return;
     this.completed = true;
     this.postCompleteAmbient = true;
+    const resolvedGrade: Exclude<MinigameGrade, 'aborted'> =
+      opts.grade ?? (this.overclockEngaged ? 'deep_overclock' : 'clean');
     this.ctx.audio?.stopInstrumentAudio();
-    this.ctx.audio?.playCaptureShutter('clean');
+    this.ctx.audio?.playCaptureShutter(resolvedGrade);
+    if (resolvedGrade === 'deep_overclock') {
+      this.ctx.audio?.playPhaseLock?.(3);
+    }
     platform.triggerHaptic('shutterCommit', 1.0);
 
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
     this.ctx.onComplete(
       resolveInstrumentPayout(
-        'clean',
+        resolvedGrade,
         totalSec,
         clamp(opts.accuracy, 0.5, 1.0),
         `${this.ctx.targetId}_${opts.proofFragmentSuffix}`,

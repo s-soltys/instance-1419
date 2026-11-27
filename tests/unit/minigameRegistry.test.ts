@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import anomaliesData from '../../src/content/anomalies.json';
 import { MinigameRegistry } from '../../src/engine/minigames/MinigameRegistry';
+import type { TargetScaleClass } from '../../src/engine/minigames/types';
 
 describe('MinigameRegistry catalog integrity', () => {
   it('registers all 21 Easy-to-Hard cosmic instruments with complete metadata, 4 curated variants, & field guides', async () => {
@@ -39,6 +40,8 @@ describe('MinigameRegistry catalog integrity', () => {
       expect(meta.platePool.length).toBe(3);
       expect(new Set(meta.platePool).size).toBe(3);
       expect(meta.variants.length).toBe(4);
+      expect(meta.supportedScales.length).toBeGreaterThan(0);
+      expect(typeof meta.supportsAnomalyBleed).toBe('boolean');
       expect(meta.backdrop3D).toBeDefined();
       expect(reg.getEntry(meta.id)).toEqual(meta);
       const instance = await reg.createAsync(meta.id);
@@ -60,6 +63,8 @@ describe('MinigameRegistry catalog integrity', () => {
     expect(anomaliesData.anomalies.length).toBe(21);
     const mappedIds = new Set<string>();
     for (const anomaly of anomaliesData.anomalies) {
+      const entry = reg.getEntry(anomaly.minigameId);
+      expect(entry?.supportedScales).toContain(anomaly.scaleClass as TargetScaleClass);
       const inst = await reg.createAsync(anomaly.minigameId);
       expect(inst.id).toBe(anomaly.minigameId);
       mappedIds.add(inst.id);

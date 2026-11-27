@@ -50,7 +50,8 @@ function verifyAssetManifest() {
   scanDir(path.join(ROOT, 'assets'));
   scanDir(path.join(ROOT, 'public', 'voices'));
   scanDir(path.join(ROOT, 'public', 'music'));
-  console.log('[verify] Asset, Voice & Music MANIFEST.json check PASS.');
+  scanDir(path.join(ROOT, 'public', 'catalogs'));
+  console.log('[verify] Asset (incl. astro/*.bin, catalogs), Voice & Music MANIFEST.json check PASS.');
 }
 
 const args = new Set(process.argv.slice(2));

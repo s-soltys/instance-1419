@@ -1,3 +1,4 @@
+import anomaliesData from '../../content/anomalies.json';
 import uiCopy from '../../content/ui_copy.json';
 import type { AudioEngine } from '../../engine/AudioEngine';
 import {
@@ -180,9 +181,10 @@ export class CodexView {
     const overlay = this.root.querySelector<HTMLElement>('#codex-overlay');
     if (!overlay) return;
 
+    const totalProofCount = anomaliesData.anomalies.length;
     const pill = overlay.querySelector<HTMLElement>('#codex-progress-pill');
     if (pill) {
-      pill.textContent = `${snap.totalUnlockedStages} / ${snap.totalStages} LOGS · ${state.proofDossier.length}/5 PROOFS`;
+      pill.textContent = `${snap.totalUnlockedStages} / ${snap.totalStages} LOGS · ${state.proofDossier.length}/${totalProofCount} PROOFS`;
     }
 
     // 1. Category Tabs
@@ -356,6 +358,7 @@ export class CodexView {
     // Merged Proof Dossier cards when viewing the Evidence category
     let proofDossierHtml = '';
     if (entry.spec.category === 'evidence') {
+      const totalProofCount = anomaliesData.anomalies.length;
       const canCapstone = state.shift >= 5 || state.proofDossier.length >= 4;
       const cards =
         state.proofDossier.length === 0
@@ -368,7 +371,7 @@ export class CodexView {
                   <strong>[${item.instrumentCode}] ${item.title}</strong>
                   <span>${item.grade.replace('_', ' ').toUpperCase()}</span>
                 </div>
-                <p>${item.principle}</p>
+                <p>${item.snippet || item.principle}</p>
               </div>
             `
               )
@@ -377,7 +380,7 @@ export class CodexView {
       proofDossierHtml = `
         <section class="codex-proof-section" aria-label="Decoded Proof Fragments">
           <div class="codex-proof-section-head">
-            <strong>DECODED PROOF FRAGMENTS (${state.proofDossier.length}/5)</strong>
+            <strong>DECODED PROOF FRAGMENTS (${state.proofDossier.length}/${totalProofCount})</strong>
             <span>ANOMALY PROGRESS · ${state.anomalyProgress}%</span>
           </div>
           <div class="codex-proof-list">${cards}</div>

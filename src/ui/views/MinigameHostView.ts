@@ -13,7 +13,7 @@ import type {
   MinigameStateVector,
 } from '../../engine/minigames/types';
 import type { AnomalySpec } from '../../engine/OpticsScene';
-import type { StateStore } from '../../engine/StateStore';
+import type { MinigameGradeTier, StateStore } from '../../engine/StateStore';
 import type { TargetShowcaseScene } from '../../engine/TargetShowcaseScene';
 import type { TelemetryLogger } from '../../engine/TelemetryLogger';
 import { platform } from '../../platform/PlatformAdapter';
@@ -22,6 +22,7 @@ export interface MinigameLaunchOptions {
   iterationIndex?: number;
   variantSeed?: string;
   plateOverride?: CosmicPlateId;
+  briefingHoldMs?: number;
 }
 
 interface CachedHudRefs {
@@ -29,6 +30,7 @@ interface CachedHudRefs {
   mount: HTMLElement | null;
   codeEl: HTMLElement | null;
   titleEl: HTMLElement | null;
+  subEl: HTMLElement | null;
   stageLabelEl: HTMLElement | null;
   stagePips: HTMLElement[];
   cueEl: HTMLElement | null;
@@ -53,10 +55,12 @@ export class MinigameHostView {
   private unbindControls: (() => void) | null = null;
   private onActiveChangeCb: ((minigameId: string | null) => void) | null = null;
   private onExitRequestCb: ((preserveDecoded: boolean, decodedSpec: AnomalySpec | null) => void) | null = null;
+  private onOpenCodexCb: ((targetId: string) => void) | null = null;
   private lastProfileSig = '';
   private lastHudSig = '';
   private isFinishing = false;
   private isExiting = false;
+  private briefingHoldActive = false;
   private currentHelperActionId: string | null = null;
   private hudRefs: CachedHudRefs | null = null;
   private launchSeq = 0;
@@ -92,6 +96,15 @@ export class MinigameHostView {
     this.onExitRequestCb = cb;
   }
 
+  setOpenCodexCallback(cb: (targetId: string) => void): void {
+    this.onOpenCodexCb = cb;
+  }
+
+  setBriefingHold(active: boolean): void {
+    this.briefingHoldActive = active;
+    this.activeMinigame?.setBriefingHold?.(active);
+  }
+
   getActiveBackdrop3DConfig(): Minigame3DConfig | null {
     return this.activeBackdrop3D;
   }
@@ -118,13 +131,25 @@ export class MinigameHostView {
     }
   }
 
-  private buildStateVector(): MinigameStateVector {
+  private buildStateVector(spec?: AnomalySpec | null): MinigameStateVector {
     const s = this.store.getState();
+    const shiftDef = shiftsData.shifts.find((sh) => sh.shift === s.shift) ?? shiftsData.shifts[0];
+    const fractalStage = shiftDef?.anomalyPhase?.fractalStage ?? shiftDef?.fractalStage ?? s.shift;
+    const baseBleed = shiftDef?.anomalyPhase?.minigameBleedIntensity ?? 0;
+    const anomalyRole = spec?.anomalyRole ?? 'baseline';
+    const roleScale =
+      anomalyRole === 'direct_anomaly' ? 1.0 : anomalyRole === 'boundary_bleed' ? 0.65 : 0.25;
+    const anomalyBleed = Math.max(0, Math.min(1, baseBleed * roleScale));
+
     return {
       humanity: s.humanity,
       opticalFidelity: s.opticalFidelity,
       chaosDrift: s.chaosDrift,
       shift: s.shift,
+      targetScale: spec?.scaleClass ?? 'star_system',
+      anomalyRole,
+      fractalStage,
+      anomalyBleed,
       maxHumanity: s.maxHumanity,
       wavelengthNm: s.wavelengthNm,
       primarySiblingH: s.primarySiblingH,
@@ -141,6 +166,7 @@ export class MinigameHostView {
         mount: this.root.querySelector<HTMLElement>('#minigame-mount'),
         codeEl: this.root.querySelector<HTMLElement>('#mg-instrument-code'),
         titleEl: this.root.querySelector<HTMLElement>('#mg-instrument-title'),
+        subEl: this.root.querySelector<HTMLElement>('#mg-instrument-sub'),
         stageLabelEl: this.root.querySelector<HTMLElement>('#mg-stage-label'),
         stagePips: Array.from(this.root.querySelectorAll<HTMLElement>('#mg-stage-pips .mg-pip')),
         cueEl: this.root.querySelector<HTMLElement>('#mg-cue-whisper'),
@@ -166,6 +192,7 @@ export class MinigameHostView {
 
     this.destroy();
     const token = ++this.launchSeq;
+    this.briefingHoldActive = (options?.briefingHoldMs ?? 0) > 0;
     this.hudRefs = null;
     const refs = this.getHudRefs();
     if (!refs.overlay || !refs.mount) return;
@@ -183,12 +210,15 @@ export class MinigameHostView {
     const iterationIndex =
       options?.iterationIndex !== undefined
         ? Math.max(0, Math.floor(options.iterationIndex))
-        : this.store.getNextIterationIndex(mg.id, variantCount);
+        : spec.preferredVariantIndex !== undefined
+          ? Math.max(0, Math.floor(spec.preferredVariantIndex))
+          : this.store.getNextIterationIndex(mg.id, variantCount);
     const activeVariant =
       variantList.length > 0 ? variantList[iterationIndex % variantList.length] : undefined;
     const variantSeed =
       options?.variantSeed ?? `${spec.id}:${mg.id}:v${iterationIndex}:s${s.shift}`;
-    const plateOverride = options?.plateOverride ?? activeVariant?.plateId;
+    const plateOverride =
+      options?.plateOverride ?? activeVariant?.plateId ?? (spec.plateId as CosmicPlateId | undefined);
 
     if (plateOverride) {
       await preloadCosmicPlateReady(plateOverride, 260);
@@ -211,7 +241,8 @@ export class MinigameHostView {
     this.onActiveChangeCb?.(mg.id);
 
     if (freshRefs.codeEl) freshRefs.codeEl.textContent = mg.instrumentCode;
-    if (freshRefs.titleEl) freshRefs.titleEl.textContent = mg.title;
+    if (freshRefs.titleEl) freshRefs.titleEl.textContent = spec.label;
+    if (freshRefs.subEl) freshRefs.subEl.textContent = mg.title;
 
     this.renderStagePips(1, 'PASS I · COARSE');
     if (freshRefs.helperBtn) {
@@ -220,7 +251,7 @@ export class MinigameHostView {
       freshRefs.helperBtn.textContent = '';
     }
 
-    this.populateFieldGuide(mg, activeVariant?.label);
+    this.populateFieldGuide(mg, spec, activeVariant?.label);
     this.bindConsoleEvents();
 
     const bridge = this.showcase ? this.showcase.getInstrumentBridge() : null;
@@ -232,8 +263,9 @@ export class MinigameHostView {
     this.activeBackdrop3D = backdropCfg;
     const backdrop3DActive = backdropCfg.mode !== 'off' && Boolean(bridge);
 
-    const vector = this.buildStateVector();
+    const vector = this.buildStateVector(spec);
     const isFirstRun = !s.calibratedInstruments.includes(mg.id);
+    const briefingHoldMs = this.briefingHoldActive ? options?.briefingHoldMs : 0;
 
     mg.mount({
       container: freshRefs.mount,
@@ -246,21 +278,28 @@ export class MinigameHostView {
       variantSeed,
       plateOverride,
       backdrop3DActive,
+      briefingHoldMs,
       showcase: bridge,
       audio: this.audio.getInstrumentHandle(),
       onTelemetry: (hud) => this.renderHudHeartbeat(hud),
       onCalibrationComplete: () => this.store.markInstrumentCalibrated(mg.id),
       onComplete: (result) => this.handleComplete(spec, mg, result, onDecoded),
     });
+
+    if (!this.briefingHoldActive) {
+      mg.setBriefingHold?.(false);
+    }
   }
 
-  private populateFieldGuide(mg: IMinigame, variantLabel?: string): void {
+  private populateFieldGuide(mg: IMinigame, spec: AnomalySpec, variantLabel?: string): void {
     const guide = mg.getFieldGuide?.();
     const card = this.root.querySelector<HTMLElement>('#mg-field-guide-card');
     card?.classList.add('hidden');
     if (!guide) return;
 
     const titleEl = this.root.querySelector<HTMLElement>('#mg-guide-title');
+    const actionWrapEl = this.root.querySelector<HTMLElement>('#mg-guide-target-action-wrap');
+    const actionEl = this.root.querySelector<HTMLElement>('#mg-guide-target-action');
     const prinEl = this.root.querySelector<HTMLElement>('#mg-guide-principle');
     const goalEl = this.root.querySelector<HTMLElement>('#mg-guide-goal');
     const warmEl = this.root.querySelector<HTMLElement>('#mg-guide-warmth');
@@ -272,6 +311,9 @@ export class MinigameHostView {
         ? `${mg.instrumentCode} · ${guide.title} (${variantLabel})`
         : `${mg.instrumentCode} · ${guide.title}`;
     }
+    const targetAction = spec.preScanBrief?.instrumentAction ?? '';
+    if (actionEl) actionEl.textContent = targetAction;
+    if (actionWrapEl) actionWrapEl.classList.toggle('hidden', !targetAction);
     if (prinEl) prinEl.textContent = guide.physicalPrinciple;
     if (goalEl) goalEl.textContent = guide.goalSummary;
     if (warmEl) warmEl.textContent = guide.warmthEffect;
@@ -314,10 +356,6 @@ export class MinigameHostView {
       clearTimeout(this.finaleRevealTimerId);
       this.finaleRevealTimerId = null;
     }
-    if (this.finaleRevealTimerId !== null) {
-      clearTimeout(this.finaleRevealTimerId);
-      this.finaleRevealTimerId = null;
-    }
     if (this.finaleArcTimerId !== null) {
       clearTimeout(this.finaleArcTimerId);
       this.finaleArcTimerId = null;
@@ -348,17 +386,21 @@ export class MinigameHostView {
     const prevState = this.store.getState();
     const prevAnomaly = prevState.anomalyProgress;
     const wasAlreadyDecoded = prevState.decodedMinigameTargets.includes(spec.id);
+    const resolvedGrade: MinigameGradeTier =
+      result.grade === 'deep_overclock' || result.grade === 'partial' ? result.grade : 'clean';
+    const dossierFinding = spec.postScanEcho?.dossierFinding ?? result.dossierSnippet ?? '';
+    const proofFragmentId = result.proofFragmentId ?? `proof_${spec.id}`;
 
     this.store.recordMinigameCompletion(spec.id, spec.label, {
       anomalyGain: result.anomalyGain,
-      grade: 'clean',
+      grade: resolvedGrade,
       chaosDelta: result.chaosDelta,
       suspicionDelta: result.suspicionDelta,
       humanityDelta: result.humanityDelta,
-      proofFragmentId: result.proofFragmentId,
-      dossierSnippet: result.dossierSnippet,
+      proofFragmentId,
+      dossierSnippet: dossierFinding,
       instrumentCode: mg.instrumentCode,
-      physicalPrinciple: result.physicalPrinciple,
+      physicalPrinciple: result.physicalPrinciple ?? dossierFinding,
     });
     this.store.markInstrumentCalibrated(mg.id);
     this.store.recordMinigameRun(mg.id);
@@ -370,7 +412,7 @@ export class MinigameHostView {
     this.telemetry.record('minigame_complete', nextState, {
       minigameId: mg.id,
       targetId: spec.id,
-      grade: result.grade,
+      grade: resolvedGrade,
       durationSec: result.elapsedSec,
       opticalFidelity: Number(nextState.opticalFidelity.toFixed(2)),
     });
@@ -378,30 +420,61 @@ export class MinigameHostView {
     const finale = this.root.querySelector<HTMLElement>('#mg-capture-finale');
     const gradeEl = this.root.querySelector<HTMLElement>('#mg-finale-grade');
     const gainEl = this.root.querySelector<HTMLElement>('#mg-finale-gain');
+    const outcomeEl = this.root.querySelector<HTMLElement>('#mg-finale-outcome');
     const visualEl = this.root.querySelector<HTMLElement>('#mg-finale-visual');
     const snipEl = this.root.querySelector<HTMLElement>('#mg-finale-snippet');
+    const mandateEl = this.root.querySelector<HTMLElement>('#mg-finale-mandate');
     const prinEl = this.root.querySelector<HTMLElement>('#mg-finale-principle');
     const logBtn = this.root.querySelector<HTMLButtonElement>('#mg-btn-log-dossier');
+    const codexBtn = this.root.querySelector<HTMLButtonElement>('#mg-btn-open-codex');
     const timerFill = this.root.querySelector<HTMLElement>('#mg-finale-timer-fill');
 
     if (finale && gradeEl && gainEl && snipEl) {
       const shiftEntry =
         shiftsData.shifts.find((sh) => sh.shift === nextState.shift) ?? shiftsData.shifts[0];
-      const shiftTargets = shiftEntry?.targetAnomalies ?? [];
-      const shiftDoneCount = shiftTargets.filter((id) =>
-        nextState.decodedMinigameTargets.includes(id)
-      ).length;
+      const requiredIds = shiftEntry?.requiredTargets ?? [];
+      const optionalIds = shiftEntry?.optionalTargets ?? [];
+      const shiftTargets = shiftEntry?.targetAnomalies ?? [...requiredIds, ...optionalIds];
+      const quota = this.store.getShiftQuotaStatus(nextState.shift);
       const targetInShift = shiftTargets.includes(spec.id);
 
       gradeEl.textContent = targetInShift
-        ? `SHIFT ${nextState.shift} · ${shiftDoneCount} OF ${shiftTargets.length}`
+        ? `SHIFT ${nextState.shift} · ${quota.requiredDone} OF ${quota.requiredIds.length} REQUIRED`
         : `SHIFT ${nextState.shift} · SURVEY LOGGED`;
       gainEl.textContent = spec.label;
-      snipEl.textContent = '';
-      snipEl.classList.add('hidden');
+
+      if (outcomeEl) {
+        const badgeLabel =
+          resolvedGrade === 'deep_overclock'
+            ? 'DEEP OVERCLOCK'
+            : resolvedGrade === 'partial'
+              ? 'PARTIAL'
+              : 'CLEAN LOCK';
+        const consequence =
+          resolvedGrade === 'deep_overclock'
+            ? '+DRIFT · +SUSPICION'
+            : resolvedGrade === 'partial'
+              ? 'BASELINE TRACE'
+              : '';
+        outcomeEl.dataset.grade = resolvedGrade;
+        outcomeEl.innerHTML = `<span class="mg-outcome-badge">${badgeLabel}</span>${
+          consequence ? `<span class="mg-outcome-consequence">${consequence}</span>` : ''
+        }`;
+      }
+
+      snipEl.textContent = dossierFinding;
+      snipEl.classList.toggle('hidden', !dossierFinding);
       if (prinEl) {
         prinEl.textContent = '';
         prinEl.classList.add('hidden');
+      }
+
+      if (mandateEl) {
+        mandateEl.textContent = quota.allDone
+          ? `SHIFT ${nextState.shift} COMPLETE (${quota.requiredDone}/${quota.requiredIds.length} REQ · ${quota.optionalDone}/${quota.optionalIds.length} OPT) · SLEEP READY`
+          : quota.mandateMet
+            ? `SHIFT ${nextState.shift} MANDATE MET (${quota.requiredDone}/${quota.requiredIds.length}) · SLEEP READY OR PUSH OPTIONAL`
+            : `SHIFT ${nextState.shift} MANDATE (${quota.requiredDone}/${quota.requiredIds.length} REQUIRED · ${quota.optionalDone}/${quota.optionalIds.length} OPTIONAL)`;
       }
 
       const circ = 289.03;
@@ -413,19 +486,26 @@ export class MinigameHostView {
           .map((id, idx) => {
             const done = nextState.decodedMinigameTargets.includes(id);
             const justEarned = id === spec.id && !wasAlreadyDecoded;
+            const isReq = requiredIds.includes(id);
             const cls = [
               'mg-finale-node',
+              isReq ? 'is-required' : 'is-optional',
               done ? 'is-done' : '',
               justEarned ? 'is-just-earned' : '',
             ]
               .filter(Boolean)
               .join(' ');
             const link = idx > 0 ? '<span class="mg-finale-node-link"></span>' : '';
-            return `${link}<span class="${cls}"><i></i></span>`;
+            return `${link}<span class="${cls}" title="${isReq ? 'Required' : 'Optional'}"><i></i></span>`;
           })
           .join('');
 
-        const deltaLabel = gained > 0 ? `+${gained}% HORIZON` : 'CALIBRATED';
+        const isShift1Baseline = spec.anomalyRole === 'baseline' && nextState.shift === 1;
+        const deltaLabel = isShift1Baseline
+          ? 'BASELINE LOCKED · 10.0 LY VECTOR SET'
+          : gained > 0
+            ? `+${gained}% HORIZON`
+            : 'CALIBRATED';
         visualEl.innerHTML = `
           <div class="mg-finale-ring-wrap">
             <svg class="mg-finale-ring-svg" viewBox="0 0 120 120">
@@ -470,6 +550,15 @@ export class MinigameHostView {
         logBtn.disabled = false;
         logBtn.onclick = () => {
           this.audio.playCue('choice');
+          finishClose();
+        };
+      }
+
+      if (codexBtn) {
+        codexBtn.disabled = false;
+        codexBtn.onclick = () => {
+          this.audio.playCue('choice');
+          this.onOpenCodexCb?.(spec.id);
           finishClose();
         };
       }
@@ -603,7 +692,7 @@ export class MinigameHostView {
     if (!this.isFinishing && !this.isExiting && this.activeMinigame && nextSig !== this.lastProfileSig) {
       this.lastProfileSig = nextSig;
       if (typeof this.activeMinigame.updateState === 'function') {
-        const vector = this.buildStateVector();
+        const vector = this.buildStateVector(this.activeSpec);
         vector.humanity = humanity;
         vector.opticalFidelity = opticalFidelity;
         this.activeMinigame.updateState(vector);
@@ -621,6 +710,7 @@ export class MinigameHostView {
     this.launchSeq++;
     this.isFinishing = false;
     this.isExiting = false;
+    this.briefingHoldActive = false;
     this.lastProfileSig = '';
     this.lastHudSig = '';
     this.currentHelperActionId = null;

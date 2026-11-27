@@ -4,6 +4,7 @@ import type {
   IMinigame,
   Minigame3DConfig,
   MinigameVariantSpec,
+  TargetScaleClass,
 } from './types';
 
 export interface MinigameCatalogEntry {
@@ -13,6 +14,8 @@ export interface MinigameCatalogEntry {
   subtitle: string;
   physicalPrinciple: string;
   warmthNote: string;
+  supportedScales: readonly TargetScaleClass[];
+  supportsAnomalyBleed: boolean;
   platePool: readonly [CosmicPlateId, CosmicPlateId, CosmicPlateId];
   variants: readonly MinigameVariantSpec[];
   backdrop3D: Minigame3DConfig;
@@ -38,6 +41,8 @@ function entry(
   subtitle: string,
   physicalPrinciple: string,
   warmthNote: string,
+  supportedScales: readonly TargetScaleClass[],
+  supportsAnomalyBleed: boolean,
   platePool: readonly [CosmicPlateId, CosmicPlateId, CosmicPlateId],
   variantLabels: readonly [string, string, string, string]
 ): MinigameCatalogEntry {
@@ -48,6 +53,8 @@ function entry(
     subtitle,
     physicalPrinciple,
     warmthNote,
+    supportedScales,
+    supportsAnomalyBleed,
     platePool,
     variants: makeVariants(id, platePool, variantLabels),
     backdrop3D: resolveMinigame3DConfig(id),
@@ -62,6 +69,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Harmonic Waveform Shaping',
     'Fourier superposition & phase resonance across traveling emission waves.',
     'Warm H%: golden lock margin · Cold H%: surgical emission tuning.',
+    ['nebula'],
+    true,
     ['carina', 'tarantula', 'rho_ophiuchi'],
     ['Carina H-Alpha Cliff', 'Tarantula O-III Ridge', 'Rho Ophiuchi Dust Echo', 'Deep Harmonic Cavity']
   ),
@@ -72,6 +81,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Parallax Spatial Memory',
     'Astrometric parallax baselines against distant reference stars.',
     'Warm H%: luminous gold starlight · Cold H%: crystalline astrometry grid.',
+    ['star_system'],
+    true,
     ['smacs', 'tarantula', 'hudf'],
     ['SMACS Anchor Asterism', 'Doradus Supercluster', 'Ultra Deep Field Lattice', 'Sol-Centauri Baseline']
   ),
@@ -82,6 +93,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Synchrotron Ring & Jet Sync',
     'Magnetized neutron star lighthouse rotation, glitches, and relativistic jets.',
     'Warm H%: generous catch arc · Cold H%: razor pulsar phase sync.',
+    ['star_system'],
+    true,
     ['crab', 'cas_a', 'hudf'],
     ['Crab Synchrotron Core', 'Cas A Remnant Spin', 'Millisecond Drift', 'Glitch Recovery Sweep']
   ),
@@ -92,6 +105,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Concentric Caustic De-Warping',
     'Gravitational lensing caustic continuity and focal depth on SMACS 0723.',
     'Warm H%: forgiving bezel snaps · Cold H%: crisp aperture calibration.',
+    ['galaxy_cluster', 'horizon_anomaly'],
+    true,
     ['smacs', 'stephans_quintet', 'cartwheel'],
     ['SMACS 0723 Arcs', 'Quintet Tidal Shear', 'Cartwheel Ring Caustic', 'Deep Enclosure Seam']
   ),
@@ -102,6 +117,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Wavelength Refraction & Dust Penetration',
     'Multi-wavelength prism dispersion & IR dust penetration.',
     'Warm H%: broad spectral beam pockets · Cold H%: surgical refraction optics.',
+    ['nebula', 'horizon_anomaly'],
+    true,
     ['pillars', 'horsehead', 'carina'],
     ['Eagle Pillar Veil', 'Horsehead Rim Refraction', 'Carina IR Window', 'Diffraction Grating Split']
   ),
@@ -112,6 +129,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Proper-Motion & Conjunction Forecast',
     'Epochal astrometry predicting linear, accelerating, and gravitationally bent paths.',
     'Warm H%: generous Epoch 4 prediction ring · Cold H%: surgical extrapolation.',
+    ['star_system', 'horizon_anomaly'],
+    true,
     ['hudf', 'stephans_quintet', 'smacs'],
     ['HUDF High-PM Drift', 'Quintet Tidal Deflection', 'Cluster Lensing Arc', 'Binary Proper-Motion']
   ),
@@ -122,6 +141,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Orbital Trajectory Bending',
     'Gravitational assist orbital mechanics around stellar wells.',
     'Warm H%: golden orbital contours · Cold H%: stark ballistic trajectory grid.',
+    ['galaxy'],
+    true,
     ['whirlpool', 'stephans_quintet', 'sombrero'],
     ['M51 Companion Assist', 'Quintet Twin Wells', 'Sombrero Halo Sweep', 'Figure-8 Periapsis']
   ),
@@ -132,6 +153,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Keplerian Orbit & Transit Matching',
     'Exoplanet transit photometry & multi-planet orbital periodicities.',
     'Warm H%: luminous solar halo · Cold H%: sharp photometric dip trace.',
+    ['planet'],
+    true,
     ['sombrero', 'southern_ring', 'rho_ophiuchi'],
     ['Hot Jupiter Dip', 'Twin Resonant Worlds', 'Young Protostar Transit', 'Grazing Inclination']
   ),
@@ -142,6 +165,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Chemical Barcodes & Doppler Shift',
     'Atomic emission barcodes & cosmological Doppler redshift.',
     'Warm H%: broad prism tolerance · Cold H%: precision z-shift vernier.',
+    ['nebula'],
+    true,
     ['ring_m57', 'cas_a', 'southern_ring'],
     ['M57 Ionized Shell', 'Cas A Oxygen-Sulfur', 'Southern Ring Halo', 'High-z Doppler Comb']
   ),
@@ -152,6 +177,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Interferometric Triangulation',
     'Very Long Baseline Interferometry (VLBI) directional beam convergence.',
     'Warm H%: broader amber beam cones · Cold H%: razor VLBI baselines.',
+    ['galaxy_cluster'],
+    true,
     ['stephans_quintet', 'cartwheel', 'whirlpool'],
     ['Quintet Shock Front', 'Cartwheel Core Fix', 'M51 Spiral Maser', 'Antipodal Drift Beacon']
   ),
@@ -162,6 +189,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Servo-Tracked Exoplanet Spot',
     'Coronagraphic starlight suppression via servo-tracked occulting masks & apodizer apertures.',
     'Warm H%: wide servo lock capture · Cold H%: razor high-contrast occultation.',
+    ['planet'],
+    true,
     ['sombrero', 'rho_ophiuchi', 'horsehead'],
     ['Fomalhaut Debris Companion', 'Rho Oph Young Giant', 'Horsehead Edge-On Rim', 'Dual-Orbit Apodizer']
   ),
@@ -172,6 +201,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Malus Law Glare Extinction',
     'Malus’s Law polarized glare extinction isolating faint perpendicular dust filaments.',
     'Warm H%: forgiving polarizer extinction angle · Cold H%: crisp crossed-filter lock.',
+    ['nebula'],
+    true,
     ['horsehead', 'pillars', 'carina'],
     ['Horsehead B-Field Rim', 'Eagle Pillar Alignment', 'Carina Dust Polarization', 'Tri-Vector Crossed Extinction']
   ),
@@ -182,6 +213,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Variable-Iris Deep-Field Integration',
     'Latched shutter blades & variable-aperture stacking with sub-frame cosmic-ray rejection.',
     'Warm H%: warm amber photon integration · Cold H%: strict cryo-cyan frame rejection.',
+    ['galaxy_cluster'],
+    true,
     ['hudf', 'smacs', 'whirlpool'],
     ['HUDF Ultra-Deep Stack', 'SMACS Cluster Exposure', 'M51 Faint Tidal Tail', 'Meteor Shower Dodger']
   ),
@@ -192,6 +225,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Cosmic Barycenter Seesaw',
     'Unequal-mass barycentric equilibrium (m₁r₁ = m₂r₂) & Keplerian orbital cadence.',
     'Warm H%: steady golden seesaw lock · Cold H%: precise Keplerian mass-ratio tuning.',
+    ['star_system'],
+    true,
     ['southern_ring', 'whirlpool', 'sombrero'],
     ['Southern Ring Binary', 'M51a/b Tidal Pair', 'Compact Dark Companion', 'High-Ratio Red Dwarf']
   ),
@@ -202,6 +237,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Heartbeat Photometer & Distance Ruler',
     'Leavitt’s period–luminosity sparklines & split-mirror flux matching across megaparsec rungs.',
     'Warm H%: gentle golden pulsation envelope · Cold H%: strict megaparsec distance ruler.',
+    ['galaxy'],
+    true,
     ['whirlpool', 'stephans_quintet', 'cartwheel'],
     ['Local Group Rung', 'Virgo / M51 Core', 'Dust-Veiled Starburst', 'Overtone Decoy Rung']
   ),
@@ -212,6 +249,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Light-Echo Triangulation & Blast Rewind',
     'Spherical light-echo curvature matching across cosmic dust patches & t=0 detonation focus.',
     'Warm H%: forgiving epicenter snap · Cold H%: forensic light-delay wavefront timing.',
+    ['nebula'],
+    true,
     ['cas_a', 'crab', 'tarantula'],
     ['Cas A Echo Sheets', 'Crab 1054 Remnant', 'SN 1987A Tarantula', 'Asymmetric Dust Echo']
   ),
@@ -222,6 +261,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Antipodal 93-BLY Sky Overlap',
     'Spherical sky-survey tile unwarping & orientation matching across the enclosure horizon.',
     'Warm H%: forgiving celestial horizon lock · Cold H%: clinical enclosure seam inspection.',
+    ['horizon_anomaly'],
+    true,
     ['hudf', 'smacs', 'ring_m57'],
     ['HUDF Mosaic Rift', 'SMACS Facet Join', 'M57 Polar Seam', '93-BLY Horizon Stitch']
   ),
@@ -232,6 +273,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Optical Delay Phase Interference',
     'Beam-splitter path equalization producing coherent Michelson / Haidinger interference fringes.',
     'Warm H%: generous coherent delay capture · Cold H%: surgical sub-micron fringe lock.',
+    ['horizon_anomaly'],
+    true,
     ['ring_m57', 'southern_ring', 'cartwheel'],
     ['M57 Narrowband Fringe', 'Southern Ring Delay', 'Cartwheel Wide Baseline', 'Thermal Drift Nulling']
   ),
@@ -242,6 +285,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'X-Ray / IR / Optical Reveal',
     'Multi-wavelength photometry penetrating molecular dust pillars & supernova remnants to uncover hidden stellar cores.',
     'Warm H%: soft multi-band dust veil · Cold H%: clinical X-ray & IR reticle clarity.',
+    ['nebula'],
+    true,
     ['pillars', 'crab', 'cas_a'],
     ['Pillars Protostar Hunt', 'Crab X-Ray Wind Nebula', 'Cas A Ejecta Knots', 'Multi-Band Decoy Sweep']
   ),
@@ -252,6 +297,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Time-Delayed Quasar Cadence',
     'Strong gravitational lensing splits quasar bursts into identical cadence copies staggered in arrival time.',
     'Warm H%: golden quasar burst highlights · Cold H%: crisp gravitational time-delay markers.',
+    ['galaxy_cluster', 'horizon_anomaly'],
+    true,
     ['smacs', 'cartwheel', 'stephans_quintet'],
     ['Huchra Quad Quasar', 'Cartwheel Lensed Burst', 'Quintet Foreground Mirage', 'Staggered Delay Echo']
   ),
@@ -262,6 +309,8 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Baseline Depth-Layer Sorting',
     'Orbital baseline swings reveal 3D parallax depth trails vs. rogue proper-motion stars.',
     'Warm H%: luminous near/mid parallax trails · Cold H%: stark astrometric proper-motion vectors.',
+    ['star_system'],
+    true,
     ['tarantula', 'rho_ophiuchi', 'horsehead'],
     ['Tarantula Cluster Depth', 'Rho Oph 390ly Foreground', 'Horsehead Silhouette Plane', 'Rogue Proper-Motion Sweep']
   ),

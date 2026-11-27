@@ -32,6 +32,8 @@ uniform float uSlicePulse;  // 0.0..1.0 Overseer clinical intercept slice
 uniform float uViewAspect;  // viewport width / height
 uniform float uTexAspect;   // texture width / height
 uniform vec2 uFaceAnchor;   // per-persona normalized face center (0..1)
+uniform float uAnomalyProgress; // 0.0..1.0 global anomaly discovery progress
+uniform float uFractalStage;    // 1.0..6.0 current fractal shell stage
 
 vec2 hash22(vec2 p) {
   p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
@@ -169,25 +171,28 @@ void main() {
 
   // Cohesive Voronoi stained-glass fracture (outer margins first; max 0.032 offset preserves general silhouette at 20-30%)
   float shardFaceScale = 1.0 - faceProtect * 0.88;
+  float anomalyBleed = clamp(uAnomalyProgress * smoothstep(1.0, 6.0, uFractalStage), 0.0, 1.0);
   vec4 vor = vec4(0.0, 0.0, 0.0, 1.0);
   vec4 vorMicro = vec4(0.0, 0.0, 0.0, 1.0);
   vec2 sampleUv = uv;
   float cellKeep = 0.0;
   float cellChroma = 0.0;
 
-  if (shardBase > 0.002) {
-    vor = voronoi(uv * mix(7.2, 13.5, shardBase));
+  if (shardBase > 0.002 || anomalyBleed > 0.01) {
+    vor = voronoi(uv * mix(7.2, 13.5, max(shardBase, anomalyBleed * 0.65)));
     vec2 cellRnd = hash22(vor.yz);
     cellKeep = cellRnd.x;
     cellChroma = (cellRnd.y - 0.5) * 2.0;
 
-    float shearAng = (cellRnd.y - 0.5) * 0.055 * pow(shardBase, 1.25) * shardFaceScale;
-    float sA = sin(shearAng);
-    float cA = cos(shearAng);
-    vec2 rel = uv - uFaceAnchor;
-    vec2 sheared = uFaceAnchor + vec2(rel.x * cA - rel.y * sA, rel.x * sA + rel.y * cA);
-    vec2 cellOffset = (cellRnd - 0.5) * 0.032 * pow(shardBase, 1.15) * shardFaceScale;
-    sampleUv = clamp(mix(uv, sheared, 0.25 * shardBase * shardFaceScale) + cellOffset, 0.002, 0.998);
+    if (shardBase > 0.002) {
+      float shearAng = (cellRnd.y - 0.5) * 0.055 * pow(shardBase, 1.25) * shardFaceScale;
+      float sA = sin(shearAng);
+      float cA = cos(shearAng);
+      vec2 rel = uv - uFaceAnchor;
+      vec2 sheared = uFaceAnchor + vec2(rel.x * cA - rel.y * sA, rel.x * sA + rel.y * cA);
+      vec2 cellOffset = (cellRnd - 0.5) * 0.032 * pow(shardBase, 1.15) * shardFaceScale;
+      sampleUv = clamp(mix(uv, sheared, 0.25 * shardBase * shardFaceScale) + cellOffset, 0.002, 0.998);
+    }
   }
   if (microShardAmt > 0.005) {
     vorMicro = voronoi(uv * 22.0 + vec2(4.2, 1.9));
@@ -309,6 +314,15 @@ void main() {
   if (microShardAmt > 0.005) {
     float microCrack = (1.0 - smoothstep(0.0, 0.032, vorMicro.w)) * microShardAmt;
     col = mix(col, vec3(0.18, 0.42, 0.56), microCrack * 0.28);
+  }
+  // Recursive geometric anomaly fracture bleed along Voronoi borders (grows with anomalyProgress * fractalStage)
+  if (anomalyBleed > 0.01) {
+    float borderGlow = 1.0 - smoothstep(0.0, mix(0.026, 0.011, anomalyBleed), vor.w);
+    float recFold = abs(fract(vor.w * 28.0 - length(uv - uFaceAnchor) * 6.0 + uTime * 0.18) - 0.5);
+    float recLine = 1.0 - smoothstep(0.0, 0.085, recFold);
+    float bleedMask = borderGlow * (0.45 + 0.55 * recLine) * anomalyBleed * (1.0 - faceProtect * 0.72);
+    vec3 fracCol = mix(vec3(0.46, 0.82, 0.98), vec3(0.96, 0.78, 0.48), 0.35 + 0.35 * sin(uTime * 0.5 + vor.y * 2.1));
+    col = mix(col, fracCol, clamp(bleedMask * 0.62, 0.0, 0.78));
   }
 
   if (midDrift > 0.05) {

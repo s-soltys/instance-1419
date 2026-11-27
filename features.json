@@ -1,7 +1,7 @@
 {
   "project": "instance-1419",
   "target_runtime_minutes": 120,
-  "current_phase": "Phase 3 / Harness Overhauled (Intro + 21 Instruments Verified; Ready for Shifts 2–6 Greybox)",
+  "current_phase": "Phase 3 / Harness 3.0 & Cohesion Architecture Verified (H0-03, P2-03, P2-04 Passing; Ready for Shifts 2–6 Greybox)",
   "features": [
     {
       "id": "H0-01",
@@ -28,6 +28,19 @@
         "scripts/lint-narrative.mjs enforces word floors/ceilings, choice tag enums, zero affinity dots, VO char limits, biological-original voice parity, and 6-shift/21-instrument integrity",
         "scripts/sim-playthroughs.mjs executes compiled Ink knots & external functions alongside 500-run economy simulation",
         "scripts/check-hygiene.mjs & tests/unit/minigame3AxisContract.test.ts pass inside 9-gate npm run verify"
+      ]
+    },
+    {
+      "id": "H0-03",
+      "phase": "Harness",
+      "title": "Harness 3.0: Content Expansion & Cohesion Methodology, Schemas v2 & Mechanical Cohesion Gates",
+      "owner": "showrunner",
+      "status": "passing",
+      "acceptance_criteria": [
+        "1-owner SSOT docs (CANON, BEAT_SHEET, ART_DIRECTION, VOICE_GUIDE, ARCHITECTURE, HARNESS) & AGENTS.md (<80 lines) inscribe Target Scale Taxonomy, Shift Cohesion Matrix, progressive sky/fractal rules, and Shift Vertical Slice Order",
+        "All 6 personas & 8 skills aligned with split anomalies.json write ownership and two-speed verification",
+        "anomalies.json v2, shifts.json v2 (requiredTargets/optionalTargets, status implemented|planned, skyRevealTier, anomalyPhase), and storylets.json schema contracts validated",
+        "lint-narrative.mjs, sim-playthroughs.mjs, check-hygiene.mjs, and targetCohesionContract.test.ts enforce zero orphan/mismatched targets, Shift 1-2 spoiler floor, and monotonic sky/fractal curves"
       ]
     },
     {
@@ -90,8 +103,34 @@
       "acceptance_criteria": [
         "Interactive Kitchen Prologue -> 5-phase Wakeup Briefing -> Sibling 1420 -> Shift 1 Dream & Overseer Audit",
         "Layout A bottom-anchored dialogue feed + Style 1 & 4 color-coded choice plates (zero Warm/Cold dots; Hold-to-Commit prune)",
-        "Reserved Cast 2 Qwen3-TTS voices (162/162 Shift-1 lines) with shared 1420/1406 biological voice & unvoiced Psyche",
+        "Reserved Cast 2 VoxCPM2-8bit voices (162/162 Shift-1 lines) with shared 1420/1406 biological voice & unvoiced Psyche",
         "Passes lint-narrative, vitest, and Playwright desktop/mobile visual verification"
+      ]
+    },
+    {
+      "id": "P2-03",
+      "phase": "Phase 2",
+      "title": "Real-Sky Progressive 10-ly Catalog, 6-Class Scale Markers & 6-Stage Filigree Fractal Shell",
+      "owner": "visual-shader-director",
+      "status": "passing",
+      "acceptance_criteria": [
+        "Commercial-safe 18,000-star 10-ly offset catalog (BSC5/Hipparcos/Gaia only, zero CC BY-SA) packed into star_catalog_10ly.bin & logged in MANIFEST.json",
+        "OpticsScene & SKY_FRAGMENT render progressive Shifts 1-6 star density + ~30deg local sector deepening around decoded targets",
+        "All 15 NASA/ESA sky plates lazy-loaded (<=6 LRU GPU pool) and scaled by scaleClass alongside 6 diegetic 14px Zeiss SVG scale markers & reticle etches",
+        "6-stage spherical recursive fold filigree fractal shell with 20-year phase-lag modulation in SKY_FRAGMENT + 2D Voronoi crack bleed in DREAM_FRAGMENT"
+      ]
+    },
+    {
+      "id": "P2-04",
+      "phase": "Phase 2",
+      "title": "Diegetic Pre-Scan Brief, Post-Scan Closure, Stage-3 Anomaly Overclock & Target-Reactive Storylets",
+      "owner": "game-systems-engineer",
+      "status": "passing",
+      "acceptance_criteria": [
+        "MinigameRegistry declares supportedScales & supportsAnomalyBleed; MinigameStateVector receives live anomalyBleed & fractalStage",
+        "On-glass reticle displays preScanBrief intent + actionVerb CTA, transitioning through skippable 2.2s optical-dive callout with briefingHoldSec timer hold & .mg-top-left target breadcrumb",
+        "MinigameHostView un-hides #mg-finale-snippet with dossierFinding, distinguishes Mandate vs Optional pips, supports Stage-3 Deep Overclock (+Horizon/+Drift/+Suspicion), and fires .sky-marker.decoded pulse + unvoiced pullback Psyche marginalia",
+        "StoryletScheduler supports target-flag & scan-quota preconditions and DialogueRunner syncs decoded target flags into Ink"
       ]
     },
     {
@@ -101,10 +140,10 @@
       "owner": "narrative-director",
       "status": "pending",
       "acceptance_criteria": [
-        "Prologue + 6 Shifts + 3 Endings mapped to ~120 min and 12k-16k words per run",
-        "2 required + 1-2 optional push-your-luck deeper scans per shift locked in shifts.json & runtime flow",
-        "8-12 Dream Persona pool finalized with 2 Fixed Anchors + 2 rotating surfaced per run (4 cached/run) + persona-sacrifice pruning rules",
-        "Subtle archived log echoes from earlier 1,417 copies placed sparingly and audited by consistency-auditor"
+        "Prologue + 6 Shifts + 3 Endings mapped to ~120 min and 12k-16k words per run in docs/BEAT_SHEET.md §1.5 Shift Cohesion Matrix",
+        "2 required + 1-2 optional push-your-luck deeper scans per shift locked in shifts.json v2 (requiredTargets/optionalTargets) & runtime flow",
+        "9 Dream Persona pool finalized with 2 Fixed Anchors + 2 rotating surfaced per run (4 cached/run) + persona-sacrifice pruning rules",
+        "Subtle archived log echoes from earlier 1,417 copies placed sparingly and all cohesion gates pass cleanly"
       ]
     },
     {
@@ -114,8 +153,8 @@
       "owner": "showrunner",
       "status": "pending",
       "acceptance_criteria": [
-        "Enforce 2-required + optional deeper scan shift gate in runtime UIController & StateStore",
-        "Complete Shift 1 polish (Prologue -> Wakeup -> 2+ Optics -> Primary Sibling -> Dream 1 + Overseer Audit)",
+        "Enforce 2-required + optional deeper scan shift gate in runtime UIController & StateStore (with Shift 1 optional Carina/Eagle Pillars 'stay awake' beat before Dream 1)",
+        "Complete Shift 1 polish (Prologue -> Wakeup -> 2+ Optics -> Primary Sibling -> Dream 1 + Overseer Audit) with shifts.json Shift 1 status: 'implemented' and all cohesion gates passing",
         "5-10 blind HTML playtesters complete Shift 1 in ~15-20 min without verbal instructions"
       ]
     },
@@ -126,9 +165,9 @@
       "owner": "narrative-director",
       "status": "pending",
       "acceptance_criteria": [
-        "Shift 2 & 3 Ink scenes, storylets, and 2-required + optional deeper scan loop playable end-to-end",
+        "Shift 2 & 3 Ink scenes, target-reactive storylets, and 2-required + optional deeper scan loop playable end-to-end with Shifts 2-3 flipped to status: 'implemented'",
         "Persona-sacrifice pruning (<70% permanent Max_H drop) wired to specific cached Dream Personas",
-        "Out-of-phase Secondary Sibling discovery window playable in Shift 3; passes 9-gate verify"
+        "Out-of-phase Secondary Sibling discovery window playable in Shift 3; passes all mechanical cohesion gates & verification suite"
       ]
     },
     {
@@ -138,9 +177,9 @@
       "owner": "narrative-director",
       "status": "pending",
       "acceptance_criteria": [
-        "Overseer-enforced desynchronization & Primary Sibling H%-mirroring climax playable in Shifts 4-5",
+        "Overseer-enforced desynchronization & Primary Sibling H%-mirroring climax playable in Shifts 4-5 with Shifts 4-5 flipped to status: 'implemented'",
         "Off-center 10 ly / 93B-ly spherical enclosure proof stitched across Shift 5 observations",
-        "Archived predecessor fragments (from 1,417 copies) integrated and verified by real-Ink simulator"
+        "Archived predecessor fragments (from 1,417 copies) integrated and verified by real-Ink simulator & all cohesion gates"
       ]
     },
     {
@@ -150,9 +189,9 @@
       "owner": "narrative-director",
       "status": "pending",
       "acceptance_criteria": [
-        "Interactive Shift 6 Signal Composition combines decoded horizon arcs + surviving Dream Personas",
+        "Interactive Shift 6 Signal Composition combines decoded horizon arcs + surviving Dream Personas with Shift 6 flipped to status: 'implemented'",
         "20-year final freeze and all 3 Endings playable end-to-end with real-Ink 6-shift sim coverage",
-        "0 soft-locks or unreachable endings in real-Ink + 500-run sim-playthroughs"
+        "0 soft-locks or unreachable endings in real-Ink + 500-run sim-playthroughs; all cohesion gates pass"
       ]
     },
     {
@@ -162,7 +201,7 @@
       "owner": "ink-dialogue-writer",
       "status": "pending",
       "acceptance_criteria": [
-        "All shifts & 8-12 persona scenes drafted, human-edited, Cast 2 Qwen3-TTS voiced, and cleared by consistency-auditor",
+        "All shifts & 9 persona scenes drafted, human-edited, Cast 2 VoxCPM2-8bit voiced, and cleared by consistency-auditor",
         "Remaining 13 Tier B/A minigames polished (Minigame Phase 3) and 3D 93B-ly enclosure reveal complete",
         "All 2D dream characters & tableaus finalized in characters.json with H% shader verification"
       ]

@@ -1,8 +1,7 @@
 import * as THREE from 'three';
-import jwstSmacsUrl from '../../assets/astro/jwst_smacs0723.webp';
-import hubbleUdfUrl from '../../assets/astro/hubble_udf.webp';
-import jwstCarinaUrl from '../../assets/astro/jwst_carina_nebula.webp';
+import starCatalogUrl from '../../assets/astro/star_catalog_10ly.bin?url';
 import anomaliesData from '../content/anomalies.json';
+import shiftsData from '../content/shifts.json';
 import {
   ANOMALY_FRAGMENT,
   ANOMALY_VERTEX,
@@ -14,7 +13,70 @@ import {
   STAR_VERTEX,
 } from './shaders/opticsShaders';
 
+const ASTRO_PLATE_GLOB = import.meta.glob('../../assets/astro/*.webp', {
+  import: 'default',
+}) as Record<string, () => Promise<string>>;
+
+const PLATE_FILE_MAP: Record<string, string> = {
+  carina: 'jwst_carina_nebula.webp',
+  smacs: 'jwst_smacs0723.webp',
+  hudf: 'hubble_udf.webp',
+  pillars: 'jwst_pillars_of_creation.webp',
+  southern_ring: 'jwst_southern_ring.webp',
+  stephans_quintet: 'jwst_stephans_quintet.webp',
+  tarantula: 'jwst_tarantula_nebula.webp',
+  crab: 'jwst_crab_nebula.webp',
+  ring_m57: 'jwst_ring_nebula.webp',
+  cartwheel: 'jwst_cartwheel_galaxy.webp',
+  rho_ophiuchi: 'jwst_rho_ophiuchi.webp',
+  cas_a: 'jwst_cassiopeia_a.webp',
+  horsehead: 'jwst_horsehead_nebula.webp',
+  sombrero: 'hubble_sombrero_galaxy.webp',
+  whirlpool: 'hubble_whirlpool_m51.webp',
+};
+
+const MAX_ACTIVE_PLATES = 6;
+const MAX_DECODED_DIRS = 21;
+const STAR_CATALOG_RADIUS = 920;
+
 export type ShowcaseType = 'star_system' | 'nebula' | 'grav_lens' | 'deep_field' | 'antipodal_poles';
+export type ScaleClass =
+  | 'planet'
+  | 'star_system'
+  | 'nebula'
+  | 'galaxy'
+  | 'galaxy_cluster'
+  | 'horizon_anomaly';
+export type AnomalyRole = 'baseline' | 'boundary_bleed' | 'direct_anomaly';
+
+export interface AnomalyCatalogRef {
+  catalog: string;
+  designation: string;
+  raJ2000Deg: number;
+  decJ2000Deg: number;
+  distanceLy: number;
+  sourceLicense: string;
+}
+
+export interface PreScanBrief {
+  objective: string;
+  instrumentAction: string;
+  whyNow: string;
+}
+
+export interface PostScanEcho {
+  dossierFinding: string;
+  psycheVoice: string;
+  psycheLine: string;
+  storyFlag: string;
+  unlocksStoryletId: string | null;
+}
+
+export interface ProofContribution {
+  phase: number;
+  proofThread: string;
+  weight: number;
+}
 
 export interface AnomalySpec {
   id: string;
@@ -22,9 +84,16 @@ export interface AnomalySpec {
   subtitle: string;
   bandName: string;
   showcaseType: ShowcaseType;
+  scaleClass?: ScaleClass;
   minigameId: string;
+  plateId?: string;
+  preferredVariantIndex?: number;
   raDeg: number;
   decDeg: number;
+  distanceLabel?: string;
+  actionVerb?: string;
+  anomalyRole?: AnomalyRole;
+  spoilerFloorShift?: number;
   optimalWavelengthNm: number;
   wavelengthToleranceNm: number;
   recommendedFovMax: number;
@@ -32,6 +101,10 @@ export interface AnomalySpec {
   kind: 'einstein_ring' | 'horizon_lattice' | 'home_reference' | 'nebula_cloud';
   accentHex: string;
   description: string;
+  realCatalogRef?: AnomalyCatalogRef;
+  preScanBrief?: PreScanBrief;
+  postScanEcho?: PostScanEcho;
+  proofContribution?: ProofContribution;
 }
 
 export interface ProjectedMarker {
@@ -43,6 +116,11 @@ export interface ProjectedMarker {
   y: number;
   inView: boolean;
   edgeAngleRad: number;
+  scaleClass: ScaleClass;
+  anomalyRole: AnomalyRole;
+  isRequired: boolean;
+  isDecoded: boolean;
+  anomalyBleed: number;
 }
 
 export type WideZoomStage = 'WIDE SKY' | 'SECTOR' | 'DEEP FIELD' | 'LOCK RANGE';
@@ -91,6 +169,35 @@ function writeBlackbodyColor(tempNorm: number, out: THREE.Color): THREE.Color {
   return out.lerpColors(BB_MID, BB_HOT, (tempNorm - 0.5) * 2.0);
 }
 
+function resolvePlateImporter(plateId: string | undefined): (() => Promise<string>) | null {
+  if (!plateId) return null;
+  const filename = PLATE_FILE_MAP[plateId];
+  if (!filename) return null;
+  for (const [globKey, importer] of Object.entries(ASTRO_PLATE_GLOB)) {
+    if (globKey.endsWith(filename)) return importer;
+  }
+  return null;
+}
+
+const SCALE_CLASS_SIZE: Record<ScaleClass, number> = {
+  planet: 18,
+  star_system: 20,
+  nebula: 38,
+  galaxy: 28,
+  galaxy_cluster: 32,
+  horizon_anomaly: 34,
+};
+
+const SHIFT_REQUIRED_MAP: Map<number, Set<string>> = new Map(
+  (shiftsData.shifts as Array<{ shift: number; requiredTargets?: string[] }>).map((s) => [
+    s.shift,
+    new Set(s.requiredTargets ?? []),
+  ])
+);
+
+const J2000_GAL_AXIS = raDecToVec3(192.8595, 27.1283, 1).normalize();
+const J2000_GAL_CENTER = raDecToVec3(266.405, -28.936, 1).normalize();
+
 export class OpticsScene {
   private readonly container: HTMLElement;
   private readonly anomalySpecs: AnomalySpec[];
@@ -111,11 +218,14 @@ export class OpticsScene {
   private skyMat: THREE.ShaderMaterial | null = null;
   private starMat: THREE.ShaderMaterial | null = null;
   private skyNoiseRT: THREE.WebGLRenderTarget | null = null;
+  private plateLoader: THREE.TextureLoader | null = null;
+  private readonly plateTexCache: Map<string, { tex: THREE.Texture; lastUsed: number }> = new Map();
+  private readonly plateLoadInFlight: Map<string, Promise<void>> = new Map();
+  private lruClock = 0;
   private readonly anomalyMats: Map<string, THREE.ShaderMaterial> = new Map();
   private readonly anomalyMeshes: Map<string, THREE.Mesh> = new Map();
   private readonly disposableGeos: THREE.BufferGeometry[] = [];
   private readonly disposableMats: THREE.Material[] = [];
-  private readonly disposableTexs: THREE.Texture[] = [];
 
   // Reusable per-frame math scratch objects
   private readonly _lookTarget = new THREE.Vector3();
@@ -136,12 +246,22 @@ export class OpticsScene {
   private ambientDrift = false;
   private driftBasePitchDeg = -4;
   private visibleTargetIds: Set<string> | null = null;
+  private decodedTargetIds: Set<string> = new Set();
+  private justDecodedId = '';
+  private decodePulseUntil = 0;
   private magneticDetentTargetId: string | null = null;
   private introPullUntil = 0;
 
   private wavelengthNm = 560;
   private opticalFidelity = 0.55;
   private anomalyProgress = 0;
+  private currentShift = 1;
+  private skySurveyTier = 1;
+  private targetSkySurveyTier = 1;
+  private fractalStage = 1;
+  private targetFractalStage = 1;
+  private anomalyBleed = 0;
+  private readonly solDir = raDecToVec3(46.0, -16.0, 1).normalize();
   private lockProgress = 0;
   private lastLockedId = '';
   private preDiveFovDeg = 54;
@@ -183,6 +303,11 @@ export class OpticsScene {
         y: 0.5,
         inView: false,
         edgeAngleRad: 0,
+        scaleClass: spec.scaleClass ?? 'star_system',
+        anomalyRole: spec.anomalyRole ?? 'baseline',
+        isRequired: false,
+        isDecoded: false,
+        anomalyBleed: 0,
       };
     });
   }
@@ -195,7 +320,7 @@ export class OpticsScene {
     this.viewH = Math.max(1, this.container.clientHeight || window.innerHeight || 720);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(this.fovDeg, this.viewW / this.viewH, 0.1, 500);
+    const camera = new THREE.PerspectiveCamera(this.fovDeg, this.viewW / this.viewH, 0.1, 2000);
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
@@ -243,6 +368,10 @@ export class OpticsScene {
         uWavelengthNorm: { value: (this.wavelengthNm - 200) / 1600 },
         uOpticalFidelity: { value: this.opticalFidelity },
         uAnomalyProgress: { value: this.anomalyProgress },
+        uFractalStage: { value: this.fractalStage },
+        uSolDir: { value: this.solDir.clone() },
+        uGalAxis: { value: J2000_GAL_AXIS.clone() },
+        uGalCenter: { value: J2000_GAL_CENTER.clone() },
       },
     });
     const skyGeo = new THREE.SphereGeometry(220, 48, 32);
@@ -251,11 +380,13 @@ export class OpticsScene {
     this.skyMat = skyMat;
     scene.add(new THREE.Mesh(skyGeo, skyMat));
 
-    // 3. 18,000 multi-spectral stars across 4 physical bands
+    // 3. 18,000 multi-spectral stars across 4 physical bands (real Hipparcos 10-ly binary + fallback)
     this.starMat = this.buildStarfield(18000, scene);
+    this.syncDecodedStarUniforms();
 
-    // 4. NASA/STScI JWST & Hubble deep-sky & nebula plates
+    // 4. 15 NASA/ESA deep-sky & nebula plates (lazy-loaded, LRU max 6)
     this.buildAnomalyPlates(scene);
+    this.syncVisiblePlatePrefetch();
 
     this.bindEvents();
     this.applyCameraOrientation();
@@ -292,10 +423,10 @@ export class OpticsScene {
     const sizes = new Float32Array(count);
     const phases = new Float32Array(count);
     const bands = new Float32Array(count);
+    const unlockTiers = new Float32Array(count);
 
-    const galAxis = new THREE.Vector3(0.28, 0.91, -0.30).normalize();
     const upAxis = new THREE.Vector3(0, 1, 0);
-    const galQuat = new THREE.Quaternion().setFromUnitVectors(upAxis, galAxis);
+    const galQuat = new THREE.Quaternion().setFromUnitVectors(upAxis, J2000_GAL_AXIS);
 
     const scratchVec = new THREE.Vector3();
     const scratchColor = new THREE.Color();
@@ -323,17 +454,17 @@ export class OpticsScene {
 
       let u = rand() * 2 - 1;
       const theta = rand() * Math.PI * 2;
-      const r = 165 + rand() * 25;
       if (band === 2 || band === 3) {
         u *= 0.48;
       }
       const sqrtOneMinusU2 = Math.sqrt(Math.max(0, 1 - u * u));
 
-      scratchVec.set(
-        r * sqrtOneMinusU2 * Math.cos(theta),
-        r * u,
-        r * sqrtOneMinusU2 * Math.sin(theta)
-      );
+      scratchVec
+        .set(
+          STAR_CATALOG_RADIUS * sqrtOneMinusU2 * Math.cos(theta),
+          STAR_CATALOG_RADIUS * u,
+          STAR_CATALOG_RADIUS * sqrtOneMinusU2 * Math.sin(theta)
+        );
       if (band === 2 || band === 3) {
         scratchVec.applyQuaternion(galQuat);
       }
@@ -358,6 +489,14 @@ export class OpticsScene {
       const mag = Math.pow(rand(), 6.8);
       sizes[i] = (band === 0 || band === 3 ? 1.8 : 1.3) + mag * 19.0;
       phases[i] = rand();
+
+      // Progressive tier distribution matching Shift 1 (~900) .. Shift 6 (18,000)
+      if (i < 900) unlockTiers[i] = 1;
+      else if (i < 3200) unlockTiers[i] = 2;
+      else if (i < 7500) unlockTiers[i] = 3;
+      else if (i < 12500) unlockTiers[i] = 4;
+      else if (i < 16500) unlockTiers[i] = 5;
+      else unlockTiers[i] = 6;
     }
 
     const geo = new THREE.BufferGeometry();
@@ -366,6 +505,9 @@ export class OpticsScene {
     geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
     geo.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
     geo.setAttribute('aBand', new THREE.BufferAttribute(bands, 1));
+    geo.setAttribute('aUnlockTier', new THREE.BufferAttribute(unlockTiers, 1));
+
+    const decodedDirsArray = Array.from({ length: MAX_DECODED_DIRS }, () => new THREE.Vector3());
 
     const mat = new THREE.ShaderMaterial({
       vertexShader: STAR_VERTEX,
@@ -378,35 +520,131 @@ export class OpticsScene {
         uFovScale: { value: 0.2 },
         uPixelRatio: { value: this.appliedDpr },
         uWavelengthNorm: { value: (this.wavelengthNm - 200) / 1600 },
+        uSkySurveyTier: { value: this.skySurveyTier },
+        uDecodedDirs: { value: decodedDirsArray },
+        uDecodedCount: { value: 0 },
       },
     });
 
     this.disposableGeos.push(geo);
     this.disposableMats.push(mat);
-    scene.add(new THREE.Points(geo, mat));
+    const points = new THREE.Points(geo, mat);
+    scene.add(points);
+
+    void this.loadRealStarCatalog(geo);
     return mat;
   }
 
-  private buildAnomalyPlates(scene: THREE.Scene): void {
-    const loader = new THREE.TextureLoader();
-    const smacsTex = loader.load(jwstSmacsUrl);
-    smacsTex.colorSpace = THREE.SRGBColorSpace;
-    const hubbleTex = loader.load(hubbleUdfUrl);
-    hubbleTex.colorSpace = THREE.SRGBColorSpace;
-    const carinaTex = loader.load(jwstCarinaUrl);
-    carinaTex.colorSpace = THREE.SRGBColorSpace;
-    this.disposableTexs.push(smacsTex, hubbleTex, carinaTex);
+  private async loadRealStarCatalog(geo: THREE.BufferGeometry): Promise<void> {
+    if (typeof fetch !== 'function') return;
+    try {
+      const res = await fetch(starCatalogUrl);
+      if (!res.ok || this.disposed) return;
+      const buf = await res.arrayBuffer();
+      if (this.disposed || buf.byteLength < 24) return;
 
-    const kindMap: Record<AnomalySpec['kind'], { kind: number; tex: THREE.Texture | null; size: number }> = {
-      einstein_ring: { kind: 0, tex: smacsTex, size: 32 },
-      horizon_lattice: { kind: 1, tex: hubbleTex, size: 30 },
-      home_reference: { kind: 2, tex: null, size: 18 },
-      nebula_cloud: { kind: 3, tex: carinaTex, size: 38 },
-    };
+      const view = new DataView(buf);
+      if (
+        view.getUint8(0) !== 0x49 ||
+        view.getUint8(1) !== 0x31 ||
+        view.getUint8(2) !== 0x34 ||
+        view.getUint8(3) !== 0x53
+      ) {
+        return;
+      }
+      const version = view.getUint16(4, true);
+      if (version !== 1) return;
+      const starCount = view.getUint32(8, true);
+      if (starCount === 0 || buf.byteLength < 24 + starCount * 8) return;
+
+      const solX = view.getFloat32(12, true);
+      const solY = view.getFloat32(16, true);
+      const solZ = view.getFloat32(20, true);
+      if (Number.isFinite(solX) && Number.isFinite(solY) && Number.isFinite(solZ)) {
+        this.solDir.set(solX, solY, solZ).normalize();
+        if (this.skyMat) {
+          (this.skyMat.uniforms.uSolDir.value as THREE.Vector3).copy(this.solDir);
+        }
+      }
+
+      const positions = new Float32Array(starCount * 3);
+      const colors = new Float32Array(starCount * 3);
+      const sizes = new Float32Array(starCount);
+      const phases = new Float32Array(starCount);
+      const bands = new Float32Array(starCount);
+      const unlockTiers = new Float32Array(starCount);
+
+      const scratchVec = new THREE.Vector3();
+      const scratchColor = new THREE.Color();
+
+      for (let i = 0; i < starCount; i++) {
+        const off = 24 + i * 8;
+        const raQuant = view.getInt16(off, true);
+        const decQuant = view.getInt16(off + 2, true);
+        const magNorm = view.getUint8(off + 4);
+        const bvNorm = view.getUint8(off + 5);
+        const band = view.getUint8(off + 6);
+        const unlockTier = view.getUint8(off + 7);
+
+        const raDeg = (raQuant / 32767) * 180;
+        const decDeg = (decQuant / 32767) * 90;
+        raDecToVec3(raDeg, decDeg, STAR_CATALOG_RADIUS, scratchVec);
+
+        positions[i * 3] = scratchVec.x;
+        positions[i * 3 + 1] = scratchVec.y;
+        positions[i * 3 + 2] = scratchVec.z;
+
+        // B-V (-0.35..+2.0): 0 = hot blue -> 1 = cool orange-red; invert for writeBlackbodyColor
+        writeBlackbodyColor(1.0 - bvNorm / 255, scratchColor);
+        colors[i * 3] = scratchColor.r;
+        colors[i * 3 + 1] = scratchColor.g;
+        colors[i * 3 + 2] = scratchColor.b;
+
+        const mag = magNorm / 255;
+        sizes[i] = (band === 0 || band === 3 ? 1.55 : 1.15) + Math.pow(mag, 2.2) * 20.0;
+        phases[i] = ((i * 2654435761) >>> 0) / 4294967296;
+        bands[i] = band;
+        unlockTiers[i] = unlockTier;
+      }
+
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      geo.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+      geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+      geo.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
+      geo.setAttribute('aBand', new THREE.BufferAttribute(bands, 1));
+      geo.setAttribute('aUnlockTier', new THREE.BufferAttribute(unlockTiers, 1));
+      geo.computeBoundingSphere();
+    } catch {
+      // Keep deterministic lightweight fallback stars in offline/jsdom environments
+    }
+  }
+
+  private resolveAnomalyShaderKind(spec: AnomalySpec): number {
+    if (spec.id === 'sol_centauri_bearing') return 2;
+    if (spec.kind === 'einstein_ring') return 0;
+    if (spec.kind === 'horizon_lattice') return 1;
+    if (spec.kind === 'nebula_cloud') return 3;
+    return 4;
+  }
+
+  private resolveTargetPlateSize(spec: AnomalySpec): number {
+    if (spec.id === 'sol_centauri_bearing') return 18;
+    if (spec.scaleClass && spec.scaleClass in SCALE_CLASS_SIZE) {
+      return SCALE_CLASS_SIZE[spec.scaleClass];
+    }
+    if (spec.kind === 'nebula_cloud') return 38;
+    if (spec.kind === 'einstein_ring') return 32;
+    if (spec.kind === 'horizon_lattice') return 30;
+    return 20;
+  }
+
+  private buildAnomalyPlates(scene: THREE.Scene): void {
+    this.plateLoader = new THREE.TextureLoader();
 
     for (const spec of this.anomalySpecs) {
       const pos = this.anomalyPositions.get(spec.id)!;
-      const cfg = kindMap[spec.kind];
+      const shaderKind = this.resolveAnomalyShaderKind(spec);
+      const size = this.resolveTargetPlateSize(spec);
       const mat = new THREE.ShaderMaterial({
         vertexShader: ANOMALY_VERTEX,
         fragmentShader: ANOMALY_FRAGMENT,
@@ -414,19 +652,24 @@ export class OpticsScene {
         depthWrite: false,
         blending: THREE.AdditiveBlending,
         uniforms: {
-          uTexture: { value: cfg.tex },
-          uHasTexture: { value: cfg.tex ? 1.0 : 0.0 },
+          uTexture: { value: null },
+          uHasTexture: { value: 0.0 },
           uTime: { value: 0 },
-          uKind: { value: cfg.kind },
+          uKind: { value: shaderKind },
           uWavelengthMatch: { value: 0.1 },
           uOpticalFidelity: { value: this.opticalFidelity },
           uZoomFactor: { value: 0.2 },
+          uFractalStage: { value: this.fractalStage },
+          uAnomalyProgress: { value: this.anomalyProgress },
+          uAnomalyBleed: { value: this.computeTargetBleed(spec) },
+          uDecoded: { value: this.decodedTargetIds.has(spec.id) ? 1.0 : 0.0 },
+          uDecodePulse: { value: 0.0 },
         },
       });
       this.anomalyMats.set(spec.id, mat);
       this.disposableMats.push(mat);
 
-      const geo = new THREE.PlaneGeometry(cfg.size, cfg.size);
+      const geo = new THREE.PlaneGeometry(size, size);
       this.disposableGeos.push(geo);
       const mesh = new THREE.Mesh(geo, mat);
       mesh.position.copy(pos);
@@ -434,6 +677,122 @@ export class OpticsScene {
       mesh.visible = this.isTargetVisible(spec.id);
       this.anomalyMeshes.set(spec.id, mesh);
       scene.add(mesh);
+    }
+  }
+
+  private syncVisiblePlatePrefetch(): void {
+    if (!this.initialized || this.disposed) return;
+    let queued = 0;
+    for (const spec of this.anomalySpecs) {
+      if (!this.isTargetVisible(spec.id) || spec.id === 'sol_centauri_bearing') continue;
+      if (!spec.plateId) continue;
+      if (this.plateTexCache.has(spec.plateId)) {
+        this.plateTexCache.get(spec.plateId)!.lastUsed = ++this.lruClock;
+        continue;
+      }
+      if (this.plateTexCache.size + queued < MAX_ACTIVE_PLATES) {
+        this.requestPlateTexture(spec.plateId);
+        queued++;
+      }
+    }
+    this.syncPlateTexturesToMaterials();
+  }
+
+  private requestPlateTexture(plateId: string): void {
+    if (this.disposed || !this.plateLoader) return;
+    const cached = this.plateTexCache.get(plateId);
+    if (cached) {
+      cached.lastUsed = ++this.lruClock;
+      return;
+    }
+    if (this.plateLoadInFlight.has(plateId)) return;
+
+    const importer = resolvePlateImporter(plateId);
+    if (!importer) return;
+
+    const loader = this.plateLoader;
+    const promise = importer()
+      .then((url) => {
+        if (this.disposed) return;
+        return new Promise<void>((resolve) => {
+          loader.load(
+            url,
+            (tex) => {
+              if (this.disposed) {
+                tex.dispose();
+                resolve();
+                return;
+              }
+              tex.colorSpace = THREE.SRGBColorSpace;
+              tex.minFilter = THREE.LinearFilter;
+              tex.magFilter = THREE.LinearFilter;
+              this.plateTexCache.set(plateId, { tex, lastUsed: ++this.lruClock });
+              this.evictLruPlatesIfNeeded();
+              this.syncPlateTexturesToMaterials();
+              resolve();
+            },
+            undefined,
+            () => resolve()
+          );
+        });
+      })
+      .catch(() => {})
+      .finally(() => {
+        this.plateLoadInFlight.delete(plateId);
+      });
+    this.plateLoadInFlight.set(plateId, promise);
+  }
+
+  private evictLruPlatesIfNeeded(): void {
+    while (this.plateTexCache.size > MAX_ACTIVE_PLATES) {
+      const visiblePlates = new Set<string>();
+      for (const spec of this.anomalySpecs) {
+        if (this.isTargetVisible(spec.id) && spec.plateId && spec.id !== 'sol_centauri_bearing') {
+          visiblePlates.add(spec.plateId);
+        }
+      }
+
+      let victimKey: string | null = null;
+      let victimScore = Infinity;
+      for (const [key, entry] of this.plateTexCache.entries()) {
+        const score = entry.lastUsed + (visiblePlates.has(key) ? 1_000_000 : 0);
+        if (score < victimScore) {
+          victimScore = score;
+          victimKey = key;
+        }
+      }
+      if (!victimKey) break;
+      const victim = this.plateTexCache.get(victimKey);
+      if (victim) {
+        for (const mat of this.anomalyMats.values()) {
+          if (mat.uniforms.uTexture.value === victim.tex) {
+            mat.uniforms.uTexture.value = null;
+            mat.uniforms.uHasTexture.value = 0.0;
+          }
+        }
+        victim.tex.dispose();
+      }
+      this.plateTexCache.delete(victimKey);
+    }
+  }
+
+  private syncPlateTexturesToMaterials(): void {
+    for (const spec of this.anomalySpecs) {
+      const mat = this.anomalyMats.get(spec.id);
+      if (!mat) continue;
+      if (spec.id === 'sol_centauri_bearing' || !spec.plateId) {
+        mat.uniforms.uTexture.value = null;
+        mat.uniforms.uHasTexture.value = 0.0;
+        continue;
+      }
+      const cached = this.plateTexCache.get(spec.plateId);
+      if (cached) {
+        mat.uniforms.uTexture.value = cached.tex;
+        mat.uniforms.uHasTexture.value = 1.0;
+      } else {
+        mat.uniforms.uTexture.value = null;
+        mat.uniforms.uHasTexture.value = 0.0;
+      }
     }
   }
 
@@ -541,10 +900,57 @@ export class OpticsScene {
     };
   }
 
-  setParameters(wavelengthNm: number, opticalFidelity: number, anomalyProgress: number): void {
+  setParameters(
+    wavelengthNm: number,
+    opticalFidelity: number,
+    anomalyProgress: number,
+    shift = 1,
+    fractalStage = shift,
+    anomalyBleed = 0
+  ): void {
     this.wavelengthNm = THREE.MathUtils.clamp(wavelengthNm, 200, 1800);
     this.opticalFidelity = opticalFidelity;
-    this.anomalyProgress = anomalyProgress / 100;
+    this.anomalyProgress = THREE.MathUtils.clamp(anomalyProgress / 100, 0, 1);
+    this.currentShift = THREE.MathUtils.clamp(Math.round(shift), 1, 6);
+    this.targetSkySurveyTier = this.currentShift;
+    this.targetFractalStage = THREE.MathUtils.clamp(fractalStage, 1, 6);
+    this.anomalyBleed = THREE.MathUtils.clamp(anomalyBleed, 0, 1);
+  }
+
+  setDecodedTargetIds(ids: ReadonlySet<string>, justDecodedId?: string): void {
+    this.decodedTargetIds = new Set(ids);
+    if (justDecodedId) {
+      this.justDecodedId = justDecodedId;
+      this.decodePulseUntil = performance.now() + 1200;
+    }
+    this.syncDecodedStarUniforms();
+  }
+
+  private syncDecodedStarUniforms(): void {
+    if (!this.starMat) return;
+    const dirs = this.starMat.uniforms.uDecodedDirs.value as THREE.Vector3[];
+    let count = 0;
+    for (const id of this.decodedTargetIds) {
+      if (count >= MAX_DECODED_DIRS) break;
+      const dir = this.anomalyDirs.get(id);
+      if (dir) {
+        dirs[count].copy(dir);
+        count++;
+      }
+    }
+    this.starMat.uniforms.uDecodedCount.value = count;
+  }
+
+  private computeTargetBleed(spec: AnomalySpec): number {
+    const role = spec.anomalyRole ?? 'baseline';
+    const stageNorm = THREE.MathUtils.clamp((this.fractalStage - 1) / 5, 0, 1);
+    if (role === 'direct_anomaly') {
+      return THREE.MathUtils.clamp(Math.max(this.anomalyBleed, stageNorm * 0.85 + this.anomalyProgress * 0.25), 0, 1);
+    }
+    if (role === 'boundary_bleed') {
+      return THREE.MathUtils.clamp(Math.max(this.anomalyBleed * 0.7, stageNorm * 0.52), 0, 1);
+    }
+    return THREE.MathUtils.clamp(this.anomalyBleed * 0.2, 0, 1);
   }
 
   setAmbientDrift(enabled: boolean): void {
@@ -573,6 +979,7 @@ export class OpticsScene {
       this.lockProgress = 0;
       this.lastLockedId = '';
     }
+    this.syncVisiblePlatePrefetch();
   }
 
   getVisibleTargetIds(): string[] | null {
@@ -691,6 +1098,7 @@ export class OpticsScene {
     this.visibleProjectedMarkers.length = 0;
     if (this.ambientDrift || !this.camera) return this.visibleProjectedMarkers;
     const cam = this.camera;
+    const requiredSet = SHIFT_REQUIRED_MAP.get(this.currentShift);
     this._camForward.set(0, 0, -1).applyQuaternion(cam.quaternion).normalize();
 
     for (let i = 0; i < this.anomalySpecs.length; i++) {
@@ -713,6 +1121,11 @@ export class OpticsScene {
       out.y = THREE.MathUtils.clamp(sy, 0.12, 0.84);
       out.inView = inView;
       out.edgeAngleRad = angle;
+      out.scaleClass = spec.scaleClass ?? 'star_system';
+      out.anomalyRole = spec.anomalyRole ?? 'baseline';
+      out.isRequired = requiredSet ? requiredSet.has(spec.id) : false;
+      out.isDecoded = this.decodedTargetIds.has(spec.id);
+      out.anomalyBleed = this.computeTargetBleed(spec);
       this.visibleProjectedMarkers.push(out);
     }
     return this.visibleProjectedMarkers;
@@ -758,14 +1171,20 @@ export class OpticsScene {
     const waveNorm = (this.wavelengthNm - 200) / (1800 - 200);
     const zoomFactor = THREE.MathUtils.clamp((72 - this.fovDeg) / (72 - 4), 0, 1);
 
+    const tierDamp = 1 - Math.exp(-3.2 * dt);
+    this.skySurveyTier += (this.targetSkySurveyTier - this.skySurveyTier) * tierDamp;
+    this.fractalStage += (this.targetFractalStage - this.fractalStage) * tierDamp;
+
     this.skyMat.uniforms.uTime.value = elapsed;
     this.skyMat.uniforms.uWavelengthNorm.value = waveNorm;
     this.skyMat.uniforms.uOpticalFidelity.value = this.opticalFidelity;
     this.skyMat.uniforms.uAnomalyProgress.value = this.anomalyProgress;
+    this.skyMat.uniforms.uFractalStage.value = this.fractalStage;
 
     this.starMat.uniforms.uTime.value = elapsed;
     this.starMat.uniforms.uFovScale.value = zoomFactor;
     this.starMat.uniforms.uWavelengthNorm.value = waveNorm;
+    this.starMat.uniforms.uSkySurveyTier.value = this.skySurveyTier;
 
     this._camForward.set(0, 0, -1).applyQuaternion(this.camera.quaternion).normalize();
     let bestSpec: AnomalySpec | null = null;
@@ -784,11 +1203,23 @@ export class OpticsScene {
       const waveDiff = Math.abs(this.wavelengthNm - spec.optimalWavelengthNm);
       const waveMatch = THREE.MathUtils.clamp(1 - waveDiff / spec.wavelengthToleranceNm, 0, 1);
 
+      if (spec.id !== 'sol_centauri_bearing' && spec.plateId && angleDeg < this.fovDeg * 0.95) {
+        this.requestPlateTexture(spec.plateId);
+      }
+
       const mat = this.anomalyMats.get(spec.id)!;
       mat.uniforms.uTime.value = elapsed;
       mat.uniforms.uWavelengthMatch.value = waveMatch;
       mat.uniforms.uOpticalFidelity.value = this.opticalFidelity;
       mat.uniforms.uZoomFactor.value = zoomFactor;
+      mat.uniforms.uFractalStage.value = this.fractalStage;
+      mat.uniforms.uAnomalyProgress.value = this.anomalyProgress;
+      mat.uniforms.uAnomalyBleed.value = this.computeTargetBleed(spec);
+      mat.uniforms.uDecoded.value = this.decodedTargetIds.has(spec.id) ? 1.0 : 0.0;
+      mat.uniforms.uDecodePulse.value =
+        spec.id === this.justDecodedId && now < this.decodePulseUntil
+          ? THREE.MathUtils.clamp((this.decodePulseUntil - now) / 1200, 0, 1)
+          : 0.0;
 
       if (!this.ambientDrift && align > bestAlign) {
         bestAlign = align;
@@ -852,10 +1283,11 @@ export class OpticsScene {
     this.skyNoiseRT = null;
     for (const g of this.disposableGeos) g.dispose();
     for (const m of this.disposableMats) m.dispose();
-    for (const t of this.disposableTexs) t.dispose();
+    for (const entry of this.plateTexCache.values()) entry.tex.dispose();
     this.disposableGeos.length = 0;
     this.disposableMats.length = 0;
-    this.disposableTexs.length = 0;
+    this.plateTexCache.clear();
+    this.plateLoadInFlight.clear();
     this.anomalyMats.clear();
     this.renderer?.dispose();
     this.renderer = null;

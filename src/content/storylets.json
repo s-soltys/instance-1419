@@ -5,6 +5,7 @@
       "knot": "sibling_first_contact",
       "mode": "waking_3d",
       "once": true,
+      "priority": 10,
       "conditions": {
         "minAnomalyProgress": 20
       }
@@ -14,8 +15,21 @@
       "knot": "dream_shift1_audit",
       "mode": "dream_2d",
       "once": false,
+      "priority": 5,
       "conditions": {
         "minShift": 1
+      }
+    },
+    {
+      "id": "shift1_optional_scan_echo",
+      "knot": "shift1_optional_scan_echo",
+      "mode": "waking_3d",
+      "once": true,
+      "priority": 20,
+      "conditions": {
+        "minShift": 1,
+        "exactShift": 1,
+        "minOptionalScansThisShift": 1
       }
     }
   ]

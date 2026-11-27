@@ -18,6 +18,7 @@ export interface DevPerfSnapshot {
 export interface DevHarnessBridge {
   openMode(mode: GameMode): void;
   jumpToIntroStage(stage: IntroStage): void;
+  jumpToShift?(shift: number): void;
   launchMinigame(
     minigameId: string,
     warmth?: number,
@@ -204,6 +205,15 @@ export class DevHarness {
                   <button class="qa-btn primary" data-intro-jump="scan_target_2" type="button">Scan Target #2 (IR)</button>
                   <button class="qa-btn primary" data-intro-jump="mg_2_done" type="button">Post-MG #2 (Dream)</button>
                   <button class="qa-btn" data-intro-jump="complete" type="button">Full Sandbox</button>
+                </div>
+                <div class="qa-card-title" style="margin-top:12px;">SHIFT QUICK-JUMP (1–6 SKY &amp; FRACTAL)</div>
+                <div class="qa-btn-row">
+                  <button class="qa-btn" data-shift-jump="1" type="button">Shift 1</button>
+                  <button class="qa-btn" data-shift-jump="2" type="button">Shift 2</button>
+                  <button class="qa-btn" data-shift-jump="3" type="button">Shift 3</button>
+                  <button class="qa-btn" data-shift-jump="4" type="button">Shift 4</button>
+                  <button class="qa-btn" data-shift-jump="5" type="button">Shift 5</button>
+                  <button class="qa-btn" data-shift-jump="6" type="button">Shift 6</button>
                 </div>
               </div>
 
@@ -574,6 +584,17 @@ export class DevHarness {
         this.maybeAutoHide();
       });
     });
+    this.host.querySelectorAll<HTMLButtonElement>('[data-shift-jump]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const sh = Number(btn.dataset.shiftJump ?? '1');
+        if (this.bridge.jumpToShift) {
+          this.bridge.jumpToShift(sh);
+        } else {
+          this.store.patch({ shift: sh, introStage: 'complete' });
+        }
+        this.maybeAutoHide();
+      });
+    });
     this.host.querySelectorAll<HTMLButtonElement>('[data-wave]').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.store.patch({ wavelengthNm: Number(btn.dataset.wave) });
@@ -845,8 +866,13 @@ export class DevHarness {
     this.updateMusicReadout(s);
     const stats = this.host.querySelector<HTMLElement>('#qa-live-stats');
     if (stats) {
-      stats.textContent = `MODE ${s.mode.toUpperCase()} · INTRO ${s.introStage.toUpperCase()} · H ${s.humanity}/${s.maxHumanity} · DRIFT ${s.chaosDrift}% · ANOM ${s.anomalyProgress}% · CLOCK ${s.subjectiveMonthsLeft} MO · SUSP ${s.overseerSuspicion}`;
+      stats.textContent = `SHIFT ${s.shift} · MODE ${s.mode.toUpperCase()} · INTRO ${s.introStage.toUpperCase()} · H ${s.humanity}/${s.maxHumanity} · DRIFT ${s.chaosDrift}% · ANOM ${s.anomalyProgress}% · CLOCK ${s.subjectiveMonthsLeft} MO · SUSP ${s.overseerSuspicion}`;
     }
+
+    const mgShiftSlider = this.host.querySelector<HTMLInputElement>('#qa-mg-shift-slider');
+    const mgShiftVal = this.host.querySelector<HTMLElement>('#qa-mg-shift-val');
+    if (mgShiftSlider) mgShiftSlider.value = String(s.shift);
+    if (mgShiftVal) mgShiftVal.textContent = String(s.shift);
 
     const gH = this.host.querySelector<HTMLInputElement>('#qa-global-h');
     const gHVal = this.host.querySelector<HTMLElement>('#qa-global-h-val');

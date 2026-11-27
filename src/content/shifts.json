@@ -1,9 +1,19 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "shifts": [
     {
       "shift": 1,
+      "status": "implemented",
       "title": "Wake & Local Cluster Calibration",
+      "shiftMandate": "Anchor the optical deck on Sol–Centauri astern and verify the strange straight edge Probe 1420 flagged behind Cluster J1419-A.",
+      "requiredTargets": [
+        "sol_centauri_bearing",
+        "cluster_j1419_a"
+      ],
+      "optionalTargets": [
+        "carina_rift_nebula",
+        "asterism_drift_01"
+      ],
       "targetAnomalies": [
         "sol_centauri_bearing",
         "cluster_j1419_a",
@@ -17,11 +27,50 @@
       "siblingDriftRange": [64, 72],
       "overseerAuditChaosThreshold": 28,
       "desyncSuspicionThreshold": 4,
-      "minAnomalyForNextShift": 15
+      "minAnomalyForNextShift": 15,
+      "skyRevealTier": {
+        "catalogLayer": "naked_eye_anchor",
+        "maxMagnitude": 4.5,
+        "starBudget": 913,
+        "unlockedSectors": [
+          "sol_centauri_corridor",
+          "j1419_onboarding_arc"
+        ],
+        "deepFieldPlateIds": [
+          "smacs",
+          "carina",
+          "pillars"
+        ],
+        "constellationGuideAlpha": 0.42
+      },
+      "anomalyPhase": {
+        "fractalStage": 1,
+        "perceptionLabel": "Isolated Lensing Notch",
+        "skyShellOpacity": 0.0,
+        "skyShellCoverage": 0.0,
+        "minigameBleedIntensity": 0.0,
+        "dreamCrackBleed": 0.0
+      },
+      "narrativeHooks": {
+        "openingKnot": "intro_overseer_wakeup",
+        "postRequiredKnot": "intro_post_target2_overseer",
+        "dreamKnot": "dream_shift1_audit",
+        "optionalArchiveEchoId": "archive_1406_echo"
+      }
     },
     {
       "shift": 2,
+      "status": "planned",
       "title": "Dust Penetration & Horizon Noise",
+      "shiftMandate": "Rule out stellar glare and polarized Milky Way dust as optical illusions before the seam spreads.",
+      "requiredTargets": [
+        "fomalhaut_glare_well",
+        "dust_polarized_veil"
+      ],
+      "optionalTargets": [
+        "kepler_transit_arc",
+        "deep_exposure_window"
+      ],
       "targetAnomalies": [
         "fomalhaut_glare_well",
         "dust_polarized_veil",
@@ -35,11 +84,55 @@
       "siblingDriftRange": [56, 68],
       "overseerAuditChaosThreshold": 32,
       "desyncSuspicionThreshold": 4,
-      "minAnomalyForNextShift": 32
+      "minAnomalyForNextShift": 31,
+      "skyRevealTier": {
+        "catalogLayer": "local_corridor",
+        "maxMagnitude": 5.5,
+        "starBudget": 2840,
+        "unlockedSectors": [
+          "sol_centauri_corridor",
+          "j1419_onboarding_arc",
+          "fornax_orion_dust"
+        ],
+        "deepFieldPlateIds": [
+          "smacs",
+          "carina",
+          "pillars",
+          "sombrero",
+          "horsehead",
+          "rho_ophiuchi",
+          "hudf"
+        ],
+        "constellationGuideAlpha": 0.34
+      },
+      "anomalyPhase": {
+        "fractalStage": 2,
+        "perceptionLabel": "Dust-Pierced Hairline Seams",
+        "skyShellOpacity": 0.08,
+        "skyShellCoverage": 0.14,
+        "minigameBleedIntensity": 0.12,
+        "dreamCrackBleed": 0.08
+      },
+      "narrativeHooks": {
+        "openingKnot": "shift2_wake",
+        "postRequiredKnot": "shift2_post_required",
+        "dreamKnot": "dream_shift2_parent",
+        "optionalArchiveEchoId": null
+      }
     },
     {
       "shift": 3,
+      "status": "planned",
       "title": "Antipodal Facet Alignment",
+      "shiftMandate": "Test whether the recursive notch persists in high-energy X-ray and ultraviolet bands across opposite sky sectors.",
+      "requiredTargets": [
+        "sector_s04_seam",
+        "fraunhofer_prism_knot"
+      ],
+      "optionalTargets": [
+        "vlbi_quad_beacon",
+        "compact_binary_scale"
+      ],
       "targetAnomalies": [
         "sector_s04_seam",
         "fraunhofer_prism_knot",
@@ -53,11 +146,59 @@
       "siblingDriftRange": [46, 62],
       "overseerAuditChaosThreshold": 35,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 48
+      "minAnomalyForNextShift": 47,
+      "skyRevealTier": {
+        "catalogLayer": "galactic_disk",
+        "maxMagnitude": 6.3,
+        "starBudget": 7048,
+        "unlockedSectors": [
+          "sol_centauri_corridor",
+          "j1419_onboarding_arc",
+          "fornax_orion_dust",
+          "taurus_lyra_pegasus"
+        ],
+        "deepFieldPlateIds": [
+          "smacs",
+          "carina",
+          "pillars",
+          "sombrero",
+          "horsehead",
+          "rho_ophiuchi",
+          "hudf",
+          "crab",
+          "ring_m57",
+          "stephans_quintet",
+          "southern_ring"
+        ],
+        "constellationGuideAlpha": 0.26
+      },
+      "anomalyPhase": {
+        "fractalStage": 3,
+        "perceptionLabel": "Broadband Facet Parity",
+        "skyShellOpacity": 0.22,
+        "skyShellCoverage": 0.32,
+        "minigameBleedIntensity": 0.28,
+        "dreamCrackBleed": 0.18
+      },
+      "narrativeHooks": {
+        "openingKnot": "shift3_wake",
+        "postRequiredKnot": "shift3_post_required",
+        "dreamKnot": "dream_shift3_rotating",
+        "optionalArchiveEchoId": "archive_1411_echo"
+      }
     },
     {
       "shift": 4,
+      "status": "planned",
       "title": "Coordinated Desynchronization",
+      "shiftMandate": "Cross-check cosmic distance rungs and supernova light-echoes while hiding your findings from the Overseer network.",
+      "requiredTargets": [
+        "cepheid_candle_field",
+        "tycho_echo_shell"
+      ],
+      "optionalTargets": [
+        "gravity_slingshot_pass"
+      ],
       "targetAnomalies": [
         "cepheid_candle_field",
         "tycho_echo_shell",
@@ -70,11 +211,62 @@
       "siblingDriftRange": [34, 54],
       "overseerAuditChaosThreshold": 35,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 62
+      "minAnomalyForNextShift": 63,
+      "skyRevealTier": {
+        "catalogLayer": "extragalactic_rungs",
+        "maxMagnitude": 6.9,
+        "starBudget": 12500,
+        "unlockedSectors": [
+          "sol_centauri_corridor",
+          "j1419_onboarding_arc",
+          "fornax_orion_dust",
+          "taurus_lyra_pegasus",
+          "canes_cassiopeia_rungs"
+        ],
+        "deepFieldPlateIds": [
+          "smacs",
+          "carina",
+          "pillars",
+          "sombrero",
+          "horsehead",
+          "rho_ophiuchi",
+          "hudf",
+          "crab",
+          "ring_m57",
+          "stephans_quintet",
+          "southern_ring",
+          "cas_a",
+          "whirlpool"
+        ],
+        "constellationGuideAlpha": 0.18
+      },
+      "anomalyPhase": {
+        "fractalStage": 4,
+        "perceptionLabel": "Hemispheric Seam Drift",
+        "skyShellOpacity": 0.42,
+        "skyShellCoverage": 0.56,
+        "minigameBleedIntensity": 0.48,
+        "dreamCrackBleed": 0.34
+      },
+      "narrativeHooks": {
+        "openingKnot": "shift4_wake",
+        "postRequiredKnot": "shift4_post_required",
+        "dreamKnot": "dream_shift4_desync",
+        "optionalArchiveEchoId": null
+      }
     },
     {
       "shift": 5,
+      "status": "planned",
       "title": "Ten-Light-Year Off-Center Proof",
+      "shiftMandate": "Measure antipodal horizon timing across opposing hemispheres to test the twenty-year causal phase lag.",
+      "requiredTargets": [
+        "antipodal_poles_seam",
+        "michelson_delay_node"
+      ],
+      "optionalTargets": [
+        "einstein_cross_quasar"
+      ],
       "targetAnomalies": [
         "antipodal_poles_seam",
         "michelson_delay_node",
@@ -87,15 +279,68 @@
       "siblingDriftRange": [26, 48],
       "overseerAuditChaosThreshold": 38,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 72
+      "minAnomalyForNextShift": 72,
+      "skyRevealTier": {
+        "catalogLayer": "antipodal_deep_sky",
+        "maxMagnitude": 7.4,
+        "starBudget": 16500,
+        "unlockedSectors": [
+          "sol_centauri_corridor",
+          "j1419_onboarding_arc",
+          "fornax_orion_dust",
+          "taurus_lyra_pegasus",
+          "canes_cassiopeia_rungs",
+          "antipodal_poles"
+        ],
+        "deepFieldPlateIds": [
+          "smacs",
+          "carina",
+          "pillars",
+          "sombrero",
+          "horsehead",
+          "rho_ophiuchi",
+          "hudf",
+          "crab",
+          "ring_m57",
+          "stephans_quintet",
+          "southern_ring",
+          "cas_a",
+          "whirlpool",
+          "cartwheel"
+        ],
+        "constellationGuideAlpha": 0.12
+      },
+      "anomalyPhase": {
+        "fractalStage": 5,
+        "perceptionLabel": "20-Year Phase Dipole",
+        "skyShellOpacity": 0.68,
+        "skyShellCoverage": 0.82,
+        "minigameBleedIntensity": 0.72,
+        "dreamCrackBleed": 0.54
+      },
+      "narrativeHooks": {
+        "openingKnot": "shift5_wake",
+        "postRequiredKnot": "shift5_post_required",
+        "dreamKnot": "dream_shift5_penultimate",
+        "optionalArchiveEchoId": "archive_0812_echo"
+      }
     },
     {
       "shift": 6,
+      "status": "planned",
       "title": "Carrier Composition & Twenty-Year Freeze",
+      "shiftMandate": "Separate local stellar parallax from the 93-billion-light-year enclosure seam and compile the homeward carrier.",
+      "requiredTargets": [
+        "orbital_parallax_drift",
+        "horizon_facet_stitch"
+      ],
+      "optionalTargets": [
+        "epoch_trajectory_seam"
+      ],
       "targetAnomalies": [
         "orbital_parallax_drift",
-        "epoch_trajectory_seam",
-        "horizon_facet_stitch"
+        "horizon_facet_stitch",
+        "epoch_trajectory_seam"
       ],
       "baseChaosPerShift": 26,
       "monthsPerShift": 4,
@@ -104,7 +349,47 @@
       "siblingDriftRange": [20, 44],
       "overseerAuditChaosThreshold": 40,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 0
+      "minAnomalyForNextShift": 0,
+      "skyRevealTier": {
+        "catalogLayer": "full_enclosure_survey",
+        "maxMagnitude": 7.8,
+        "starBudget": 18000,
+        "unlockedSectors": [
+          "all_sky_360"
+        ],
+        "deepFieldPlateIds": [
+          "smacs",
+          "carina",
+          "pillars",
+          "sombrero",
+          "horsehead",
+          "rho_ophiuchi",
+          "hudf",
+          "crab",
+          "ring_m57",
+          "stephans_quintet",
+          "southern_ring",
+          "cas_a",
+          "whirlpool",
+          "cartwheel",
+          "tarantula"
+        ],
+        "constellationGuideAlpha": 0.08
+      },
+      "anomalyPhase": {
+        "fractalStage": 6,
+        "perceptionLabel": "93-BLY Recursive Enclosure",
+        "skyShellOpacity": 0.92,
+        "skyShellCoverage": 1.0,
+        "minigameBleedIntensity": 0.95,
+        "dreamCrackBleed": 0.76
+      },
+      "narrativeHooks": {
+        "openingKnot": "shift6_wake",
+        "postRequiredKnot": "shift6_carrier_compose",
+        "dreamKnot": "future_humanity_echo",
+        "optionalArchiveEchoId": null
+      }
     }
   ],
   "endings": {

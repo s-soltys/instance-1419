@@ -29,11 +29,12 @@ Read this first every session. Keep this file `<80` lines; deeper specs live in 
 5. **Engine vs. Content Isolation:** Never hardcode prose or balance constants inside `src/engine/`. Keep saves/platform calls behind `src/platform/PlatformAdapter.ts`.
 6. **Pure HTML First:** Do not add Electron or Capacitor dependencies until Phase 6.
 7. **Taste Compass & Presentation (SSOT):** Honor `docs/HARNESS.md` (Taste Compass + 1-by-1 calibration), `docs/VOICE_GUIDE.md` (5-role tone, `◇` Q&A hubs, reserved Cast 2 voices), and `docs/ART_DIRECTION.md` (Zeiss-glass optics, Layout A, color-coded choice plates with zero Warm/Cold spoiler dots).
+8. **Cohesive Target & Shift Construction:** Every target and shift must pass the Shift Expansion & Cohesion Methodology (`docs/HARNESS.md` §1.6)—valid `scaleClass`↔minigame, commercial-safe `realCatalogRef`, spoiler-disciplined `preScanBrief`/`postScanEcho`, `2 required + 1–2 optional` shift slots, and monotonic `skyRevealTier` & `anomalyPhase`.
 
 ## 5. Session Protocol (Every Run)
 1. Read `PROGRESS.md`, `features.json`, and recent `git log -n 5`.
 2. Pick **one** pending item in `features.json` (do not boil the ocean).
-3. Load only the relevant SSOT `docs/*.md` and `.agents/skills/*/SKILL.md` for that task.
+3. Load only the relevant SSOT `docs/*.md` and `.agents/skills/*/SKILL.md` for that task; follow the Shift Expansion & Cohesion Checklist (`docs/HARNESS.md` §1.6) when adding or revising shifts/targets.
 4. Implement cleanly and verify during dev with `npm run verify:fast` (Gates 1–8) + targeted Playwright (`npm run test:visual:smoke` or `--flows=...`) only for UI/shader changes; full 21-instrument + mobile matrix runs in CI (`.github/workflows/ci.yml`).
 5. Update `features.json` and append a concise entry to `PROGRESS.md` **in the same atomic milestone commit**.
 

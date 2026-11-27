@@ -1,4 +1,5 @@
 import { Story } from 'inkjs';
+import anomaliesData from '../content/anomalies.json';
 import compiledSpikeStory from '../content/dialogue/compiled/spike_shift1.ink.json';
 import type { AuditOutcome, StateStore } from './StateStore';
 
@@ -227,6 +228,29 @@ export class DialogueRunner {
     story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
     story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
     this.setInkVarIfDeclared(story, 'current_shift', s.shift);
+
+    const quota = this.store.getShiftQuotaStatus(s.shift);
+    this.setInkVarIfDeclared(story, 'shift_required_done', quota.requiredDone);
+    this.setInkVarIfDeclared(story, 'shift_optional_done', quota.optionalDone);
+    this.setInkVarIfDeclared(story, 'shift_mandate_met', quota.mandateMet);
+    this.setInkVarIfDeclared(story, 'total_decoded', s.decodedMinigameTargets.length);
+    const lastDecoded =
+      s.decodedMinigameTargets.length > 0
+        ? s.decodedMinigameTargets[s.decodedMinigameTargets.length - 1]
+        : '';
+    this.setInkVarIfDeclared(story, 'last_decoded_target', lastDecoded);
+    this.setInkVarIfDeclared(
+      story,
+      'shift1_optional_scan_done',
+      s.shift === 1 ? quota.optionalDone > 0 : false
+    );
+
+    for (const anomaly of anomaliesData.anomalies) {
+      const flag = anomaly.postScanEcho?.storyFlag;
+      if (flag) {
+        this.setInkVarIfDeclared(story, flag, s.decodedMinigameTargets.includes(anomaly.id));
+      }
+    }
   }
 
   exportStateJson(): string {

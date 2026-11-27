@@ -43,7 +43,9 @@
       "coldMaxH": 44
     },
     "payouts": {
-      "clean": { "anomalyGain": 5, "chaosDelta": 2, "suspicionDelta": 0 }
+      "clean": { "anomalyGain": 7, "chaosDelta": 2, "suspicionDelta": 0 },
+      "deep_overclock": { "anomalyGain": 11, "chaosDelta": 7, "suspicionDelta": 1 },
+      "partial": { "anomalyGain": 4, "chaosDelta": 1, "suspicionDelta": 0 }
     }
   },
   "dreamDefrag": {

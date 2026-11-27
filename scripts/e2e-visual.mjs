@@ -155,6 +155,17 @@ async function ensureQaClosed(page) {
   }
 }
 
+async function settleOpticalDive(page) {
+  const diveActive = await page.locator('#transition-stage.is-dive-brief.is-active').count();
+  if (diveActive > 0) {
+    await page.click('#transition-stage', { force: true }).catch(() => {});
+  }
+  await page.waitForSelector('#transition-stage:not(.is-active)', {
+    state: 'attached',
+    timeout: 4000,
+  }).catch(() => {});
+}
+
 async function saveCheckedScreenshot(page, filename) {
   const fullPath = path.join(OUT_DIR, filename);
   await page.screenshot({ path: fullPath, animations: 'disabled', timeout: 45000 });
@@ -276,17 +287,90 @@ async function run() {
         await ensureQaOpen(page);
         await page.click('[data-qa-tab="scenes"]');
         await page.click('[data-intro-jump="complete"]');
+        await page.click('[data-wave="1180"]');
         await ensureQaClosed(page);
         await page.waitForSelector('#optics-layer:not(.hidden)', { timeout: 6000 });
         skyReady = true;
       }
 
       if (activeFlows.has('sky')) {
-        // Flow 2: Single-CTA Open Aperture -> Full Sandbox Sky Aperture
+        // Flow 2: Full Sandbox Sky Aperture -> 6 Scale Markers -> Reticle Preview -> Optical Dive -> Shift 1 vs 6 Fractal Check
         await page.waitForSelector('[data-bearing-id="cluster_j1419_a"]', { timeout: 4000 });
+        const skyScaleCheck = await page.evaluate(() => {
+          const markers = Array.from(document.querySelectorAll('#sky-markers .sky-marker'));
+          const scales = new Set(markers.map((m) => m.getAttribute('data-scale-class')).filter(Boolean));
+          const glyphs = document.querySelectorAll('#sky-markers .sky-marker svg.sky-glyph').length;
+          const reqCount = document.querySelectorAll('#sky-markers .sky-marker.is-required').length;
+          const optCount = document.querySelectorAll('#sky-markers .sky-marker.is-optional').length;
+          return { total: markers.length, scales: [...scales], glyphs, reqCount, optCount };
+        });
+        if (skyScaleCheck.scales.length !== 6 || skyScaleCheck.glyphs !== 21) {
+          throw new Error(`Expected 6 scale marker classes & 21 SVG glyphs, got ${JSON.stringify(skyScaleCheck)}`);
+        }
+        if (skyScaleCheck.reqCount < 2 || skyScaleCheck.optCount < 1) {
+          throw new Error(`Expected required/optional marker classes on Shift 1, got ${JSON.stringify(skyScaleCheck)}`);
+        }
+
         await page.click('[data-bearing-id="cluster_j1419_a"]');
-        await page.waitForTimeout(450);
+        await page.waitForSelector('#reticle-brief:not(.hidden)', { timeout: 8000 });
+        await page.waitForSelector('#btn-enter-inspect:not(.hidden)', { timeout: 8000 });
+        const reticleState = await page.evaluate(() => ({
+          scaleClass: document.querySelector('.reticle')?.getAttribute('data-scale-class') ?? '',
+          etch: document.querySelector('#reticle-scale-etch')?.textContent?.trim() ?? '',
+          cta: document.querySelector('#btn-enter-inspect')?.textContent?.trim() ?? '',
+        }));
+        if (reticleState.scaleClass !== 'galaxy_cluster' || !reticleState.etch.includes('GALAXY CLUSTER')) {
+          throw new Error(`Reticle scale etch mismatch for J1419-A: ${JSON.stringify(reticleState)}`);
+        }
+        if ((await page.locator('.status-shift-overlay:not(.hidden)').count()) > 0) {
+          await page.click('.status-shift-overlay:not(.hidden)', { force: true });
+          await page.waitForSelector('.status-shift-overlay.hidden', { state: 'attached', timeout: 2000 }).catch(() => {});
+          await page.waitForTimeout(220);
+        }
         await saveCheckedScreenshot(page, '02_sky_aperture.png');
+
+        // Verify optical_dive 2.2s brief + click-to-skip -> LNS-04 launch -> clean exit
+        await page.click('#btn-enter-inspect');
+        await page.waitForSelector('#transition-stage.is-dive-brief', { timeout: 2000 });
+        const diveLabelVisible = await page.evaluate(() => {
+          const lbl = document.querySelector('#transition-label');
+          return Boolean(lbl && !lbl.classList.contains('sr-only') && lbl.textContent?.includes('LNS-04'));
+        });
+        if (!diveLabelVisible) {
+          throw new Error('Expected #transition-label to display visible optical_dive brief for LNS-04');
+        }
+        await page.click('#transition-stage', { force: true });
+        await page.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 6000 });
+        const diveCode = (await page.textContent('#mg-instrument-code'))?.trim();
+        if (diveCode !== 'LNS-04') {
+          throw new Error(`Expected LNS-04 after optical_dive from J1419-A, got "${diveCode}"`);
+        }
+        await page.click('#mg-btn-close');
+        await page.waitForSelector('#minigame-overlay', { state: 'hidden', timeout: 4000 });
+
+        // Verify .sky-marker.decoded state via mg_1_done + ?dev=1 Shift 1 vs Shift 6 sky reveal & fractal check
+        await ensureQaOpen(page);
+        await page.click('[data-qa-tab="scenes"]');
+        await page.click('[data-intro-jump="mg_1_done"]');
+        await page.waitForSelector('.sky-marker[data-anomaly-id="sol_centauri_bearing"].decoded', { timeout: 4000 });
+        await page.click('[data-shift-jump="6"]');
+        await page.waitForTimeout(450);
+        await ensureQaClosed(page);
+        if ((await page.locator('.status-shift-overlay:not(.hidden)').count()) > 0) {
+          await page.click('.status-shift-overlay:not(.hidden)', { force: true });
+          await page.waitForTimeout(180);
+        }
+        const shift6Tag = (await page.textContent('.bearing-shift-tag'))?.trim() ?? '';
+        if (!shift6Tag.includes('SHIFT 6')) {
+          throw new Error(`Expected Shift 6 bearing header after ?dev=1 shift jump, got "${shift6Tag}"`);
+        }
+        await saveCheckedScreenshot(page, '02e_sky_shift6_fractal.png');
+        // Restore Shift 1 + full sandbox for subsequent flows
+        await ensureQaOpen(page);
+        await page.click('[data-qa-tab="scenes"]');
+        await page.click('[data-shift-jump="1"]');
+        await page.click('[data-intro-jump="complete"]');
+        await ensureQaClosed(page);
       }
 
       if (activeFlows.has('settings')) {
@@ -384,6 +468,7 @@ async function run() {
           await page.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 8000 });
           await page.waitForSelector('#minigame-mount canvas.minigame-canvas', { timeout: 4000 });
           await ensureQaClosed(page);
+          await settleOpticalDive(page);
           await page.waitForTimeout(120);
 
           const codeText = (await page.textContent('#mg-instrument-code'))?.trim();
@@ -417,6 +502,10 @@ async function run() {
           await page.click('#mg-btn-guide');
           await page.waitForSelector('#mg-field-guide-card:not(.hidden)', { timeout: 2000 });
           const v1GuideTitle = (await page.textContent('#mg-guide-title'))?.trim() ?? '';
+          const guideTargetAction = (await page.textContent('#mg-guide-target-action'))?.trim() ?? '';
+          if (!guideTargetAction) {
+            throw new Error(`Expected non-empty #mg-guide-target-action on ${inst.id}`);
+          }
           await page.click('#mg-btn-guide-close');
           await page.waitForTimeout(80);
 
@@ -431,6 +520,7 @@ async function run() {
             await page.click(`[data-launch-mg="${inst.id}"]`);
             await page.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 8000 });
             await ensureQaClosed(page);
+            await settleOpticalDive(page);
             await page.waitForTimeout(120);
             await page.click('#mg-btn-guide');
             await page.waitForSelector('#mg-field-guide-card:not(.hidden)', { timeout: 2000 });
@@ -496,6 +586,7 @@ async function run() {
       });
 
       await mPage.goto(url, { waitUntil: 'networkidle' });
+      await mPage.waitForSelector('#qa-drawer');
       await ensureQaOpen(mPage);
       await mPage.click('[data-qa-tab="scenes"]');
       await mPage.click('[data-intro-jump="complete"]');
@@ -539,6 +630,7 @@ async function run() {
         await mPage.click(`[data-launch-mg="${mobileId}"]`);
         await mPage.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 8000 });
         await ensureQaClosed(mPage);
+        await settleOpticalDive(mPage);
         await mPage.waitForSelector('#minigame-overlay:not(.is-entering)', { timeout: 2500 }).catch(() => {});
         await mPage.waitForFunction(
           () => {

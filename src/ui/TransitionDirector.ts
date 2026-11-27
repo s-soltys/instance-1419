@@ -10,6 +10,9 @@ export interface TransitionPlayOptions {
   kind: TransitionKind;
   label: string;
   sublabel?: string;
+  eyebrow?: string;
+  instrument?: string;
+  skippable?: boolean;
   tone?: 'warm' | 'cold';
   fromSelector?: string;
   toSelector?: string;
@@ -34,7 +37,7 @@ interface TransitionTimings {
  */
 const TIMINGS: Record<TransitionKind, TransitionTimings> = {
   aperture_boot: { switchMs: 950, durationMs: 3900 },
-  optical_dive: { switchMs: 480, durationMs: 1850 },
+  optical_dive: { switchMs: 620, durationMs: 2200 },
   optical_pullback: { switchMs: 360, durationMs: 1850 },
   dream_submerge: { switchMs: 420, durationMs: 2350 },
   dream_wake: { switchMs: 380, durationMs: 2350 },
@@ -51,6 +54,7 @@ export class TransitionDirector {
   private arrivalTimer: number | null = null;
   private activeFromEl: HTMLElement | null = null;
   private activeToEl: HTMLElement | null = null;
+  private skipCleanup: (() => void) | null = null;
 
   constructor(root: HTMLElement) {
     this.root = root;
@@ -61,6 +65,8 @@ export class TransitionDirector {
       window.clearTimeout(id);
     }
     this.timers = [];
+    this.skipCleanup?.();
+    this.skipCleanup = null;
   }
 
   private getStageEl(): HTMLElement | null {
@@ -100,8 +106,31 @@ export class TransitionDirector {
       return;
     }
 
+    const isDiveBrief = opts.kind === 'optical_dive';
+    const isSkippable = Boolean(opts.skippable ?? isDiveBrief);
     const labelEl = stageEl.querySelector<HTMLElement>('#transition-label');
-    if (labelEl) labelEl.textContent = opts.label;
+    if (labelEl) {
+      if (isDiveBrief) {
+        labelEl.classList.remove('sr-only');
+        labelEl.innerHTML = '';
+        const eyebrowEl = document.createElement('span');
+        eyebrowEl.className = 'ts-dive-eyebrow';
+        eyebrowEl.textContent = opts.eyebrow ?? opts.label;
+        const instEl = document.createElement('strong');
+        instEl.className = 'ts-dive-instrument';
+        instEl.textContent = opts.instrument ?? opts.label;
+        const subEl = document.createElement('span');
+        subEl.className = 'ts-dive-sublabel';
+        subEl.textContent = opts.sublabel ?? '';
+        const hintEl = document.createElement('span');
+        hintEl.className = 'ts-dive-skip-hint';
+        hintEl.textContent = 'CLICK OR PRESS SPACE TO ENTER';
+        labelEl.append(eyebrowEl, instEl, subEl, hintEl);
+      } else {
+        labelEl.classList.add('sr-only');
+        labelEl.textContent = opts.label;
+      }
+    }
 
     const timing = TIMINGS[opts.kind];
     const tone = opts.tone ?? 'cold';
@@ -119,16 +148,25 @@ export class TransitionDirector {
     }
 
     const wasActive = stageEl.classList.contains('is-active') || stageEl.classList.contains('is-pulse');
-    stageEl.classList.remove('is-active', 'is-pulse');
+    stageEl.classList.remove('is-active', 'is-pulse', 'is-dive-brief');
     stageEl.dataset.kind = opts.kind;
     stageEl.dataset.tone = tone;
     stageEl.dataset.phase = 'active';
+    stageEl.setAttribute('aria-hidden', isDiveBrief ? 'false' : 'true');
+    if (isDiveBrief) {
+      stageEl.classList.add('is-dive-brief');
+    }
     if (wasActive) {
       void stageEl.offsetWidth;
     }
     stageEl.classList.add('is-active');
 
-    const tSwitch = window.setTimeout(() => {
+    let midpointRan = false;
+    let finished = false;
+
+    const runMidpoint = () => {
+      if (midpointRan) return;
+      midpointRan = true;
       opts.onMidpoint();
 
       if (toEl) {
@@ -144,10 +182,21 @@ export class TransitionDirector {
         toEl.dataset.arriveTone = tone;
         toEl.classList.add('is-arriving', 'is-entering');
       }
-    }, timing.switchMs);
+    };
 
-    const tDone = window.setTimeout(() => {
-      stageEl.classList.remove('is-active', 'is-pulse');
+    const finishTransition = () => {
+      if (finished) return;
+      finished = true;
+      this.clearTimers();
+      if (!midpointRan) {
+        runMidpoint();
+      }
+
+      stageEl.classList.remove('is-active', 'is-pulse', 'is-dive-brief');
+      stageEl.setAttribute('aria-hidden', 'true');
+      if (labelEl) {
+        labelEl.classList.add('sr-only');
+      }
       delete stageEl.dataset.phase;
 
       if (this.activeFromEl && this.activeFromEl !== this.activeToEl) {
@@ -168,7 +217,31 @@ export class TransitionDirector {
       this.activeToEl = null;
 
       opts.onComplete?.();
-    }, timing.durationMs);
+    };
+
+    if (isSkippable) {
+      const onSkipClick = (e: Event) => {
+        e.preventDefault();
+        e.stopPropagation();
+        finishTransition();
+      };
+      const onSkipKey = (e: KeyboardEvent) => {
+        if (e.key === ' ' || e.code === 'Space' || e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+          finishTransition();
+        }
+      };
+      stageEl.addEventListener('click', onSkipClick);
+      window.addEventListener('keydown', onSkipKey, true);
+      this.skipCleanup = () => {
+        stageEl.removeEventListener('click', onSkipClick);
+        window.removeEventListener('keydown', onSkipKey, true);
+      };
+    }
+
+    const tSwitch = window.setTimeout(runMidpoint, timing.switchMs);
+    const tDone = window.setTimeout(finishTransition, timing.durationMs);
 
     this.timers.push(tSwitch, tDone);
   }
@@ -189,10 +262,14 @@ export class TransitionDirector {
     }
 
     const labelEl = stageEl.querySelector<HTMLElement>('#transition-label');
-    if (labelEl) labelEl.textContent = label;
+    if (labelEl) {
+      labelEl.classList.add('sr-only');
+      labelEl.textContent = label;
+    }
 
     const wasActive = stageEl.classList.contains('is-active') || stageEl.classList.contains('is-pulse');
-    stageEl.classList.remove('is-active');
+    stageEl.classList.remove('is-active', 'is-dive-brief');
+    stageEl.setAttribute('aria-hidden', 'true');
     stageEl.dataset.kind = kind;
     stageEl.dataset.tone = 'cold';
     stageEl.dataset.phase = 'active';
@@ -209,7 +286,7 @@ export class TransitionDirector {
     }, midpointMs);
 
     const tDone = window.setTimeout(() => {
-      stageEl.classList.remove('is-active', 'is-pulse');
+      stageEl.classList.remove('is-active', 'is-pulse', 'is-dive-brief');
       delete stageEl.dataset.phase;
       opts?.onComplete?.();
     }, durationMs);

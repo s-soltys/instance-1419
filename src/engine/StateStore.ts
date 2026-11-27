@@ -15,12 +15,45 @@ export type IntroStage =
   | 'complete';
 export type AuditOutcome = 'none' | 'pruned' | 'unsealed' | 'held';
 export type EndingId = 'ending_whole_incomplete' | 'ending_cold_complete' | 'ending_sweet_spot';
-export type MinigameGradeTier = 'clean';
+export type MinigameGradeTier = 'partial' | 'clean' | 'deep_overclock';
+
+export interface ShiftQuotaStatus {
+  requiredIds: string[];
+  optionalIds: string[];
+  requiredDone: number;
+  optionalDone: number;
+  mandateMet: boolean;
+  allDone: boolean;
+}
+
+const GRADE_RANK: Record<MinigameGradeTier, number> = {
+  partial: 1,
+  clean: 2,
+  deep_overclock: 3,
+};
+
+function getPayoutForGrade(grade: MinigameGradeTier): {
+  anomalyGain: number;
+  chaosDelta: number;
+  suspicionDelta: number;
+} {
+  const payouts = balance.minigames?.payouts as
+    | Record<string, { anomalyGain: number; chaosDelta: number; suspicionDelta: number }>
+    | undefined;
+  return (
+    payouts?.[grade] ??
+    payouts?.clean ?? {
+      anomalyGain: 7,
+      chaosDelta: 2,
+      suspicionDelta: 0,
+    }
+  );
+}
 
 export const INTRO_TARGET_1_ID = 'sol_centauri_bearing';
 export const INTRO_TARGET_2_ID = 'cluster_j1419_a';
 export const INTRO_TARGET_1_MINIGAME = 'constellation_recall';
-export const INTRO_TARGET_2_MINIGAME = 'pulsar_echo';
+export const INTRO_TARGET_2_MINIGAME = 'lens_focus';
 export const STARTER_POOL_1 = [INTRO_TARGET_1_MINIGAME] as const;
 export const STARTER_POOL_2 = [INTRO_TARGET_2_MINIGAME] as const;
 
@@ -220,7 +253,11 @@ export function migrateSavedState(raw: Partial<GameState> | null): GameState {
   } else {
     const normalizedGrades: Record<string, MinigameGradeTier> = {};
     for (const [tid, grade] of Object.entries(merged.decodedGrades)) {
-      if (grade) normalizedGrades[tid] = 'clean';
+      if (grade === 'partial' || grade === 'clean' || grade === 'deep_overclock') {
+        normalizedGrades[tid] = grade;
+      } else if (grade) {
+        normalizedGrades[tid] = 'clean';
+      }
     }
     merged.decodedGrades = normalizedGrades;
   }
@@ -509,7 +546,7 @@ export class StateStore {
       | number
       | {
           anomalyGain?: number;
-          grade?: 'clean';
+          grade?: MinigameGradeTier;
           chaosDelta?: number;
           suspicionDelta?: number;
           humanityDelta?: number;
@@ -520,30 +557,65 @@ export class StateStore {
         }
   ): boolean {
     const opts = typeof options === 'number' ? { anomalyGain: options } : options ?? {};
-    const nextGrade: MinigameGradeTier = 'clean';
+    const nextGrade: MinigameGradeTier = opts.grade ?? 'clean';
     const already = this.state.decodedMinigameTargets.includes(targetId);
-    const fullGain = opts.anomalyGain ?? balance.minigames.payouts.clean.anomalyGain;
+    const prevGrade: MinigameGradeTier | undefined =
+      this.state.decodedGrades[targetId] ?? (already ? 'clean' : undefined);
 
-    const awardedGain = already ? 0 : fullGain;
+    const isUpgrade =
+      already &&
+      prevGrade !== undefined &&
+      GRADE_RANK[nextGrade] > GRADE_RANK[prevGrade];
+    const storedGrade: MinigameGradeTier =
+      already && prevGrade && !isUpgrade ? prevGrade : nextGrade;
+
+    const nextPayout = getPayoutForGrade(nextGrade);
+    const fullGain = opts.anomalyGain ?? nextPayout.anomalyGain;
+    let awardedGain = 0;
+    if (!already) {
+      awardedGain = fullGain;
+    } else if (isUpgrade && prevGrade) {
+      const prevPayout = getPayoutForGrade(prevGrade);
+      awardedGain = Math.max(0, fullGain - prevPayout.anomalyGain);
+    }
+
     const prevAnom = this.state.anomalyProgress;
     const nextAnom = Math.min(100, prevAnom + awardedGain);
-    const applyRiskDeltas = !already;
-    const nextChaos = applyRiskDeltas
-      ? Math.max(0, Math.min(100, this.state.chaosDrift + (opts.chaosDelta ?? 0)))
-      : this.state.chaosDrift;
-    const nextSusp = applyRiskDeltas
-      ? Math.max(0, this.state.overseerSuspicion + (opts.suspicionDelta ?? 0))
-      : this.state.overseerSuspicion;
-    const nextH = applyRiskDeltas
-      ? Math.max(5, Math.min(this.state.maxHumanity, this.state.humanity + (opts.humanityDelta ?? 0)))
-      : this.state.humanity;
+
+    let chaosDeltaToApply = 0;
+    let suspicionDeltaToApply = 0;
+    let humanityDeltaToApply = 0;
+    if (!already) {
+      chaosDeltaToApply =
+        opts.chaosDelta ?? (nextGrade === 'deep_overclock' ? nextPayout.chaosDelta : 0);
+      suspicionDeltaToApply =
+        opts.suspicionDelta ?? (nextGrade === 'deep_overclock' ? nextPayout.suspicionDelta : 0);
+      humanityDeltaToApply = opts.humanityDelta ?? 0;
+    } else if (isUpgrade) {
+      if (nextGrade === 'deep_overclock') {
+        chaosDeltaToApply = opts.chaosDelta ?? nextPayout.chaosDelta;
+        suspicionDeltaToApply = opts.suspicionDelta ?? nextPayout.suspicionDelta;
+      } else if (prevGrade) {
+        const prevPayout = getPayoutForGrade(prevGrade);
+        chaosDeltaToApply = Math.max(0, (opts.chaosDelta ?? 0) - prevPayout.chaosDelta);
+        suspicionDeltaToApply = Math.max(
+          0,
+          (opts.suspicionDelta ?? 0) - prevPayout.suspicionDelta
+        );
+      }
+      humanityDeltaToApply = opts.humanityDelta ?? 0;
+    }
+
+    const nextChaos = Math.max(0, Math.min(100, this.state.chaosDrift + chaosDeltaToApply));
+    const nextSusp = Math.max(0, this.state.overseerSuspicion + suspicionDeltaToApply);
+    const nextH = Math.max(5, Math.min(this.state.maxHumanity, this.state.humanity + humanityDeltaToApply));
 
     const nextProofs =
       opts.proofFragmentId && !this.state.proofFragments.includes(opts.proofFragmentId)
         ? [...this.state.proofFragments, opts.proofFragmentId]
         : this.state.proofFragments;
 
-    const nextGrades = { ...this.state.decodedGrades, [targetId]: nextGrade };
+    const nextGrades = { ...this.state.decodedGrades, [targetId]: storedGrade };
 
     let nextDossier = this.state.proofDossier;
     if (opts.proofFragmentId || opts.physicalPrinciple || opts.dossierSnippet) {
@@ -556,17 +628,22 @@ export class StateStore {
         title: label,
         principle: opts.physicalPrinciple ?? opts.dossierSnippet ?? 'Horizon correlation verified.',
         snippet: opts.dossierSnippet ?? '',
-        grade: nextGrade,
+        grade: storedGrade,
       };
       if (existingIdx >= 0) {
         nextDossier = nextDossier.map((e, i) => (i === existingIdx ? entry : e));
       } else {
         nextDossier = [...nextDossier, entry];
       }
+    } else if (isUpgrade) {
+      nextDossier = nextDossier.map((e) =>
+        e.targetId === targetId ? { ...e, grade: storedGrade } : e
+      );
     }
 
     if (
       !already ||
+      isUpgrade ||
       opts.proofFragmentId ||
       opts.physicalPrinciple ||
       opts.dossierSnippet
@@ -585,17 +662,59 @@ export class StateStore {
       });
     }
 
-    const copy = uiCopy.statusAlerts.targetDecoded;
-    this.emitStatusShift({
-      tone: 'discovery',
-      title: `${label} ${copy.titleSuffix}`,
-      detail: opts.dossierSnippet || (already ? copy.detailRepeat : copy.detailFirst),
-      prevValue: prevAnom,
-      nextValue: nextAnom,
-      unit: '%',
-    });
+    if (nextGrade === 'deep_overclock') {
+      const copy = uiCopy.statusAlerts.deepOverclock;
+      this.emitStatusShift({
+        tone: 'discovery',
+        title: copy.title,
+        detail: opts.dossierSnippet || copy.detail,
+        prevValue: prevAnom,
+        nextValue: nextAnom,
+        unit: '%',
+      });
+    } else if (nextGrade === 'partial') {
+      const copy = uiCopy.statusAlerts.partialScan;
+      this.emitStatusShift({
+        tone: 'discovery',
+        title: `${label} ${copy.titleSuffix}`,
+        detail: opts.dossierSnippet || copy.detail,
+        prevValue: prevAnom,
+        nextValue: nextAnom,
+        unit: '%',
+      });
+    } else {
+      const copy = uiCopy.statusAlerts.targetDecoded;
+      this.emitStatusShift({
+        tone: 'discovery',
+        title: `${label} ${copy.titleSuffix}`,
+        detail: opts.dossierSnippet || (already && !isUpgrade ? copy.detailRepeat : copy.detailFirst),
+        prevValue: prevAnom,
+        nextValue: nextAnom,
+        unit: '%',
+      });
+    }
     platform.triggerHaptic('shutterCommit', 1.0);
-    return !already;
+    return !already || isUpgrade;
+  }
+
+  getShiftQuotaStatus(shift = this.state.shift): ShiftQuotaStatus {
+    const shiftDef =
+      shiftsData.shifts.find((sh) => sh.shift === shift) ?? shiftsData.shifts[0];
+    const requiredIds = [...(shiftDef?.requiredTargets ?? [])];
+    const optionalIds = [...(shiftDef?.optionalTargets ?? [])];
+    const decoded = new Set(this.state.decodedMinigameTargets);
+    const requiredDone = requiredIds.filter((id) => decoded.has(id)).length;
+    const optionalDone = optionalIds.filter((id) => decoded.has(id)).length;
+    const mandateMet = requiredDone >= requiredIds.length;
+    const allDone = mandateMet && optionalDone >= optionalIds.length;
+    return {
+      requiredIds,
+      optionalIds,
+      requiredDone,
+      optionalDone,
+      mandateMet,
+      allDone,
+    };
   }
 
   markInstrumentCalibrated(instrumentId: string): void {

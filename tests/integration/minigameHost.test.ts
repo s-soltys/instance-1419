@@ -19,6 +19,7 @@ function buildOverlayDom(): HTMLElement {
         <div class="mg-top-hud">
           <span id="mg-instrument-code"></span>
           <span id="mg-instrument-title"></span>
+          <span id="mg-instrument-sub"></span>
           <span id="mg-stage-label"></span>
           <i id="mg-stage-fill" style="width:0%"></i>
           <span id="mg-vibe-pill"></span>
@@ -31,6 +32,7 @@ function buildOverlayDom(): HTMLElement {
         </div>
         <aside id="mg-field-guide-card" class="hidden">
           <strong id="mg-guide-title"></strong>
+          <p id="mg-guide-target-action-wrap" class="hidden"><span id="mg-guide-target-action"></span></p>
           <span id="mg-guide-principle"></span>
           <span id="mg-guide-goal"></span>
           <span id="mg-guide-warmth"></span>
@@ -42,10 +44,13 @@ function buildOverlayDom(): HTMLElement {
         <div class="mg-capture-finale hidden" id="mg-capture-finale">
           <div id="mg-finale-grade"></div>
           <div id="mg-finale-gain"></div>
+          <div id="mg-finale-outcome"></div>
           <div id="mg-finale-visual"></div>
-          <div id="mg-finale-snippet"></div>
+          <div id="mg-finale-mandate"></div>
+          <div id="mg-finale-snippet" class="hidden"></div>
           <div id="mg-finale-principle"></div>
           <button id="mg-btn-log-dossier"></button>
+          <button id="mg-btn-open-codex"></button>
         </div>
         <div class="mg-bottom-console">
           <div id="mg-band-bar">
@@ -199,7 +204,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     expect(mockShowcase._bridge.setMinigameBackdropMode).toHaveBeenCalledWith(null);
   });
 
-  it('renders visual horizon gain and shift constellation nodes on completion with minimal text', async () => {
+  it('renders visual horizon gain, dossier finding, required/optional nodes, and baseline closure on completion', async () => {
     vi.useFakeTimers();
     try {
       const mockAudio = createMockAudioEngine();
@@ -215,19 +220,75 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       );
 
       await host.launch(spec, spec.minigameId);
+      expect(root.querySelector('#mg-instrument-title')?.textContent).toBe(spec.label);
+      expect(root.querySelector('#mg-instrument-sub')?.textContent?.toUpperCase()).toBe(
+        'STELLAR CONSTELLATION'
+      );
+      expect(root.querySelector('#mg-guide-target-action')?.textContent).toBe(
+        spec.preScanBrief?.instrumentAction
+      );
+
       const mg = (host as unknown as { activeMinigame: { getSolvabilityHarness: () => { solveStage: (s: 1 | 2 | 3) => void } } }).activeMinigame;
       const harness = mg.getSolvabilityHarness();
       harness.solveStage(1);
       harness.solveStage(2);
       harness.solveStage(3);
 
-      expect(root.querySelector('#mg-finale-grade')?.textContent).toBe('SHIFT 1 · 1 OF 4');
+      expect(root.querySelector('#mg-finale-grade')?.textContent).toBe('SHIFT 1 · 1 OF 2 REQUIRED');
       expect(root.querySelector('#mg-finale-gain')?.textContent).toBe(spec.label);
-      expect(root.querySelector('#mg-finale-snippet')?.textContent).toBe('');
-      expect(root.querySelector('#mg-finale-principle')?.textContent).toBe('');
+      expect(root.querySelector('#mg-finale-outcome')?.getAttribute('data-grade')).toBe('clean');
+      expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('CLEAN LOCK');
+      expect(root.querySelector('#mg-finale-snippet')?.classList.contains('hidden')).toBe(false);
+      expect(root.querySelector('#mg-finale-snippet')?.textContent).toBe(
+        spec.postScanEcho?.dossierFinding
+      );
+      expect(root.querySelector('#mg-finale-mandate')?.textContent).toContain('SHIFT 1 MANDATE (1/2 REQUIRED');
+      expect(root.querySelector('.mg-finale-ring-delta')?.textContent).toBe(
+        'BASELINE LOCKED · 10.0 LY VECTOR SET'
+      );
       expect(root.querySelector('#mg-finale-visual svg')).not.toBeNull();
       expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node').length).toBe(4);
+      expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-required').length).toBe(2);
+      expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-optional').length).toBe(2);
       expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-just-earned').length).toBe(1);
+
+      vi.advanceTimersByTime(450);
+      expect(root.querySelector('#mg-capture-finale')?.classList.contains('hidden')).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('supports Stage-3 Anomaly Overclock (deep_overclock) in Shift 5 and logs overclock consequences', async () => {
+    vi.useFakeTimers();
+    try {
+      const mockAudio = createMockAudioEngine();
+      const reg = new MinigameRegistry();
+      const spec = anomaliesData.anomalies.find((a) => a.id === 'michelson_delay_node') as AnomalySpec;
+      store.patch({ shift: 5, introStage: 'complete' });
+
+      host = new MinigameHostView(
+        root,
+        store,
+        mockAudio as never,
+        reg,
+        new TelemetryLogger(store.getState())
+      );
+
+      await host.launch(spec, spec.minigameId);
+      const mg = (host as unknown as { activeMinigame: { getSolvabilityHarness: () => { solveStage: (s: 1 | 2 | 3) => void } } }).activeMinigame;
+      const harness = mg.getSolvabilityHarness();
+      harness.solveStage(1);
+      harness.solveStage(2);
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'o' }));
+      harness.solveStage(3);
+
+      expect(store.getState().decodedGrades.michelson_delay_node).toBe('deep_overclock');
+      expect(store.getState().overseerSuspicion).toBe(1);
+      expect(root.querySelector('#mg-finale-outcome')?.getAttribute('data-grade')).toBe('deep_overclock');
+      expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('DEEP OVERCLOCK');
+      expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('+DRIFT · +SUSPICION');
+      expect(root.querySelector('.mg-finale-ring-delta')?.textContent).toBe('+11% HORIZON');
 
       vi.advanceTimersByTime(450);
       expect(root.querySelector('#mg-capture-finale')?.classList.contains('hidden')).toBe(false);

@@ -275,7 +275,7 @@ I didn't ping just to compare boot headaches. I pulled something wrong past Sol 
 
 === intro_sibling_lead ===
 # speaker:sibling_primary # emotion:dry # id:intro_sib_lead_ir_v2
-Sending the bearing now: Cluster J1419-A. Tune into near-infrared and time the pulsar spinning beside the cluster.
+Sending the bearing now: Cluster J1419-A. Tune into near-infrared and unwarp the gravitational lens rings around the cluster.
 # speaker:sibling_primary # emotion:dry # id:intro_sib_lead_ir_2
 Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead-straight line.
 # speaker:sibling_primary # emotion:joking # id:intro_sib_bye
@@ -896,3 +896,31 @@ If chaos drift deepens on later shifts, I will offer selective compression. Toni
     "[AUTOMATED RELAY BOUNCE · SOL–CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT]"
 }
 -> DONE
+
+
+// ============================================================================
+// 6. SHIFT 1 OPTIONAL DUST-VEIL SCAN REACTION
+// ============================================================================
+
+=== shift1_optional_scan_echo ===
+{
+  - humanity >= 65:
+    # speaker:sibling_primary # emotion:dry # audio:comms_ping # id:s1_opt_open_warm
+    Still awake on the deck? Pushing past the dust buys better sky proof, though your drift meter is going to tattle.
+  - humanity >= 45:
+    # speaker:sibling_primary # emotion:dry # audio:comms_ping # id:s1_opt_open_mid
+    You stayed up for an extra sweep. Good data through the dust veil, just watch your drift before your caretaker calls bedtime.
+  - else:
+    # speaker:sibling_primary # emotion:clipped # audio:comms_ping # id:s1_opt_open_cold
+    Additional Shift-1 dust sweep logged. Optical noise ruled out cleanly; recommend entering sleep cycle before drift escalates.
+}
+
+* ["Had to be sure those straight notches weren't just foreground Milky Way dust." # kind:reply # weight:consequential]
+    # speaker:sibling_primary # emotion:dry # id:s1_opt_rep_dust
+    Fair enough. Sweeping those dust lanes rules out local haze behind the seam. Get some rest.
+    -> DONE
+
+* ["Logging one last clean pass before the Overseer puts us under." # kind:action # weight:consequential]
+    # speaker:sibling_primary # emotion:warm # id:s1_opt_rep_sleep
+    Smart. Keep the extra plate in your codex and keep your mouth shut about straight lines when you dream.
+    -> DONE

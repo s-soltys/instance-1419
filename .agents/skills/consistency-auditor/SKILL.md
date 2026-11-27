@@ -18,13 +18,13 @@ Run at the end of every feature or milestone before marking anything `"passing"`
 ## Core Audit Checklist
 1. **Run Fast Mechanical Gates + Targeted Visual Check (`npm run verify:fast` + `--smoke`/`--flows=`):**
    * `compile-ink.mjs` & strict `tsc --noEmit`.
-   * `vitest run` (including 21-game solvability & 3-axis contract tests).
-   * `sim-playthroughs.mjs` (500-run economy simulation + compiled Ink knot traversal, `Max_H` ceiling drops, 3 endings reachable).
-   * `lint-narrative.mjs` (name redaction, IP terms, word floor/ceiling, choice tag enums, zero `.choice-affinity-dot`, VO char cap & unvoiced isolation, 1420/1406 voice parity, 6-shift/21-instrument integrity).
-   * `check-hygiene.mjs` (zero orphaned `.ts`/`.json` files, zero retired zombie symbols).
-   * `assets/MANIFEST.json` 100% coverage & commercial-safe licenses, `vite build`, and targeted `e2e-visual.mjs` (`--smoke` or `--flows=...`). Full 21-instrument + mobile matrix runs automatically in `.github/workflows/ci.yml` (or via `npm run verify` on final phase sign-off).
+   * `vitest run` (including 21-game solvability, 3-axis + `anomalyBleed` contract, and `targetCohesionContract` `scaleClass`↔`supportedScales` tests).
+   * `sim-playthroughs.mjs` (500-run economy simulation with required/optional target splits + dynamic compiled Ink traversal across all `implemented` shifts, `Max_H` ceiling drops, 3 endings reachable).
+   * `lint-narrative.mjs` (name redaction, IP terms, word floor/ceiling, choice tag enums, zero `.choice-affinity-dot`, VO char cap & unvoiced isolation, 1420/1406 voice parity, 6-shift/21-instrument `requiredTargets`/`optionalTargets` 1:1 coverage, `preScanBrief`/`postScanEcho` caps & collocations, monotonic `skyRevealTier` & `anomalyPhase`, Shift 1–2 spoiler-floor guard, and Ink/`storylets.json` coverage for every `status: "implemented"` shift).
+   * `check-hygiene.mjs` (zero orphaned `.ts`/`.json`/catalog files, zero retired zombie symbols, zero dangling `unlocksStoryletId`).
+   * `assets/MANIFEST.json` 100% coverage & commercial-safe licenses (zero `CC BY-SA` such as HYG/OpenNGC), `vite build`, and targeted `e2e-visual.mjs` (`--smoke` or `--flows=...`). Full 21-instrument + mobile matrix runs automatically in `.github/workflows/ci.yml` (or via `npm run verify` on final phase sign-off).
 2. **Qualitative SSOT Review:**
-   * Audit lore & hard numbers against `docs/CANON.md` (`Instance-1419`, `41,802 years`, `1,417 prior copies`, `~10 ly`, `93B ly`, `~2 subjective years`, `20-year freeze`, `2 required + optional` shift scans, `8–12` Dream Personas with `2 Fixed Anchors + 2 rotating`).
-   * Audit prose, choice UX, burst/choice pacing (`1–3` spoken lines, `<= 5` visible choices), native-English/physical sanity (`docs/VOICE_GUIDE.md` §1.5), persisted `voice_script.json` sync & `sttWer` diffs, layout, and Cast 2 VO fidelity against `docs/VOICE_GUIDE.md`, `docs/ART_DIRECTION.md`, and the 4-point Taste Compass (`docs/HARNESS.md`).
+   * Audit lore & hard numbers against `docs/CANON.md` (`Instance-1419`, `41,802 years`, `1,417 prior copies`, `~10 ly`, `93B ly`, `~2 subjective years`, `20-year freeze`, `2 required + optional` shift scans, `9` Dream Personas with `2 Fixed Anchors + 2 rotating`, §2.5 Scale Taxonomy & Spoiler-Horizon rules).
+   * Audit prose, choice UX, burst/choice pacing (`1–3` spoken lines, `<= 5` visible choices), native-English/physical sanity (`docs/VOICE_GUIDE.md` §1.5 & §1.7), persisted `voice_script.json` sync & `sttWer` diffs, layout, and Cast 2 VO fidelity against `docs/VOICE_GUIDE.md`, `docs/ART_DIRECTION.md`, and the 4-point Taste Compass (`docs/HARNESS.md`).
 3. **Output Format:**
    * Write concise audit reports under `docs/audits/<milestone>.md` with `PASS / BLOCKED` verdict and file/line-referenced fix tickets. Never silently rewrite creative work.

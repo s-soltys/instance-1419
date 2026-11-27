@@ -21,7 +21,7 @@ describe('StateStore invariants & economy', () => {
     expect(s.introStage).toBe('prologue');
     expect(store.hasSavedProgress()).toBe(false);
     expect(s.introTarget1Minigame).toBe('constellation_recall');
-    expect(s.introTarget2Minigame).toBe('pulsar_echo');
+    expect(s.introTarget2Minigame).toBe('lens_focus');
     expect(store.getMinigameIdForTarget(INTRO_TARGET_1_ID, 'fallback_mg')).toBe(INTRO_TARGET_1_MINIGAME);
     expect(store.getMinigameIdForTarget(INTRO_TARGET_2_ID, 'fallback_mg')).toBe(INTRO_TARGET_2_MINIGAME);
     expect(store.getMinigameIdForTarget('carina_rift_nebula', 'wave_shaper')).toBe('wave_shaper');
@@ -41,7 +41,7 @@ describe('StateStore invariants & economy', () => {
     for (let seed = 1; seed <= 10; seed++) {
       const st = createInitialState(seed * 97);
       expect(st.introTarget1Minigame).toBe('constellation_recall');
-      expect(st.introTarget2Minigame).toBe('pulsar_echo');
+      expect(st.introTarget2Minigame).toBe('lens_focus');
     }
 
     const store = new StateStore();
@@ -54,7 +54,7 @@ describe('StateStore invariants & economy', () => {
     const reloaded = new StateStore();
     expect(reloaded.getState().introStage).toBe('scan_target_1');
     expect(reloaded.getState().introTarget1Minigame).toBe('constellation_recall');
-    expect(reloaded.getState().introTarget2Minigame).toBe('pulsar_echo');
+    expect(reloaded.getState().introTarget2Minigame).toBe('lens_focus');
     store.dispose();
     reloaded.dispose();
   });
@@ -80,7 +80,7 @@ describe('StateStore invariants & economy', () => {
     expect(s.shift).toBe(3);
     expect(s.humanity).toBe(62);
     expect(s.introTarget1Minigame).toBe('constellation_recall');
-    expect(s.introTarget2Minigame).toBe('pulsar_echo');
+    expect(s.introTarget2Minigame).toBe('lens_focus');
     expect(s.minigameRunCounts).toEqual({});
     expect(s.codexUnlocks).toEqual([]);
     expect(s.codexSeenStages).toEqual({});
@@ -113,40 +113,79 @@ describe('StateStore invariants & economy', () => {
     expect(afterPetition.maxHumanity).toBe(afterPrune.maxHumanity);
   });
 
-  it('awards clean completion payout once, migrates legacy partial grades to clean, and avoids duplicate replay gain', () => {
+  it('supports partial/clean/deep_overclock grade persistence, marginal upgrades, and shift quota status', () => {
     const store = new StateStore();
     const first = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
-      anomalyGain: 5,
-      grade: 'clean',
-      chaosDelta: 2,
-      suspicionDelta: 0,
+      grade: 'partial',
       proofFragmentId: 'j1419_caustic_seam',
-      dossierSnippet: 'Clean lens lock',
+      dossierSnippet: 'Partial lens trace',
       instrumentCode: 'LNS-04',
       physicalPrinciple: 'Thin-lens inversion',
     });
     expect(first).toBe(true);
-    expect(store.getState().anomalyProgress).toBe(5);
-    expect(store.getState().decodedGrades.cluster_j1419_a).toBe('clean');
-    expect(store.getState().proofFragments).toEqual(['j1419_caustic_seam']);
-    expect(store.getState().proofDossier.length).toBe(1);
+    expect(store.getState().anomalyProgress).toBe(4);
+    expect(store.getState().decodedGrades.cluster_j1419_a).toBe('partial');
 
-    // Replaying awards 0 additional anomalyProgress
+    // Replaying at same or lower grade awards 0 additional anomalyProgress
     const repeat = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
-      anomalyGain: 5,
-      grade: 'clean',
+      grade: 'partial',
       proofFragmentId: 'j1419_caustic_seam',
     });
     expect(repeat).toBe(false);
-    expect(store.getState().anomalyProgress).toBe(5);
+    expect(store.getState().anomalyProgress).toBe(4);
 
-    // Legacy 'partial' / 'deep_overclock' saved grades normalize cleanly to 'clean'
-    const migrated = migrateSavedState({
+    // Upgrading partial -> clean awards marginal difference (7 - 4 = +3)
+    const toClean = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
+      grade: 'clean',
+      proofFragmentId: 'j1419_caustic_seam',
+      dossierSnippet: 'Clean lens lock',
+      instrumentCode: 'LNS-04',
+    });
+    expect(toClean).toBe(true);
+    expect(store.getState().anomalyProgress).toBe(7);
+    expect(store.getState().decodedGrades.cluster_j1419_a).toBe('clean');
+    expect(store.getState().proofDossier[0].grade).toBe('clean');
+
+    // Upgrading clean -> deep_overclock awards marginal anomalyProgress (11 - 7 = +4) plus overclock chaos/suspicion
+    const chaosBefore = store.getState().chaosDrift;
+    const suspBefore = store.getState().overseerSuspicion;
+    const toOverclock = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
+      grade: 'deep_overclock',
+      proofFragmentId: 'j1419_caustic_seam',
+      dossierSnippet: 'Deep seam overclock',
+      instrumentCode: 'LNS-04',
+    });
+    expect(toOverclock).toBe(true);
+    expect(store.getState().anomalyProgress).toBe(11);
+    expect(store.getState().decodedGrades.cluster_j1419_a).toBe('deep_overclock');
+    expect(store.getState().chaosDrift).toBe(chaosBefore + 7);
+    expect(store.getState().overseerSuspicion).toBe(suspBefore + 1);
+    expect(store.getState().proofDossier[0].grade).toBe('deep_overclock');
+
+    // Saved partial & deep_overclock grades persist across migration
+    const migratedPartial = migrateSavedState({
       saveSchemaVersion: 6,
       decodedMinigameTargets: ['cluster_j1419_a'],
-      decodedGrades: { cluster_j1419_a: 'partial' as never },
+      decodedGrades: { cluster_j1419_a: 'partial' },
     });
-    expect(migrated.decodedGrades.cluster_j1419_a).toBe('clean');
+    expect(migratedPartial.decodedGrades.cluster_j1419_a).toBe('partial');
+
+    // getShiftQuotaStatus() tracks required vs optional targets dynamically
+    expect(store.getShiftQuotaStatus(1)).toEqual({
+      requiredIds: ['sol_centauri_bearing', 'cluster_j1419_a'],
+      optionalIds: ['carina_rift_nebula', 'asterism_drift_01'],
+      requiredDone: 1,
+      optionalDone: 0,
+      mandateMet: false,
+      allDone: false,
+    });
+    store.recordMinigameCompletion('sol_centauri_bearing', 'SOL–CENTAURI BEARING', { grade: 'clean' });
+    expect(store.getShiftQuotaStatus(1).mandateMet).toBe(true);
+    expect(store.getShiftQuotaStatus(1).allDone).toBe(false);
+    store.recordMinigameCompletion('carina_rift_nebula', 'CARINA RIFT NURSERY', { grade: 'clean' });
+    store.recordMinigameCompletion('asterism_drift_01', 'EAGLE DUST PILLARS K-01', { grade: 'clean' });
+    expect(store.getShiftQuotaStatus(1).allDone).toBe(true);
+    store.dispose();
   });
 
   it('tracks calibratedInstruments without duplicates', () => {

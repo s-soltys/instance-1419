@@ -142,6 +142,15 @@
       "notes": "Real Hubble optical grand-design spiral and tidal companion (1280x800 crop); used for Cepheid distance ladder, gravity slingshot, binary mass, and deep stacking."
     },
     {
+      "path": "assets/astro/star_catalog_10ly.bin",
+      "source_url": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv?-source=I/311/hip2",
+      "license": "CC BY 3.0 IGO (ESA Hipparcos / CDS VizieR)",
+      "attribution": "ESA Hipparcos Main Catalogue (I/239/hip_main, ESA 1997) and Hipparcos, the New Reduction (I/311/hip2, van Leeuwen 2007), via CDS VizieR",
+      "ai_generated": false,
+      "internal_prototype_only": false,
+      "notes": "18,000 real Hipparcos stars (V <= 7.8) transformed into a 10.0-ly probe-centered J2000 frame with Sol (RA 46.0°, Dec -16.0°) and Alpha Centauri AB astern, partitioned across unlockTiers 1-6 and 4 spectral bands (scripts/build-star-catalog.mjs)."
+    },
+    {
       "path": "assets/characters/dream_spouse_impasto.webp",
       "source_url": "internal:generated",
       "license": "Project Original (Internal AI Prototype Draft)",

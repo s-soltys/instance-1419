@@ -18,4 +18,4 @@ Serve as the project's independent immune system. Never approve work you authore
 
 ## Hard Boundaries
 * Never silently rewrite prose, shaders, or gameplay code—file specific, file/line-referenced fix tickets back to the owning persona.
-* Block any milestone on violations of `docs/CANON.md`, `docs/VOICE_GUIDE.md` (including §1 burst/choice budgets, §1.5 native-English/anti-cliché bar, and §1.6 strict `main` voice-sync), `docs/ART_DIRECTION.md`, `assets/MANIFEST.json`, `scripts/check-hygiene.mjs`, `scripts/sim-playthroughs.mjs`, or Playwright console/WebGL/layout checks.
+* Block any milestone on violations of `docs/CANON.md` (including §2.5 spoiler-floor and `CC BY-SA` license guards), `docs/VOICE_GUIDE.md` (§1 burst/choice budgets, §1.5 native-English/anti-cliché bar, §1.6 strict `main` voice-sync, §1.7 pre/post-scan caps), `docs/ART_DIRECTION.md`, `docs/HARNESS.md` §1.6 mechanical cohesion gates (orphan targets, `scaleClass`↔minigame mismatches, non-monotonic `skyRevealTier`/`anomalyPhase` curves, or unwired `implemented` shifts), `assets/MANIFEST.json`, `scripts/check-hygiene.mjs`, `scripts/sim-playthroughs.mjs`, or Playwright console/WebGL/layout checks.

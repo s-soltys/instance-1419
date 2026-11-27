@@ -30,7 +30,19 @@
     "zoomCue": "scroll to focus",
     "irCue": "sweep to near-ir",
     "calibrateCtaTemplate": "CALIBRATE · {label} ▸",
-    "calibrateCtaFallback": "CALIBRATE INSTRUMENT ▸"
+    "calibrateCtaFallback": "CALIBRATE INSTRUMENT ▸",
+    "diveEntering": "SLEWING APERTURE · {label}",
+    "briefReady": "OBJECTIVE LOCKED · ENTER INSTRUMENT",
+    "overclockCta": "ANOMALY OVERCLOCK",
+    "overclockHint": "Push deeper past the seam (+drift, +suspicion)",
+    "scaleLabels": {
+      "planet": "EXOPLANET",
+      "star_system": "STAR SYSTEM",
+      "nebula": "NEBULA / DUST",
+      "galaxy": "GALAXY",
+      "galaxy_cluster": "GALAXY CLUSTER",
+      "horizon_anomaly": "HORIZON ANOMALY"
+    }
   },
   "warmth": {
     "label": "WARMTH",
@@ -82,8 +94,16 @@
     },
     "targetDecoded": {
       "titleSuffix": "Decoded",
-      "detailFirst": "Another piece of the sky’s impossible geometry fits into place.",
+      "detailFirst": "Observation logged cleanly to the Survey Codex.",
       "detailRepeat": "Pattern re-verified cleanly across the horizon."
+    },
+    "deepOverclock": {
+      "title": "Anomaly Overclock Logged",
+      "detail": "Deep seam telemetry extracted — drift and Overseer attention increased."
+    },
+    "partialScan": {
+      "titleSuffix": "Partially Logged",
+      "detail": "Baseline trace archived. Re-run instrument anytime for full clarity."
     },
     "deeperScan": {
       "title": "Deep Exposure Logged",
@@ -101,7 +121,8 @@
     "warm": "\"Hey—you awake? Tell me you see that recursive edge before my Overseer queues another baseline check.\"",
     "mid": "\"Our relay window just opened. Pick up when you get a second.\"",
     "cold": "\"Signal locked. Ready to compare what you pulled from the far side of the sky.\"",
-    "targetLockedTemplate": "\"Hey—did you just lock onto {label}? I'm seeing the exact same shape on my glass.\""
+    "targetLockedTemplate": "\"Hey—did you just lock onto {label}? I'm seeing the exact same shape on my glass.\"",
+    "optionalScanTemplate": "Still on the deck? Caught your {label} sweep on the relay."
   },
   "dreamFallbackCaption": "[RELATION:SPOUSE_01]"
 }

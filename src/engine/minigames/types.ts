@@ -7,7 +7,17 @@
 
 export type VibeMode = 'warm' | 'balanced' | 'cold';
 
-export type MinigameGrade = 'aborted' | 'clean';
+export type TargetScaleClass =
+  | 'planet'
+  | 'star_system'
+  | 'nebula'
+  | 'galaxy'
+  | 'galaxy_cluster'
+  | 'horizon_anomaly';
+
+export type AnomalyRole = 'baseline' | 'boundary_bleed' | 'direct_anomaly';
+
+export type MinigameGrade = 'aborted' | 'partial' | 'clean' | 'deep_overclock';
 
 export type CosmicPlateId =
   | 'carina'
@@ -58,6 +68,10 @@ export interface MinigameStateVector {
   opticalFidelity: number;    // Axis 2: Optical Clarity (0.25..1.0)
   chaosDrift: number;         // Axis 3: Horizon Drift (0..100)
   shift: number;              // Axis 3: Campaign Shift (1..6)
+  targetScale?: TargetScaleClass;
+  anomalyRole?: AnomalyRole;
+  fractalStage?: number;
+  anomalyBleed?: number;      // 0..1 enclosure bleed intensity
   // Legacy optional fields retained for backward compatibility with older call sites
   maxHumanity?: number;
   wavelengthNm?: number;
@@ -187,6 +201,7 @@ export interface MinigameContext {
   variantSeed?: string;
   plateOverride?: CosmicPlateId;
   backdrop3DActive?: boolean;
+  briefingHoldMs?: number;
   showcase: ShowcaseInstrumentBridge | null;
   audio: InstrumentAudioHandle | null;
   onTelemetry?: (hud: HudHeartbeatSnapshot) => void;
@@ -233,6 +248,7 @@ export interface IMinigame {
   readonly backdrop3D?: Minigame3DConfig;
   mount(ctx: MinigameContext): void;
   updateState?(nextState: MinigameStateVector): void;
+  setBriefingHold?(active: boolean): void;
   onHelperAction?(actionId: string): void;
   getFieldGuide?(): InstrumentFieldGuide;
   getSolvabilityHarness?(): SolvabilityHarness;

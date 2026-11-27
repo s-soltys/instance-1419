@@ -113,11 +113,40 @@ for (const relFile of scanFiles) {
   }
 }
 
+// 4. Dangling unlocksStoryletId & Unused Star/Sky Catalog Check
+const anomaliesData = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/anomalies.json'), 'utf8'));
+const storyletsData = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/content/storylets.json'), 'utf8'));
+const validStoryletIds = new Set((storyletsData.storylets ?? []).map((s) => s.id));
+
+for (const anomaly of anomaliesData.anomalies ?? []) {
+  const unlockId = anomaly.postScanEcho?.unlocksStoryletId;
+  if (unlockId && !validStoryletIds.has(unlockId)) {
+    console.error(
+      `[check-hygiene] Dangling postScanEcho.unlocksStoryletId "${unlockId}" on anomaly "${anomaly.id}"`
+    );
+    errors++;
+  }
+}
+
+const catalogCandidates = [
+  ...walkFiles(path.join(ROOT, 'assets', 'astro'), ['.bin', '.json']),
+  ...walkFiles(path.join(ROOT, 'public', 'catalogs'), ['.bin', '.json', '.csv']),
+];
+for (const catAbs of catalogCandidates) {
+  const base = path.basename(catAbs);
+  if (!referenceCorpus.includes(base)) {
+    console.error(
+      `[check-hygiene] Unused astronomy catalog file (unreferenced in src/ or scripts/): ${path.relative(ROOT, catAbs).replace(/\\/g, '/')}`
+    );
+    errors++;
+  }
+}
+
 if (errors > 0) {
   console.error(`[check-hygiene] FAILED with ${errors} hygiene issue(s).`);
   process.exit(1);
 }
 
 console.log(
-  `[check-hygiene] PASS (${srcTsFiles.length} TS modules imported, ${jsonFiles.length} content JSONs active, 0 retired zombie symbols).`
+  `[check-hygiene] PASS (${srcTsFiles.length} TS modules imported, ${jsonFiles.length} content JSONs active, ${catalogCandidates.length} catalog file(s) active, 0 dangling storylet unlocks, 0 retired zombie symbols).`
 );
