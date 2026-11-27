@@ -79,17 +79,17 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     );
     expect(appRoot.querySelectorAll('#sky-markers .sky-marker svg.sky-glyph').length).toBe(21);
 
-    // Clicking DevHarness launch button reproduces the direct sky -> minigame path with 4.6s optical_dive brief
+    // Clicking DevHarness launch button reproduces the direct sky -> minigame path with text-light 1.85s optical_dive
     const lensBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="lens_focus"]');
     expect(lensBtn).not.toBeNull();
     lensBtn!.click();
 
     const transLabel = appRoot.querySelector('#transition-label');
-    expect(transLabel?.classList.contains('sr-only')).toBe(false);
-    expect(appRoot.querySelector('#transition-stage')?.classList.contains('is-dive-brief')).toBe(true);
+    expect(transLabel?.classList.contains('sr-only')).toBe(true);
+    expect(appRoot.querySelector('#transition-stage')?.classList.contains('is-dive-brief')).toBe(false);
 
-    // Advance optical_dive transition (4600ms) & dynamic import microtasks cleanly
-    await vi.advanceTimersByTimeAsync(4700);
+    // Advance optical_dive transition (1850ms) & dynamic import microtasks cleanly
+    await vi.advanceTimersByTimeAsync(2000);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });
@@ -104,7 +104,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     const waveBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="wave_shaper"]');
     expect(waveBtn).not.toBeNull();
     waveBtn!.click();
-    await vi.advanceTimersByTimeAsync(4700);
+    await vi.advanceTimersByTimeAsync(2000);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
     });
@@ -294,14 +294,17 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(calibrateBtn.textContent).toContain('CON-02');
     expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#reticle-brief-meta')?.textContent).toContain('STAR SYSTEM');
+    expect(appRoot.querySelector('#reticle-brief-schematic svg.schematic-svg')).not.toBeNull();
+    expect(appRoot.querySelector('#reticle-brief-goal')?.textContent).toContain('GOAL');
+    expect(appRoot.querySelector('#reticle-brief-countdown')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#reticle-scale-etch')?.textContent).toContain('STAR SYSTEM');
     expect(appRoot.querySelector('.reticle')?.getAttribute('data-scale-class')).toBe('star_system');
 
     calibrateBtn.click();
     expect(stageEl.dataset.kind).toBe('optical_dive');
-    expect(stageEl.classList.contains('is-dive-brief')).toBe(true);
+    expect(stageEl.classList.contains('is-dive-brief')).toBe(false);
     expect(optics.triggerTransitionDive).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
-    await vi.advanceTimersByTimeAsync(4700);
+    await vi.advanceTimersByTimeAsync(2000);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });
@@ -342,12 +345,12 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
       'asterism_drift_01',
     ]);
 
-    // 5. Entering 2D Dream uses dream_submerge + DreamCanvas entrance reveal + soft Shift-1 audit
+    // 5. Entering 2D Dream uses unhurried dream_submerge (4200ms) + DreamCanvas entrance reveal + 2.6s settle
     document.querySelector<HTMLButtonElement>('[data-intro-jump="complete"]')!.click();
     await vi.advanceTimersByTimeAsync(400);
     appRoot.querySelector<HTMLButtonElement>('#btn-enter-dream')!.click();
     expect(stageEl.dataset.kind).toBe('dream_submerge');
-    await vi.advanceTimersByTimeAsync(2700);
+    await vi.advanceTimersByTimeAsync(4300);
     expect(dream.triggerEntranceReveal).toHaveBeenCalled();
     expect(dream.setAnomalyState).toHaveBeenCalled();
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);

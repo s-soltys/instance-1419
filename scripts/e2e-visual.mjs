@@ -318,9 +318,18 @@ async function run() {
           scaleClass: document.querySelector('.reticle')?.getAttribute('data-scale-class') ?? '',
           etch: document.querySelector('#reticle-scale-etch')?.textContent?.trim() ?? '',
           cta: document.querySelector('#btn-enter-inspect')?.textContent?.trim() ?? '',
+          hasSchematic: Boolean(document.querySelector('#reticle-brief-schematic svg.schematic-svg')),
+          goal: document.querySelector('#reticle-brief-goal')?.textContent?.trim() ?? '',
+          hasCountdown: !document.querySelector('#reticle-brief-countdown')?.classList.contains('hidden'),
         }));
-        if (reticleState.scaleClass !== 'galaxy_cluster' || !reticleState.etch.includes('GALAXY CLUSTER')) {
-          throw new Error(`Reticle scale etch mismatch for J1419-A: ${JSON.stringify(reticleState)}`);
+        if (
+          reticleState.scaleClass !== 'galaxy_cluster' ||
+          !reticleState.etch.includes('GALAXY CLUSTER') ||
+          !reticleState.hasSchematic ||
+          !reticleState.goal.includes('UNWARP') ||
+          !reticleState.hasCountdown
+        ) {
+          throw new Error(`Reticle schematic brief mismatch for J1419-A: ${JSON.stringify(reticleState)}`);
         }
         if ((await page.locator('.status-shift-overlay:not(.hidden)').count()) > 0) {
           await page.click('.status-shift-overlay:not(.hidden)', { force: true });
@@ -329,17 +338,8 @@ async function run() {
         }
         await saveCheckedScreenshot(page, '02_sky_aperture.png');
 
-        // Verify optical_dive 2.2s brief + click-to-skip -> LNS-04 launch -> clean exit
+        // Verify pure visual optical_dive (no double text screen) -> LNS-04 launch -> clean exit
         await page.click('#btn-enter-inspect');
-        await page.waitForSelector('#transition-stage.is-dive-brief', { timeout: 2000 });
-        const diveLabelVisible = await page.evaluate(() => {
-          const lbl = document.querySelector('#transition-label');
-          return Boolean(lbl && !lbl.classList.contains('sr-only') && lbl.textContent?.includes('LNS-04'));
-        });
-        if (!diveLabelVisible) {
-          throw new Error('Expected #transition-label to display visible optical_dive brief for LNS-04');
-        }
-        await page.click('#transition-stage', { force: true });
         await page.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 6000 });
         const diveCode = (await page.textContent('#mg-instrument-code'))?.trim();
         if (diveCode !== 'LNS-04') {
@@ -552,10 +552,11 @@ async function run() {
         await ensureQaOpen(page);
         await page.click('[data-qa-tab="scenes"]');
         await page.click('[data-scene-mode="dream_2d"]');
-        await page.waitForSelector('#dream-layer:not(.hidden)', { timeout: 6000 });
-        await page.waitForSelector('#optics-layer', { state: 'hidden', timeout: 5000 });
+        await page.waitForSelector('#dream-layer:not(.hidden)', { timeout: 8000 });
+        await page.waitForSelector('#optics-layer', { state: 'hidden', timeout: 6000 });
         await ensureQaClosed(page);
-        await page.waitForTimeout(200);
+        await page.waitForSelector('#dream-layer .choice-line', { timeout: 6000 });
+        await page.waitForTimeout(250);
         const codexVisibleInDream = await page.locator('#btn-codex').isVisible();
         if (codexVisibleInDream) {
           throw new Error('Wake-World Codex button must not be visible inside 2D Dream View');

@@ -50,7 +50,6 @@ function buildOverlayDom(): HTMLElement {
           <div id="mg-finale-snippet" class="hidden"></div>
           <div id="mg-finale-principle"></div>
           <button id="mg-btn-log-dossier"></button>
-          <button id="mg-btn-open-codex"></button>
         </div>
         <div class="mg-bottom-console">
           <div id="mg-band-bar">

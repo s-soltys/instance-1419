@@ -94,7 +94,7 @@
     },
     "targetDecoded": {
       "titleSuffix": "Decoded",
-      "detailFirst": "Observation logged cleanly to the Survey Codex.",
+      "detailFirst": "Observation archived.",
       "detailRepeat": "Pattern re-verified cleanly across the horizon."
     },
     "deepOverclock": {

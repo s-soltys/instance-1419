@@ -55,7 +55,6 @@ export class MinigameHostView {
   private unbindControls: (() => void) | null = null;
   private onActiveChangeCb: ((minigameId: string | null) => void) | null = null;
   private onExitRequestCb: ((preserveDecoded: boolean, decodedSpec: AnomalySpec | null) => void) | null = null;
-  private onOpenCodexCb: ((targetId: string) => void) | null = null;
   private lastProfileSig = '';
   private lastHudSig = '';
   private isFinishing = false;
@@ -94,10 +93,6 @@ export class MinigameHostView {
 
   setExitRequestCallback(cb: (preserveDecoded: boolean, decodedSpec: AnomalySpec | null) => void): void {
     this.onExitRequestCb = cb;
-  }
-
-  setOpenCodexCallback(cb: (targetId: string) => void): void {
-    this.onOpenCodexCb = cb;
   }
 
   setBriefingHold(active: boolean): void {
@@ -426,7 +421,6 @@ export class MinigameHostView {
     const mandateEl = this.root.querySelector<HTMLElement>('#mg-finale-mandate');
     const prinEl = this.root.querySelector<HTMLElement>('#mg-finale-principle');
     const logBtn = this.root.querySelector<HTMLButtonElement>('#mg-btn-log-dossier');
-    const codexBtn = this.root.querySelector<HTMLButtonElement>('#mg-btn-open-codex');
     const timerFill = this.root.querySelector<HTMLElement>('#mg-finale-timer-fill');
 
     if (finale && gradeEl && gainEl && snipEl) {
@@ -550,15 +544,6 @@ export class MinigameHostView {
         logBtn.disabled = false;
         logBtn.onclick = () => {
           this.audio.playCue('choice');
-          finishClose();
-        };
-      }
-
-      if (codexBtn) {
-        codexBtn.disabled = false;
-        codexBtn.onclick = () => {
-          this.audio.playCue('choice');
-          this.onOpenCodexCb?.(spec.id);
           finishClose();
         };
       }

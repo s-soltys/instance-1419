@@ -5,6 +5,7 @@ import { MINIGAME_CATALOG } from '../../src/engine/minigames/MinigameRegistry';
 import type { TargetScaleClass } from '../../src/engine/minigames/types';
 import { createInitialState } from '../../src/engine/StateStore';
 import { StoryletScheduler, type StoryletSpec } from '../../src/engine/StoryletScheduler';
+import { getInstrumentSchematic } from '../../src/ui/InstrumentSchematics';
 
 const DISALLOWED_LICENSE_RX = /\b(?:CC\s*BY-SA|CC\s*BY-NC|GPL|AGPL)\b/i;
 
@@ -130,5 +131,19 @@ describe('Target Cohesion, Sky Reveal & StoryletScheduler Contracts', () => {
       decodedMinigameTargets: ['cluster_j1419_a', 'kepler_transit_arc'],
     };
     expect(scheduler.pickAvailable(flagWithOptional, 'waking_3d')?.id).toBe('high_prio');
+  });
+
+  it('provides an in-world Zeiss SVG schematic, 1-word goal, how-to-play, and controls for all 21 instruments', () => {
+    const ids = Object.keys(MINIGAME_CATALOG);
+    expect(ids.length).toBe(21);
+    for (const id of ids) {
+      const sch = getInstrumentSchematic(id);
+      expect(sch.goalWord.trim().length).toBeGreaterThan(1);
+      expect(sch.goalWord.includes(' ')).toBe(false);
+      expect(sch.howToPlay.trim().length).toBeGreaterThan(12);
+      expect(sch.controlsHint.trim().length).toBeGreaterThan(4);
+      expect(sch.svg).toContain('<svg');
+      expect(sch.svg).toContain('schematic-svg');
+    }
   });
 });

@@ -37,11 +37,11 @@ interface TransitionTimings {
  */
 const TIMINGS: Record<TransitionKind, TransitionTimings> = {
   aperture_boot: { switchMs: 950, durationMs: 3900 },
-  optical_dive: { switchMs: 900, durationMs: 4600 },
+  optical_dive: { switchMs: 680, durationMs: 1850 },
   optical_pullback: { switchMs: 360, durationMs: 1850 },
-  dream_submerge: { switchMs: 420, durationMs: 2350 },
-  dream_wake: { switchMs: 380, durationMs: 2350 },
-  overseer_slice: { switchMs: 280, durationMs: 1950 },
+  dream_submerge: { switchMs: 1200, durationMs: 4200 },
+  dream_wake: { switchMs: 1050, durationMs: 3800 },
+  overseer_slice: { switchMs: 420, durationMs: 2600 },
 };
 
 /**
@@ -106,34 +106,13 @@ export class TransitionDirector {
       return;
     }
 
-    const isDiveBrief = opts.kind === 'optical_dive';
-    const isSkippable = Boolean(opts.skippable ?? isDiveBrief);
+    // optical_dive is pure visual iris zoom — the on-map Zeiss schematic already briefed the player.
+    const isDiveBrief = false;
+    const isSkippable = Boolean(opts.skippable ?? false);
     const labelEl = stageEl.querySelector<HTMLElement>('#transition-label');
     if (labelEl) {
-      if (isDiveBrief) {
-        labelEl.classList.remove('sr-only');
-        labelEl.innerHTML = '';
-        const eyebrowEl = document.createElement('span');
-        eyebrowEl.className = 'ts-dive-eyebrow';
-        eyebrowEl.textContent = opts.eyebrow ?? opts.label;
-        const instEl = document.createElement('strong');
-        instEl.className = 'ts-dive-instrument';
-        instEl.textContent = opts.instrument ?? opts.label;
-        const subEl = document.createElement('span');
-        subEl.className = 'ts-dive-sublabel';
-        subEl.textContent = opts.sublabel ?? '';
-        const progressEl = document.createElement('span');
-        progressEl.className = 'ts-dive-progress';
-        const progressFillEl = document.createElement('span');
-        progressEl.appendChild(progressFillEl);
-        const hintEl = document.createElement('span');
-        hintEl.className = 'ts-dive-skip-hint';
-        hintEl.textContent = 'CLICK OR PRESS SPACE TO BEGIN';
-        labelEl.append(eyebrowEl, instEl, subEl, progressEl, hintEl);
-      } else {
-        labelEl.classList.add('sr-only');
-        labelEl.textContent = opts.label;
-      }
+      labelEl.classList.add('sr-only');
+      labelEl.textContent = opts.label;
     }
 
     const timing = TIMINGS[opts.kind];

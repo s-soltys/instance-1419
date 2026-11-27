@@ -399,10 +399,10 @@ export class DreamCanvas {
     const targetOverseer = this.overseerActive ? 1.0 : 0.0;
 
     if (this.revealProgress < 1.0) {
-      this.revealProgress = Math.min(1.0, this.revealProgress + dt / 1.35);
+      this.revealProgress = Math.min(1.0, this.revealProgress + dt / 3.0);
     }
     if (this.slicePulse > 0.0) {
-      this.slicePulse = Math.max(0.0, this.slicePulse - dt / 0.58);
+      this.slicePulse = Math.max(0.0, this.slicePulse - dt / 1.1);
     }
 
     const u = this.mat.uniforms;

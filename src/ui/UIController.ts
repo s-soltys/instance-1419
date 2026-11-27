@@ -1,9 +1,8 @@
 import charactersData from '../content/characters.json';
-import codexData from '../content/codex.json';
 import shiftsData from '../content/shifts.json';
 import uiCopy from '../content/ui_copy.json';
 import type { AudioEngine } from '../engine/AudioEngine';
-import { CodexEngine, type CodexCategoryId } from '../engine/CodexEngine';
+import { CodexEngine } from '../engine/CodexEngine';
 import { DialogueRunner, type DialogueSnapshot } from '../engine/DialogueRunner';
 import type { DreamCanvas } from '../engine/DreamCanvas';
 import type { MinigameRegistry } from '../engine/minigames/MinigameRegistry';
@@ -24,6 +23,7 @@ import { TelemetryLogger } from '../engine/TelemetryLogger';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { platform } from '../platform/PlatformAdapter';
 import type { DevHarnessBridge } from './DevHarness';
+import { getInstrumentSchematic } from './InstrumentSchematics';
 import { renderSpeakerAvatar, updateAvatarVoiceAnimations } from './SpeakerAvatar';
 import { StatusShiftOverlay } from './StatusShiftOverlay';
 import { TransitionDirector, type TransitionKind } from './TransitionDirector';
@@ -145,6 +145,14 @@ interface CachedOpticsHudRefs {
   reticleBrief: HTMLElement | null;
   reticleBriefMeta: HTMLElement | null;
   reticleBriefWhy: HTMLElement | null;
+  reticleBriefSchematic: HTMLElement | null;
+  reticleBriefGoal: HTMLElement | null;
+  reticleBriefHow: HTMLElement | null;
+  reticleBriefControls: HTMLElement | null;
+  reticleBriefCountdown: HTMLElement | null;
+  reticleAutoFill: HTMLElement | null;
+  reticleAutoLabel: HTMLElement | null;
+  holdAutoDiveBtn: HTMLButtonElement | null;
   zoomLabel: HTMLElement | null;
   stageLabel: HTMLElement | null;
   zoomFill: HTMLElement | null;
@@ -266,7 +274,6 @@ export class UIController {
   private avatarAnimRaf = 0;
   private unbindVoiceSub: (() => void) | null = null;
 
-  private pendingCodexTargetId: string | null = null;
   private pendingCommsStorylet: StoryletSpec | null = null;
   private isWakingFromDream = false;
 
@@ -288,6 +295,12 @@ export class UIController {
   private overseerInterruptTimer: number | null = null;
   private overseerInterruptToken = 0;
   private overseerSliceTimer: number | null = null;
+  private overseerRevealTimer: number | null = null;
+  private overseerSpeakTimer: number | null = null;
+  private autoDiveTargetId: string | null = null;
+  private autoDiveDeadlineMs = 0;
+  private autoDiveHeldTargetId: string | null = null;
+  private autoDiveTickTimer: number | null = null;
 
   constructor(
     root: HTMLElement,
@@ -352,9 +365,6 @@ export class UIController {
         this.minigameHost.destroy(preserveDecoded);
       }
     });
-    this.minigameHost.setOpenCodexCallback((targetId) => {
-      this.pendingCodexTargetId = targetId;
-    });
     this.minigameHost.setActiveChangeCallback((mgId) => {
       if (this.shellRefs?.stage) {
         this.shellRefs.stage.dataset.minigame = mgId !== null ? '1' : '0';
@@ -376,6 +386,12 @@ export class UIController {
     this.settingsStore.subscribe((settings) => this.applyUserSettings(settings));
     this.store.subscribe((state) => this.syncStateToUI(state));
     this.store.subscribeStatusShift((ev) => {
+      if (
+        ev.title.endsWith(` ${uiCopy.statusAlerts.targetLocked.titleSuffix}`) ||
+        ev.title === uiCopy.statusAlerts.targetLocked.fallbackTitle
+      ) {
+        return;
+      }
       if (this.store.getState().introStage !== 'complete' && ev.tone === 'discovery') return;
       if (ev.tone === 'discovery' && this.minigameHost.isActive()) return;
       this.statusShift.show(ev);
@@ -557,6 +573,21 @@ export class UIController {
             <div class="reticle-brief hidden" id="reticle-brief">
               <div class="reticle-brief-meta" id="reticle-brief-meta"></div>
               <div class="reticle-brief-why" id="reticle-brief-why"></div>
+              <div class="reticle-brief-diagram">
+                <div class="reticle-brief-schematic" id="reticle-brief-schematic"></div>
+                <div class="reticle-brief-howto">
+                  <div class="reticle-brief-goal" id="reticle-brief-goal"></div>
+                  <div class="reticle-brief-how" id="reticle-brief-how"></div>
+                  <div class="reticle-brief-controls" id="reticle-brief-controls"></div>
+                </div>
+              </div>
+              <div class="reticle-brief-countdown hidden" id="reticle-brief-countdown">
+                <div class="reticle-auto-bar"><span id="reticle-auto-fill"></span></div>
+                <div class="reticle-auto-row">
+                  <span class="reticle-auto-label" id="reticle-auto-label">ENTERING IN 7s…</span>
+                  <button class="reticle-auto-hold" id="btn-hold-auto-dive" type="button">HOLD</button>
+                </div>
+              </div>
             </div>
             <button class="inspect-cta hidden" id="btn-enter-inspect" type="button">${uiCopy.sky.calibrateCtaFallback}</button>
           </div>
@@ -604,8 +635,8 @@ export class UIController {
               </div>
             </div>
             <button class="etched-action codex-trigger" id="btn-codex" type="button" aria-haspopup="dialog">
-              <span>SURVEY CODEX</span>
-              <span class="codex-unread-dot hidden" id="codex-unread-dot">0</span>
+              <span>CODEX</span>
+              <span class="codex-unread-dot hidden" id="codex-unread-dot" aria-hidden="true"></span>
             </button>
             <button class="etched-action mint" id="btn-open-comms" type="button">TALK TO OTHER ME</button>
             <button class="etched-action amber" id="btn-enter-dream" type="button">SLEEP · ENTER DREAM</button>
@@ -683,7 +714,6 @@ export class UIController {
               <div class="mg-finale-timer" aria-hidden="true"><span class="mg-finale-timer-fill" id="mg-finale-timer-fill"></span></div>
               <div class="mg-finale-actions">
                 <button class="etched-action amber" id="mg-btn-log-dossier" type="button">RETURN TO SKY</button>
-                <button class="etched-action mint" id="mg-btn-open-codex" type="button">OPEN IN CODEX ▸</button>
               </div>
             </div>
             <div class="mg-bottom-console">
@@ -774,6 +804,14 @@ export class UIController {
       reticleBrief: q('#reticle-brief'),
       reticleBriefMeta: q('#reticle-brief-meta'),
       reticleBriefWhy: q('#reticle-brief-why'),
+      reticleBriefSchematic: q('#reticle-brief-schematic'),
+      reticleBriefGoal: q('#reticle-brief-goal'),
+      reticleBriefHow: q('#reticle-brief-how'),
+      reticleBriefControls: q('#reticle-brief-controls'),
+      reticleBriefCountdown: q('#reticle-brief-countdown'),
+      reticleAutoFill: q('#reticle-auto-fill'),
+      reticleAutoLabel: q('#reticle-auto-label'),
+      holdAutoDiveBtn: q<HTMLButtonElement>('#btn-hold-auto-dive'),
       zoomLabel: q('#zoom-label'),
       stageLabel: q('#sky-zoom-stage-label'),
       zoomFill: skyFill,
@@ -867,6 +905,80 @@ export class UIController {
       window.clearTimeout(this.overseerSliceTimer);
       this.overseerSliceTimer = null;
     }
+    if (this.overseerRevealTimer !== null) {
+      window.clearTimeout(this.overseerRevealTimer);
+      this.overseerRevealTimer = null;
+    }
+    if (this.overseerSpeakTimer !== null) {
+      window.clearTimeout(this.overseerSpeakTimer);
+      this.overseerSpeakTimer = null;
+    }
+    this.cancelAutoDive(false);
+  }
+
+  private isSkyOverlayOpen(): boolean {
+    const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
+    return this.settingsView.isOpen() || this.codexView.isOpen() || commsOpen;
+  }
+
+  private cancelAutoDive(markHeld = false): void {
+    if (this.autoDiveTickTimer !== null) {
+      window.clearInterval(this.autoDiveTickTimer);
+      this.autoDiveTickTimer = null;
+    }
+    if (markHeld && this.autoDiveTargetId) {
+      this.autoDiveHeldTargetId = this.autoDiveTargetId;
+    }
+    this.autoDiveTargetId = null;
+    this.autoDiveDeadlineMs = 0;
+    this.updateAutoDiveUi();
+  }
+
+  private startAutoDive(targetId: string): void {
+    if (this.autoDiveTargetId === targetId && this.autoDiveTickTimer !== null) return;
+    this.cancelAutoDive(false);
+    const DURATION_MS = 7500;
+    this.autoDiveTargetId = targetId;
+    this.autoDiveDeadlineMs = Date.now() + DURATION_MS;
+    this.updateAutoDiveUi();
+    this.autoDiveTickTimer = window.setInterval(() => {
+      if (!this.autoDiveTargetId || this.activeMinigameTargetId !== null || this.isSkyOverlayOpen()) {
+        this.cancelAutoDive(false);
+        return;
+      }
+      const remaining = this.autoDiveDeadlineMs - Date.now();
+      if (remaining <= 0) {
+        const readyTarget = this.autoDiveTargetId;
+        this.cancelAutoDive(false);
+        this.enterTargetMinigame(readyTarget);
+        return;
+      }
+      this.updateAutoDiveUi();
+    }, 180);
+  }
+
+  private updateAutoDiveUi(): void {
+    const refs = this.opticsRefs;
+    if (!refs?.reticleBriefCountdown) return;
+    if (!this.autoDiveTargetId) {
+      if (this.autoDiveHeldTargetId && this.focusedSpec?.id === this.autoDiveHeldTargetId) {
+        refs.reticleBriefCountdown.classList.remove('hidden');
+        if (refs.reticleAutoFill) refs.reticleAutoFill.style.transform = 'scaleX(0)';
+        if (refs.reticleAutoLabel) refs.reticleAutoLabel.textContent = 'HELD · CLICK ENTER OR PRESS SPACE';
+        if (refs.holdAutoDiveBtn) refs.holdAutoDiveBtn.classList.add('hidden');
+      } else {
+        refs.reticleBriefCountdown.classList.add('hidden');
+      }
+      return;
+    }
+    const DURATION_MS = 7500;
+    const rem = Math.max(0, this.autoDiveDeadlineMs - Date.now());
+    const frac = Math.min(1, Math.max(0, 1 - rem / DURATION_MS));
+    const secs = Math.max(1, Math.ceil(rem / 1000));
+    refs.reticleBriefCountdown.classList.remove('hidden');
+    if (refs.holdAutoDiveBtn) refs.holdAutoDiveBtn.classList.remove('hidden');
+    if (refs.reticleAutoFill) refs.reticleAutoFill.style.transform = `scaleX(${frac.toFixed(3)})`;
+    if (refs.reticleAutoLabel) refs.reticleAutoLabel.textContent = `ENTERING IN ${secs}s…`;
   }
 
   private startIdleDragHintTimer(): void {
@@ -1541,6 +1653,10 @@ export class UIController {
     this.root.querySelector('#btn-enter-inspect')?.addEventListener('click', () => {
       if (this.focusedSpec) this.enterTargetMinigame(this.focusedSpec.id);
     });
+    this.root.querySelector('#btn-hold-auto-dive')?.addEventListener('click', () => {
+      this.audio.playCue('tick');
+      this.cancelAutoDive(true);
+    });
 
     this.root.querySelector('#btn-codex')?.addEventListener('click', () => {
       this.audio.playCue('choice');
@@ -1614,7 +1730,21 @@ export class UIController {
       if (this.settingsView.isOpen() || this.codexView.isOpen()) return;
       const overseerOpen = !this.root.querySelector('#overseer-panel')?.classList.contains('hidden');
       const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
-      const dreamOpen = this.store.getState().mode === 'dream_2d' && !overseerOpen;
+      const stateNow = this.store.getState();
+      if (
+        (e.key === ' ' || e.key === 'Enter') &&
+        stateNow.mode === 'waking_3d' &&
+        this.activeMinigameTargetId === null &&
+        !overseerOpen &&
+        !commsOpen &&
+        this.focusedSpec &&
+        stateNow.scannedAnomalyIds.includes(this.focusedSpec.id)
+      ) {
+        e.preventDefault();
+        this.enterTargetMinigame(this.focusedSpec.id);
+        return;
+      }
+      const dreamOpen = stateNow.mode === 'dream_2d' && !overseerOpen;
       const selector = overseerOpen
         ? '#overseer-choices'
         : commsOpen
@@ -1780,17 +1910,28 @@ export class UIController {
       let hideInspect = true;
       let briefMeta = '';
       let briefWhy = '';
+      let briefMgId = '';
+      let briefGoal = '';
+      let briefHow = '';
+      let briefControls = '';
+      const decodedSet = new Set(state.decodedMinigameTargets);
+
+      if (this.autoDiveTargetId && (!t.focusedAnomaly || t.focusedAnomaly.id !== this.autoDiveTargetId || this.isSkyOverlayOpen())) {
+        this.cancelAutoDive(false);
+      }
 
       if (t.focusedAnomaly) {
         const spec = t.focusedAnomaly;
         const scanned = scannedSet.has(spec.id);
+        const decoded = decodedSet.has(spec.id);
         hideInspect = !scanned;
+        const chosenMgId = this.store.getMinigameIdForTarget(spec.id, spec.minigameId);
+        const entry = this.minigames.getEntry(chosenMgId);
+        const verb = spec.actionVerb ?? 'CALIBRATE';
+        const code = entry?.instrumentCode ?? 'OPT';
+
         if (refs.inspectBtn && scanned) {
-          const chosenMgId = this.store.getMinigameIdForTarget(spec.id, spec.minigameId);
-          const entry = this.minigames.getEntry(chosenMgId);
-          const verb = spec.actionVerb ?? 'CALIBRATE';
-          const code = entry?.instrumentCode ?? 'OPT';
-          const ctaText = `${verb} · ${code} ▸`;
+          const ctaText = decoded ? `RE-CALIBRATE · ${code} [SPACE] ▸` : `${verb} · ${code} [SPACE] ▸`;
           if (ctaText !== this.lastInspectLabel) {
             this.lastInspectLabel = ctaText;
             refs.inspectBtn.textContent = ctaText;
@@ -1799,10 +1940,18 @@ export class UIController {
         if (scanned) {
           const scaleLabel = getScaleLabel(spec.scaleClass);
           const distLabel = spec.distanceLabel ?? spec.bandName;
+          const sch = getInstrumentSchematic(chosenMgId);
           briefMeta = `${scaleLabel} · ${distLabel} — ${spec.label}`;
           briefWhy = spec.preScanBrief?.whyNow ?? spec.subtitle;
+          briefMgId = chosenMgId;
+          briefGoal = `GOAL · ${sch.goalWord}`;
+          briefHow = sch.howToPlay;
+          briefControls = sch.controlsHint;
           nextPrompt = `${spec.label} · LOCKED`;
           stateKey = `ready:${spec.id}`;
+          if (!decoded && this.autoDiveTargetId !== spec.id && this.autoDiveHeldTargetId !== spec.id && !this.isSkyOverlayOpen()) {
+            this.startAutoDive(spec.id);
+          }
         } else if (t.fovDeg > spec.recommendedFovMax + 10) {
           nextPrompt =
             state.introStage === 'scan_target_1'
@@ -1818,6 +1967,7 @@ export class UIController {
           stateKey = `locking:${spec.id}`;
         }
       } else {
+        this.autoDiveHeldTargetId = null;
         if (state.introStage === 'scan_target_1') {
           nextPrompt = this.idleDragHintShown ? uiCopy.sky.idleDragCue.toUpperCase() : '';
           stateKey = this.idleDragHintShown ? 'idle_drag_cue' : 'idle_quiet';
@@ -1836,12 +1986,19 @@ export class UIController {
         }
       }
 
-      const briefSig = `${hideInspect ? '0' : '1'}|${briefMeta}|${briefWhy}`;
+      const briefSig = `${hideInspect ? '0' : '1'}|${briefMeta}|${briefMgId}`;
       if (refs.reticleBrief && briefSig !== this.lastReticleBriefSig) {
         this.lastReticleBriefSig = briefSig;
         refs.reticleBrief.classList.toggle('hidden', hideInspect || !briefMeta);
         if (refs.reticleBriefMeta) refs.reticleBriefMeta.textContent = briefMeta;
         if (refs.reticleBriefWhy) refs.reticleBriefWhy.textContent = briefWhy;
+        if (refs.reticleBriefSchematic) {
+          refs.reticleBriefSchematic.innerHTML = briefMgId ? getInstrumentSchematic(briefMgId).svg : '';
+        }
+        if (refs.reticleBriefGoal) refs.reticleBriefGoal.textContent = briefGoal;
+        if (refs.reticleBriefHow) refs.reticleBriefHow.textContent = briefHow;
+        if (refs.reticleBriefControls) refs.reticleBriefControls.textContent = briefControls;
+        this.updateAutoDiveUi();
       }
 
       if (refs.inspectBtn && hideInspect !== this.lastInspectHidden) {
@@ -1880,6 +2037,8 @@ export class UIController {
     this.closeSiblingComms();
     this.hideCommsToast();
     this.hideSkyPsycheWhisper();
+    this.cancelAutoDive(false);
+    this.autoDiveHeldTargetId = null;
     if (this.proactiveCommsTimer !== null) {
       window.clearTimeout(this.proactiveCommsTimer);
       this.proactiveCommsTimer = null;
@@ -1894,7 +2053,6 @@ export class UIController {
     const chosenId = overrideMinigameId ?? this.store.getMinigameIdForTarget(spec.id, spec.minigameId);
     const entry = this.minigames.getEntry(chosenId);
     const resolvedIter = iterationIndex ?? spec.preferredVariantIndex;
-    const scaleLabel = getScaleLabel(spec.scaleClass);
 
     // Preload dynamic JS chunk + plate image during optical_dive so frame 1 is live
     void this.minigameHost.preload(
@@ -1909,10 +2067,7 @@ export class UIController {
     this.transitions.play({
       kind: 'optical_dive',
       label: `${entry?.instrumentCode ?? chosenId.toUpperCase()} · ${entry?.title ?? spec.label}`,
-      eyebrow: `${scaleLabel} · ${spec.label}`,
-      instrument: `${entry?.instrumentCode ?? chosenId.toUpperCase()} · ${entry?.title ?? spec.subtitle}`,
-      sublabel: spec.preScanBrief?.objective ?? spec.subtitle,
-      skippable: true,
+      skippable: false,
       tone: state.humanity >= 45 ? 'warm' : 'cold',
       fromSelector: '#optics-layer',
       toSelector: '#minigame-layer',
@@ -1932,7 +2087,7 @@ export class UIController {
             },
             {
               iterationIndex: resolvedIter,
-              briefingHoldMs: 3900,
+              briefingHoldMs: 900,
             }
           );
         } finally {
@@ -1950,8 +2105,6 @@ export class UIController {
 
   private exitTargetMinigame(decodedSpec: AnomalySpec | null, preserveDecoded = true): void {
     const resolvedDecoded = decodedSpec ?? this.lastMinigameDecodedSpec;
-    const openCodexTarget = this.pendingCodexTargetId;
-    this.pendingCodexTargetId = null;
     this.activeMinigameTargetId = null;
     this.lastMinigameDecodedSpec = null;
 
@@ -2020,25 +2173,8 @@ export class UIController {
         this.minigameHost.destroy(preserveDecoded);
         this.showcase.setMinigameBackdropMode(null);
         this.showcase.setActive(false);
-        if (openCodexTarget) {
-          this.openCodexForTarget(openCodexTarget);
-        }
       },
     });
-  }
-
-  private openCodexForTarget(targetId: string): void {
-    const entries = codexData.entries as Array<{
-      id: string;
-      category: CodexCategoryId;
-      targetId?: string;
-    }>;
-    const match = entries.find((e) => e.targetId === targetId);
-    if (match) {
-      this.codexView.open(match.category, match.id);
-    } else {
-      this.codexView.open('evidence');
-    }
   }
 
   private showSkyPsycheWhisper(spec: AnomalySpec): void {
@@ -2398,7 +2534,7 @@ export class UIController {
             this.startDreamDialogue(dreamStorylet?.knot ?? 'dream_shift1_audit');
             afterStart?.();
           }
-        }, 480);
+        }, 2600);
       },
     });
   }
@@ -2464,7 +2600,7 @@ export class UIController {
       choicesEl.innerHTML = `
         <button class="choice-line audit-incoming-btn is-tier-action" id="btn-audit-now" type="button">
           <span class="choice-num">!</span>
-          <span class="choice-body">OVERSEER IS STEPPING IN…</span>
+          <span class="choice-body">OVERSEER AUDIT APPROACHING…</span>
         </button>
       `;
       choicesEl.querySelector('#btn-audit-now')?.addEventListener('click', () => {
@@ -2473,10 +2609,14 @@ export class UIController {
       this.dialogueFeed.scrollToLatest(this.root.querySelector<HTMLElement>('#dream-scroll'));
     }
 
-    void this.voice.waitForQueueNearEnd(260, 2200).then(() => {
-      if (token === this.overseerInterruptToken) {
-        this.triggerOverseerInterrogation(knot);
-      }
+    void this.voice.waitForQueueNearEnd(0, 4800).then(() => {
+      if (token !== this.overseerInterruptToken) return;
+      this.overseerInterruptTimer = window.setTimeout(() => {
+        this.overseerInterruptTimer = null;
+        if (token === this.overseerInterruptToken) {
+          this.triggerOverseerInterrogation(knot);
+        }
+      }, 1600);
     });
   }
 
@@ -2486,7 +2626,15 @@ export class UIController {
       window.clearTimeout(this.overseerInterruptTimer);
       this.overseerInterruptTimer = null;
     }
-    this.overseerInterruptToken++;
+    if (this.overseerRevealTimer !== null) {
+      window.clearTimeout(this.overseerRevealTimer);
+      this.overseerRevealTimer = null;
+    }
+    if (this.overseerSpeakTimer !== null) {
+      window.clearTimeout(this.overseerSpeakTimer);
+      this.overseerSpeakTimer = null;
+    }
+    const revealToken = ++this.overseerInterruptToken;
 
     this.audio.playCue('overseer_slice');
     this.dream.triggerSlicePulse?.();
@@ -2499,20 +2647,39 @@ export class UIController {
       this.overseerSliceTimer = window.setTimeout(() => {
         visualPane.classList.remove('is-slicing');
         this.overseerSliceTimer = null;
-      }, 620);
+      }, 950);
     }
 
     this.transitions.playOverlayPulse('overseer_slice', 'OVERSEER // AUDIT INTERCEPT');
     this.root.querySelector('#dream-ribbon')?.classList.add('receded');
-    this.root.querySelector('#overseer-panel')?.classList.remove('hidden');
 
-    this.activeOverseerSnapshot = this.overseerDialogue.startKnot(knot);
-    this.dialogueFeed.speakEntries(this.activeOverseerSnapshot.lastAddedEntries);
-    this.updateOverseerAvatarBay(this.store.getState());
-    this.renderOverseerDialogue();
+    this.overseerRevealTimer = window.setTimeout(() => {
+      this.overseerRevealTimer = null;
+      if (revealToken !== this.overseerInterruptToken) return;
+      this.root.querySelector('#overseer-panel')?.classList.remove('hidden');
+      this.activeOverseerSnapshot = this.overseerDialogue.startKnot(knot);
+      this.updateOverseerAvatarBay(this.store.getState());
+      this.renderOverseerDialogue();
+      const entriesToSpeak = this.activeOverseerSnapshot.lastAddedEntries;
+      this.overseerSpeakTimer = window.setTimeout(() => {
+        this.overseerSpeakTimer = null;
+        if (revealToken === this.overseerInterruptToken) {
+          this.dialogueFeed.speakEntries(entriesToSpeak);
+        }
+      }, 550);
+    }, 950);
   }
 
   private hideOverseerPanel(): void {
+    this.overseerInterruptToken++;
+    if (this.overseerRevealTimer !== null) {
+      window.clearTimeout(this.overseerRevealTimer);
+      this.overseerRevealTimer = null;
+    }
+    if (this.overseerSpeakTimer !== null) {
+      window.clearTimeout(this.overseerSpeakTimer);
+      this.overseerSpeakTimer = null;
+    }
     this.dialogueFeed.clearReplyBeatTimer();
     this.root.querySelector('#dream-ribbon')?.classList.remove('receded');
     this.root.querySelector('#overseer-panel')?.classList.add('hidden');
@@ -2710,7 +2877,7 @@ export class UIController {
       this.lastCodexSig = codexSig;
       const codexSnap = this.codexView.syncState(state);
       if (refs.codexUnreadDot) {
-        refs.codexUnreadDot.textContent = String(codexSnap.totalUnread);
+        refs.codexUnreadDot.textContent = '';
         refs.codexUnreadDot.classList.toggle('hidden', codexSnap.totalUnread <= 0);
       }
     }
@@ -3246,7 +3413,6 @@ export class UIController {
     this.activeCommsMode = 'sibling';
     this.activeDreamSnapshot = null;
     this.activeOverseerSnapshot = null;
-    this.pendingCodexTargetId = null;
     this.pendingCommsStorylet = null;
     this.isWakingFromDream = false;
     this.proactiveCommsSent = false;
