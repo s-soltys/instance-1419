@@ -37,8 +37,8 @@ interface TransitionTimings {
  */
 const TIMINGS: Record<TransitionKind, TransitionTimings> = {
   aperture_boot: { switchMs: 950, durationMs: 3900 },
-  optical_dive: { switchMs: 680, durationMs: 1850 },
-  optical_pullback: { switchMs: 360, durationMs: 1850 },
+  optical_dive: { switchMs: 1550, durationMs: 3600 },
+  optical_pullback: { switchMs: 750, durationMs: 2800 },
   dream_submerge: { switchMs: 1200, durationMs: 4200 },
   dream_wake: { switchMs: 1050, durationMs: 3800 },
   overseer_slice: { switchMs: 420, durationMs: 2600 },

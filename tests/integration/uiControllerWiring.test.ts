@@ -79,7 +79,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     );
     expect(appRoot.querySelectorAll('#sky-markers .sky-marker svg.sky-glyph').length).toBe(21);
 
-    // Clicking DevHarness launch button reproduces the direct sky -> minigame path with text-light 1.85s optical_dive
+    // Clicking DevHarness launch button reproduces the direct sky -> minigame path with text-light 3.6s optical_dive
     const lensBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="lens_focus"]');
     expect(lensBtn).not.toBeNull();
     lensBtn!.click();
@@ -88,8 +88,8 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(transLabel?.classList.contains('sr-only')).toBe(true);
     expect(appRoot.querySelector('#transition-stage')?.classList.contains('is-dive-brief')).toBe(false);
 
-    // Advance optical_dive transition (1850ms) & dynamic import microtasks cleanly
-    await vi.advanceTimersByTimeAsync(2000);
+    // Advance optical_dive transition (3600ms) & dynamic import microtasks cleanly
+    await vi.advanceTimersByTimeAsync(3700);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });
@@ -104,7 +104,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     const waveBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="wave_shaper"]');
     expect(waveBtn).not.toBeNull();
     waveBtn!.click();
-    await vi.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(3700);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
     });
@@ -303,11 +303,18 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     calibrateBtn.click();
     expect(stageEl.dataset.kind).toBe('optical_dive');
     expect(stageEl.classList.contains('is-dive-brief')).toBe(false);
+    expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(false);
+    expect(appRoot.querySelector('#reticle-brief')?.getAttribute('data-brief-phase')).toBe('diving');
     expect(optics.triggerTransitionDive).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
-    await vi.advanceTimersByTimeAsync(2000);
+    await vi.advanceTimersByTimeAsync(3700);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });
+
+    expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(false);
+    expect(appRoot.querySelector('#reticle-brief')?.getAttribute('data-brief-phase')).toBe('handover');
+    await vi.advanceTimersByTimeAsync(4300);
+    expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(true);
 
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(false);
@@ -319,7 +326,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     store.recordMinigameCompletion(INTRO_TARGET_1_ID, target1Spec.label, { grade: 'clean' });
     appRoot.querySelector<HTMLButtonElement>('#mg-btn-close')!.click();
     expect(stageEl.dataset.kind).toBe('optical_pullback');
-    await vi.advanceTimersByTimeAsync(2100);
+    await vi.advanceTimersByTimeAsync(3000);
     expect(optics.triggerPullbackArrival).toHaveBeenCalled();
     expect(optics.setDecodedTargetIds).toHaveBeenCalledWith(new Set([INTRO_TARGET_1_ID]));
     expect(

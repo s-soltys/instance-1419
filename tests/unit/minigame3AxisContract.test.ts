@@ -169,6 +169,12 @@ describe('Minigame Lean 3-Axis contract across all 21 cosmic instruments', () =>
     await vi.advanceTimersByTimeAsync(120);
     expect(priv.elapsedSec).toBe(0);
 
+    // Input events are ignored cleanly during briefingHold until handover
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'r' }));
+    const canvas = mountEl.querySelector('canvas');
+    canvas?.dispatchEvent(new Event('pointerdown'));
+    expect(priv.elapsedSec).toBe(0);
+
     inst.setBriefingHold?.(false);
     await vi.advanceTimersByTimeAsync(120);
     expect(priv.elapsedSec).toBeGreaterThan(0);

@@ -1089,14 +1089,14 @@ export class OpticsScene {
       this.targetPitchDeg = spec.decDeg;
     }
     this.targetFovDeg = 3.6;
-    this.transitionBoostUntil = performance.now() + 620;
+    this.transitionBoostUntil = performance.now() + 1550;
   }
 
   triggerPullbackArrival(): void {
     const restoreFov = THREE.MathUtils.clamp(this.preDiveFovDeg || 54, 12, 72);
     this.fovDeg = Math.max(8, Math.min(18, restoreFov * 0.42));
     this.targetFovDeg = restoreFov;
-    this.transitionBoostUntil = performance.now() + 650;
+    this.transitionBoostUntil = performance.now() + 1050;
   }
 
   getAnomalySpecs(): AnomalySpec[] {

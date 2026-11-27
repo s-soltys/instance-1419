@@ -162,7 +162,7 @@ async function settleOpticalDive(page) {
   }
   await page.waitForSelector('#transition-stage:not(.is-active)', {
     state: 'attached',
-    timeout: 4000,
+    timeout: 6000,
   }).catch(() => {});
 }
 
@@ -338,15 +338,25 @@ async function run() {
         }
         await saveCheckedScreenshot(page, '02_sky_aperture.png');
 
-        // Verify pure visual optical_dive (no double text screen) -> LNS-04 launch -> clean exit
+        // Verify persistent right-side brief stays visible through optical_dive ('diving') into 'handover' -> LNS-04 launch -> clean exit
         await page.click('#btn-enter-inspect');
+        const divePhase = await page.getAttribute('#reticle-brief', 'data-brief-phase');
+        const diveHidden = await page.locator('#reticle-brief.hidden').count();
+        if (divePhase !== 'diving' || diveHidden > 0) {
+          throw new Error(`Expected #reticle-brief visible in 'diving' phase during optical_dive, got phase="${divePhase}" hidden=${diveHidden}`);
+        }
         await page.waitForSelector('#minigame-overlay:not(.hidden)', { timeout: 6000 });
+        await settleOpticalDive(page);
+        const handoverPhase = await page.getAttribute('#reticle-brief', 'data-brief-phase');
+        if (handoverPhase !== 'handover' && handoverPhase !== 'fading') {
+          throw new Error(`Expected #reticle-brief in 'handover'/'fading' phase on arrival, got "${handoverPhase}"`);
+        }
         const diveCode = (await page.textContent('#mg-instrument-code'))?.trim();
         if (diveCode !== 'LNS-04') {
           throw new Error(`Expected LNS-04 after optical_dive from J1419-A, got "${diveCode}"`);
         }
         await page.click('#mg-btn-close');
-        await page.waitForSelector('#minigame-overlay', { state: 'hidden', timeout: 4000 });
+        await page.waitForSelector('#minigame-overlay', { state: 'hidden', timeout: 5500 });
 
         // Verify .sky-marker.decoded state via mg_1_done + ?dev=1 Shift 1 vs Shift 6 sky reveal & fractal check
         await ensureQaOpen(page);
@@ -543,7 +553,7 @@ async function run() {
           }
 
           await page.click('#mg-btn-close');
-          await page.waitForSelector('#minigame-overlay', { state: 'hidden', timeout: 3000 });
+          await page.waitForSelector('#minigame-overlay', { state: 'hidden', timeout: 5500 });
         }
       }
 
@@ -652,7 +662,7 @@ async function run() {
         }
         await saveCheckedScreenshot(mPage, `06_mobile_844x390_${mobileId}.png`);
         await mPage.click('#mg-btn-close');
-        await mPage.waitForSelector('#minigame-overlay', { state: 'hidden', timeout: 3000 });
+        await mPage.waitForSelector('#minigame-overlay', { state: 'hidden', timeout: 5500 });
       }
       await mobileCtx.close();
     }

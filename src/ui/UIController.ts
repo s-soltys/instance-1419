@@ -301,6 +301,9 @@ export class UIController {
   private autoDiveDeadlineMs = 0;
   private autoDiveHeldTargetId: string | null = null;
   private autoDiveTickTimer: number | null = null;
+  private briefPhase: 'idle' | 'locked' | 'diving' | 'handover' | 'fading' = 'idle';
+  private briefHandoverTimer: number | null = null;
+  private briefFadeTimer: number | null = null;
 
   constructor(
     root: HTMLElement,
@@ -483,6 +486,26 @@ export class UIController {
           <span class="transition-label sr-only" id="transition-label">ENTERING DREAM CACHE…</span>
         </div>
 
+        <aside class="reticle-brief hidden" id="reticle-brief" data-brief-phase="locked" aria-live="polite">
+          <div class="reticle-brief-head">
+            <div class="reticle-brief-meta" id="reticle-brief-meta"></div>
+            <div class="reticle-brief-why" id="reticle-brief-why"></div>
+          </div>
+          <div class="reticle-brief-schematic" id="reticle-brief-schematic"></div>
+          <div class="reticle-brief-howto">
+            <div class="reticle-brief-goal" id="reticle-brief-goal"></div>
+            <div class="reticle-brief-how" id="reticle-brief-how"></div>
+            <div class="reticle-brief-controls" id="reticle-brief-controls"></div>
+          </div>
+          <div class="reticle-brief-countdown hidden" id="reticle-brief-countdown">
+            <div class="reticle-auto-bar"><span id="reticle-auto-fill"></span></div>
+            <div class="reticle-auto-row">
+              <span class="reticle-auto-label" id="reticle-auto-label">ENTERING IN 7s…</span>
+              <button class="reticle-auto-hold" id="btn-hold-auto-dive" type="button">HOLD</button>
+            </div>
+          </div>
+        </aside>
+
         <header class="top-telemetry">
           <div class="telemetry-readout">
             <div class="warmth-pill" id="hud-warmth-pill" data-band="high" title="${uiCopy.warmth.tooltipWarm}">
@@ -570,25 +593,6 @@ export class UIController {
 
           <div class="reticle-readout">
             <div class="reticle-main" id="reticle-target"></div>
-            <div class="reticle-brief hidden" id="reticle-brief">
-              <div class="reticle-brief-meta" id="reticle-brief-meta"></div>
-              <div class="reticle-brief-why" id="reticle-brief-why"></div>
-              <div class="reticle-brief-diagram">
-                <div class="reticle-brief-schematic" id="reticle-brief-schematic"></div>
-                <div class="reticle-brief-howto">
-                  <div class="reticle-brief-goal" id="reticle-brief-goal"></div>
-                  <div class="reticle-brief-how" id="reticle-brief-how"></div>
-                  <div class="reticle-brief-controls" id="reticle-brief-controls"></div>
-                </div>
-              </div>
-              <div class="reticle-brief-countdown hidden" id="reticle-brief-countdown">
-                <div class="reticle-auto-bar"><span id="reticle-auto-fill"></span></div>
-                <div class="reticle-auto-row">
-                  <span class="reticle-auto-label" id="reticle-auto-label">ENTERING IN 7s…</span>
-                  <button class="reticle-auto-hold" id="btn-hold-auto-dive" type="button">HOLD</button>
-                </div>
-              </div>
-            </div>
             <button class="inspect-cta hidden" id="btn-enter-inspect" type="button">${uiCopy.sky.calibrateCtaFallback}</button>
           </div>
 
@@ -914,6 +918,46 @@ export class UIController {
       this.overseerSpeakTimer = null;
     }
     this.cancelAutoDive(false);
+    this.hideInstrumentBrief();
+  }
+
+  private clearBriefTransitionTimers(): void {
+    if (this.briefHandoverTimer !== null) {
+      window.clearTimeout(this.briefHandoverTimer);
+      this.briefHandoverTimer = null;
+    }
+    if (this.briefFadeTimer !== null) {
+      window.clearTimeout(this.briefFadeTimer);
+      this.briefFadeTimer = null;
+    }
+  }
+
+  private hideInstrumentBrief(): void {
+    this.clearBriefTransitionTimers();
+    this.briefPhase = 'idle';
+    this.lastReticleBriefSig = '';
+    const refs = this.opticsRefs;
+    if (refs?.reticleBrief) {
+      refs.reticleBrief.classList.add('hidden');
+      delete refs.reticleBrief.dataset.briefPhase;
+    }
+    if (refs?.reticleAutoFill) {
+      refs.reticleAutoFill.style.transform = '';
+    }
+  }
+
+  private populateInstrumentBrief(spec: AnomalySpec, chosenMgId: string): void {
+    const refs = this.opticsRefs;
+    if (!refs?.reticleBrief) return;
+    const scaleLabel = getScaleLabel(spec.scaleClass);
+    const distLabel = spec.distanceLabel ?? spec.bandName;
+    const sch = getInstrumentSchematic(chosenMgId);
+    if (refs.reticleBriefMeta) refs.reticleBriefMeta.textContent = `${scaleLabel} · ${distLabel} — ${spec.label}`;
+    if (refs.reticleBriefWhy) refs.reticleBriefWhy.textContent = spec.preScanBrief?.whyNow ?? spec.subtitle;
+    if (refs.reticleBriefSchematic) refs.reticleBriefSchematic.innerHTML = sch.svg;
+    if (refs.reticleBriefGoal) refs.reticleBriefGoal.textContent = `GOAL · ${sch.goalWord}`;
+    if (refs.reticleBriefHow) refs.reticleBriefHow.textContent = sch.howToPlay;
+    if (refs.reticleBriefControls) refs.reticleBriefControls.textContent = sch.controlsHint;
   }
 
   private isSkyOverlayOpen(): boolean {
@@ -958,6 +1002,7 @@ export class UIController {
   }
 
   private updateAutoDiveUi(): void {
+    if (this.briefPhase !== 'locked' && this.briefPhase !== 'idle') return;
     const refs = this.opticsRefs;
     if (!refs?.reticleBriefCountdown) return;
     if (!this.autoDiveTargetId) {
@@ -1698,6 +1743,11 @@ export class UIController {
       this.codexView.close();
       this.enterDreamVariant('current');
     });
+    this.root.querySelector('#mg-btn-guide')?.addEventListener('click', () => {
+      if (this.briefPhase === 'handover' || this.briefPhase === 'fading') {
+        this.hideInstrumentBrief();
+      }
+    });
 
     window.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
@@ -1909,11 +1959,7 @@ export class UIController {
       let stateKey = 'idle';
       let hideInspect = true;
       let briefMeta = '';
-      let briefWhy = '';
       let briefMgId = '';
-      let briefGoal = '';
-      let briefHow = '';
-      let briefControls = '';
       const decodedSet = new Set(state.decodedMinigameTargets);
 
       if (this.autoDiveTargetId && (!t.focusedAnomaly || t.focusedAnomaly.id !== this.autoDiveTargetId || this.isSkyOverlayOpen())) {
@@ -1940,13 +1986,8 @@ export class UIController {
         if (scanned) {
           const scaleLabel = getScaleLabel(spec.scaleClass);
           const distLabel = spec.distanceLabel ?? spec.bandName;
-          const sch = getInstrumentSchematic(chosenMgId);
           briefMeta = `${scaleLabel} · ${distLabel} — ${spec.label}`;
-          briefWhy = spec.preScanBrief?.whyNow ?? spec.subtitle;
           briefMgId = chosenMgId;
-          briefGoal = `GOAL · ${sch.goalWord}`;
-          briefHow = sch.howToPlay;
-          briefControls = sch.controlsHint;
           nextPrompt = `${spec.label} · LOCKED`;
           stateKey = `ready:${spec.id}`;
           if (!decoded && this.autoDiveTargetId !== spec.id && this.autoDiveHeldTargetId !== spec.id && !this.isSkyOverlayOpen()) {
@@ -1986,19 +2027,24 @@ export class UIController {
         }
       }
 
-      const briefSig = `${hideInspect ? '0' : '1'}|${briefMeta}|${briefMgId}`;
-      if (refs.reticleBrief && briefSig !== this.lastReticleBriefSig) {
-        this.lastReticleBriefSig = briefSig;
-        refs.reticleBrief.classList.toggle('hidden', hideInspect || !briefMeta);
-        if (refs.reticleBriefMeta) refs.reticleBriefMeta.textContent = briefMeta;
-        if (refs.reticleBriefWhy) refs.reticleBriefWhy.textContent = briefWhy;
-        if (refs.reticleBriefSchematic) {
-          refs.reticleBriefSchematic.innerHTML = briefMgId ? getInstrumentSchematic(briefMgId).svg : '';
+      if (this.briefPhase === 'idle' || this.briefPhase === 'locked') {
+        const overlayOpen = this.isSkyOverlayOpen();
+        const showLockedBrief = !hideInspect && Boolean(briefMeta) && !overlayOpen;
+        const briefSig = `${showLockedBrief ? '1' : '0'}|${briefMeta}|${briefMgId}`;
+        if (refs.reticleBrief && briefSig !== this.lastReticleBriefSig) {
+          this.lastReticleBriefSig = briefSig;
+          if (showLockedBrief && t.focusedAnomaly) {
+            this.briefPhase = 'locked';
+            this.populateInstrumentBrief(t.focusedAnomaly, briefMgId);
+            refs.reticleBrief.dataset.briefPhase = 'locked';
+            refs.reticleBrief.classList.remove('hidden');
+            this.updateAutoDiveUi();
+          } else {
+            this.briefPhase = 'idle';
+            refs.reticleBrief.classList.add('hidden');
+            delete refs.reticleBrief.dataset.briefPhase;
+          }
         }
-        if (refs.reticleBriefGoal) refs.reticleBriefGoal.textContent = briefGoal;
-        if (refs.reticleBriefHow) refs.reticleBriefHow.textContent = briefHow;
-        if (refs.reticleBriefControls) refs.reticleBriefControls.textContent = briefControls;
-        this.updateAutoDiveUi();
       }
 
       if (refs.inspectBtn && hideInspect !== this.lastInspectHidden) {
@@ -2039,6 +2085,7 @@ export class UIController {
     this.hideSkyPsycheWhisper();
     this.cancelAutoDive(false);
     this.autoDiveHeldTargetId = null;
+    this.clearBriefTransitionTimers();
     if (this.proactiveCommsTimer !== null) {
       window.clearTimeout(this.proactiveCommsTimer);
       this.proactiveCommsTimer = null;
@@ -2053,6 +2100,29 @@ export class UIController {
     const chosenId = overrideMinigameId ?? this.store.getMinigameIdForTarget(spec.id, spec.minigameId);
     const entry = this.minigames.getEntry(chosenId);
     const resolvedIter = iterationIndex ?? spec.preferredVariantIndex;
+    const refs = this.opticsRefs;
+
+    this.populateInstrumentBrief(spec, chosenId);
+    if (refs?.reticleBrief) {
+      this.briefPhase = 'diving';
+      this.lastReticleBriefSig = '';
+      refs.reticleBrief.classList.remove('hidden');
+      delete refs.reticleBrief.dataset.briefPhase;
+      void refs.reticleBrief.offsetWidth;
+      refs.reticleBrief.dataset.briefPhase = 'diving';
+    }
+    if (refs?.reticleBriefCountdown) {
+      refs.reticleBriefCountdown.classList.remove('hidden');
+    }
+    if (refs?.holdAutoDiveBtn) {
+      refs.holdAutoDiveBtn.classList.add('hidden');
+    }
+    if (refs?.reticleAutoFill) {
+      refs.reticleAutoFill.style.transform = '';
+    }
+    if (refs?.reticleAutoLabel) {
+      refs.reticleAutoLabel.textContent = `ENGAGING INSTRUMENT · ${entry?.instrumentCode ?? chosenId.toUpperCase()}…`;
+    }
 
     // Preload dynamic JS chunk + plate image during optical_dive so frame 1 is live
     void this.minigameHost.preload(
@@ -2087,7 +2157,7 @@ export class UIController {
             },
             {
               iterationIndex: resolvedIter,
-              briefingHoldMs: 900,
+              briefingHoldMs: 2600,
             }
           );
         } finally {
@@ -2099,6 +2169,38 @@ export class UIController {
           this.optics.setActive(false);
         }
         this.minigameHost.setBriefingHold(false);
+        if (this.activeMinigameTargetId === spec.id && this.briefPhase === 'diving') {
+          this.briefPhase = 'handover';
+          if (refs?.reticleBrief) {
+            delete refs.reticleBrief.dataset.briefPhase;
+            void refs.reticleBrief.offsetWidth;
+            refs.reticleBrief.dataset.briefPhase = 'handover';
+          }
+          if (refs?.reticleAutoFill) {
+            refs.reticleAutoFill.style.transform = '';
+          }
+          if (refs?.reticleAutoLabel) {
+            refs.reticleAutoLabel.textContent =
+              chosenId === 'constellation_recall'
+                ? 'OBSERVE SEQUENCE · CONTROL READY'
+                : 'INSTRUMENT LIVE · CONTROL READY';
+          }
+          this.clearBriefTransitionTimers();
+          this.briefHandoverTimer = window.setTimeout(() => {
+            this.briefHandoverTimer = null;
+            if (this.briefPhase !== 'handover') return;
+            this.briefPhase = 'fading';
+            if (refs?.reticleBrief) {
+              refs.reticleBrief.dataset.briefPhase = 'fading';
+            }
+            this.briefFadeTimer = window.setTimeout(() => {
+              this.briefFadeTimer = null;
+              if (this.briefPhase === 'fading') {
+                this.hideInstrumentBrief();
+              }
+            }, 1600);
+          }, 2600);
+        }
       },
     });
   }
@@ -2107,6 +2209,7 @@ export class UIController {
     const resolvedDecoded = decodedSpec ?? this.lastMinigameDecodedSpec;
     this.activeMinigameTargetId = null;
     this.lastMinigameDecodedSpec = null;
+    this.hideInstrumentBrief();
 
     const currState = this.store.getState();
     this.audio.playCue('iris_pullback');
@@ -2303,6 +2406,7 @@ export class UIController {
   private openSiblingComms(): void {
     this.hideCommsToast();
     this.hideSkyPsycheWhisper();
+    this.hideInstrumentBrief();
     this.proactiveCommsSent = true;
     this.activeCommsMode = 'sibling';
 
@@ -2340,6 +2444,7 @@ export class UIController {
   private openPostTarget2Transmission(): void {
     this.hideCommsToast();
     this.hideSkyPsycheWhisper();
+    this.hideInstrumentBrief();
     this.activeCommsMode = 'post_target2';
 
     const panel = this.root.querySelector<HTMLElement>('#comms-panel')!;

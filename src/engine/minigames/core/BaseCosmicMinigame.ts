@@ -397,7 +397,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     }
 
     const onDown = (e: PointerEvent) => {
-      if (this.completed) return;
+      if (this.completed || this.briefingHold) return;
       this.refreshCachedRect();
       this.activePointerId = e.pointerId;
       if (typeof this.canvas.setPointerCapture === 'function') {
@@ -455,14 +455,14 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     };
 
     const onWheel = (e: WheelEvent) => {
-      if (this.completed) return;
+      if (this.completed || this.briefingHold) return;
       if (this.onWheel(e.deltaY, e)) {
         e.preventDefault();
       }
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (this.completed) return;
+      if (this.completed || this.briefingHold) return;
       if (!e.repeat && (e.key === 'o' || e.key === 'O') && this.isOverclockAvailable()) {
         e.preventDefault();
         this.toggleOverclock();
