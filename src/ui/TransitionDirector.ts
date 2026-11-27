@@ -37,7 +37,7 @@ interface TransitionTimings {
  */
 const TIMINGS: Record<TransitionKind, TransitionTimings> = {
   aperture_boot: { switchMs: 950, durationMs: 3900 },
-  optical_dive: { switchMs: 620, durationMs: 2200 },
+  optical_dive: { switchMs: 900, durationMs: 4600 },
   optical_pullback: { switchMs: 360, durationMs: 1850 },
   dream_submerge: { switchMs: 420, durationMs: 2350 },
   dream_wake: { switchMs: 380, durationMs: 2350 },
@@ -122,10 +122,14 @@ export class TransitionDirector {
         const subEl = document.createElement('span');
         subEl.className = 'ts-dive-sublabel';
         subEl.textContent = opts.sublabel ?? '';
+        const progressEl = document.createElement('span');
+        progressEl.className = 'ts-dive-progress';
+        const progressFillEl = document.createElement('span');
+        progressEl.appendChild(progressFillEl);
         const hintEl = document.createElement('span');
         hintEl.className = 'ts-dive-skip-hint';
-        hintEl.textContent = 'CLICK OR PRESS SPACE TO ENTER';
-        labelEl.append(eyebrowEl, instEl, subEl, hintEl);
+        hintEl.textContent = 'CLICK OR PRESS SPACE TO BEGIN';
+        labelEl.append(eyebrowEl, instEl, subEl, progressEl, hintEl);
       } else {
         labelEl.classList.add('sr-only');
         labelEl.textContent = opts.label;

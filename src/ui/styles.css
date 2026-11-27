@@ -129,11 +129,11 @@ body,
 }
 
 .stage > section.is-leaving[data-leave-kind='optical_dive'] {
-  animation: leaveOpticalDive 1.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: leaveOpticalDive 2.1s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .stage > section.is-arriving[data-arrive-kind='optical_dive'] {
-  animation: arriveOpticalDive 1.45s cubic-bezier(0.18, 0.9, 0.28, 1) both;
+  animation: arriveOpticalDive 1.9s cubic-bezier(0.18, 0.9, 0.28, 1) both;
 }
 
 /* --- 3. Direct Minigame -> 3D Sky (optical_pullback) --- */
@@ -290,12 +290,44 @@ body,
   text-wrap: balance;
 }
 
+.transition-stage.is-dive-brief .transition-label::before {
+  content: '';
+  position: absolute;
+  inset: -44px -68px;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, rgba(4, 9, 16, 0.72) 0%, rgba(4, 9, 16, 0.36) 52%, transparent 78%);
+  pointer-events: none;
+}
+
+.ts-dive-progress {
+  width: min(220px, 52vw);
+  height: 1.5px;
+  margin-top: 4px;
+  background: rgba(160, 200, 230, 0.22);
+  overflow: hidden;
+  display: block;
+}
+
+.ts-dive-progress > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(140, 210, 245, 0.78), rgba(235, 176, 98, 0.92));
+  transform-origin: left center;
+  animation: diveBriefFill 4.6s linear both;
+}
+
+@keyframes diveBriefFill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 .ts-dive-skip-hint {
   margin-top: 6px;
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 0.2em;
-  color: rgba(235, 176, 98, 0.72);
+  color: rgba(235, 176, 98, 0.82);
   text-transform: uppercase;
 }
 
@@ -345,6 +377,10 @@ body,
   animation-duration: 3.4s;
 }
 
+.transition-stage[data-kind='optical_dive'].is-active .ts-bloom {
+  animation-duration: 3.8s;
+}
+
 @keyframes fxFlareStreak {
   0% { opacity: 0; transform: translate(-50%, -50%) scaleX(0.15) scaleY(0.7); }
   28% { opacity: 0.95; transform: translate(-50%, -50%) scaleX(1) scaleY(1.15); }
@@ -387,6 +423,10 @@ body,
 
 .transition-stage[data-kind='aperture_boot'].is-active .ts-flare {
   animation-duration: 2.9s;
+}
+
+.transition-stage[data-kind='optical_dive'].is-active .ts-flare {
+  animation-duration: 2.6s;
 }
 
 @keyframes fxIrisBoot {
@@ -446,7 +486,7 @@ body,
 }
 
 .transition-stage[data-kind='optical_dive'].is-active .ts-iris-ring {
-  animation: fxIrisDive 1.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: fxIrisDive 3.6s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .transition-stage[data-kind='optical_pullback'].is-active .ts-iris-ring {

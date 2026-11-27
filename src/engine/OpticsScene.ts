@@ -195,6 +195,23 @@ const SHIFT_REQUIRED_MAP: Map<number, Set<string>> = new Map(
   ])
 );
 
+const SHIFT_ALL_MAP: Map<number, Set<string>> = new Map(
+  (shiftsData.shifts as Array<{ shift: number; targetAnomalies?: string[] }>).map((s) => [
+    s.shift,
+    new Set(s.targetAnomalies ?? []),
+  ])
+);
+
+const SURVEY_CENTER_DIR = raDecToVec3(26.0, 2.0, 1).normalize();
+const SURVEY_COS_THRESHOLDS = [0.53, 0.03, -0.47, -0.83, -0.985, -1.05] as const;
+
+function computeSurveyCosEdge(tier: number): number {
+  const clamped = THREE.MathUtils.clamp(tier, 1, 6);
+  const idx = Math.min(4, Math.floor(clamped - 1));
+  const frac = clamped - 1 - idx;
+  return THREE.MathUtils.lerp(SURVEY_COS_THRESHOLDS[idx], SURVEY_COS_THRESHOLDS[idx + 1], frac);
+}
+
 const J2000_GAL_AXIS = raDecToVec3(192.8595, 27.1283, 1).normalize();
 const J2000_GAL_CENTER = raDecToVec3(266.405, -28.936, 1).normalize();
 
@@ -372,6 +389,8 @@ export class OpticsScene {
         uSolDir: { value: this.solDir.clone() },
         uGalAxis: { value: J2000_GAL_AXIS.clone() },
         uGalCenter: { value: J2000_GAL_CENTER.clone() },
+        uSurveyCenterDir: { value: SURVEY_CENTER_DIR.clone() },
+        uSurveyCosEdge: { value: computeSurveyCosEdge(this.skySurveyTier) },
       },
     });
     const skyGeo = new THREE.SphereGeometry(220, 48, 32);
@@ -521,6 +540,8 @@ export class OpticsScene {
         uPixelRatio: { value: this.appliedDpr },
         uWavelengthNorm: { value: (this.wavelengthNm - 200) / 1600 },
         uSkySurveyTier: { value: this.skySurveyTier },
+        uSurveyCenterDir: { value: SURVEY_CENTER_DIR.clone() },
+        uSurveyCosEdge: { value: computeSurveyCosEdge(this.skySurveyTier) },
         uDecodedDirs: { value: decodedDirsArray },
         uDecodedCount: { value: 0 },
       },
@@ -601,7 +622,7 @@ export class OpticsScene {
         colors[i * 3 + 2] = scratchColor.b;
 
         const mag = magNorm / 255;
-        sizes[i] = (band === 0 || band === 3 ? 1.55 : 1.15) + Math.pow(mag, 2.2) * 20.0;
+        sizes[i] = (band === 0 || band === 3 ? 1.85 : 1.45) + Math.pow(mag, 2.0) * 21.0;
         phases[i] = ((i * 2654435761) >>> 0) / 4294967296;
         bands[i] = band;
         unlockTiers[i] = unlockTier;
@@ -664,6 +685,7 @@ export class OpticsScene {
           uAnomalyBleed: { value: this.computeTargetBleed(spec) },
           uDecoded: { value: this.decodedTargetIds.has(spec.id) ? 1.0 : 0.0 },
           uDecodePulse: { value: 0.0 },
+          uAmbientScale: { value: 1.0 },
         },
       });
       this.anomalyMats.set(spec.id, mat);
@@ -1032,6 +1054,12 @@ export class OpticsScene {
     return this.visibleTargetIds === null || this.visibleTargetIds.has(id);
   }
 
+  private isOuterFlankAmbient(id: string): boolean {
+    if (this.ambientDrift || this.isTargetVisible(id)) return false;
+    const nextShiftTargets = SHIFT_ALL_MAP.get(this.currentShift + 1);
+    return nextShiftTargets ? nextShiftTargets.has(id) : false;
+  }
+
   private getMagneticDetentAngleDeg(): number | null {
     if (!this.magneticDetentTargetId || this.ambientDrift) return null;
     if (!this.isTargetVisible(this.magneticDetentTargetId)) return null;
@@ -1174,17 +1202,20 @@ export class OpticsScene {
     const tierDamp = 1 - Math.exp(-3.2 * dt);
     this.skySurveyTier += (this.targetSkySurveyTier - this.skySurveyTier) * tierDamp;
     this.fractalStage += (this.targetFractalStage - this.fractalStage) * tierDamp;
+    const surveyCosEdge = computeSurveyCosEdge(this.skySurveyTier);
 
     this.skyMat.uniforms.uTime.value = elapsed;
     this.skyMat.uniforms.uWavelengthNorm.value = waveNorm;
     this.skyMat.uniforms.uOpticalFidelity.value = this.opticalFidelity;
     this.skyMat.uniforms.uAnomalyProgress.value = this.anomalyProgress;
     this.skyMat.uniforms.uFractalStage.value = this.fractalStage;
+    this.skyMat.uniforms.uSurveyCosEdge.value = surveyCosEdge;
 
     this.starMat.uniforms.uTime.value = elapsed;
     this.starMat.uniforms.uFovScale.value = zoomFactor;
     this.starMat.uniforms.uWavelengthNorm.value = waveNorm;
     this.starMat.uniforms.uSkySurveyTier.value = this.skySurveyTier;
+    this.starMat.uniforms.uSurveyCosEdge.value = surveyCosEdge;
 
     this._camForward.set(0, 0, -1).applyQuaternion(this.camera.quaternion).normalize();
     let bestSpec: AnomalySpec | null = null;
@@ -1192,10 +1223,12 @@ export class OpticsScene {
     let bestWaveMatch = 0;
 
     for (const spec of this.anomalySpecs) {
-      const visible = this.isTargetVisible(spec.id);
+      const activeVisible = this.isTargetVisible(spec.id);
+      const ambientFlank = this.isOuterFlankAmbient(spec.id);
+      const renderVisible = activeVisible || ambientFlank;
       const mesh = this.anomalyMeshes.get(spec.id);
-      if (mesh) mesh.visible = visible;
-      if (!visible) continue;
+      if (mesh) mesh.visible = renderVisible;
+      if (!renderVisible) continue;
 
       const dir = this.anomalyDirs.get(spec.id)!;
       const angleDeg = THREE.MathUtils.radToDeg(Math.acos(THREE.MathUtils.clamp(this._camForward.dot(dir), -1, 1)));
@@ -1209,7 +1242,7 @@ export class OpticsScene {
 
       const mat = this.anomalyMats.get(spec.id)!;
       mat.uniforms.uTime.value = elapsed;
-      mat.uniforms.uWavelengthMatch.value = waveMatch;
+      mat.uniforms.uWavelengthMatch.value = activeVisible ? waveMatch : Math.max(waveMatch, 0.35);
       mat.uniforms.uOpticalFidelity.value = this.opticalFidelity;
       mat.uniforms.uZoomFactor.value = zoomFactor;
       mat.uniforms.uFractalStage.value = this.fractalStage;
@@ -1220,8 +1253,9 @@ export class OpticsScene {
         spec.id === this.justDecodedId && now < this.decodePulseUntil
           ? THREE.MathUtils.clamp((this.decodePulseUntil - now) / 1200, 0, 1)
           : 0.0;
+      mat.uniforms.uAmbientScale.value = activeVisible ? 1.0 : 0.26;
 
-      if (!this.ambientDrift && align > bestAlign) {
+      if (activeVisible && !this.ambientDrift && align > bestAlign) {
         bestAlign = align;
         bestSpec = spec;
         bestWaveMatch = waveMatch;

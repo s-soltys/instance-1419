@@ -77,6 +77,8 @@ uniform float uFractalStage;     // 1.0..6.0 (6-stage filigree fractal progressi
 uniform vec3 uSolDir;            // Bearing toward Sol (10 ly astern)
 uniform vec3 uGalAxis;           // True J2000 Galactic North Pole (RA 192.8595°, Dec +27.1283°)
 uniform vec3 uGalCenter;         // True J2000 Galactic Center (RA 266.405°, Dec -28.936°)
+uniform vec3 uSurveyCenterDir;   // Shift 1 active hemisphere center
+uniform float uSurveyCosEdge;    // Lateral expansion cosine threshold (widens Shift 1 -> 6)
 
 void main() {
   vec3 d = normalize(vDir);
@@ -121,21 +123,23 @@ void main() {
   }
 
   // 2. VISIBLE: Rich sapphire-gold Milky Way with OPAQUE dark dust lanes
-  vec3 mwVis = mix(vec3(0.05, 0.09, 0.17), vec3(0.17, 0.14, 0.11), cloud1);
-  col += mwVis * band * (0.45 + 0.75 * cloud1) * visWeight * (1.0 - dustLane * 0.88);
+  vec3 mwVis = mix(vec3(0.07, 0.13, 0.24), vec3(0.24, 0.19, 0.14), cloud1);
+  col += mwVis * band * (0.55 + 0.85 * cloud1) * visWeight * (1.0 - dustLane * 0.84);
 
   // 3. NEAR-IR: Dust turns transparent, unveiling dense golden galactic bulge
-  vec3 mwNear = mix(vec3(0.18, 0.10, 0.05), vec3(0.34, 0.21, 0.10), cloud1);
-  col += mwNear * (band * 0.8 + bulge * 1.15) * (0.5 + 0.65 * cloud1) * nearIrWeight * (1.0 - dustLane * 0.12);
+  vec3 mwNear = mix(vec3(0.20, 0.11, 0.06), vec3(0.38, 0.24, 0.12), cloud1);
+  col += mwNear * (band * 0.85 + bulge * 1.2) * (0.55 + 0.65 * cloud1) * nearIrWeight * (1.0 - dustLane * 0.12);
 
   // 4. MID-IR: Glowing crimson-amber molecular dust filaments & warm clouds
-  vec3 dustGlowCol = mix(vec3(0.36, 0.09, 0.06), vec3(0.62, 0.26, 0.09), filament);
+  vec3 dustGlowCol = mix(vec3(0.38, 0.10, 0.06), vec3(0.66, 0.28, 0.10), filament);
   col += dustGlowCol * (filament * band * 1.15 + dustLane * 0.72) * midIrWeight;
 
-  // Subtle distant unresolved dust wisps
-  float neb = pow(clamp(cloud1 * 0.58 + cloud2 * 0.42, 0.0, 1.0), 3.4);
-  vec3 nebTint = mix(vec3(0.08, 0.16, 0.34), vec3(0.28, 0.11, 0.07), uWavelengthNorm);
-  col += nebTint * neb * 0.32;
+  // Unresolved deep-sky star clouds & faint background mist (brightens gently inside expanding lateral survey swath)
+  float surveySwath = smoothstep(uSurveyCosEdge - 0.22, uSurveyCosEdge + 0.18, dot(d, normalize(uSurveyCenterDir)));
+  float neb = pow(clamp(cloud1 * 0.58 + cloud2 * 0.42, 0.0, 1.0), 2.8);
+  vec3 nebTint = mix(vec3(0.09, 0.17, 0.34), vec3(0.28, 0.12, 0.08), uWavelengthNorm);
+  col += nebTint * neb * mix(0.26, 0.46, surveySwath);
+  col += vec3(0.012, 0.018, 0.030) * band * surveySwath * visWeight;
 
   // 5. 93-billion-light-year 6-stage razor-thin mathematical astrometric filigree fractal
   // Shift 1 (uFractalStage <= 1.1) stays completely invisible on the wide sky.
@@ -215,6 +219,8 @@ uniform float uFovScale;
 uniform float uPixelRatio;
 uniform float uWavelengthNorm;
 uniform float uSkySurveyTier;  // 1.0..6.0 smoothly animated shift ceiling
+uniform vec3 uSurveyCenterDir; // Active Shift 1 core direction
+uniform float uSurveyCosEdge;  // Cosine edge expanding outward Shifts 1 -> 6
 uniform vec3 uDecodedDirs[21]; // Unit directions of decoded targets
 uniform float uDecodedCount;   // Active decoded count (0..21)
 
@@ -222,41 +228,44 @@ void main() {
   vColor = aColor;
   vPhase = aPhase;
 
-  // Local ~30° cone sector deepening around decoded targets
+  // Lush global baseline (~Shift 1 floor 3.4 -> Shift 6 floor 6.0) + lateral outward swath + ~35° decoded cones
   vec3 starDir = normalize(position);
-  float localBoost = 0.0;
+  float swathVis = smoothstep(uSurveyCosEdge - 0.16, uSurveyCosEdge + 0.12, dot(starDir, normalize(uSurveyCenterDir)));
+  float globalFloor = 3.4 + clamp(uSkySurveyTier - 1.0, 0.0, 5.0) * 0.52;
+  float localBoost = swathVis * 2.6;
   for (int i = 0; i < 21; i++) {
     if (float(i) < uDecodedCount) {
-      if (dot(starDir, uDecodedDirs[i]) > 0.866) {
-        localBoost = 1.2;
+      if (dot(starDir, uDecodedDirs[i]) > 0.82) {
+        localBoost = max(localBoost, 2.6);
       }
     }
   }
-  float effectiveTier = max(uSkySurveyTier, min(6.0, uSkySurveyTier + localBoost));
-  float tierVis = smoothstep(-0.65, 0.0, effectiveTier - aUnlockTier);
+  float effectiveTier = min(6.0, globalFloor + localBoost);
+  float tierVis = smoothstep(-0.75, 0.0, effectiveTier - aUnlockTier);
 
   // Compute physical visibility of each stellar population across 200nm -> 1800nm
+  // All bands maintain crisp starlight presence in Visible while still surging in their native band.
   float bandVis = 0.0;
   if (aBand < 0.5) {
-    // Hot UV / X-ray sources: bright below 520nm, vanish in IR
-    bandVis = 1.0 - smoothstep(0.06, 0.30, uWavelengthNorm);
+    // Hot UV / X-ray stars: bright in UV, clearly visible blue-white anchors in Visible
+    bandVis = 0.55 + 0.60 * (1.0 - smoothstep(0.06, 0.34, uWavelengthNorm));
   } else if (aBand < 1.5) {
-    // Visible optical stars: peak around 450-800nm, dim at extremes
-    bandVis = 0.25 + 0.85 * smoothstep(0.06, 0.20, uWavelengthNorm) * (1.0 - 0.65 * smoothstep(0.55, 0.92, uWavelengthNorm));
+    // Visible optical stars: peak around 450-800nm
+    bandVis = 0.42 + 0.72 * smoothstep(0.04, 0.20, uWavelengthNorm) * (1.0 - 0.55 * smoothstep(0.58, 0.94, uWavelengthNorm));
   } else if (aBand < 2.5) {
-    // Dust-shrouded Near-IR cluster stars: hidden in optical, reveal past 800nm!
-    bandVis = smoothstep(0.32, 0.62, uWavelengthNorm);
+    // Warm K/G/Near-IR stars: visible golden stars that surge past 800nm
+    bandVis = 0.62 + 0.55 * smoothstep(0.34, 0.66, uWavelengthNorm);
   } else {
-    // Cool Mid-IR protostars & giants: emerge in Near/Mid-IR
-    bandVis = smoothstep(0.58, 0.88, uWavelengthNorm);
+    // Cool Mid-IR giants & protostars: faint ruby anchors in Visible, surge in Near/Mid-IR
+    bandVis = 0.30 + 0.85 * smoothstep(0.56, 0.88, uWavelengthNorm);
   }
   bandVis *= tierVis;
   vBandVis = bandVis;
 
   vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-  float size = aSize * uPixelRatio * mix(0.9, 1.75, uFovScale) * (0.45 + 0.65 * bandVis);
+  float size = aSize * uPixelRatio * mix(0.95, 1.78, uFovScale) * (0.55 + 0.62 * clamp(bandVis, 0.0, 1.15));
   vSize = size;
-  gl_PointSize = bandVis < 0.02 ? 0.0 : clamp(size, 1.1, 44.0);
+  gl_PointSize = bandVis < 0.02 ? 0.0 : clamp(size, 1.35, 44.0);
   gl_Position = projectionMatrix * mvPosition;
 }
 `;
@@ -279,8 +288,8 @@ void main() {
   float r = length(uv);
   if (r > 1.0) discard;
 
-  float core = exp(-r * r * 22.0);
-  float halo = exp(-r * 5.0) * 0.38;
+  float core = exp(-r * r * 20.0);
+  float halo = exp(-r * 4.4) * 0.45;
 
   // Authentic JWST 6-point hexagonal diffraction spikes on bright stars
   float spikeMask = smoothstep(5.5, 16.0, vSize);
@@ -328,6 +337,7 @@ uniform float uAnomalyProgress; // 0.0..1.0
 uniform float uAnomalyBleed;    // 0.0..1.0 per-target fractal bleed
 uniform float uDecoded;         // 0.0 or 1.0
 uniform float uDecodePulse;     // 0.0..1.0 arrival pulse
+uniform float uAmbientScale;    // 1.0 for active targets, ~0.26 for outer-flank next-shift silhouettes
 
 void main() {
   vec2 p = vUv * 2.0 - 1.0;
@@ -456,6 +466,7 @@ void main() {
     alpha = clamp(max(alpha, pulseRing * feather), 0.0, 1.0);
   }
 
-  gl_FragColor = vec4(col, alpha);
+  float amb = clamp(uAmbientScale, 0.0, 1.0);
+  gl_FragColor = vec4(col * amb, alpha * amb);
 }
 `;

@@ -79,7 +79,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     );
     expect(appRoot.querySelectorAll('#sky-markers .sky-marker svg.sky-glyph').length).toBe(21);
 
-    // Clicking DevHarness launch button reproduces the direct sky -> minigame path with 2.2s optical_dive brief
+    // Clicking DevHarness launch button reproduces the direct sky -> minigame path with 4.6s optical_dive brief
     const lensBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="lens_focus"]');
     expect(lensBtn).not.toBeNull();
     lensBtn!.click();
@@ -88,8 +88,8 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(transLabel?.classList.contains('sr-only')).toBe(false);
     expect(appRoot.querySelector('#transition-stage')?.classList.contains('is-dive-brief')).toBe(true);
 
-    // Advance optical_dive transition (2200ms) & dynamic import microtasks cleanly
-    await vi.advanceTimersByTimeAsync(2300);
+    // Advance optical_dive transition (4600ms) & dynamic import microtasks cleanly
+    await vi.advanceTimersByTimeAsync(4700);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });
@@ -104,7 +104,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     const waveBtn = document.querySelector<HTMLButtonElement>('[data-launch-mg="wave_shaper"]');
     expect(waveBtn).not.toBeNull();
     waveBtn!.click();
-    await vi.advanceTimersByTimeAsync(2300);
+    await vi.advanceTimersByTimeAsync(4700);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('WAV-01');
     });
@@ -301,7 +301,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(stageEl.dataset.kind).toBe('optical_dive');
     expect(stageEl.classList.contains('is-dive-brief')).toBe(true);
     expect(optics.triggerTransitionDive).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
-    await vi.advanceTimersByTimeAsync(2300);
+    await vi.advanceTimersByTimeAsync(4700);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
     });

@@ -1932,7 +1932,7 @@ export class UIController {
             },
             {
               iterationIndex: resolvedIter,
-              briefingHoldMs: 1650,
+              briefingHoldMs: 3900,
             }
           );
         } finally {
