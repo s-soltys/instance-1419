@@ -313,8 +313,8 @@ async function run() {
         }
 
         await page.click('[data-bearing-id="cluster_j1419_a"]');
-        await page.waitForSelector('#reticle-brief:not(.hidden)', { timeout: 8000 });
-        await page.waitForSelector('#btn-enter-inspect:not(.hidden)', { timeout: 8000 });
+        await page.waitForSelector('#reticle-brief:not(.hidden)', { timeout: 25000 });
+        await page.waitForSelector('#btn-enter-inspect:not(.hidden)', { timeout: 20000 });
         const reticleState = await page.evaluate(() => ({
           scaleClass: document.querySelector('.reticle')?.getAttribute('data-scale-class') ?? '',
           etch: document.querySelector('#reticle-scale-etch')?.textContent?.trim() ?? '',

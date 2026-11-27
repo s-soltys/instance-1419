@@ -2,6 +2,7 @@ import shiftsData from '../../content/shifts.json';
 import type { AnomalySpec } from '../../engine/OpticsScene';
 import {
   INTRO_TARGET_1_ID,
+  INTRO_TARGET_CALIB2_ID,
   INTRO_TARGET_2_ID,
   type GameState,
   type IntroStage,
@@ -53,13 +54,15 @@ export class ShiftDirector {
     if (
       state.introStage === 'prologue' ||
       state.introStage === 'title' ||
-      state.introStage === 'scan_target_1' ||
-      state.introStage === 'mg_1_done'
+      state.introStage === 'scan_target_1'
     ) {
       return [INTRO_TARGET_1_ID];
     }
+    if (state.introStage === 'scan_target_calib2' || state.introStage === 'mg_1_done') {
+      return [INTRO_TARGET_1_ID, INTRO_TARGET_CALIB2_ID];
+    }
     if (state.introStage === 'scan_target_2') {
-      return [INTRO_TARGET_1_ID, INTRO_TARGET_2_ID];
+      return [INTRO_TARGET_1_ID, INTRO_TARGET_CALIB2_ID, INTRO_TARGET_2_ID];
     }
     const unlocked = new Set<string>();
     for (const sh of shiftsData.shifts as ShiftDef[]) {
@@ -82,7 +85,7 @@ export class ShiftDirector {
       state.introStage !== 'mg_2_done';
     const canEnterDream = !isIntroLocked && quota.mandateMet && state.shift < 6;
     const reason = isIntroLocked
-      ? 'Finish the Sol–Centauri and Cluster J1419-A checks before sleep.'
+      ? 'Finish the baseline calibrations and Cluster J1419-A check before sleep.'
       : !quota.mandateMet
         ? `Decode ${quota.requiredIds.length - quota.requiredDone} more required target${
             quota.requiredIds.length - quota.requiredDone === 1 ? '' : 's'
@@ -216,11 +219,11 @@ export class ShiftDirector {
     if (stage === 'prologue' || stage === 'title' || stage === 'scan_target_1') {
       return [INTRO_TARGET_1_ID];
     }
-    if (stage === 'mg_1_done') {
-      return [INTRO_TARGET_1_ID];
+    if (stage === 'scan_target_calib2' || stage === 'mg_1_done') {
+      return [INTRO_TARGET_1_ID, INTRO_TARGET_CALIB2_ID];
     }
     if (stage === 'scan_target_2') {
-      return [INTRO_TARGET_1_ID, INTRO_TARGET_2_ID];
+      return [INTRO_TARGET_1_ID, INTRO_TARGET_CALIB2_ID, INTRO_TARGET_2_ID];
     }
     return this.getUnlockedAnomalyIds(state);
   }

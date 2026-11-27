@@ -207,9 +207,10 @@ export class DevHarness {
                   <button class="qa-btn primary" data-intro-jump="prologue" type="button">Prologue</button>
                   <button class="qa-btn primary" data-intro-jump="title" type="button">Title Beat</button>
                   <button class="qa-btn primary" data-intro-jump="scan_target_1" type="button">Scan Target #1</button>
-                  <button class="qa-btn primary" data-intro-jump="mg_1_done" type="button">Post-MG #1 (1420)</button>
-                  <button class="qa-btn primary" data-intro-jump="scan_target_2" type="button">Scan Target #2 (IR)</button>
-                  <button class="qa-btn primary" data-intro-jump="mg_2_done" type="button">Post-MG #2 (Dream)</button>
+                  <button class="qa-btn primary" data-intro-jump="scan_target_calib2" type="button">Scan Target #2 (Prism)</button>
+                  <button class="qa-btn primary" data-intro-jump="mg_1_done" type="button">Post-MG #2 (1420)</button>
+                  <button class="qa-btn primary" data-intro-jump="scan_target_2" type="button">Scan Target #3 (IR)</button>
+                  <button class="qa-btn primary" data-intro-jump="mg_2_done" type="button">Post-MG #3 (Dream)</button>
                   <button class="qa-btn" data-intro-jump="complete" type="button">Full Sandbox</button>
                 </div>
                 <div class="qa-card-title" style="margin-top:12px;">SHIFT QUICK-JUMP (1–6 SKY &amp; FRACTAL)</div>

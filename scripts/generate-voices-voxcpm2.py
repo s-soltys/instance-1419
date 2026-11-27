@@ -332,12 +332,32 @@ def resolve_vox_spec(spk: str, emotion: str, profiles: dict[str, Any], anchors_d
         "Natural adult English voice, understated close-mic delivery."
     )
     anchor_file = v.get("anchorFile") or q.get("anchorFile") or f"{spk}.wav"
+    anchor_instruct = v.get("anchorInstruct") or q.get("voiceDesignInstruct") or instruct
+    anchor_text = v.get("anchorText") or q.get("anchorText") or ""
+    anchor_seed = int(v.get("seed", q.get("seed", 14190)))
+
+    # Use dedicated locked alternate anchors only for degraded states that already have .voice-anchors WAVs
+    emo_anchors = q.get("emotionAnchors") or {}
+    alt_spec = None
+    if spk == "phantom_spouse" and emotion == "fractured":
+        alt_spec = emo_anchors.get("fractured")
+    elif spk == "sibling_primary" and emotion == "clipped":
+        alt_spec = emo_anchors.get("clipped")
+
+    if isinstance(alt_spec, dict) and alt_spec.get("anchorFile"):
+        alt_path = anchors_dir / alt_spec["anchorFile"]
+        if alt_path.exists():
+            anchor_file = alt_spec["anchorFile"]
+            anchor_instruct = alt_spec.get("voiceDesignInstruct") or anchor_instruct
+            anchor_text = alt_spec.get("anchorText") or anchor_text
+            anchor_seed = int(alt_spec.get("seed", anchor_seed))
+
     return {
         "anchorKey": anchor_file,
         "anchorPath": anchors_dir / anchor_file,
-        "anchorInstruct": v.get("anchorInstruct") or q.get("voiceDesignInstruct") or instruct,
-        "anchorText": v.get("anchorText") or q.get("anchorText") or "",
-        "anchorSeed": int(v.get("seed", q.get("seed", 14190))),
+        "anchorInstruct": anchor_instruct,
+        "anchorText": anchor_text,
+        "anchorSeed": anchor_seed,
         "instruct": instruct,
         "ffmpegFilter": prof.get("ffmpegFilter", "highpass=f=80,lowpass=f=12000"),
     }
@@ -455,7 +475,8 @@ def synthesize_batch(
     cache_limit_mb = int(cfg.get("cacheLimitMb", 2048))
     bitrate = str(cfg.get("deliveryBitrate", cfg.get("bitrate", "64k")))
     target_sr = int(cfg.get("deliverySampleRate", cfg.get("sampleRate", 24000)))
-    enable_continuation = bool(cfg.get("enableContinuation", True)) and not no_continuation
+    anchor_lock_mode = bool(cfg.get("anchorLockMode", True))
+    enable_continuation = bool(cfg.get("enableContinuation", False)) and not no_continuation and not anchor_lock_mode
     stt_model_id = cfg.get("sttQaModel", "mlx-community/parakeet-tdt-0.6b-v3")
     max_wer_default = float(cfg.get("sttQaMaxWer", 0.20))
     stt_max_retries = int(cfg.get("sttQaMaxRetries", 2))
@@ -517,17 +538,34 @@ def synthesize_batch(
             ):
                 use_cont = True
 
+            if anchor_lock_mode and spec["anchorText"]:
+                prompt_audio_for_line = spec["anchorPath"]
+                prompt_text_for_line = spec["anchorText"]
+                instruct_for_line = None
+                warmup_for_line = 0
+                use_cont = False
+            elif use_cont:
+                prompt_audio_for_line = prev_wav_path
+                prompt_text_for_line = prev_text
+                instruct_for_line = None
+                warmup_for_line = warmup_patches
+            else:
+                prompt_audio_for_line = None
+                prompt_text_for_line = None
+                instruct_for_line = spec["instruct"]
+                warmup_for_line = warmup_patches
+
             wav, sr, gen_dt = synthesize_one_line(
                 model,
                 text=text,
                 seed=base_seed,
                 ref_audio_path=spec["anchorPath"],
-                instruct=None if use_cont else spec["instruct"],
+                instruct=instruct_for_line,
                 timesteps=timesteps,
                 cfg_value=cfg_value,
-                warmup_patches=warmup_patches,
-                prompt_audio_path=prev_wav_path if use_cont else None,
-                prompt_text=prev_text if use_cont else None,
+                warmup_patches=warmup_for_line,
+                prompt_audio_path=prompt_audio_for_line,
+                prompt_text=prompt_text_for_line,
             )
             trimmed = trim_edge_silence(wav, sr)
             stats = analyze_audio(trimmed, sr, text)
@@ -535,16 +573,18 @@ def synthesize_batch(
 
             if not ok:
                 acoustic_retries += 1
-                print(f"[voxcpm2] Acoustic retry {lid} ({reason}) -> standalone instruct...", flush=True)
+                print(f"[voxcpm2] Acoustic retry {lid} ({reason}) -> anchor-locked retry...", flush=True)
                 wav, sr, dt2 = synthesize_one_line(
                     model,
                     text=text,
                     seed=base_seed + 41,
                     ref_audio_path=spec["anchorPath"],
-                    instruct=spec["instruct"],
+                    instruct=None if (anchor_lock_mode and spec["anchorText"]) else spec["instruct"],
                     timesteps=max(timesteps, 12),
                     cfg_value=max(cfg_value, 2.15),
-                    warmup_patches=warmup_patches,
+                    warmup_patches=0 if (anchor_lock_mode and spec["anchorText"]) else warmup_patches,
+                    prompt_audio_path=spec["anchorPath"] if (anchor_lock_mode and spec["anchorText"]) else None,
+                    prompt_text=spec["anchorText"] if (anchor_lock_mode and spec["anchorText"]) else None,
                 )
                 gen_dt += dt2
                 trimmed = trim_edge_silence(wav, sr)
@@ -637,10 +677,12 @@ def synthesize_batch(
                             text=t["spokenText"],
                             seed=retry_seed,
                             ref_audio_path=spec["anchorPath"],
-                            instruct=spec["instruct"],
+                            instruct=None if (anchor_lock_mode and spec["anchorText"]) else spec["instruct"],
                             timesteps=max(timesteps, 12),
                             cfg_value=max(cfg_value, 2.15),
-                            warmup_patches=warmup_patches,
+                            warmup_patches=0 if (anchor_lock_mode and spec["anchorText"]) else warmup_patches,
+                            prompt_audio_path=spec["anchorPath"] if (anchor_lock_mode and spec["anchorText"]) else None,
+                            prompt_text=spec["anchorText"] if (anchor_lock_mode and spec["anchorText"]) else None,
                         )
                         trimmed = trim_edge_silence(wav, sr)
                         stats = analyze_audio(trimmed, sr, t["spokenText"])

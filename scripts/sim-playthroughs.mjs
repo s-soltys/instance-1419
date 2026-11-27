@@ -119,8 +119,9 @@ function runArchetype(archetype, rand) {
     const shiftDef = shiftsData.shifts[i];
     const reqTargets = shiftDef.requiredTargets ?? [];
     const optTargets = shiftDef.optionalTargets ?? [];
-    if (reqTargets.length !== 2) {
-      throw new Error(`Shift ${shiftDef.shift} must define 2 requiredTargets (found ${reqTargets.length})`);
+    const maxReq = shiftDef.shift === 1 ? 3 : 2;
+    if (reqTargets.length < 2 || reqTargets.length > maxReq) {
+      throw new Error(`Shift ${shiftDef.shift} must define 2..${maxReq} requiredTargets (found ${reqTargets.length})`);
     }
     if (state.subjectiveMonthsLeft <= 0) {
       throw new Error(`Soft-lock: subjectiveMonthsLeft depleted before Shift ${shiftDef.shift}`);
@@ -135,20 +136,23 @@ function runArchetype(archetype, rand) {
       state.overseerSuspicion += p.suspicionDelta + (isOptional ? optSusp : 0);
     };
 
-    // Complete 2 required targets + 0..optionalTargets.length push-your-luck optional targets
+    // Complete required targets + 0..optionalTargets.length push-your-luck optional targets
     if (archetype === 'pure_warmth') {
-      // Pure warmth completes all 12 required scans cleanly but skips optional risks & never prunes -> ~60% (Ending 1)
-      applyScan('clean', false);
-      applyScan('clean', false);
+      // Pure warmth completes required scans cleanly but skips optional risks & never prunes -> <75% (Ending 1)
+      for (let r = 0; r < reqTargets.length; r++) {
+        applyScan('clean', false);
+      }
     } else if (archetype === 'cautious_sleeper') {
-      applyScan('clean', false);
-      applyScan('clean', false);
+      for (let r = 0; r < reqTargets.length; r++) {
+        applyScan('clean', false);
+      }
       if (optTargets.length > 0 && rand() < 0.45) {
         applyScan('clean', true);
       }
     } else if (archetype === 'balanced_sweet_spot') {
-      applyScan('clean', false);
-      applyScan('clean', false);
+      for (let r = 0; r < reqTargets.length; r++) {
+        applyScan('clean', false);
+      }
       const optToRun = Math.min(optTargets.length, rand() < 0.65 ? 1 : 0);
       for (let o = 0; o < optToRun; o++) {
         applyScan('clean', true);

@@ -1100,9 +1100,15 @@ export class OpticsScene {
   slewToAnomaly(id: string): void {
     const spec = this.anomalySpecs.find((a) => a.id === id);
     if (!spec) return;
-    this.targetYawDeg = spec.raDeg;
+    this.introPullUntil = 0;
+    if (this.magneticDetentTargetId && this.magneticDetentTargetId !== id) {
+      this.magneticDetentTargetId = null;
+    }
+    const delta = ((((spec.raDeg - this.yawDeg) % 360) + 540) % 360) - 180;
+    this.targetYawDeg = this.yawDeg + delta;
     this.targetPitchDeg = spec.decDeg;
     this.targetFovDeg = Math.min(spec.recommendedFovMax - 4, 18);
+    this.transitionBoostUntil = performance.now() + 950;
   }
 
   triggerTransitionDive(targetId: string): void {

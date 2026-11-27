@@ -9,6 +9,7 @@ export type IntroStage =
   | 'prologue'
   | 'title'
   | 'scan_target_1'
+  | 'scan_target_calib2'
   | 'mg_1_done'
   | 'scan_target_2'
   | 'mg_2_done'
@@ -94,8 +95,10 @@ function getPayoutForGrade(grade: MinigameGradeTier): {
 }
 
 export const INTRO_TARGET_1_ID = 'sol_centauri_bearing';
+export const INTRO_TARGET_CALIB2_ID = 'fraunhofer_prism_knot';
 export const INTRO_TARGET_2_ID = 'cluster_j1419_a';
 export const INTRO_TARGET_1_MINIGAME = 'constellation_recall';
+export const INTRO_TARGET_CALIB2_MINIGAME = 'spectral_prism';
 export const INTRO_TARGET_2_MINIGAME = 'lens_focus';
 export const STARTER_POOL_1 = [INTRO_TARGET_1_MINIGAME] as const;
 export const STARTER_POOL_2 = [INTRO_TARGET_2_MINIGAME] as const;
@@ -105,6 +108,7 @@ const VALID_INTRO_STAGES = new Set<IntroStage>([
   'prologue',
   'title',
   'scan_target_1',
+  'scan_target_calib2',
   'mg_1_done',
   'scan_target_2',
   'mg_2_done',
@@ -493,6 +497,9 @@ export class StateStore {
   getMinigameIdForTarget(targetId: string, defaultId: string): string {
     if (targetId === INTRO_TARGET_1_ID) {
       return this.state.introTarget1Minigame || defaultId;
+    }
+    if (targetId === INTRO_TARGET_CALIB2_ID) {
+      return INTRO_TARGET_CALIB2_MINIGAME;
     }
     if (targetId === INTRO_TARGET_2_ID) {
       return this.state.introTarget2Minigame || defaultId;

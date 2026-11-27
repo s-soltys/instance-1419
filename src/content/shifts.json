@@ -5,20 +5,20 @@
       "shift": 1,
       "status": "implemented",
       "title": "Wake & Local Cluster Calibration",
-      "shiftMandate": "Anchor the optical deck on Sol–Centauri astern and verify the strange straight edge Probe 1420 flagged behind Cluster J1419-A.",
+      "shiftMandate": "Anchor the optical deck on Sol–Centauri astern, match M57's emission spectrum, and verify the strange straight edge behind Cluster J1419-A.",
       "requiredTargets": [
         "sol_centauri_bearing",
+        "fraunhofer_prism_knot",
         "cluster_j1419_a"
       ],
       "optionalTargets": [
-        "carina_rift_nebula",
-        "asterism_drift_01"
+        "carina_rift_nebula"
       ],
       "targetAnomalies": [
         "sol_centauri_bearing",
+        "fraunhofer_prism_knot",
         "cluster_j1419_a",
-        "carina_rift_nebula",
-        "asterism_drift_01"
+        "carina_rift_nebula"
       ],
       "baseChaosPerShift": 16,
       "monthsPerShift": 4,
@@ -39,7 +39,8 @@
         "deepFieldPlateIds": [
           "smacs",
           "carina",
-          "pillars"
+          "ring_m57",
+          "tarantula"
         ],
         "constellationGuideAlpha": 0.42
       },
@@ -97,7 +98,8 @@
         "deepFieldPlateIds": [
           "smacs",
           "carina",
-          "pillars",
+          "ring_m57",
+          "tarantula",
           "sombrero",
           "horsehead",
           "rho_ophiuchi",
@@ -130,13 +132,13 @@
         "vlbi_quad_beacon"
       ],
       "optionalTargets": [
-        "fraunhofer_prism_knot",
+        "asterism_drift_01",
         "compact_binary_scale"
       ],
       "targetAnomalies": [
         "sector_s04_seam",
         "vlbi_quad_beacon",
-        "fraunhofer_prism_knot",
+        "asterism_drift_01",
         "compact_binary_scale"
       ],
       "baseChaosPerShift": 20,
@@ -167,6 +169,7 @@
           "hudf",
           "crab",
           "ring_m57",
+          "tarantula",
           "stephans_quintet",
           "southern_ring"
         ],
@@ -236,7 +239,8 @@
           "stephans_quintet",
           "southern_ring",
           "cas_a",
-          "whirlpool"
+          "whirlpool",
+          "tarantula"
         ],
         "constellationGuideAlpha": 0.18
       },
@@ -306,7 +310,8 @@
           "southern_ring",
           "cas_a",
           "whirlpool",
-          "cartwheel"
+          "cartwheel",
+          "tarantula"
         ],
         "constellationGuideAlpha": 0.12
       },

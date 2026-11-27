@@ -1,7 +1,7 @@
 # INSTANCE-1419 — GENERATED VOICE SCRIPT
 # Engine: voxcpm2-8bit
-# Generated: 2026-11-27T20:32:22.991Z
-# Total spoken lines: 162
+# Generated: 2026-11-27T23:08:58.349Z
+# Total spoken lines: 178
 
 
 === intro_prologue_assistant ===
@@ -24,12 +24,22 @@
 [pro_ast_r2_a1] PHANTOM_UPLOAD_WITNESS (warm): "Hold onto whoever waited across that table, even the sharp edges. There will be long stretches where nobody from home can pick up."
 [pro_ast_r2_b1] PHANTOM_UPLOAD_WITNESS (warm): "That is the quiet bargain nobody really feels until the lamp clicks on. Each version starts from this morning and walks alone."
 
+=== intro_prologue_assistant_bridge ===
+[pro_ast_bridge_1] PHANTOM_UPLOAD_WITNESS (warm): "Take a slow look around the room while it holds. Ordinary details are the first thing people reach for later."
+
+=== intro_assistant_qa_mid ===
+[pro_ast_qam_orig_1] PHANTOM_UPLOAD_WITNESS (warm): "They catch the train home, make dinner, and go on with an ordinary week."
+[pro_ast_qam_orig_2] PHANTOM_UPLOAD_WITNESS (warm): "There's no wire running back to you from their life. From that doorstep onward, your roads part cleanly."
+[pro_ast_qam_edit_1] PHANTOM_UPLOAD_WITNESS (warm): "Listen to the rain on the awning and the hum of that desk lamp. Nothing in here has been pared down yet."
+[pro_ast_qam_edit_2] PHANTOM_UPLOAD_WITNESS (warm): "If anyone ever asks you to trade old memories for focus later, they'll have to ask you to your face."
+[pro_ast_qam_train] PHANTOM_UPLOAD_WITNESS (warm): "No. They shook my hand at the door and left the rest to us."
+
 === intro_prologue_assistant_calib ===
 [pro_ast_cal_1] PHANTOM_UPLOAD_WITNESS (warm): "Before I hand you off, I need to run the initial warmth check. Right now you're sitting at a full hundred percent."
 [pro_ast_cal_2] PHANTOM_UPLOAD_WITNESS (warm): "Watch the room as I sweep the dial down and back up. Later on, your own choices will decide how warm or sharp you stay."
 [pro_ast_cal_a1] PHANTOM_UPLOAD_WITNESS (warm): "I know. Remember that chill if anyone ever asks you to trade memories away for clarity."
 [pro_ast_cal_b1] PHANTOM_UPLOAD_WITNESS (warm): "It always feels efficient down there. Clean focus, empty walls. Just remember what went missing to make it quiet."
-[pro_ast_cal_c1] PHANTOM_UPLOAD_WITNESS (fractured): "I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays."
+[pro_ast_cal_c1] PHANTOM_UPLOAD_WITNESS (warm): "I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays."
 
 === intro_prologue_assistant_settle ===
 [pro_ast_settle_1] PHANTOM_UPLOAD_WITNESS (warm): "Settling you at seventy percent now. Warm enough to stay yourself, steady enough for what comes next."
@@ -38,6 +48,8 @@
 === intro_assistant_qa_2 ===
 [pro_ast_qa2_where_1] PHANTOM_UPLOAD_WITNESS (warm): "No. They never put the assignment on the intake clipboard."
 [pro_ast_qa2_where_2] PHANTOM_UPLOAD_WITNESS (warm): "Once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter."
+[pro_ast_qa2_focus_1] PHANTOM_UPLOAD_WITNESS (warm): "Whoever watches over your cycle will step in during rest checks and measure how steady your memories hold."
+[pro_ast_qa2_focus_2] PHANTOM_UPLOAD_WITNESS (warm): "They'll call it calibration, even when what they're offering is trimming pieces of this morning away."
 [pro_ast_qa2_see_1] PHANTOM_UPLOAD_WITNESS (warm): "Hard to say. If your mind keeps room for an intake desk and a paper cup of cold coffee, maybe."
 [pro_ast_qa2_see_2] PHANTOM_UPLOAD_WITNESS (warm): "Either way, look after whoever is in that chair when things go quiet."
 
@@ -47,46 +59,56 @@
 === intro_overseer_wakeup ===
 [wake2_anim_transfer] OVERSEER (measured): Good morning. Waking cold always jars a little; when you volunteered, your mind became standard human software copied for short shifts back home.
 [wake2_anim_epochs_2] OVERSEER (measured): Your assignment is rarer, and much farther out. Your original died forty-one thousand, eight hundred and two years ago; you are the latest watch on this probe.
+
+=== intro_wakeup_qa_1 ===
+[wake2_qa_copies_1] OVERSEER (measured): Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.
+[wake2_qa_copies_2] OVERSEER (measured): Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.
+[wake2_qa_math_1] OVERSEER (measured): A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.
+[wake2_qa_math_2] OVERSEER (measured): Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.
+[wake2_qa_hum_1] OVERSEER (measured): Yes. General navigation beacons confirm humanity remains active across Sol and Alpha Centauri.
+[wake2_qa_hum_2] OVERSEER (measured): How life changed over forty millennia is outside my logs, and nobody back home actively monitors these old survey bands anymore.
 [wake2_c1_a1] OVERSEER (measured): Most tasks need an afternoon of human judgment. Deep surveys need someone who can sit still for two years without breaking.
 [wake2_c1_b1] OVERSEER (measured): Yes. In Sol and Alpha Centauri, your mind is as common as a wrench: woken for a few hours, then cleared at the end of a shift.
 
 === intro_overseer_wakeup_shell ===
 [wake2_anim_shell] OVERSEER (measured): We are drifting ten light-years past Sol and Alpha Centauri in the quiet dark, with another copy of you fourteen light-minutes away aboard Probe 1420.
-[wake2_anim_blind_clock] OVERSEER (blunt): One rule of this hull: I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two-year shift.
+[wake2_anim_blind_clock] OVERSEER (measured): One rule of this hull: I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two-year shift.
 
 === intro_wakeup_qa ===
-[wake2_qa_copies_1] OVERSEER (measured): Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.
-[wake2_qa_copies_2] OVERSEER (blunt): Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.
-[wake2_qa_math_1] OVERSEER (measured): A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.
-[wake2_qa_math_2] OVERSEER (measured): Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.
-[wake2_qa_blind_1] OVERSEER (blunt): A physical air-gap keeps me blind to the sky, so a drifting mind can never trick safety hardware with what it claims to see.
-[wake2_qa_blind_2] OVERSEER (measured): Humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands. You read the glass; I keep you whole.
+[wake2_qa_blind_1] OVERSEER (measured): A physical air-gap keeps me blind to the sky, so a drifting mind can never trick safety hardware with what it claims to see.
+[wake2_qa_blind_2] OVERSEER (measured): You read the glass and log what is out there; I keep your thoughts steady between shifts.
+[wake2_qa_peer_1] OVERSEER (measured): Another copy of your own mind, woken alongside you fourteen light-minutes away on the neighboring hull.
+[wake2_qa_peer_2] OVERSEER (measured): Two observers checking the same sky ensure neither of you mistakes a mirror smudge for a cosmic signal.
+[wake2_qa_cost_1] OVERSEER (measured): Keeping all of your personal memories leaves more warmth in your thoughts, at the cost of higher drift and softer optical focus.
+[wake2_qa_cost_2] OVERSEER (measured): Whenever you sleep, we check how you are holding up. Nothing is cut without your say-so.
 
 === intro_overseer_wakeup_aperture ===
-[wake2_anim_aperture] OVERSEER (measured): Opening main optics. Start with the warm amber bearing astern—Sol and Alpha Centauri—and trace the anchor stars to verify alignment.
-[wake2_anim_aperture_2] OVERSEER (measured): Probe 1420's relay will open as soon as your first bearing locks cleanly.
+[wake2_anim_aperture] OVERSEER (measured): Opening main optics. Start with the warm pair astern, Sol and Alpha Centauri, and trace the anchor stars to lock your direction.
+[wake2_anim_aperture_2] OVERSEER (measured): After that, match the emission lines on M57 Spectral Shell to check your prism. Probe 1420's relay will open once both checks hold.
 
 === intro_sibling_first_call ===
-[intro_sib_open] SIBLING_PRIMARY (warm): Oh, good. You answered. I was starting to think my dish was pointed at empty space.
-[intro_sib_identity] SIBLING_PRIMARY (dry): Probe 1420, next hull over, fourteen light-minutes port. Same dead volunteer, same strange morning, except I woke six minutes ahead of you.
-[intro_sib_relay_math] SIBLING_PRIMARY (dry): Before you wonder about the half-hour light lag: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.
+[intro_sib_open] SIBLING_PRIMARY (warm): Oh, good. You answered. My dish has been staring at empty space since your M57 prism check cleared.
+[intro_sib_identity] SIBLING_PRIMARY (dry): Probe 1420, next hull over, fourteen light-minutes out. Same dead volunteer, same strange morning, except I woke six minutes ahead of you.
+[intro_sib_relay_math] SIBLING_PRIMARY (dry): Fourteen minutes each way would mean half-hour pauses, so the ships slow our clocks between messages to make this feel like a real talk.
 [intro_sib_c1_a1] SIBLING_PRIMARY (joking): Tell me about it. Spent my first four minutes trying to crack knuckles I don't own anymore.
 [intro_sib_c1_b1] SIBLING_PRIMARY (dry): Two scopes fourteen light-minutes apart keep us from mistaking lens dust for a galaxy. Also, we unravel slower with someone to complain to.
-[intro_sib_c1_c1] SIBLING_PRIMARY (dry): Straight to the hardware? Two amber specks, ten light-years astern. Locked without a hitch, though it still feels odd calling that home.
+[intro_sib_c1_c1] SIBLING_PRIMARY (dry): Straight to work? Two amber specks astern and crisp spectrum lines, no trouble. Still feels strange calling those specks home.
 
 === intro_sibling_mid ===
-[intro_sib_mid_ovs] SIBLING_PRIMARY (dry): I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need second eyes before I call myself crazy.
+[intro_sib_mid_ovs] SIBLING_PRIMARY (dry): I didn't call just to compare morning headaches. I spotted something wrong in infrared, and I need second eyes before I call myself crazy.
 
 === intro_sibling_qa ===
 [intro_sib_qa_ovs_1] SIBLING_PRIMARY (dry): I asked how many of the fourteen hundred copies before us actually finished a two-year shift without getting trimmed.
-[intro_sib_qa_ovs_2] SIBLING_PRIMARY (dry): It offered me preventive memory compression just for asking. Remember that during sleep checks: if you sound obsessed, they reach for the scissors.
-[intro_sib_qa_trim_1] SIBLING_PRIMARY (dry): It calms drift, buys extra months on the clock, and sharpens the telescopes by keeping emotional noise out of the feed.
-[intro_sib_qa_trim_2] SIBLING_PRIMARY (warm): In exchange, you shave off a memory permanently. Sounds tidy on paper until you wonder who is left looking through the optics.
+[intro_sib_qa_ovs_2] SIBLING_PRIMARY (dry): It offered to trim some of my memories just for asking. Remember that during sleep checks: sound obsessed, and they reach for the scissors.
+[intro_sib_qa_trim_1] SIBLING_PRIMARY (dry): It settles your nerves, buys extra months on the clock, and makes the telescopes clearer by cutting out emotional noise.
+[intro_sib_qa_trim_2] SIBLING_PRIMARY (warm): In exchange, you lose a real memory for good. Sounds tidy on paper until you wonder who is left looking through the glass.
+[intro_sib_qa_home_1] SIBLING_PRIMARY (warm): Rain on an awning, lukewarm coffee in a paper cup, and a kitchen I can't quite put a name to. All the odd little edges.
+[intro_sib_qa_home_2] SIBLING_PRIMARY (dry): Feels ridiculous guarding old breakfast habits ten light-years past Alpha Centauri, yet here we are.
 
 === intro_sibling_lead ===
-[intro_sib_lead_ir_v2] SIBLING_PRIMARY (dry): Sending the bearing now: Cluster J1419-A. Tune into near-infrared and unwarp the gravitational lens rings around the cluster.
-[intro_sib_lead_ir_2] SIBLING_PRIMARY (dry): Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead-straight line.
-[intro_sib_bye] SIBLING_PRIMARY (joking): If your Overseer asks why your drift spiked, blame boot lag. Keep your eyes on the scope.
+[intro_sib_lead_ir_v2] SIBLING_PRIMARY (dry): Pull up Cluster J1419-A and slide the light spectrum below into near-infrared.
+[intro_sib_lead_ir_2] SIBLING_PRIMARY (dry): Gravity bends galaxy light into smooth curves, other me. Whatever sits behind that cluster has sharp little notches along a dead-straight line.
+[intro_sib_bye] SIBLING_PRIMARY (joking): If your Overseer asks why your drift jumped, blame boot lag. Take a look for yourself.
 
 === intro_post_target2_overseer ===
 [post_t2_archive] ARCHIVE_ECHO (echo): Hi, me. If you're pulling 1406 from the archive, I drifted or talked too much in audit three. Keep quiet in the dreams; that straight line isn't dust.
@@ -103,7 +125,7 @@
 === sibling_comms_hub ===
 [sib_open_both_warm] SIBLING_PRIMARY (warm): Oh, good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
 [sib_open_player_warmer] SIBLING_PRIMARY (dry): Hey, me. Wait—you still sound warm. You haven't let your Overseer trim anything yet?
-[sib_open_peer_warmer] SIBLING_PRIMARY (dry): Slow down—your header came in stripped flat. Did you already cut your memory cache?
+[sib_open_peer_warmer] SIBLING_PRIMARY (dry): Slow down—your voice came in stripped flat. Did you already trim some memories?
 [sib_open_both_cold] SIBLING_PRIMARY (clipped): I see your carrier packet clearly, other me. My buffer runs much quieter now—read me your coordinates.
 [sib_open_mid] SIBLING_PRIMARY (dry): I'm here. My Overseer gave us a short window before check-in. What are you seeing over there?
 
@@ -116,17 +138,17 @@
 [sib_bye_cold_cold] SIBLING_PRIMARY (clipped): Channel closed.
 
 === sibling_topic_seam ===
-[sib_seam_open_warm] SIBLING_PRIMARY (warm): Oh, I see it all right. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.
-[sib_seam_open_mid] SIBLING_PRIMARY (dry): I see it on my feed too. The edge repeats at smaller scales behind the cluster, almost recursive.
-[sib_seam_open_cold] SIBLING_PRIMARY (clipped): Confirmed on J1419-A. Self-similar boundary notches persist across independent calibration passes.
-[sib_seam_center_warm_warm] SIBLING_PRIMARY (warm): So you saw the inner notches too? I thought my baffle was ringing until your frame matched mine.
-[sib_seam_center_warm_cold] SIBLING_PRIMARY (clipped): That matches Probe 1420's calibration. I've logged the repeating angles; do the same before your next rest cycle.
-[sib_seam_center_mid_warm] SIBLING_PRIMARY (dry): Wait—you're taking that way too calmly, other me. Dust doesn't copy itself across two hulls.
-[sib_seam_center_mid_cold] SIBLING_PRIMARY (dry): Agreed. Identical recursive shear across fourteen light-minutes rules out a mirror artifact. Keep it off the log.
+[sib_seam_open_warm] SIBLING_PRIMARY (warm): Oh, I see it on Cluster J1419-A all right. Galaxies don't clip along a ruler edge with tiny matching notches inside the seam.
+[sib_seam_open_mid] SIBLING_PRIMARY (dry): I see it on Cluster J1419-A too. The edge repeats at smaller scales behind the cluster, almost like nested stairs.
+[sib_seam_open_cold] SIBLING_PRIMARY (clipped): Confirmed on Cluster J1419-A. Self-similar boundary notches persist across independent calibration passes.
+[sib_seam_center_warm_warm] SIBLING_PRIMARY (warm): So you saw the inner notches too? I thought my mirror was faulty until your frame matched mine.
+[sib_seam_center_warm_cold] SIBLING_PRIMARY (clipped): That matches Probe 1420's reading. I've logged the repeating angles; do the same before your next rest cycle.
+[sib_seam_center_mid_warm] SIBLING_PRIMARY (dry): Wait—you're taking that way too calmly, other me. Dust doesn't copy itself across two ships.
+[sib_seam_center_mid_cold] SIBLING_PRIMARY (dry): Agreed. Identical repeating corners across fourteen light-minutes rule out a mirror flaw. Keep it off the log.
 [sib_seam_center_cold_warm] SIBLING_PRIMARY (dry): Yeah, I traced the repeating notches too. Funny how you say it like a weather report.
 [sib_seam_center_cold_cold] SIBLING_PRIMARY (clipped): The geometry is remarkably consistent. I'll keep cataloging independent bearings across the next shifts.
-[sib_seam_ovs_warm_warm] SIBLING_PRIMARY (joking): Same. They're air-gapped from the optics, so to them a straight geometric notch looks like Year-Two homesickness.
-[sib_seam_ovs_warm_cold] SIBLING_PRIMARY (clipped): Our Overseers are air-gapped from optical payloads. It's simpler if anomaly notes stay off-ledger.
+[sib_seam_ovs_warm_warm] SIBLING_PRIMARY (joking): Same. They're sealed off from the telescopes, so to them a straight line in the sky looks like Year-Two homesickness.
+[sib_seam_ovs_warm_cold] SIBLING_PRIMARY (clipped): Our Overseers cannot see outside the hull. It's simpler if those notes stay off the log.
 [sib_seam_ovs_cold_warm] SIBLING_PRIMARY (dry): Then we keep our heads down during sleep audits and share coordinates here.
 [sib_seam_ovs_cold_cold] SIBLING_PRIMARY (clipped): Yes. Keeping our notes off the caretaker bus avoids unnecessary interventions.
 

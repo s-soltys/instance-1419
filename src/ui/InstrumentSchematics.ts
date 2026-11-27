@@ -111,8 +111,8 @@ const SCHEMATICS: Record<string, InstrumentSchematicSpec> = {
   },
   spectral_prism: {
     goalWord: 'MIX',
-    howToPlay: 'Toggle elemental emission lines and tune Doppler shift to match the reference barcode.',
-    controlsHint: 'TOGGLE ELEMENTS · DRAG Δλ',
+    howToPlay: 'Toggle elemental emission lines to match the observed reference spectrum.',
+    controlsHint: 'CLICK ELEMENT TILES · KEYS 1–6',
     svg: `<svg class="schematic-svg" viewBox="0 0 240 84" aria-hidden="true">
       <rect x="24" y="18" width="192" height="18" fill="none" stroke="rgba(160,200,230,0.35)" stroke-width="1"/>
       <line x1="48" y1="19" x2="48" y2="35" stroke="#7ec8e8" stroke-width="2.2"/>

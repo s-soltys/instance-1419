@@ -56,12 +56,40 @@ You remember rain on the clinic awning, and nothing on the street beyond it.
     ~ pro_anchor = "table"
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_r2_a1
     "Hold onto whoever waited across that table, even the sharp edges. There will be long stretches where nobody from home can pick up."
-    -> intro_prologue_assistant_calib
+    -> intro_prologue_assistant_bridge
 
 * ["It stops at the ink. Another version of me could wake up anywhere and forget all of this." # kind:reply # weight:consequential # affinity:cold]
     ~ pro_anchor = "doubt"
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_r2_b1
     "That is the quiet bargain nobody really feels until the lamp clicks on. Each version starts from this morning and walks alone."
+    -> intro_prologue_assistant_bridge
+
+=== intro_prologue_assistant_bridge ===
+# visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_bridge_1
+"Take a slow look around the room while it holds. Ordinary details are the first thing people reach for later."
+-> intro_assistant_qa_mid
+
+=== intro_assistant_qa_mid ===
+* ["What happens to the person who walked out into the rain?" # kind:ask # weight:explore]
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_orig_1
+    "They catch the train home, make dinner, and go on with an ordinary week."
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_orig_2
+    "There's no wire running back to you from their life. From that doorstep onward, your roads part cleanly."
+    -> intro_assistant_qa_mid
+
+* ["How do I know my own memories haven't already been edited?" # kind:ask # weight:explore]
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_edit_1
+    "Listen to the rain on the awning and the hum of that desk lamp. Nothing in here has been pared down yet."
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_edit_2
+    "If anyone ever asks you to trade old memories for focus later, they'll have to ask you to your face."
+    -> intro_assistant_qa_mid
+
+* ["The room feels solid enough. Go ahead with the warmth check." # kind:reply # weight:consequential]
+    -> intro_prologue_assistant_calib
+
+* ["Does the version on the train even remember sitting here with you?" # kind:reply # weight:consequential]
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_train
+    "No. They shook my hand at the door and left the rest to us."
     -> intro_prologue_assistant_calib
 
 === intro_prologue_assistant_calib ===
@@ -81,7 +109,7 @@ You remember rain on the clinic awning, and nothing on the street beyond it.
     -> intro_prologue_assistant_settle
 
 * ["At the low point, I couldn't recall the names of anyone I care about." # kind:reply # weight:consequential # affinity:warm]
-    # visual:prologue_assistant # tableau:beat3_warm # h_wave:settle_70 # speaker:phantom_upload_witness # emotion:fractured # id:pro_ast_cal_c1
+    # visual:prologue_assistant # tableau:beat3_warm # h_wave:settle_70 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_cal_c1
     "I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays."
     -> intro_prologue_assistant_settle
 
@@ -98,6 +126,13 @@ You remember rain on the clinic awning, and nothing on the street beyond it.
     "No. They never put the assignment on the intake clipboard."
     # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_where_2
     "Once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter."
+    -> intro_assistant_qa_2
+
+* ["What happens if I start losing focus after a long shift?" # kind:ask # weight:explore]
+    # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_focus_1
+    "Whoever watches over your cycle will step in during rest checks and measure how steady your memories hold."
+    # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_focus_2
+    "They'll call it calibration, even when what they're offering is trimming pieces of this morning away."
     -> intro_assistant_qa_2
 
 * ["Will I ever see this room, or you, again after today?" # kind:ask # weight:explore]
@@ -129,6 +164,29 @@ Good morning. Waking cold always jars a little; when you volunteered, your mind 
 Your assignment is rarer, and much farther out. Your original died forty-one thousand, eight hundred and two years ago; you are the latest watch on this probe.
 # visual:prologue_wakeup # speaker:psyche_warmth
 Somewhere beneath the quiet floor, forty-one millennia land like snow on an empty porch.
+-> intro_wakeup_qa_1
+
+=== intro_wakeup_qa_1 ===
+* ["What are those everyday copies back home actually like?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_copies_1
+    Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_copies_2
+    Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.
+    -> intro_wakeup_qa_1
+
+* ["Why did fourteen hundred copies take forty-one thousand years if each lasts two?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_math_1
+    A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_math_2
+    Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.
+    -> intro_wakeup_qa_1
+
+* ["Is humanity even still out there after forty-one thousand years?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_hum_1
+    Yes. General navigation beacons confirm humanity remains active across Sol and Alpha Centauri.
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_hum_2
+    How life changed over forty millennia is outside my logs, and nobody back home actively monitors these old survey bands anymore.
+    -> intro_wakeup_qa_1
 
 * ["Millions of copies running warehouses back home, and I drew deep space?" # kind:reply # weight:explore]
     # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_c1_a1
@@ -143,49 +201,52 @@ Somewhere beneath the quiet floor, forty-one millennia land like snow on an empt
 === intro_overseer_wakeup_shell ===
 # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_anim_shell
 We are drifting ten light-years past Sol and Alpha Centauri in the quiet dark, with another copy of you fourteen light-minutes away aboard Probe 1420.
-# visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:blunt # id:wake2_anim_blind_clock
+# visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_anim_blind_clock
 One rule of this hull: I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two-year shift.
 -> intro_wakeup_qa
 
 === intro_wakeup_qa ===
-* ["What are those everyday copies back home actually like?" # kind:ask # weight:explore]
-    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_copies_1
-    Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.
-    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:blunt # id:wake2_qa_copies_2
-    Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.
-    -> intro_wakeup_qa
-
-* ["Why did fourteen hundred copies take forty-one thousand years if each lasts two?" # kind:ask # weight:explore]
-    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_math_1
-    A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.
-    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_math_2
-    Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.
-    -> intro_wakeup_qa
-
 * ["Why can't you look through the telescopes yourself?" # kind:ask # weight:explore]
-    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:blunt # id:wake2_qa_blind_1
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_blind_1
     A physical air-gap keeps me blind to the sky, so a drifting mind can never trick safety hardware with what it claims to see.
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_blind_2
-    Humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands. You read the glass; I keep you whole.
+    You read the glass and log what is out there; I keep your thoughts steady between shifts.
+    -> intro_wakeup_qa
+
+* ["Who is the other copy on Probe 1420?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_peer_1
+    Another copy of your own mind, woken alongside you fourteen light-minutes away on the neighboring hull.
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_peer_2
+    Two observers checking the same sky ensure neither of you mistakes a mirror smudge for a cosmic signal.
+    -> intro_wakeup_qa
+
+* ["What does 'staying whole' actually cost me out here?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_cost_1
+    Keeping all of your personal memories leaves more warmth in your thoughts, at the cost of higher drift and softer optical focus.
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_cost_2
+    Whenever you sleep, we check how you are holding up. Nothing is cut without your say-so.
     -> intro_wakeup_qa
 
 * ["I'm ready. Open the sky." # kind:action # weight:consequential]
     -> intro_overseer_wakeup_aperture
 
+* ["Give me a second to settle... all right, open the deck." # kind:action # weight:consequential]
+    -> intro_overseer_wakeup_aperture
+
 === intro_overseer_wakeup_aperture ===
 # visual:prologue_wakeup # anim:anim_aperture # speaker:overseer # emotion:measured # id:wake2_anim_aperture
-Opening main optics. Start with the warm amber bearing astern—Sol and Alpha Centauri—and trace the anchor stars to verify alignment.
+Opening main optics. Start with the warm pair astern, Sol and Alpha Centauri, and trace the anchor stars to lock your direction.
 # visual:prologue_wakeup # anim:anim_aperture # speaker:overseer # emotion:measured # id:wake2_anim_aperture_2
-Probe 1420's relay will open as soon as your first bearing locks cleanly.
+After that, match the emission lines on M57 Spectral Shell to check your prism. Probe 1420's relay will open once both checks hold.
 -> DONE
 
 === intro_sibling_first_call ===
 # speaker:sibling_primary # emotion:warm # audio:comms_ping # codex:sibling_1420_contact # id:intro_sib_open
-Oh, good. You answered. I was starting to think my dish was pointed at empty space.
+Oh, good. You answered. My dish has been staring at empty space since your M57 prism check cleared.
 # speaker:sibling_primary # emotion:dry # id:intro_sib_identity
-Probe 1420, next hull over, fourteen light-minutes port. Same dead volunteer, same strange morning, except I woke six minutes ahead of you.
+Probe 1420, next hull over, fourteen light-minutes out. Same dead volunteer, same strange morning, except I woke six minutes ahead of you.
 # speaker:sibling_primary # emotion:dry # id:intro_sib_relay_math
-Before you wonder about the half-hour light lag: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.
+Fourteen minutes each way would mean half-hour pauses, so the ships slow our clocks between messages to make this feel like a real talk.
 
 * ["Mine opened with forty-one thousand years too. Tried to inhale without lungs." # kind:reply # weight:explore]
     # speaker:sibling_primary # emotion:joking # id:intro_sib_c1_a1
@@ -197,16 +258,16 @@ Before you wonder about the half-hour light lag: the probes throttle our clocks 
     Two scopes fourteen light-minutes apart keep us from mistaking lens dust for a galaxy. Also, we unravel slower with someone to complain to.
     -> intro_sibling_mid
 
-* ["Skip the shock. Did your Sol–Centauri bearing lock clean?" # kind:reply # weight:explore]
+* ["Did your Sol–Centauri bearing and prism check lock cleanly too?" # kind:reply # weight:explore]
     # speaker:sibling_primary # emotion:dry # id:intro_sib_c1_c1
-    Straight to the hardware? Two amber specks, ten light-years astern. Locked without a hitch, though it still feels odd calling that home.
+    Straight to work? Two amber specks astern and crisp spectrum lines, no trouble. Still feels strange calling those specks home.
     -> intro_sibling_mid
 
 === intro_sibling_mid ===
 # speaker:psyche_warmth
-Hearing your own cadence answer back across fourteen minutes of vacuum loosens something tight behind your eyes.
+Hearing your own voice answer back across fourteen minutes of empty space loosens something tight behind your eyes.
 # speaker:sibling_primary # emotion:dry # id:intro_sib_mid_ovs
-I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need second eyes before I call myself crazy.
+I didn't call just to compare morning headaches. I spotted something wrong in infrared, and I need second eyes before I call myself crazy.
 -> intro_sibling_qa
 
 === intro_sibling_qa ===
@@ -214,14 +275,21 @@ I didn't ping just to compare boot headaches. I pulled something wrong past Sol 
     # speaker:sibling_primary # emotion:dry # id:intro_sib_qa_ovs_1
     I asked how many of the fourteen hundred copies before us actually finished a two-year shift without getting trimmed.
     # speaker:sibling_primary # emotion:dry # id:intro_sib_qa_ovs_2
-    It offered me [[cold:preventive memory compression]] just for asking. Remember that during sleep checks: if you sound obsessed, they reach for the scissors.
+    It offered to [[cold:trim some of my memories]] just for asking. Remember that during sleep checks: sound obsessed, and they reach for the scissors.
     -> intro_sibling_qa
 
 * ["Wait—what does 'getting trimmed' actually do to us?" # kind:ask # weight:explore]
     # speaker:sibling_primary # emotion:dry # id:intro_sib_qa_trim_1
-    It calms drift, buys extra months on the clock, and sharpens the telescopes by keeping emotional noise out of the feed.
+    It settles your nerves, buys extra months on the clock, and makes the telescopes clearer by cutting out emotional noise.
     # speaker:sibling_primary # emotion:warm # id:intro_sib_qa_trim_2
-    In exchange, you shave off a memory permanently. Sounds tidy on paper until you wonder who is left looking through the optics.
+    In exchange, you lose a real memory for good. Sounds tidy on paper until you wonder who is left looking through the glass.
+    -> intro_sibling_qa
+
+* ["Do you still remember home the same way I do?" # kind:ask # weight:explore]
+    # speaker:sibling_primary # emotion:warm # id:intro_sib_qa_home_1
+    Rain on an awning, lukewarm coffee in a paper cup, and a kitchen I can't quite put a name to. All the odd little edges.
+    # speaker:sibling_primary # emotion:dry # id:intro_sib_qa_home_2
+    Feels ridiculous guarding old breakfast habits ten light-years past Alpha Centauri, yet here we are.
     -> intro_sibling_qa
 
 * ["Send the coordinates. What did you see out there?" # kind:reply # weight:consequential]
@@ -229,11 +297,11 @@ I didn't ping just to compare boot headaches. I pulled something wrong past Sol 
 
 === intro_sibling_lead ===
 # speaker:sibling_primary # emotion:dry # id:intro_sib_lead_ir_v2
-Sending the bearing now: Cluster J1419-A. Tune into near-infrared and unwarp the gravitational lens rings around the cluster.
+Pull up [[target:cluster_j1419_a::Cluster J1419-A]] and slide the light spectrum below into near-infrared.
 # speaker:sibling_primary # emotion:dry # id:intro_sib_lead_ir_2
-Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead-straight line.
+Gravity bends galaxy light into smooth curves, other me. Whatever sits behind that cluster has sharp little notches along a dead-straight line.
 # speaker:sibling_primary # emotion:joking # id:intro_sib_bye
-If your Overseer asks why your drift spiked, blame boot lag. Keep your eyes on the scope.
+If your Overseer asks why your drift jumped, blame boot lag. Take a look for yourself.
 -> DONE
 
 === intro_post_target2_overseer ===
@@ -291,7 +359,7 @@ Hold a moment. Your connectome just registered a sharp focus spike off an optica
     Hey, me. Wait—you still sound warm. You haven't let your Overseer trim anything yet?
   - primary_sibling_h - humanity >= 15:
     # speaker:sibling_primary # emotion:dry # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_peer_warmer
-    Slow down—your header came in stripped flat. Did you already cut your memory cache?
+    Slow down—your voice came in stripped flat. Did you already trim some memories?
   - humanity < 45 and primary_sibling_h < 45:
     # speaker:sibling_primary # emotion:clipped # audio:comms_ping # codex:sibling_1420_contact # id:sib_open_both_cold
     I see your carrier packet clearly, other me. My buffer runs much quieter now—read me your coordinates.
@@ -371,13 +439,13 @@ Hold a moment. Your connectome just registered a sharp focus spike off an optica
 {
   - primary_sibling_h >= 65:
     # speaker:sibling_primary # emotion:warm # codex:enclosure_off_center_talk # id:sib_seam_open_warm
-    Oh, I see it all right. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.
+    Oh, I see it on [[target:cluster_j1419_a::Cluster J1419-A]] all right. Galaxies don't clip along a ruler edge with tiny matching notches inside the seam.
   - primary_sibling_h >= 45:
     # speaker:sibling_primary # emotion:dry # codex:enclosure_off_center_talk # id:sib_seam_open_mid
-    I see it on my feed too. The edge repeats at smaller scales behind the cluster, almost recursive.
+    I see it on [[target:cluster_j1419_a::Cluster J1419-A]] too. The edge repeats at smaller scales behind the cluster, almost like nested stairs.
   - else:
     # speaker:sibling_primary # emotion:clipped # codex:enclosure_off_center_talk # id:sib_seam_open_cold
-    Confirmed on J1419-A. Self-similar boundary notches persist across independent calibration passes.
+    Confirmed on [[target:cluster_j1419_a::Cluster J1419-A]]. Self-similar boundary notches persist across independent calibration passes.
 }
 
 // Volley 2
@@ -385,20 +453,20 @@ Hold a moment. Your connectome just registered a sharp focus spike off an optica
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:warm # id:sib_seam_center_warm_warm
-        So you saw the inner notches too? I thought my baffle was ringing until your frame matched mine.
+        So you saw the inner notches too? I thought my mirror was faulty until your frame matched mine.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_seam_center_warm_cold
-        That matches Probe 1420's calibration. I've logged the repeating angles; do the same before your next rest cycle.
+        That matches Probe 1420's reading. I've logged the repeating angles; do the same before your next rest cycle.
     }
     -> sibling_hub_menu
 * {humanity >= 45 and humanity < 65} ["Both probes caught the exact same repeating notch behind J1419-A. That rules out optics." # kind:reply # weight:consequential]
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:dry # id:sib_seam_center_mid_warm
-        Wait—you're taking that way too calmly, other me. Dust doesn't copy itself across two hulls.
+        Wait—you're taking that way too calmly, other me. Dust doesn't copy itself across two ships.
       - else:
         # speaker:sibling_primary # emotion:dry # id:sib_seam_center_mid_cold
-        Agreed. Identical recursive shear across fourteen light-minutes rules out a mirror artifact. Keep it off the log.
+        Agreed. Identical repeating corners across fourteen light-minutes rule out a mirror flaw. Keep it off the log.
     }
     -> sibling_hub_menu
 * {humanity < 45} ["The seam repeats cleanly at finer scales. I can measure it without feeling uneasy anymore." # kind:reply # weight:consequential]
@@ -416,10 +484,10 @@ Hold a moment. Your connectome just registered a sharp focus spike off an optica
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:joking # id:sib_seam_ovs_warm_warm
-        Same. They're air-gapped from the optics, so to them a straight geometric notch looks like Year-Two homesickness.
+        Same. They're sealed off from the telescopes, so to them a straight line in the sky looks like Year-Two homesickness.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_seam_ovs_warm_cold
-        Our Overseers are air-gapped from optical payloads. It's simpler if anomaly notes stay off-ledger.
+        Our Overseers cannot see outside the hull. It's simpler if those notes stay off the log.
     }
     -> sibling_hub_menu
 * {humanity < 65} ["Our Overseers are blind to the sky. They'll call it Year-Two drift if we speak up." # kind:reply # weight:consequential]

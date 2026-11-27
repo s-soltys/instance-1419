@@ -98,6 +98,7 @@ function countInkProseWords(rawInk) {
       .replace(/#.*$/, '')
       .replace(/^[\*\+]+\s*(\{[^}]*\})?\s*/, '')
       .replace(/->\s*[a-zA-Z0-9_]+\s*$/, '')
+      .replace(/\[\[target:[a-z0-9_]+(?:::|\|)([^\]]+)\]\]/gi, '$1')
       .replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
     cleanedLines.push(noTags);
   }
@@ -131,6 +132,14 @@ for (const fullPath of allInkPaths) {
     const id = match[1];
     if (!validSpeakers.has(id)) {
       console.error(`[lint-narrative] Unregistered portrait "${id}" in ${file}`);
+      errors++;
+    }
+  }
+
+  for (const m of text.matchAll(/\[\[target:([a-zA-Z0-9_]+)(?:::|\|)([^\]]+)\]\]/g)) {
+    const targetId = m[1];
+    if (!validAnomalyIds.has(targetId)) {
+      console.error(`[lint-narrative] Invalid [[target:${targetId}|...]] link in ${file}`);
       errors++;
     }
   }
@@ -563,8 +572,9 @@ for (const sh of sortedShifts) {
   const req = Array.isArray(sh.requiredTargets) ? sh.requiredTargets : [];
   const opt = Array.isArray(sh.optionalTargets) ? sh.optionalTargets : [];
   const all = Array.isArray(sh.targetAnomalies) ? sh.targetAnomalies : [];
-  if (req.length !== 2) {
-    console.error(`[lint-narrative] Check 16: Shift ${sh.shift} requiredTargets must have length 2 (found ${req.length})`);
+  const maxReq = sh.shift === 1 ? 3 : 2;
+  if (req.length < 2 || req.length > maxReq) {
+    console.error(`[lint-narrative] Check 16: Shift ${sh.shift} requiredTargets must have length 2..${maxReq} (found ${req.length})`);
     errors++;
   }
   if (opt.length < 1 || opt.length > 2) {

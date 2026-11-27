@@ -83,7 +83,7 @@ export const MINIGAME_CATALOG: Record<string, MinigameCatalogEntry> = {
     'Warm H%: luminous gold starlight · Cold H%: crystalline astrometry grid.',
     ['star_system'],
     true,
-    ['smacs', 'tarantula', 'hudf'],
+    ['tarantula', 'smacs', 'hudf'],
     ['SMACS Anchor Asterism', 'Doradus Supercluster', 'Ultra Deep Field Lattice', 'Sol-Centauri Baseline']
   ),
   pulsar_echo: entry(

@@ -6,6 +6,8 @@ import {
   INTRO_TARGET_1_MINIGAME,
   INTRO_TARGET_2_ID,
   INTRO_TARGET_2_MINIGAME,
+  INTRO_TARGET_CALIB2_ID,
+  INTRO_TARGET_CALIB2_MINIGAME,
   StateStore,
 } from '../../src/engine/StateStore';
 import { StoryletScheduler } from '../../src/engine/StoryletScheduler';
@@ -229,7 +231,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     let sawExploreTier = false;
     let sawConsequentialTier = false;
-    for (let step = 0; step < 140; step++) {
+    for (let step = 0; step < 200; step++) {
       if (bootEl.dataset.bootVisual) seenVisuals.add(bootEl.dataset.bootVisual);
       if (store.getState().introStage === 'title') break;
 
@@ -305,7 +307,27 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(stageEl.classList.contains('is-dive-brief')).toBe(false);
     expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#reticle-brief')?.getAttribute('data-brief-phase')).toBe('diving');
+    expect(optics.triggerTransitionDive).toHaveBeenCalledTimes(1);
     expect(optics.triggerTransitionDive).toHaveBeenCalledWith(INTRO_TARGET_1_ID);
+
+    // Re-entrant double-click + mid-dive telemetry must NOT re-trigger dive or stall brief in locked phase
+    calibrateBtn.click();
+    ui.onOpticsTelemetry({
+      raDeg: target1Spec.raDeg,
+      decDeg: target1Spec.decDeg,
+      fovDeg: 22,
+      zoomX: 3.2,
+      zoomNorm: 0.72,
+      zoomStage: 'DEEP FIELD',
+      focusedAnomaly: target1Spec,
+      alignmentScore: 0.96,
+      wavelengthMatch: 0.98,
+      lockProgress: 1,
+      markers: [],
+    });
+    expect(optics.triggerTransitionDive).toHaveBeenCalledTimes(1);
+    expect(appRoot.querySelector('#reticle-brief')?.getAttribute('data-brief-phase')).toBe('diving');
+
     await vi.advanceTimersByTimeAsync(3700);
     await vi.waitFor(() => {
       expect(appRoot.querySelector('#minigame-overlay')?.classList.contains('hidden')).toBe(false);
@@ -313,16 +335,17 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
 
     expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(false);
     expect(appRoot.querySelector('#reticle-brief')?.getAttribute('data-brief-phase')).toBe('handover');
-    await vi.advanceTimersByTimeAsync(4300);
+    await vi.advanceTimersByTimeAsync(1200);
     expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(true);
 
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(false);
     expect(store.getMinigameIdForTarget(INTRO_TARGET_1_ID, 'fallback')).toBe(INTRO_TARGET_1_MINIGAME);
+    expect(store.getMinigameIdForTarget(INTRO_TARGET_CALIB2_ID, 'fallback')).toBe(INTRO_TARGET_CALIB2_MINIGAME);
     expect(store.getMinigameIdForTarget(INTRO_TARGET_2_ID, 'fallback')).toBe(INTRO_TARGET_2_MINIGAME);
     expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('CON-02');
 
-    // 4. Completing Target #1 and returning to sky advances scan_target_1 -> mg_1_done and marks .sky-marker.decoded
+    // 4. Completing Target #1 advances scan_target_1 -> scan_target_calib2 with clickable M57 guidance whisper
     store.recordMinigameCompletion(INTRO_TARGET_1_ID, target1Spec.label, { grade: 'clean' });
     appRoot.querySelector<HTMLButtonElement>('#mg-btn-close')!.click();
     expect(stageEl.dataset.kind).toBe('optical_pullback');
@@ -337,19 +360,79 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(appRoot.querySelector('#minigame-layer')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#optics-layer')?.classList.contains('hidden')).toBe(false);
     expect(store.getState().mode).toBe('waking_3d');
+    expect(store.getState().introStage).toBe('scan_target_calib2');
+    expect(optics.setMagneticDetentTarget).toHaveBeenCalledWith(INTRO_TARGET_CALIB2_ID);
+
+    const whisperLink = appRoot.querySelector<HTMLButtonElement>(
+      `#sky-psyche-whisper [data-target-link="${INTRO_TARGET_CALIB2_ID}"]`
+    );
+    expect(whisperLink).not.toBeNull();
+    expect(appRoot.querySelector('#sky-psyche-whisper')?.classList.contains('hidden')).toBe(false);
+    whisperLink!.click();
+    expect(optics.slewToAnomaly).toHaveBeenCalledWith(INTRO_TARGET_CALIB2_ID);
+
+    // 4a. Calibration #2 (PRM-09 M57 Spectral Shell) completes -> mg_1_done -> Sibling comms + [[target:...]] jump
+    const calib2Spec = optics.getAnomalySpecs().find((a) => a.id === INTRO_TARGET_CALIB2_ID)!;
+    store.recordAnomalyScan(calib2Spec.id, calib2Spec.anomalyGain, calib2Spec.label);
+    ui.onOpticsTelemetry({
+      raDeg: calib2Spec.raDeg,
+      decDeg: calib2Spec.decDeg,
+      fovDeg: 22,
+      zoomX: 3.2,
+      zoomNorm: 0.72,
+      zoomStage: 'DEEP FIELD',
+      focusedAnomaly: calib2Spec,
+      alignmentScore: 0.96,
+      wavelengthMatch: 0.98,
+      lockProgress: 1,
+      markers: [],
+    });
+    expect(calibrateBtn.textContent).toContain('PRM-09');
+    calibrateBtn.click();
+    await vi.advanceTimersByTimeAsync(3700);
+    await vi.advanceTimersByTimeAsync(1200);
+    expect(appRoot.querySelector('#mg-instrument-code')?.textContent).toBe('PRM-09');
+    expect(appRoot.querySelector('#reticle-brief')?.classList.contains('hidden')).toBe(true);
+
+    store.recordMinigameCompletion(INTRO_TARGET_CALIB2_ID, calib2Spec.label, { grade: 'clean' });
+    appRoot.querySelector<HTMLButtonElement>('#mg-btn-close')!.click();
+    await vi.advanceTimersByTimeAsync(3000);
     expect(store.getState().introStage).toBe('mg_1_done');
+
+    await vi.advanceTimersByTimeAsync(2500);
+    appRoot.querySelector<HTMLButtonElement>('#btn-toast-open')!.click();
+    expect(appRoot.querySelector('#comms-panel')?.classList.contains('hidden')).toBe(false);
+
+    for (let step = 0; step < 12; step++) {
+      if (appRoot.querySelector(`#comms-scroll [data-target-link="${INTRO_TARGET_2_ID}"]`)) break;
+      const sibChoice =
+        appRoot.querySelector<HTMLButtonElement>('#comms-choices .choice-line:not([data-choice-kind="ask"])') ??
+        appRoot.querySelector<HTMLButtonElement>('#comms-choices .choice-line');
+      if (!sibChoice) break;
+      sibChoice.click();
+      await vi.advanceTimersByTimeAsync(900);
+    }
+
+    const sibTargetLink = appRoot.querySelector<HTMLButtonElement>(
+      `#comms-scroll [data-target-link="${INTRO_TARGET_2_ID}"]`
+    );
+    expect(sibTargetLink).not.toBeNull();
+    sibTargetLink!.click();
+    expect(appRoot.querySelector('#comms-panel')?.classList.contains('hidden')).toBe(true);
+    expect(store.getState().introStage).toBe('scan_target_2');
+    expect(optics.slewToAnomaly).toHaveBeenCalledWith(INTRO_TARGET_2_ID);
 
     // 4b. Shift 1 mg_2_done keeps shift === 1 and unlocks Shift 1 optional targets until Dream 1 wake advances to Shift 2
     store.patch({
       introStage: 'mg_2_done',
-      decodedMinigameTargets: [INTRO_TARGET_1_ID, INTRO_TARGET_2_ID],
+      decodedMinigameTargets: [INTRO_TARGET_1_ID, INTRO_TARGET_CALIB2_ID, INTRO_TARGET_2_ID],
     });
     expect(store.getState().shift).toBe(1);
     expect(optics.setVisibleTargetIds).toHaveBeenLastCalledWith([
       INTRO_TARGET_1_ID,
+      INTRO_TARGET_CALIB2_ID,
       INTRO_TARGET_2_ID,
       'carina_rift_nebula',
-      'asterism_drift_01',
     ]);
 
     // 5. Entering 2D Dream uses unhurried dream_submerge (4200ms) + DreamCanvas entrance reveal + 2.6s settle

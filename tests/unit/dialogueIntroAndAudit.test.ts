@@ -121,7 +121,7 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
 
     let sib = runner.startKnot('intro_sibling_first_call');
     let sibTurns = 0;
-    while (!sib.ended && sib.choices.length > 0 && sibTurns < 8) {
+    while (!sib.ended && sib.choices.length > 0 && sibTurns < 12) {
       sibTurns++;
       const adv =
         (sibTurns === 2 ? sib.choices.find((c) => c.kind === 'ask') : undefined) ??
@@ -209,12 +209,19 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
     store.dispose();
   });
 
-  it('safely formats and strips inline [[warm:...]] / [[cold:...]] highlights without XSS', () => {
-    const raw = 'Remember [[warm:your laugh]] vs [[cold:<b>archive</b> zero]].';
+  it('safely formats and strips inline [[warm:...]], [[cold:...]], and [[target:...]] highlights without XSS', () => {
+    const raw =
+      'Remember [[warm:your laugh]] vs [[cold:<b>archive</b> zero]] toward [[target:cluster_j1419_a::Cluster <script>J1419-A]].';
     const html = formatInlineHighlights(raw);
     expect(html).toContain('<span class="hl-warm">your laugh</span>');
     expect(html).toContain('<span class="hl-cold">&lt;b&gt;archive&lt;/b&gt; zero</span>');
-    expect(stripInlineHighlights(raw)).toBe('Remember your laugh vs <b>archive</b> zero.');
+    expect(html).toContain('class="dialogue-target-link"');
+    expect(html).toContain('data-target-link="cluster_j1419_a"');
+    expect(html).toContain('Cluster &lt;script&gt;J1419-A');
+    expect(html).not.toContain('<script>');
+    expect(stripInlineHighlights(raw)).toBe(
+      'Remember your laugh vs <b>archive</b> zero toward Cluster <script>J1419-A.'
+    );
   });
 });
 

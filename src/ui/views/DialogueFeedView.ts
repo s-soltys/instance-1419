@@ -37,17 +37,25 @@ export function escapeHtml(raw: string): string {
  * into styled spans while HTML-escaping all surrounding text.
  */
 export function formatInlineHighlights(raw: string): string {
-  return escapeHtml(raw).replace(
-    /\[\[(warm|cold):([^\]]+)\]\]/g,
-    (_match, tone: string, inner: string) => `<span class="hl-${tone}">${inner}</span>`
-  );
+  return escapeHtml(raw)
+    .replace(
+      /\[\[target:([a-z0-9_]+)(?:::|\|)([^\]]+)\]\]/gi,
+      (_match, targetId: string, label: string) =>
+        `<button class="dialogue-target-link" data-target-link="${targetId}" type="button" title="Zoom directly to target in sky"><span class="dtl-glyph" aria-hidden="true">⌖</span>${label}<span class="dtl-arrow" aria-hidden="true">↗</span></button>`
+    )
+    .replace(
+      /\[\[(warm|cold):([^\]]+)\]\]/g,
+      (_match, tone: string, inner: string) => `<span class="hl-${tone}">${inner}</span>`
+    );
 }
 
 /**
- * Strips inline [[warm:...]] / [[cold:...]] markers to plain prose for TTS playback.
+ * Strips inline [[warm:...]] / [[cold:...]] / [[target:id::...]] markers to plain prose for TTS playback.
  */
 export function stripInlineHighlights(raw: string): string {
-  return raw.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/g, '$1');
+  return raw
+    .replace(/\[\[target:[a-z0-9_]+(?:::|\|)([^\]]+)\]\]/gi, '$1')
+    .replace(/\[\[(?:warm|cold):([^\]]+)\]\]/g, '$1');
 }
 
 function inferChannel(scrollSel: string): DialogueChannel {
@@ -330,6 +338,7 @@ export class DialogueFeedView {
   private revealAdvanceFn: (() => void) | null = null;
   private revealScrollEl: HTMLElement | null = null;
   private revealChoicesEl: HTMLElement | null = null;
+  private onTargetLinkClick: ((targetId: string) => void) | null = null;
   private readonly boundAdvanceScrolls = new WeakSet<HTMLElement>();
   private readonly feedCache = new WeakMap<HTMLElement, ScrollFeedCache>();
 
@@ -340,6 +349,10 @@ export class DialogueFeedView {
     private readonly voice: VoiceEngine,
     private readonly telemetry: TelemetryLogger
   ) {}
+
+  setTargetLinkHandler(cb: ((targetId: string) => void) | null): void {
+    this.onTargetLinkClick = cb;
+  }
 
   setPacingMode(mode: DialoguePacingSetting): void {
     this.pacingMode = mode;
@@ -551,6 +564,13 @@ export class DialogueFeedView {
       cache.boundClick = true;
       scrollEl.addEventListener('click', (e) => {
         const target = e.target as Element | null;
+        const linkBtn = target?.closest<HTMLButtonElement>('.dialogue-target-link');
+        if (linkBtn) {
+          e.stopPropagation();
+          const targetId = linkBtn.dataset.targetLink;
+          if (targetId) this.onTargetLinkClick?.(targetId);
+          return;
+        }
         const btn = target?.closest<HTMLButtonElement>('.voice-replay-btn');
         if (!btn) return;
         const current = this.feedCache.get(scrollEl);
@@ -707,7 +727,7 @@ export class DialogueFeedView {
     if (!this.boundAdvanceScrolls.has(scrollEl)) {
       this.boundAdvanceScrolls.add(scrollEl);
       scrollEl.addEventListener('click', (e) => {
-        if ((e.target as HTMLElement | null)?.closest('.voice-replay-btn')) return;
+        if ((e.target as HTMLElement | null)?.closest('.voice-replay-btn, .dialogue-target-link')) return;
         if (this.revealActive) {
           this.advanceReveal();
         }

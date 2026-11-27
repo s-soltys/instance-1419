@@ -12,6 +12,7 @@ import type { AnomalySpec, OpticsScene, OpticsTelemetry, ScaleClass } from '../e
 import { SettingsStore, type UserSettings } from '../engine/SettingsStore';
 import {
   INTRO_TARGET_1_ID,
+  INTRO_TARGET_CALIB2_ID,
   INTRO_TARGET_2_ID,
   type GameMode,
   type GameState,
@@ -36,6 +37,7 @@ import { BootView } from './views/BootView';
 import { CodexView } from './views/CodexView';
 import {
   DialogueFeedView,
+  formatInlineHighlights,
   handleChoiceKeyboardNav,
   stripInlineHighlights,
 } from './views/DialogueFeedView';
@@ -251,6 +253,7 @@ export class UIController {
   private resumeModeAfterTitle: 'waking_3d' | 'dream_2d' = 'waking_3d';
 
   private activeMinigameTargetId: string | null = null;
+  private isDivingToMinigame = false;
   private lastMinigameDecodedSpec: AnomalySpec | null = null;
   private suppressMinigamePullback = false;
 
@@ -369,6 +372,7 @@ export class UIController {
     this.wakeupCanvas = new WakeupBriefingCanvas(this.root.querySelector<HTMLElement>('#wakeup-canvas-mount')!);
     this.wakeupCanvas.setCaptions(uiCopy.wakeupAnim);
     this.dialogueFeed = new DialogueFeedView(this.root, store, audio, voice, this.telemetry);
+    this.dialogueFeed.setTargetLinkHandler((targetId) => this.focusTargetFromDialogue(targetId));
     this.minigameHost = new MinigameHostView(
       this.root,
       store,
@@ -497,6 +501,11 @@ export class UIController {
       this.applyIntroOpticsConstraints(state.introStage);
       if (state.introStage === 'scan_target_1') {
         this.startIdleDragHintTimer();
+      } else if (state.introStage === 'scan_target_calib2') {
+        this.showSkyGuidanceWhisper(
+          'psyche_clinical',
+          'Home bearing locked. Sweep to [[target:fraunhofer_prism_knot|M57 Spectral Shell]] to match its wavelength spectrum.'
+        );
       }
     }
   }
@@ -989,6 +998,7 @@ export class UIController {
     }
     this.cancelAutoDive(false);
     this.hideInstrumentBrief();
+    this.isDivingToMinigame = false;
   }
 
   private clearBriefTransitionTimers(): void {
@@ -1521,6 +1531,14 @@ export class UIController {
     if (stage === 'scan_target_1') {
       this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID]);
       this.optics.setMagneticDetentTarget(INTRO_TARGET_1_ID);
+    } else if (stage === 'scan_target_calib2') {
+      this.optics.setVisibleTargetIds(
+        this.shiftDirector.getIntroVisibleIds(stage, this.store.getState()) ?? [
+          INTRO_TARGET_1_ID,
+          INTRO_TARGET_CALIB2_ID,
+        ]
+      );
+      this.optics.setMagneticDetentTarget(INTRO_TARGET_CALIB2_ID);
     } else {
       this.optics.setVisibleTargetIds(
         this.shiftDirector.getIntroVisibleIds(stage, this.store.getState()) ?? [INTRO_TARGET_1_ID]
@@ -1774,7 +1792,31 @@ export class UIController {
     this.root.querySelector('#mg-btn-guide')?.addEventListener('click', () => {
       if (this.briefPhase === 'handover' || this.briefPhase === 'fading') {
         this.hideInstrumentBrief();
+        this.minigameHost.setBriefingHold(false);
       }
+    });
+
+    const dismissActiveBrief = () => {
+      if (
+        this.activeMinigameTargetId !== null &&
+        (this.briefPhase === 'handover' || this.briefPhase === 'fading' || this.briefPhase === 'diving')
+      ) {
+        this.hideInstrumentBrief();
+        this.minigameHost.setBriefingHold(false);
+      }
+    };
+    this.root.querySelector('#minigame-mount')?.addEventListener('pointerdown', dismissActiveBrief);
+    this.root.querySelector('#reticle-brief')?.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement | null)?.closest('#btn-hold-auto-dive')) return;
+      dismissActiveBrief();
+    });
+
+    this.root.querySelector('#sky-psyche-whisper')?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement | null)?.closest<HTMLButtonElement>('.dialogue-target-link');
+      if (!btn) return;
+      e.stopPropagation();
+      const tid = btn.dataset.targetLink;
+      if (tid) this.focusTargetFromDialogue(tid);
     });
 
     window.addEventListener('keydown', (e) => {
@@ -1828,6 +1870,7 @@ export class UIController {
         (e.key === ' ' || e.key === 'Enter') &&
         stateNow.mode === 'waking_3d' &&
         this.activeMinigameTargetId === null &&
+        !this.isDivingToMinigame &&
         !overseerOpen &&
         !commsOpen &&
         this.focusedSpec &&
@@ -1853,7 +1896,7 @@ export class UIController {
 
   onOpticsTelemetry(t: OpticsTelemetry): void {
     const state = this.store.getState();
-    if (state.mode !== 'waking_3d' || this.activeMinigameTargetId !== null) return;
+    if (state.mode !== 'waking_3d' || this.activeMinigameTargetId !== null || this.isDivingToMinigame) return;
 
     const refs = this.opticsRefs;
     this.audio.updateProbeSignal(t.alignmentScore, t.wavelengthMatch, t.lockProgress);
@@ -2061,6 +2104,9 @@ export class UIController {
         if (state.introStage === 'scan_target_1') {
           nextPrompt = this.idleDragHintShown ? uiCopy.sky.idleDragCue.toUpperCase() : '';
           stateKey = this.idleDragHintShown ? 'idle_drag_cue' : 'idle_quiet';
+        } else if (state.introStage === 'scan_target_calib2') {
+          nextPrompt = 'FOLLOW BEACON TO M57 SPECTRAL SHELL · CALIBRATE SPECTRUM';
+          stateKey = 'idle_calib2';
         } else if (state.introStage === 'scan_target_2') {
           nextPrompt = `${uiCopy.sky.irCue.toUpperCase()} · CLUSTER J1419-A`;
           stateKey = 'idle_t2';
@@ -2126,9 +2172,12 @@ export class UIController {
   // ==================== DIRECT SKY -> MINIGAME -> SKY LOOP ====================
 
   private enterTargetMinigame(targetId: string, overrideMinigameId?: string, iterationIndex?: number): void {
+    if (!overrideMinigameId && (this.isDivingToMinigame || this.activeMinigameTargetId !== null)) return;
+    if (overrideMinigameId && this.isDivingToMinigame) return;
     const spec = this.optics.getAnomalySpecs().find((a) => a.id === targetId);
     if (!spec) return;
 
+    this.isDivingToMinigame = true;
     this.closeSiblingComms();
     this.hideCommsToast();
     this.hideSkyPsycheWhisper();
@@ -2206,7 +2255,7 @@ export class UIController {
             },
             {
               iterationIndex: resolvedIter,
-              briefingHoldMs: 2600,
+              briefingHoldMs: 3600,
             }
           );
         } finally {
@@ -2214,13 +2263,15 @@ export class UIController {
         }
       },
       onComplete: () => {
+        this.isDivingToMinigame = false;
         if (this.activeMinigameTargetId !== null) {
           this.optics.setActive(false);
         }
-        this.minigameHost.setBriefingHold(false);
-        if (this.activeMinigameTargetId === spec.id && this.briefPhase === 'diving') {
+        if (this.activeMinigameTargetId === spec.id) {
+          this.minigameHost.setBriefingHold(true);
           this.briefPhase = 'handover';
           if (refs?.reticleBrief) {
+            refs.reticleBrief.classList.remove('hidden');
             delete refs.reticleBrief.dataset.briefPhase;
             void refs.reticleBrief.offsetWidth;
             refs.reticleBrief.dataset.briefPhase = 'handover';
@@ -2237,6 +2288,7 @@ export class UIController {
           this.clearBriefTransitionTimers();
           this.briefHandoverTimer = window.setTimeout(() => {
             this.briefHandoverTimer = null;
+            this.minigameHost.setBriefingHold(false);
             if (this.briefPhase !== 'handover') return;
             this.briefPhase = 'fading';
             if (refs?.reticleBrief) {
@@ -2247,8 +2299,11 @@ export class UIController {
               if (this.briefPhase === 'fading') {
                 this.hideInstrumentBrief();
               }
-            }, 1600);
-          }, 2600);
+            }, 450);
+          }, 500);
+        } else {
+          this.minigameHost.setBriefingHold(false);
+          this.hideInstrumentBrief();
         }
       },
     });
@@ -2256,6 +2311,7 @@ export class UIController {
 
   private exitTargetMinigame(decodedSpec: AnomalySpec | null, preserveDecoded = true): void {
     const resolvedDecoded = decodedSpec ?? this.lastMinigameDecodedSpec;
+    this.isDivingToMinigame = false;
     this.activeMinigameTargetId = null;
     this.lastMinigameDecodedSpec = null;
     this.hideInstrumentBrief();
@@ -2291,10 +2347,20 @@ export class UIController {
         const decodedTargets = updatedState.decodedMinigameTargets;
         const completedTarget1 =
           resolvedDecoded?.id === INTRO_TARGET_1_ID || decodedTargets.includes(INTRO_TARGET_1_ID);
+        const completedCalib2 =
+          resolvedDecoded?.id === INTRO_TARGET_CALIB2_ID || decodedTargets.includes(INTRO_TARGET_CALIB2_ID);
         const completedTarget2 =
           resolvedDecoded?.id === INTRO_TARGET_2_ID || decodedTargets.includes(INTRO_TARGET_2_ID);
 
         if (completedTarget1 && stage === 'scan_target_1') {
+          this.store.setIntroStage('scan_target_calib2');
+          this.optics.setMagneticDetentTarget(INTRO_TARGET_CALIB2_ID);
+          this.showSkyGuidanceWhisper(
+            'psyche_clinical',
+            'Home bearing locked. Sweep to [[target:fraunhofer_prism_knot::M57 Spectral Shell]] to match its wavelength spectrum.'
+          );
+        } else if (completedCalib2 && stage === 'scan_target_calib2') {
+          this.optics.setMagneticDetentTarget(null);
           this.store.setIntroStage('mg_1_done');
           if (this.proactiveCommsTimer !== null) window.clearTimeout(this.proactiveCommsTimer);
           this.proactiveCommsTimer = window.setTimeout(() => {
@@ -2348,6 +2414,14 @@ export class UIController {
   private showSkyPsycheWhisper(spec: AnomalySpec): void {
     const echo = spec.postScanEcho;
     if (!echo?.psycheLine) return;
+    this.renderSkyWhisper(echo.psycheVoice, echo.psycheLine, pacing.postScan.psycheWhisperDurationMs);
+  }
+
+  private showSkyGuidanceWhisper(voiceId: string, lineText: string): void {
+    this.renderSkyWhisper(voiceId, lineText, null);
+  }
+
+  private renderSkyWhisper(voiceId: string, lineText: string, autoHideMs: number | null): void {
     const box = this.shellRefs?.skyPsycheWhisper;
     const voiceEl = this.shellRefs?.skyPsycheVoice;
     const lineEl = this.shellRefs?.skyPsycheLine;
@@ -2358,17 +2432,38 @@ export class UIController {
       this.skyPsycheTimer = null;
     }
 
-    const charMeta = CHAR_MAP[echo.psycheVoice];
+    const charMeta = CHAR_MAP[voiceId];
     voiceEl.textContent =
-      charMeta?.displayName ?? echo.psycheVoice.replace(/^psyche_/, '').toUpperCase();
-    box.dataset.psycheVoice = echo.psycheVoice;
-    lineEl.textContent = echo.psycheLine;
+      charMeta?.displayName ?? voiceId.replace(/^psyche_/, '').toUpperCase();
+    box.dataset.psycheVoice = voiceId;
+    lineEl.innerHTML = formatInlineHighlights(lineText);
     box.classList.remove('hidden');
 
-    this.skyPsycheTimer = window.setTimeout(() => {
-      this.skyPsycheTimer = null;
-      this.hideSkyPsycheWhisper();
-    }, pacing.postScan.psycheWhisperDurationMs);
+    if (autoHideMs !== null && autoHideMs > 0) {
+      this.skyPsycheTimer = window.setTimeout(() => {
+        this.skyPsycheTimer = null;
+        this.hideSkyPsycheWhisper();
+      }, autoHideMs);
+    }
+  }
+
+  private focusTargetFromDialogue(targetId: string): void {
+    this.audio.playCue('slew');
+    const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
+    if (commsOpen) {
+      this.closeSiblingComms();
+    }
+    if (this.activeMinigameTargetId !== null || this.minigameHost.isActive() || this.isDivingToMinigame) {
+      return;
+    }
+    const state = this.store.getState();
+    if (state.mode !== 'waking_3d') {
+      this.optics.setAmbientDrift(false);
+      this.store.patch({ mode: 'waking_3d' });
+    }
+    if (this.getUnlockedAnomalyIds(state).includes(targetId)) {
+      this.optics.slewToAnomaly(targetId);
+    }
   }
 
   private hideSkyPsycheWhisper(): void {
@@ -2617,6 +2712,7 @@ export class UIController {
     this.suppressMinigamePullback = true;
     this.minigameHost.destroy();
     this.suppressMinigamePullback = false;
+    this.isDivingToMinigame = false;
     this.activeMinigameTargetId = null;
     this.root.querySelector('#minigame-layer')?.classList.add('hidden');
     this.showcase?.setMinigameBackdropMode(null);
@@ -3307,7 +3403,7 @@ export class UIController {
           });
           this.optics.pullInToTarget1();
           this.startIdleDragHintTimer();
-        } else if (stage === 'mg_1_done') {
+        } else if (stage === 'scan_target_calib2') {
           const scanned = this.store.getState().scannedAnomalyIds.includes(INTRO_TARGET_1_ID)
             ? this.store.getState().scannedAnomalyIds
             : [...this.store.getState().scannedAnomalyIds, INTRO_TARGET_1_ID];
@@ -3317,9 +3413,28 @@ export class UIController {
           this.optics.setAmbientDrift(false);
           this.store.patch({
             mode: 'waking_3d',
-            introStage: 'mg_1_done',
+            introStage: 'scan_target_calib2',
             scannedAnomalyIds: scanned,
             decodedMinigameTargets: decoded,
+            activeTargetId: null,
+          });
+          this.showSkyGuidanceWhisper(
+            'psyche_clinical',
+            'Home bearing locked. Sweep to [[target:fraunhofer_prism_knot::M57 Spectral Shell]] to match its wavelength spectrum.'
+          );
+        } else if (stage === 'mg_1_done') {
+          const baseScanned = new Set(this.store.getState().scannedAnomalyIds);
+          baseScanned.add(INTRO_TARGET_1_ID);
+          baseScanned.add(INTRO_TARGET_CALIB2_ID);
+          const baseDecoded = new Set(this.store.getState().decodedMinigameTargets);
+          baseDecoded.add(INTRO_TARGET_1_ID);
+          baseDecoded.add(INTRO_TARGET_CALIB2_ID);
+          this.optics.setAmbientDrift(false);
+          this.store.patch({
+            mode: 'waking_3d',
+            introStage: 'mg_1_done',
+            scannedAnomalyIds: [...baseScanned],
+            decodedMinigameTargets: [...baseDecoded],
             activeTargetId: null,
           });
           this.showProactiveCommsToast(uiCopy.commsToast.introTeaser);
@@ -3665,6 +3780,7 @@ export class UIController {
     this.suppressMinigamePullback = true;
     this.minigameHost.destroy();
     this.suppressMinigamePullback = false;
+    this.isDivingToMinigame = false;
     this.activeMinigameTargetId = null;
     this.lastMinigameDecodedSpec = null;
     this.codexView.close();

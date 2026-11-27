@@ -564,5 +564,21 @@ Each agent session reads the latest entries here before starting work and append
   * Bound all 9 multi-shift `EXTERNAL`s & v8 variables in `scripts/sim-playthroughs.mjs`, added `scripts/export-playscript.mjs` (`npm run export:playscript` -> `artifacts/playscript.md`), filtered `internal_prototype_only` entries from `SettingsView` Credits, and upgraded `DevHarness` with Shift 1–6 quick-jump, Signal Composer & Ending previews, 9-persona selector, independent `Max_H` slider, arbitrary Ink knot launcher, `"VOXCPM2-8BIT"` voice badge, and flex-safe drawer CSS.
 * **Verified:** `node scripts/export-playscript.mjs` PASS (170 lines, 2,956 words); `node scripts/verify.mjs --release --fast` PASS (all 8 gates, 13 test files / 183 tests, `--release` strict voice-sync); `node scripts/e2e-visual.mjs --flows=prologue,sky,dream,mobile` PASS (0 errors).
 
+---
+
+## Session 35 — 2026-11-27 — Prologue & Shift-1 Calibration Overhaul, Anchor-Locked Voice Uniformity & Target Hyperlinks
+* **Anchor-Locked VoxCPM2 Voice Uniformity (`src/content/voice_profiles.json`, `scripts/generate-voices-voxcpm2.py`, `scripts/voice-extract.mjs`):**
+  * Eliminated mid-scene timbre and accent drift across the Prologue by enabling `"anchorLockMode": true`, disabling cross-line continuation (`"enableContinuation": false`), and switching synthesis & retries to Mode 4 Combined Reference + Anchor Prompt (`ref_audio` + `prompt_audio=anchorPath` + `prompt_text=anchorText`, `instruct=None`) under uniform `24000` Hz / `64k` MP3 encoding.
+  * Regenerated all `178` voice lines via VoxCPM2-8bit + Parakeet STT QA (`0` acoustic retries, `12` WER retries, `avg_wer=0.012`), passing `lint-narrative --strict-voice-sync`.
+* **Stuck `#reticle-brief` Fix (`src/ui/UIController.ts`, `src/ui/styles.css`):**
+  * Added `isDivingToMinigame` re-entrancy guards across `enterTargetMinigame()`, telemetry, keyboard `[Space]`, and exit/reset transitions (while preserving DevHarness `overrideMinigameId` switching), switched `onComplete` to hold the minigame briefly during unconditional `500ms` `handover` -> `450ms` `fading` cleanup, and added pointerdown failsafe dismissal.
+* **Game 1 `CON-02` Stillness & Visual Upgrade (`src/engine/minigames/games/ConstellationRecallGame.ts`, `BaseCosmicMinigame.ts`, `MinigameRegistry.ts`, `Minigame3DBridge.ts`):**
+  * Removed autonomous background star drift and Stage 1 pointer parallax in `ConstellationRecallGame`, set `constellation_recall` 3D prop rig to `'off'`, switched `sol_centauri_bearing` / `constellation_recall_v1`/`v4` to unblurred JWST `tarantula` plate (`blurPx: 0`), and added an etched circular Zeiss eyepiece graticule, 5-bead comet wake, and `SOL / α CEN · 10.0 LY` badge.
+* **Two Calibration Minigames Before Sibling 1420 + Clickable Target Hyperlinks (`anomalies.json`, `shifts.json`, `StateStore.ts`, `ShiftDirector.ts`, `OpticsScene.ts`, `DialogueFeedView.ts`, `UIController.ts`, `spike_shift1.ink`, `ui_copy.json`, `docs/BEAT_SHEET.md`):**
+  * Inserted `scan_target_calib2` (`fraunhofer_prism_knot` M57 Spectral Shell, `PRM-09`) between `sol_centauri_bearing` (`CON-02`) and Sibling 1420's first call (`mg_1_done`), guided by a persistent clickable sky whisper, while moving `asterism_drift_01` (`BND-19`) to Shift 3 optional.
+  * Implemented clickable `[[target:<id>::<Label>]]` links across Ink dialogue & sky whispers wired to `OpticsScene.slewToAnomaly()` (shortest-yaw, mismatched detent clear, `950ms` transition boost), expanded Intake Assistant & Overseer prologue dialogue (~50% longer with richer `◇ ASK` Q&A hubs), simplified Sibling 1420 prose with less jargon, and added `Cluster J1419-A` hyperlinks.
+* **Verified:** `compile-ink` PASS, `tsc --noEmit` PASS, `vitest run` PASS (`13` files / `183` tests), `sim-playthroughs` PASS (`500` economy + `120` Ink runs, `0` soft-locks), `lint-narrative --strict-voice-sync` PASS (`4,547` Ink words, `178` synced clips), `check-hygiene` PASS, `vite build` PASS, and `e2e-visual.mjs` PASS (`0` errors across `prologue` and `sky` + `constellation_recall` + `spectral_prism`, PNGs inspected).
+
+
 
 

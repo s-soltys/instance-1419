@@ -34,7 +34,9 @@ export function walkInkFiles(dialogueDir, { includeStructural = false } = {}) {
 }
 
 export function stripInlineMarkup(text) {
-  return text.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
+  return text
+    .replace(/\[\[target:[a-z0-9_]+(?:::|\|)([^\]]+)\]\]/gi, '$1')
+    .replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
 }
 
 export function normalizeMatchKey(speaker, text) {
@@ -132,22 +134,31 @@ export function computeSynthHash(entry, profilesJson, providerArg = 'voxcpm2', {
 
   let payload;
   if (providerArg === 'voxcpm2') {
-    const instruct =
-      v.emotionInstructs?.[entry.emotion] ?? v.defaultInstruct ?? q.voiceDesignInstruct ?? '';
+    const anchorLockMode = Boolean(voxCfg.anchorLockMode ?? true);
+    let resolvedAnchor = v.anchorFile ?? q.anchorFile ?? '';
+    if (entry.speaker === 'phantom_spouse' && entry.emotion === 'fractured' && q.emotionAnchors?.fractured?.anchorFile) {
+      resolvedAnchor = q.emotionAnchors.fractured.anchorFile;
+    } else if (entry.speaker === 'sibling_primary' && entry.emotion === 'clipped' && q.emotionAnchors?.clipped?.anchorFile) {
+      resolvedAnchor = q.emotionAnchors.clipped.anchorFile;
+    }
+    const instruct = anchorLockMode
+      ? ''
+      : v.emotionInstructs?.[entry.emotion] ?? v.defaultInstruct ?? q.voiceDesignInstruct ?? '';
     payload = [
       'voxcpm2',
       voxCfg.model ?? 'mlx-community/VoxCPM2-8bit',
       String(voxCfg.inferenceTimesteps ?? 10),
       String(voxCfg.cfgValue ?? 2.0),
-      String(voxCfg.bitrate ?? '128k'),
-      String(voxCfg.sampleRate ?? 48000),
-      String(Boolean(voxCfg.enableContinuation) && !noContinuation),
-      v.anchorFile ?? q.anchorFile ?? '',
-      entry.emotion,
+      String(voxCfg.deliveryBitrate ?? voxCfg.bitrate ?? '64k'),
+      String(voxCfg.deliverySampleRate ?? voxCfg.sampleRate ?? 24000),
+      String(anchorLockMode),
+      String(Boolean(voxCfg.enableContinuation) && !noContinuation && !anchorLockMode),
+      resolvedAnchor,
+      anchorLockMode ? '' : entry.emotion,
       instruct,
       entry.spokenText,
       prof.ffmpegFilter ?? '',
-      entry.turnPrevLineId ?? '',
+      anchorLockMode ? '' : (entry.turnPrevLineId ?? ''),
     ].join('|');
   } else if (providerArg === 'qwen3') {
     const emoSpec = q.emotionAnchors?.[entry.emotion];

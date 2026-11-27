@@ -9,7 +9,7 @@
       "showcaseType": "star_system",
       "scaleClass": "star_system",
       "minigameId": "constellation_recall",
-      "plateId": "smacs",
+      "plateId": "tarantula",
       "preferredVariantIndex": 3,
       "raDeg": 46.0,
       "decDeg": -16.0,
@@ -158,12 +158,12 @@
       "minigameId": "multiband_loupe",
       "plateId": "pillars",
       "preferredVariantIndex": 0,
-      "raDeg": 70.0,
-      "decDeg": 14.0,
+      "raDeg": 274.7,
+      "decDeg": -13.79,
       "distanceLabel": "6,500 LY",
       "actionVerb": "SWEEP BANDS",
       "anomalyRole": "baseline",
-      "spoilerFloorShift": 1,
+      "spoilerFloorShift": 3,
       "optimalWavelengthNm": 540,
       "wavelengthToleranceNm": 220,
       "recommendedFovMax": 32,
@@ -189,11 +189,11 @@
         "psycheVoice": "psyche_clinical",
         "psycheLine": "Optical obscures, infrared reveals, X-ray cuts clean. Foreground dust columns behave strictly by physics.",
         "storyFlag": "decoded_asterism_drift_01",
-        "unlocksStoryletId": "shift1_optional_scan_echo"
+        "unlocksStoryletId": null
       },
       "proofContribution": {
-        "phase": 1,
-        "proofThread": "dust_extinction_control",
+        "phase": 3,
+        "proofThread": "broadband_parity",
         "weight": 1
       }
     },
@@ -445,26 +445,26 @@
     {
       "id": "fraunhofer_prism_knot",
       "label": "M57 SPECTRAL SHELL",
-      "subtitle": "Ionized Emission & Doppler Knot",
+      "subtitle": "Ionized Emission & Wavelength Prism",
       "bandName": "VISIBLE",
       "showcaseType": "nebula",
       "scaleClass": "nebula",
       "minigameId": "spectral_prism",
       "plateId": "ring_m57",
       "preferredVariantIndex": 0,
-      "raDeg": 283.4,
-      "decDeg": 33.03,
+      "raDeg": 26.0,
+      "decDeg": 14.0,
       "distanceLabel": "2,570 LY",
-      "actionVerb": "SPLIT SPECTRUM",
+      "actionVerb": "MATCH SPECTRUM",
       "anomalyRole": "baseline",
-      "spoilerFloorShift": 3,
+      "spoilerFloorShift": 1,
       "optimalWavelengthNm": 510,
       "wavelengthToleranceNm": 210,
       "recommendedFovMax": 30,
       "anomalyGain": 1,
       "kind": "nebula_cloud",
       "accentHex": "#9ee8ff",
-      "description": "An expanding planetary nebula glows in crisp atomic emission lines. Reconstruct its elemental barcode and cosmological shift to rule out thermal instrument drift.",
+      "description": "An expanding planetary nebula glows in crisp atomic emission lines. Reconstruct its elemental barcode to verify your spectrograph wavelength zero-point.",
       "realCatalogRef": {
         "catalog": "ESA/Webb NASA/CSA",
         "designation": "M57 / NGC 6720 (Ring Nebula)",
@@ -474,20 +474,20 @@
         "sourceLicense": "CC BY 4.0 (ESA/Webb, NASA, CSA)"
       },
       "preScanBrief": {
-        "objective": "Calibrate atomic emission lines on M57 to rule out spectrograph thermal drift.",
-        "instrumentAction": "Mix ionized emission elements and tune cosmological redshift to match reference lines.",
-        "whyNow": "Independent wavelength calibration anchors all broadband anomaly comparisons."
+        "objective": "Match M57's glowing element lines to verify your wavelength prism.",
+        "instrumentAction": "Toggle atomic elements until your prism mix matches the observed spectrum.",
+        "whyNow": "Second baseline check: confirm wavelength calibration before opening Probe 1420's relay."
       },
       "postScanEcho": {
         "dossierFinding": "M57 emission barcode calibrated; spectrograph wavelength zero-point confirmed.",
         "psycheVoice": "psyche_clinical",
-        "psycheLine": "Hydrogen, oxygen, nitrogen lines hold to four decimals. The spectrograph is not drifting.",
+        "psycheLine": "Hydrogen, oxygen, and sodium lines lock cleanly. Both your bearing and your prism hold true.",
         "storyFlag": "decoded_fraunhofer_prism_knot",
         "unlocksStoryletId": null
       },
       "proofContribution": {
-        "phase": 3,
-        "proofThread": "broadband_parity",
+        "phase": 1,
+        "proofThread": "baseline_anchor",
         "weight": 1
       }
     },

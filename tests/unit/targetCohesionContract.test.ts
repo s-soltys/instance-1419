@@ -41,7 +41,7 @@ describe('Target Cohesion, Sky Reveal & StoryletScheduler Contracts', () => {
 
     for (let i = 0; i < sorted.length; i++) {
       const s = sorted[i];
-      expect(s.requiredTargets.length).toBe(2);
+      expect(s.requiredTargets.length).toBe(s.shift === 1 ? 3 : 2);
       expect(s.optionalTargets.length).toBeGreaterThanOrEqual(1);
       expect(s.optionalTargets.length).toBeLessThanOrEqual(2);
       expect(s.targetAnomalies).toEqual([...s.requiredTargets, ...s.optionalTargets]);

@@ -172,17 +172,18 @@ describe('StateStore invariants & economy', () => {
 
     // getShiftQuotaStatus() tracks required vs optional targets dynamically
     expect(store.getShiftQuotaStatus(1)).toEqual({
-      requiredIds: ['sol_centauri_bearing', 'cluster_j1419_a'],
-      optionalIds: ['carina_rift_nebula', 'asterism_drift_01'],
+      requiredIds: ['sol_centauri_bearing', 'fraunhofer_prism_knot', 'cluster_j1419_a'],
+      optionalIds: ['carina_rift_nebula'],
       requiredDone: 1,
       optionalDone: 1,
       mandateMet: false,
       allDone: false,
     });
     store.recordMinigameCompletion('sol_centauri_bearing', 'SOL–CENTAURI BEARING', { grade: 'clean' });
-    expect(store.getShiftQuotaStatus(1).mandateMet).toBe(true);
+    expect(store.getShiftQuotaStatus(1).mandateMet).toBe(false);
     expect(store.getShiftQuotaStatus(1).allDone).toBe(false);
-    store.recordMinigameCompletion('asterism_drift_01', 'EAGLE DUST PILLARS K-01', { grade: 'clean' });
+    store.recordMinigameCompletion('fraunhofer_prism_knot', 'M57 SPECTRAL SHELL', { grade: 'clean' });
+    expect(store.getShiftQuotaStatus(1).mandateMet).toBe(true);
     expect(store.getShiftQuotaStatus(1).allDone).toBe(true);
     store.dispose();
   });

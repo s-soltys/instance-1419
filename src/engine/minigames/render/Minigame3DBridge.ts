@@ -19,14 +19,7 @@ export const DEFAULT_MINIGAME_3D_PRESETS: Record<string, Minigame3DConfig> = {
     exposure: 0.5,
     driftSpeed: 0.014,
   },
-  constellation_recall: {
-    mode: 'ambient_stars',
-    opacity: 0.52,
-    parallaxScale: 0.032,
-    propRig: 'horizon_arc',
-    exposure: 0.54,
-    driftSpeed: 0.012,
-  },
+  constellation_recall: { mode: 'off', propRig: 'none' },
   pulsar_echo: {
     mode: 'orbital_rig',
     opacity: 0.5,

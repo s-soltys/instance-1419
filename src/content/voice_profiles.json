@@ -11,7 +11,8 @@
     "sampleRate": 48000,
     "deliveryBitrate": "64k",
     "deliverySampleRate": 24000,
-    "enableContinuation": true,
+    "anchorLockMode": true,
+    "enableContinuation": false,
     "sttQaModel": "mlx-community/parakeet-tdt-0.6b-v3",
     "sttQaMaxWer": 0.15,
     "sttQaMaxRetries": 2

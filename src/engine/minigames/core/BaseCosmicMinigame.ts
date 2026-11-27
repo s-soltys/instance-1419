@@ -636,8 +636,8 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     drawAmbientStarfield3Depth(c2d, w, h, this.depthStars, this.elapsedSec, {
       opacityMul: (opts?.starOpacity ?? 0.78) * lerp(0.84, 1.08, this.profile.clarity01),
       vibeMode: this.palette.mode,
-      parallaxX: this.pointerNormX,
-      parallaxY: this.pointerNormY,
+      parallaxX: opts?.parallaxX ?? this.pointerNormX,
+      parallaxY: opts?.parallaxY ?? this.pointerNormY,
     });
 
     this.particles.render(c2d, {

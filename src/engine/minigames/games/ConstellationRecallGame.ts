@@ -93,12 +93,12 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
   readonly subtitle = 'Parallax Spatial Memory';
   readonly instrumentCode = 'CON-02';
 
-  readonly platePool: readonly CosmicPlateId[] = ['smacs', 'tarantula', 'hudf'];
+  readonly platePool: readonly CosmicPlateId[] = ['tarantula', 'smacs', 'hudf'];
   readonly variants: readonly MinigameVariantSpec[] = [
-    { index: 0, id: 'constellation_recall_v1', label: 'SMACS Anchor Asterism', plateId: 'smacs', scenarioTag: 'smacs_anchor' },
-    { index: 1, id: 'constellation_recall_v2', label: 'Doradus Supercluster', plateId: 'tarantula', scenarioTag: 'doradus' },
+    { index: 0, id: 'constellation_recall_v1', label: 'SMACS Anchor Asterism', plateId: 'tarantula', scenarioTag: 'smacs_anchor' },
+    { index: 1, id: 'constellation_recall_v2', label: 'Doradus Supercluster', plateId: 'smacs', scenarioTag: 'doradus' },
     { index: 2, id: 'constellation_recall_v3', label: 'Ultra Deep Field Lattice', plateId: 'hudf', scenarioTag: 'hudf_lattice' },
-    { index: 3, id: 'constellation_recall_v4', label: 'Sol-Centauri Baseline', plateId: 'smacs', scenarioTag: 'sol_centauri' },
+    { index: 3, id: 'constellation_recall_v4', label: 'Sol-Centauri Baseline', plateId: 'tarantula', scenarioTag: 'sol_centauri' },
   ];
 
   private variantCfg: ConstellationVariantConfig = VARIANT_CONFIGS[0];
@@ -293,11 +293,11 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
     const parallaxOn = this.stage >= 2;
     for (let i = 0; i < this.nodes.length; i++) {
       const n = this.nodes[i];
-      const baseDrift = (parallaxOn ? 0.0085 * n.parallaxWeight : 0.002) * swayScale;
-      const pointerScaleX = (parallaxOn ? 0.015 : 0.006) * n.parallaxWeight * swayScale;
-      const pointerScaleY = (parallaxOn ? 0.011 : 0.004) * n.parallaxWeight * swayScale;
-      const ox = baseDrift * Math.sin(this.elapsedSec * 0.85 + n.driftPhase) + this.smoothPx * pointerScaleX;
-      const oy = baseDrift * 0.55 * Math.cos(this.elapsedSec * 0.7 + n.driftPhase) + this.smoothPy * pointerScaleY;
+      // Locked sidereal mount: zero autonomous star drift; subtle pointer parallax in Stages 2-3 only
+      const pointerScaleX = (parallaxOn ? 0.009 : 0) * n.parallaxWeight * swayScale;
+      const pointerScaleY = (parallaxOn ? 0.006 : 0) * n.parallaxWeight * swayScale;
+      const ox = this.smoothPx * pointerScaleX;
+      const oy = this.smoothPy * pointerScaleY;
       this.posCacheX[i] = clamp(n.bx + ox, 0.07, 0.93) * w;
       this.posCacheY[i] = clamp(n.by * compactShift + (this.compact ? 0.03 : 0) + oy, 0.14, this.compact ? 0.7 : 0.78) * h;
     }
@@ -525,16 +525,49 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
 
   protected override onRender(c2d: CanvasRenderingContext2D, w: number, h: number): void {
     const overall = this.getStageProgress01();
+    const bgParallax = this.stage === 1 ? 0 : 0.25;
     this.drawBackdropAndAmbient(c2d, w, h, {
-      blurPx: lerp(6, 0, overall),
-      alpha: lerp(0.56, 0.92, overall),
-      brightness: lerp(0.84, 1.12, overall),
-      scale: lerp(1.06, 1.01, overall),
-      tintAlpha: 0.34,
+      blurPx: lerp(2.0, 0, overall),
+      alpha: lerp(0.76, 0.96, overall),
+      brightness: lerp(0.92, 1.14, overall),
+      scale: lerp(1.03, 1.0, overall),
+      tintAlpha: 0.24,
       starOpacity: this.clarity01,
+      parallaxX: this.smoothPx * bgParallax,
+      parallaxY: this.smoothPy * bgParallax,
     });
 
     this.computeNodePositions(w, h);
+
+    // Subtle etched circular Zeiss eyepiece graticule framing the deep-sky field
+    const cxView = w * 0.5;
+    const cyView = h * (this.compact ? 0.45 : 0.48);
+    const gratR = Math.min(w, h) * (this.compact ? 0.39 : 0.41);
+    c2d.save();
+    c2d.strokeStyle = `rgba(${this.palette.secondaryRgb}, 0.16)`;
+    c2d.lineWidth = 1;
+    c2d.beginPath();
+    c2d.arc(cxView, cyView, gratR, 0, Math.PI * 2);
+    c2d.stroke();
+
+    c2d.strokeStyle = `rgba(${this.palette.accentRgb}, 0.11)`;
+    c2d.setLineDash?.([3, 8]);
+    c2d.beginPath();
+    c2d.arc(cxView, cyView, gratR * 0.74, 0, Math.PI * 2);
+    c2d.stroke();
+    c2d.setLineDash?.([]);
+
+    c2d.strokeStyle = `rgba(${this.palette.secondaryRgb}, 0.22)`;
+    c2d.beginPath();
+    for (let deg = 0; deg < 360; deg += 15) {
+      const rad = (deg * Math.PI) / 180;
+      const major = deg % 45 === 0;
+      const innerR = gratR - (major ? 8 : 4);
+      c2d.moveTo(cxView + Math.cos(rad) * innerR, cyView + Math.sin(rad) * innerR);
+      c2d.lineTo(cxView + Math.cos(rad) * gratR, cyView + Math.sin(rad) * gratR);
+    }
+    c2d.stroke();
+    c2d.restore();
 
     // Count of stars already arrived/connected
     const connectedCount =
@@ -627,19 +660,19 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
       });
 
       // Luminous stardust wake beads behind traveling comet
-      for (let wake = 1; wake <= 3; wake++) {
-        const wt = Math.max(0, t - wake * 0.065);
-        drawOpticalStar(c2d, lerp(fx, tx, wt), lerp(fy, ty, wt), 3.4 - wake * 0.7, {
+      for (let wake = 1; wake <= 5; wake++) {
+        const wt = Math.max(0, t - wake * 0.048);
+        drawOpticalStar(c2d, lerp(fx, tx, wt), lerp(fy, ty, wt), 3.6 - wake * 0.45, {
           spectralClass: 'F',
           spikes: 0,
-          alpha: 0.65 - wake * 0.16,
+          alpha: 0.72 - wake * 0.11,
           vibeMode: this.palette.mode,
         });
       }
 
-      drawOpticalStar(c2d, cx, cy, 5.4, {
+      drawOpticalStar(c2d, cx, cy, 6.0, {
         spectralClass: 'F',
-        spikes: 4,
+        spikes: 6,
         alpha: 0.98,
         rotationRad: 0,
         vibeMode: this.palette.mode,
@@ -728,6 +761,26 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
         c2d.beginPath();
         c2d.arc(sx, sy, rad * (isHovered ? 2.0 : 1.75), 0, Math.PI * 2);
         c2d.stroke();
+
+        // Subtle geometric vertex ticks on locked asterism nodes
+        if (alreadyConnected) {
+          const rRing = rad * 1.75;
+          c2d.beginPath();
+          c2d.moveTo(sx - rRing - 3.5, sy);
+          c2d.lineTo(sx - rRing + 1, sy);
+          c2d.moveTo(sx + rRing - 1, sy);
+          c2d.lineTo(sx + rRing + 3.5, sy);
+          c2d.stroke();
+        }
+
+        // Sol–Centauri home anchor badge beside the first star on the home-bearing baseline
+        if (this.iterationIndex % 4 === 3 && seqIdx === 0) {
+          c2d.font = '600 8.5px ui-monospace, SFMono-Regular, Menlo, monospace';
+          c2d.fillStyle = '#ffe2a6';
+          c2d.globalAlpha = 0.85;
+          c2d.textAlign = 'center';
+          c2d.fillText('SOL / α CEN · 10.0 LY', sx, sy - rad * 2.1 - 6);
+        }
 
         // Cold mode: clinical astrometry parallax readout (mas) & sequence index
         if (this.profile.showNumericDeltas && alreadyConnected) {

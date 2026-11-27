@@ -238,7 +238,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       harness.solveStage(2);
       harness.solveStage(3);
 
-      expect(root.querySelector('#mg-finale-grade')?.textContent).toBe('SHIFT 1 · 1 OF 2 REQUIRED');
+      expect(root.querySelector('#mg-finale-grade')?.textContent).toBe('SHIFT 1 · 1 OF 3 REQUIRED');
       expect(root.querySelector('#mg-finale-gain')?.textContent).toBe(spec.label);
       expect(root.querySelector('#mg-finale-outcome')?.getAttribute('data-grade')).toBe('clean');
       expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('CLEAN LOCK');
@@ -246,14 +246,14 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       expect(root.querySelector('#mg-finale-snippet')?.textContent).toBe(
         spec.postScanEcho?.dossierFinding
       );
-      expect(root.querySelector('#mg-finale-mandate')?.textContent).toContain('SHIFT 1 MANDATE (1/2 REQUIRED');
+      expect(root.querySelector('#mg-finale-mandate')?.textContent).toContain('SHIFT 1 MANDATE (1/3 REQUIRED');
       expect(root.querySelector('.mg-finale-ring-delta')?.textContent).toBe(
         'BASELINE LOCKED · 10.0 LY VECTOR SET'
       );
       expect(root.querySelector('#mg-finale-visual svg')).not.toBeNull();
       expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node').length).toBe(4);
-      expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-required').length).toBe(2);
-      expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-optional').length).toBe(2);
+      expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-required').length).toBe(3);
+      expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-optional').length).toBe(1);
       expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-just-earned').length).toBe(1);
 
       vi.advanceTimersByTime(1400);

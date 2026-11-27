@@ -80,7 +80,9 @@ const COMPILED_PRONUNCIATION_RULES = (pronunciationJson.replacements ?? []).map(
 );
 
 function stripInlineMarkup(text: string): string {
-  return text.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
+  return text
+    .replace(/\[\[target:[a-z0-9_]+(?:::|\|)([^\]]+)\]\]/gi, '$1')
+    .replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
 }
 
 export function normalizeVoiceMatchKey(speaker: string, text: string): string {
