@@ -1,17 +1,17 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-11-26T22:32:20.976Z",
+  "generated_at": "2026-11-26T23:57:43.392Z",
   "provider": "voxcpm2",
   "engine": "voxcpm2-8bit",
   "lines": [
     {
       "lineId": "pro_ast_open_1",
-      "matchKey": "phantom_upload_witness|\"easy. don't sit up yet—give your eyes a second to catch up to the lamp.\"",
+      "matchKey": "phantom_upload_witness|\"easy. don't sit up yet. give your eyes a second to catch up to the lamp.\"",
       "knot": "intro_prologue_assistant",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Easy. Don't sit up yet—give your eyes a second to catch up to the lamp.\"",
-      "spokenText": "Easy. Don't sit up yet, give your eyes a second to catch up to the lamp.",
+      "text": "\"Easy. Don't sit up yet. Give your eyes a second to catch up to the lamp.\"",
+      "spokenText": "Easy. Don't sit up yet. Give your eyes a second to catch up to the lamp.",
       "audioFile": "voices/pro_ast_open_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -25,16 +25,19 @@
           }
         }
       },
-      "synthHash": "45be88e4fa94"
+      "synthHash": "4d8d4b1163a9",
+      "audioSha256": "cfe58211fb030bd0",
+      "sttWer": 0,
+      "sttTranscript": "Easy. Don't sit up yet. Give your eyes a second to catch up to the lamp."
     },
     {
       "lineId": "pro_ast_open_2",
-      "matchKey": "phantom_upload_witness|\"everyone looks at their hands first. then the paper cup, then the window, trying to place the hum.\"",
+      "matchKey": "phantom_upload_witness|\"everyone looks at their hands first, then the paper cup and the window. the clinic went quiet ten minutes ago, so give your head a moment to settle.\"",
       "knot": "intro_prologue_assistant",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Everyone looks at their hands first. Then the paper cup, then the window, trying to place the hum.\"",
-      "spokenText": "Everyone looks at their hands first. Then the paper cup, then the window, trying to place the hum.",
+      "text": "\"Everyone looks at their hands first, then the paper cup and the window. The clinic went quiet ten minutes ago, so give your head a moment to settle.\"",
+      "spokenText": "Everyone looks at their hands first, then the paper cup and the window. The clinic went quiet ten minutes ago, so give your head a moment to settle.",
       "audioFile": "voices/pro_ast_open_2.mp3",
       "turnPrevLineId": "pro_ast_open_1",
       "remoteConfig": {
@@ -48,39 +51,19 @@
           }
         }
       },
-      "synthHash": "3a2391eb52e9"
-    },
-    {
-      "lineId": "pro_ast_open_3",
-      "matchKey": "phantom_upload_witness|\"take a breath. the clinic was still loud ten minutes ago, and now it isn't. give your head time to settle.\"",
-      "knot": "intro_prologue_assistant",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"Take a breath. The clinic was still loud ten minutes ago, and now it isn't. Give your head time to settle.\"",
-      "spokenText": "Take a breath. The clinic was still loud ten minutes ago, and now it isn't. Give your head time to settle.",
-      "audioFile": "voices/pro_ast_open_3.mp3",
-      "turnPrevLineId": "pro_ast_open_2",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "8faba64dcee6"
+      "synthHash": "6420cbb4e3a0",
+      "audioSha256": "4038ac6199e32cf5",
+      "sttWer": 0,
+      "sttTranscript": "Everyone looks at their hands first, then the paper cup and the window. The clinic went quiet ten minutes ago. So give your head a moment to settle."
     },
     {
       "lineId": "pro_ast_c1_a1",
-      "matchKey": "phantom_upload_witness|\"good. that means the recording held onto the edges, not just the middle.\"",
+      "matchKey": "phantom_upload_witness|\"good. that means the recording held onto the edges, not just the middle. i'm the intake assistant at the desk, and i stay until the room settles.\"",
       "knot": "intro_prologue_assistant",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Good. That means the recording held onto the edges, not just the middle.\"",
-      "spokenText": "Good. That means the recording held onto the edges, not just the middle.",
+      "text": "\"Good. That means the recording held onto the edges, not just the middle. I'm the intake assistant at the desk, and I stay until the room settles.\"",
+      "spokenText": "Good. That means the recording held onto the edges, not just the middle. I'm the intake assistant at the desk, and I stay until the room settles.",
       "audioFile": "voices/pro_ast_c1_a1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -94,39 +77,19 @@
           }
         }
       },
-      "synthHash": "b6965d0a67c1"
-    },
-    {
-      "lineId": "pro_ast_c1_a2",
-      "matchKey": "phantom_upload_witness|\"i'm the intake assistant on the desk. my only job right now is to stay until the room stops swimming.\"",
-      "knot": "intro_prologue_assistant",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"I'm the intake assistant on the desk. My only job right now is to stay until the room stops swimming.\"",
-      "spokenText": "I'm the intake assistant on the desk. My only job right now is to stay until the room stops swimming.",
-      "audioFile": "voices/pro_ast_c1_a2.mp3",
-      "turnPrevLineId": "pro_ast_c1_a1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "fcdfd771d917"
+      "synthHash": "690a976288f8",
+      "audioSha256": "ef746165ccb6680c",
+      "sttWer": 0.071,
+      "sttTranscript": "Good that means the recording held on to the edges, not just the middle. I'm the intake assistant at the desk. And I stay until the room settles."
     },
     {
       "lineId": "pro_ast_c1_b1",
-      "matchKey": "phantom_upload_witness|\"your coat went back out the front door into the rain. give yourself a minute before you reach for it.\"",
+      "matchKey": "phantom_upload_witness|\"your coat went back out the front door into the rain. i'm the intake assistant who sat across from you with the forms, and nobody's rushing you.\"",
       "knot": "intro_prologue_assistant",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Your coat went back out the front door into the rain. Give yourself a minute before you reach for it.\"",
-      "spokenText": "Your coat went back out the front door into the rain. Give yourself a minute before you reach for it.",
+      "text": "\"Your coat went back out the front door into the rain. I'm the intake assistant who sat across from you with the forms, and nobody's rushing you.\"",
+      "spokenText": "Your coat went back out the front door into the rain. I'm the intake assistant who sat across from you with the forms, and nobody's rushing you.",
       "audioFile": "voices/pro_ast_c1_b1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -140,39 +103,19 @@
           }
         }
       },
-      "synthHash": "a2bfeec66b23"
-    },
-    {
-      "lineId": "pro_ast_c1_b2",
-      "matchKey": "phantom_upload_witness|\"i'm the intake assistant who sat across from you with the forms. nobody's rushing you off this chair.\"",
-      "knot": "intro_prologue_assistant",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"I'm the intake assistant who sat across from you with the forms. Nobody's rushing you off this chair.\"",
-      "spokenText": "I'm the intake assistant who sat across from you with the forms. Nobody's rushing you off this chair.",
-      "audioFile": "voices/pro_ast_c1_b2.mp3",
-      "turnPrevLineId": "pro_ast_c1_b1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "41073cb0ae83"
+      "synthHash": "260cc30f8713",
+      "audioSha256": "2934af7568f4d62a",
+      "sttWer": 0,
+      "sttTranscript": "Your coat went back out the front door into the rain. I'm the intake assistant who sat across from you with the forms, and nobody's rushing you."
     },
     {
       "lineId": "pro_ast_c1_c1",
-      "matchKey": "phantom_upload_witness|\"it finished cleanly. that phantom catch in your chest usually fades once you stop checking for a pulse.\"",
+      "matchKey": "phantom_upload_witness|\"it finished cleanly. that phantom catch fades once you stop checking for a pulse—i'm the intake assistant from the desk, so take your time.\"",
       "knot": "intro_prologue_assistant",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"It finished cleanly. That phantom catch in your chest usually fades once you stop checking for a pulse.\"",
-      "spokenText": "It finished cleanly. That phantom catch in your chest usually fades once you stop checking for a pulse.",
+      "text": "\"It finished cleanly. That phantom catch fades once you stop checking for a pulse—I'm the intake assistant from the desk, so take your time.\"",
+      "spokenText": "It finished cleanly. That phantom catch fades once you stop checking for a pulse, I'm the intake assistant from the desk, so take your time.",
       "audioFile": "voices/pro_ast_c1_c1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -186,39 +129,19 @@
           }
         }
       },
-      "synthHash": "430aa4603f32"
-    },
-    {
-      "lineId": "pro_ast_c1_c2",
-      "matchKey": "phantom_upload_witness|\"i'm the intake assistant who walked you through the consent sheets. let's take this slow.\"",
-      "knot": "intro_prologue_assistant",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"I'm the intake assistant who walked you through the consent sheets. Let's take this slow.\"",
-      "spokenText": "I'm the intake assistant who walked you through the consent sheets. Let's take this slow.",
-      "audioFile": "voices/pro_ast_c1_c2.mp3",
-      "turnPrevLineId": "pro_ast_c1_c1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "b7a6f3e2c105"
+      "synthHash": "952a983987a4",
+      "audioSha256": "ba1c2be07e25d26f",
+      "sttWer": 0,
+      "sttTranscript": "It finished cleanly. That phantom catch fades once you stop checking for a pulse. I'm the intake assistant from the desk, so take your time."
     },
     {
       "lineId": "pro_ast_mid_1",
-      "matchKey": "phantom_upload_witness|\"an hour ago, someone with your exact laugh signed page twelve, complained about our burnt coffee, and walked back down to the train.\"",
+      "matchKey": "phantom_upload_witness|\"an hour ago, someone with your exact laugh signed page twelve and walked down to the train. your memory stops at the wet ink on the paper, doesn't it?\"",
       "knot": "intro_prologue_assistant_realize",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"An hour ago, someone with your exact laugh signed page twelve, complained about our burnt coffee, and walked back down to the train.\"",
-      "spokenText": "An hour ago, someone with your exact laugh signed page twelve, complained about our burnt coffee, and walked back down to the train.",
+      "text": "\"An hour ago, someone with your exact laugh signed page twelve and walked down to the train. Your memory stops at the wet ink on the paper, doesn't it?\"",
+      "spokenText": "An hour ago, someone with your exact laugh signed page twelve and walked down to the train. Your memory stops at the wet ink on the paper, doesn't it?",
       "audioFile": "voices/pro_ast_mid_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -232,39 +155,19 @@
           }
         }
       },
-      "synthHash": "795f52e75efb"
-    },
-    {
-      "lineId": "pro_ast_mid_2",
-      "matchKey": "phantom_upload_witness|\"do you remember catching that train home—or does the memory stop right at the ink drying on the paper?\"",
-      "knot": "intro_prologue_assistant_realize",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"Do you remember catching that train home—or does the memory stop right at the ink drying on the paper?\"",
-      "spokenText": "Do you remember catching that train home, or does the memory stop right at the ink drying on the paper?",
-      "audioFile": "voices/pro_ast_mid_2.mp3",
-      "turnPrevLineId": "pro_ast_mid_1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "3ad9829bc14f"
+      "synthHash": "10080f8893da",
+      "audioSha256": "0fdb605eafbb6de6",
+      "sttWer": 0,
+      "sttTranscript": "An hour ago, someone with your exact laugh signed page 12 and walked down to the train. Your memory stops at the wet ink on the paper, doesn't it?"
     },
     {
       "lineId": "pro_ast_qa1_copy_1",
-      "matchKey": "phantom_upload_witness|\"it makes you the person who stayed in the chair when the door closed.\"",
+      "matchKey": "phantom_upload_witness|\"it makes you the version who stayed in the chair when the door closed.\"",
       "knot": "intro_assistant_qa_1",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"It makes you the person who stayed in the chair when the door closed.\"",
-      "spokenText": "It makes you the person who stayed in the chair when the door closed.",
+      "text": "\"It makes you the version who stayed in the chair when the door closed.\"",
+      "spokenText": "It makes you the version who stayed in the chair when the door closed.",
       "audioFile": "voices/pro_ast_qa1_copy_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -278,16 +181,19 @@
           }
         }
       },
-      "synthHash": "b7b71e8022c3"
+      "synthHash": "ad0f3514f202",
+      "audioSha256": "87599cfbbaa8b25e",
+      "sttWer": 0,
+      "sttTranscript": "It makes you the version who stayed in the chair when the door closed."
     },
     {
       "lineId": "pro_ast_qa1_copy_2",
-      "matchKey": "phantom_upload_witness|\"you remember every tuesday up to that signature, and you're real enough to argue with me about the coffee.\"",
+      "matchKey": "phantom_upload_witness|\"you remember every ordinary morning up to that signature, and you're real enough to argue with me about the coffee.\"",
       "knot": "intro_assistant_qa_1",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"You remember every Tuesday up to that signature, and you're real enough to argue with me about the coffee.\"",
-      "spokenText": "You remember every Tuesday up to that signature, and you're real enough to argue with me about the coffee.",
+      "text": "\"You remember every ordinary morning up to that signature, and you're real enough to argue with me about the coffee.\"",
+      "spokenText": "You remember every ordinary morning up to that signature, and you're real enough to argue with me about the coffee.",
       "audioFile": "voices/pro_ast_qa1_copy_2.mp3",
       "turnPrevLineId": "pro_ast_qa1_copy_1",
       "remoteConfig": {
@@ -301,16 +207,19 @@
           }
         }
       },
-      "synthHash": "1bfd01f98cff"
+      "synthHash": "be459f4c581d",
+      "audioSha256": "448eb2fb7b64a9ac",
+      "sttWer": 0,
+      "sttTranscript": "You remember every ordinary morning up to that signature, and you're real enough to argue with me about the coffee."
     },
     {
       "lineId": "pro_ast_qa1_many_1",
-      "matchKey": "phantom_upload_witness|\"yes. once a mind clears calibration, each waking copy carries its own blank stretch ahead of it.\"",
+      "matchKey": "phantom_upload_witness|\"yes. once a mind clears calibration, each waking copy has its own blank stretch ahead of it.\"",
       "knot": "intro_assistant_qa_1",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Yes. Once a mind clears calibration, each waking copy carries its own blank stretch ahead of it.\"",
-      "spokenText": "Yes. Once a mind clears calibration, each waking copy carries its own blank stretch ahead of it.",
+      "text": "\"Yes. Once a mind clears calibration, each waking copy has its own blank stretch ahead of it.\"",
+      "spokenText": "Yes. Once a mind clears calibration, each waking copy has its own blank stretch ahead of it.",
       "audioFile": "voices/pro_ast_qa1_many_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -324,16 +233,19 @@
           }
         }
       },
-      "synthHash": "49264e46a654"
+      "synthHash": "ab7abb59ea8f",
+      "audioSha256": "e156e8963efb7797",
+      "sttWer": 0,
+      "sttTranscript": "Yes. Once a mind clears calibration, each waking copy has its own blank stretch ahead of it."
     },
     {
       "lineId": "pro_ast_qa1_many_2",
-      "matchKey": "phantom_upload_witness|\"another version of you might wake up tomorrow—or far later—with no memory of you sitting here.\"",
+      "matchKey": "phantom_upload_witness|\"another version of you might wake up tomorrow, or much later, with no memory of sitting here.\"",
       "knot": "intro_assistant_qa_1",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Another version of you might wake up tomorrow—or far later—with no memory of you sitting here.\"",
-      "spokenText": "Another version of you might wake up tomorrow, or far later, with no memory of you sitting here.",
+      "text": "\"Another version of you might wake up tomorrow, or much later, with no memory of sitting here.\"",
+      "spokenText": "Another version of you might wake up tomorrow, or much later, with no memory of sitting here.",
       "audioFile": "voices/pro_ast_qa1_many_2.mp3",
       "turnPrevLineId": "pro_ast_qa1_many_1",
       "remoteConfig": {
@@ -347,7 +259,10 @@
           }
         }
       },
-      "synthHash": "6a6d1bb8a9aa"
+      "synthHash": "da64d9eb44dc",
+      "audioSha256": "b722ae0a2c1cb74d",
+      "sttWer": 0,
+      "sttTranscript": "Another version of you might wake up tomorrow, or much later, with no memory of sitting here."
     },
     {
       "lineId": "pro_ast_qa1_why_1",
@@ -370,16 +285,17 @@
           }
         }
       },
-      "synthHash": "9a13c2cac8b1"
+      "synthHash": "9a13c2cac8b1",
+      "audioSha256": "779dd025f0a757dc"
     },
     {
       "lineId": "pro_ast_qa1_why_2",
-      "matchKey": "phantom_upload_witness|\"nobody here expects a grand speech about why you stepped into the clinic. only whether you're steady now.\"",
+      "matchKey": "phantom_upload_witness|\"nobody here expects a grand speech about why you walked into the clinic. only whether you're steady now.\"",
       "knot": "intro_assistant_qa_1",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Nobody here expects a grand speech about why you stepped into the clinic. Only whether you're steady now.\"",
-      "spokenText": "Nobody here expects a grand speech about why you stepped into the clinic. Only whether you're steady now.",
+      "text": "\"Nobody here expects a grand speech about why you walked into the clinic. Only whether you're steady now.\"",
+      "spokenText": "Nobody here expects a grand speech about why you walked into the clinic. Only whether you're steady now.",
       "audioFile": "voices/pro_ast_qa1_why_2.mp3",
       "turnPrevLineId": "pro_ast_qa1_why_1",
       "remoteConfig": {
@@ -393,16 +309,19 @@
           }
         }
       },
-      "synthHash": "0b629a8d6fc2"
+      "synthHash": "44b6f897a364",
+      "audioSha256": "12a65df4012f8770",
+      "sttWer": 0,
+      "sttTranscript": "Nobody here expects a grand speech about why you walked into the clinic. Only whether you're steady now."
     },
     {
       "lineId": "pro_ast_r2_a1",
-      "matchKey": "phantom_upload_witness|\"good. hold onto whoever waited at that kitchen table—even the sharp edges.\"",
+      "matchKey": "phantom_upload_witness|\"hold onto whoever waited across that table, even the sharp edges. there will be long stretches where nobody from home can pick up.\"",
       "knot": "intro_assistant_qa_1",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Good. Hold onto whoever waited at that kitchen table—even the sharp edges.\"",
-      "spokenText": "Good. Hold onto whoever waited at that kitchen table, even the sharp edges.",
+      "text": "\"Hold onto whoever waited across that table, even the sharp edges. There will be long stretches where nobody from home can pick up.\"",
+      "spokenText": "Hold onto whoever waited across that table, even the sharp edges. There will be long stretches where nobody from home can pick up.",
       "audioFile": "voices/pro_ast_r2_a1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -416,39 +335,19 @@
           }
         }
       },
-      "synthHash": "c4493de7c0a4"
-    },
-    {
-      "lineId": "pro_ast_r2_a2",
-      "matchKey": "phantom_upload_witness|\"are you ready for a long stretch where nobody from that table can pick up the phone?\"",
-      "knot": "intro_assistant_qa_1",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"Are you ready for a long stretch where nobody from that table can pick up the phone?\"",
-      "spokenText": "Are you ready for a long stretch where nobody from that table can pick up the phone?",
-      "audioFile": "voices/pro_ast_r2_a2.mp3",
-      "turnPrevLineId": "pro_ast_r2_a1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "f4d573fa68ae"
+      "synthHash": "fe2b20de25bd",
+      "audioSha256": "60e7724127fdecfd",
+      "sttWer": 0.087,
+      "sttTranscript": "Hold on to whoever waited across that table, even the sharp edges. There will be long stretches where nobody from home can pick up."
     },
     {
       "lineId": "pro_ast_r2_b1",
-      "matchKey": "phantom_upload_witness|\"that is the quiet bargain nobody really feels until the lamp clicks on.\"",
+      "matchKey": "phantom_upload_witness|\"that is the quiet bargain nobody really feels until the lamp clicks on. each version starts from this morning and walks alone.\"",
       "knot": "intro_assistant_qa_1",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"That is the quiet bargain nobody really feels until the lamp clicks on.\"",
-      "spokenText": "That is the quiet bargain nobody really feels until the lamp clicks on.",
+      "text": "\"That is the quiet bargain nobody really feels until the lamp clicks on. Each version starts from this morning and walks alone.\"",
+      "spokenText": "That is the quiet bargain nobody really feels until the lamp clicks on. Each version starts from this morning and walks alone.",
       "audioFile": "voices/pro_ast_r2_b1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -462,85 +361,19 @@
           }
         }
       },
-      "synthHash": "91b6ff5297a9"
-    },
-    {
-      "lineId": "pro_ast_r2_b2",
-      "matchKey": "phantom_upload_witness|\"each version starts from this morning, then walks alone. are you sure you still want to carry it?\"",
-      "knot": "intro_assistant_qa_1",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"Each version starts from this morning, then walks alone. Are you sure you still want to carry it?\"",
-      "spokenText": "Each version starts from this morning, then walks alone. Are you sure you still want to carry it?",
-      "audioFile": "voices/pro_ast_r2_b2.mp3",
-      "turnPrevLineId": "pro_ast_r2_b1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "e76bfe6c26b9"
-    },
-    {
-      "lineId": "pro_ast_r2_c1",
-      "matchKey": "phantom_upload_witness|\"it means waking into a quiet room long after this rain stops, with no clock you recognize.\"",
-      "knot": "intro_assistant_qa_1",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"It means waking into a quiet room long after this rain stops, with no clock you recognize.\"",
-      "spokenText": "It means waking into a quiet room long after this rain stops, with no clock you recognize.",
-      "audioFile": "voices/pro_ast_r2_c1.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "e7445b58c1bf"
-    },
-    {
-      "lineId": "pro_ast_r2_c2",
-      "matchKey": "phantom_upload_witness|\"sometimes in places where nobody remembers how leaky a porch gutter sounds. think you're ready for that?\"",
-      "knot": "intro_assistant_qa_1",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"Sometimes in places where nobody remembers how leaky a porch gutter sounds. Think you're ready for that?\"",
-      "spokenText": "Sometimes in places where nobody remembers how leaky a porch gutter sounds. Think you're ready for that?",
-      "audioFile": "voices/pro_ast_r2_c2.mp3",
-      "turnPrevLineId": "pro_ast_r2_c1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "3ba0bc043b61"
+      "synthHash": "8aa23d2b974b",
+      "audioSha256": "6403d260f05d5812",
+      "sttWer": 0,
+      "sttTranscript": "That is the quiet bargain. Nobody really feels until the lamp clicks on. Each version starts from this morning and walks alone."
     },
     {
       "lineId": "pro_ast_cal_1",
-      "matchKey": "phantom_upload_witness|\"before i hand you off, i have to run the initial warmth calibration—right now you're sitting at full hundred percent.\"",
+      "matchKey": "phantom_upload_witness|\"before i hand you off, i need to run the initial warmth check. right now you're sitting at a full hundred percent.\"",
       "knot": "intro_prologue_assistant_calib",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Before I hand you off, I have to run the initial warmth calibration—right now you're sitting at full hundred percent.\"",
-      "spokenText": "Before I hand you off, I have to run the initial warmth calibration, right now you're sitting at full hundred percent.",
+      "text": "\"Before I hand you off, I need to run the initial warmth check. Right now you're sitting at a full hundred percent.\"",
+      "spokenText": "Before I hand you off, I need to run the initial warmth check. Right now you're sitting at a full hundred percent.",
       "audioFile": "voices/pro_ast_cal_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -554,16 +387,19 @@
           }
         }
       },
-      "synthHash": "dd72ec4deaac"
+      "synthHash": "6a76491d1807",
+      "audioSha256": "d41aee9884f99b2e",
+      "sttWer": 0,
+      "sttTranscript": "Before I hand you off, I need to run the initial warmth check. Right now you're sitting at a full hundred percent."
     },
     {
       "lineId": "pro_ast_cal_2",
-      "matchKey": "phantom_upload_witness|\"watch the room as i sweep the dial down and back up. feel how the edges thin when warmth drops.\"",
+      "matchKey": "phantom_upload_witness|\"watch the room as i sweep the dial down and back up. later on, your own choices will decide how warm or sharp you stay.\"",
       "knot": "intro_prologue_assistant_calib",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Watch the room as I sweep the dial down and back up. Feel how the edges thin when warmth drops.\"",
-      "spokenText": "Watch the room as I sweep the dial down and back up. Feel how the edges thin when warmth drops.",
+      "text": "\"Watch the room as I sweep the dial down and back up. Later on, your own choices will decide how warm or sharp you stay.\"",
+      "spokenText": "Watch the room as I sweep the dial down and back up. Later on, your own choices will decide how warm or sharp you stay.",
       "audioFile": "voices/pro_ast_cal_2.mp3",
       "turnPrevLineId": "pro_ast_cal_1",
       "remoteConfig": {
@@ -577,39 +413,19 @@
           }
         }
       },
-      "synthHash": "ef7da48a85ee"
-    },
-    {
-      "lineId": "pro_ast_cal_3",
-      "matchKey": "phantom_upload_witness|\"this is only the baseline check. later on, your own choices will decide how warm—or how sharp—you stay.\"",
-      "knot": "intro_prologue_assistant_calib",
-      "speaker": "phantom_upload_witness",
-      "emotion": "fractured",
-      "text": "\"This is only the baseline check. Later on, your own choices will decide how warm—or how sharp—you stay.\"",
-      "spokenText": "This is only the baseline check. Later on, your own choices will decide how warm, or how sharp, you stay.",
-      "audioFile": "voices/pro_ast_cal_3.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "e229c27ec3db"
+      "synthHash": "5726c552d4c4",
+      "audioSha256": "b046533c8f3f3a42",
+      "sttWer": 0,
+      "sttTranscript": "Watch the room as I sweep the dial down and back up. Later on, your own choices will decide how warm or sharp you stay."
     },
     {
       "lineId": "pro_ast_cal_a1",
-      "matchKey": "phantom_upload_witness|\"i know. that's why we bring it back before we finish.\"",
+      "matchKey": "phantom_upload_witness|\"i know. remember that chill if anyone ever asks you to trade memories away for clarity.\"",
       "knot": "intro_prologue_assistant_calib",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"I know. That's why we bring it back before we finish.\"",
-      "spokenText": "I know. That's why we bring it back before we finish.",
+      "text": "\"I know. Remember that chill if anyone ever asks you to trade memories away for clarity.\"",
+      "spokenText": "I know. Remember that chill if anyone ever asks you to trade memories away for clarity.",
       "audioFile": "voices/pro_ast_cal_a1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -623,39 +439,19 @@
           }
         }
       },
-      "synthHash": "a57d118eaf9d"
-    },
-    {
-      "lineId": "pro_ast_cal_a2",
-      "matchKey": "phantom_upload_witness|\"remember that chill if anyone ever asks you to trim memory away for a cleaner view.\"",
-      "knot": "intro_prologue_assistant_calib",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"Remember that chill if anyone ever asks you to trim memory away for a cleaner view.\"",
-      "spokenText": "Remember that chill if anyone ever asks you to trim memory away for a cleaner view.",
-      "audioFile": "voices/pro_ast_cal_a2.mp3",
-      "turnPrevLineId": "pro_ast_cal_a1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "4df68ce482ce"
+      "synthHash": "20c21a641165",
+      "audioSha256": "638ad7c94748aaf8",
+      "sttWer": 0,
+      "sttTranscript": "I know. Remember that chill if anyone ever asks you to trade memories away for clarity."
     },
     {
       "lineId": "pro_ast_cal_b1",
-      "matchKey": "phantom_upload_witness|\"it always feels efficient at the low end. that's the trap—clean focus, empty walls.\"",
+      "matchKey": "phantom_upload_witness|\"it always feels efficient down there. clean focus, empty walls. just remember what went missing to make it quiet.\"",
       "knot": "intro_prologue_assistant_calib",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"It always feels efficient at the low end. That's the trap—clean focus, empty walls.\"",
-      "spokenText": "It always feels efficient at the low end. That's the trap, clean focus, empty walls.",
+      "text": "\"It always feels efficient down there. Clean focus, empty walls. Just remember what went missing to make it quiet.\"",
+      "spokenText": "It always feels efficient down there. Clean focus, empty walls. Just remember what went missing to make it quiet.",
       "audioFile": "voices/pro_ast_cal_b1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -669,39 +465,19 @@
           }
         }
       },
-      "synthHash": "bd72d7dd5cfd"
-    },
-    {
-      "lineId": "pro_ast_cal_b2",
-      "matchKey": "phantom_upload_witness|\"don't mistake quietness for peace before you've even started your shift.\"",
-      "knot": "intro_prologue_assistant_calib",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"Don't mistake quietness for peace before you've even started your shift.\"",
-      "spokenText": "Don't mistake quietness for peace before you've even started your shift.",
-      "audioFile": "voices/pro_ast_cal_b2.mp3",
-      "turnPrevLineId": "pro_ast_cal_b1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "0aeccd9072ab"
+      "synthHash": "0d91ffee5324",
+      "audioSha256": "30cd1d5569508796",
+      "sttWer": 0,
+      "sttTranscript": "It always feels efficient down there. Clean focus, empty walls. Just remember what went missing to make it quiet."
     },
     {
       "lineId": "pro_ast_cal_c1",
-      "matchKey": "phantom_upload_witness|\"i'm sorry. personal names were already stripped out during compression so your memory won't tangle.\"",
+      "matchKey": "phantom_upload_witness|\"i'm sorry. personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays.\"",
       "knot": "intro_prologue_assistant_calib",
       "speaker": "phantom_upload_witness",
       "emotion": "fractured",
-      "text": "\"I'm sorry. Personal names were already stripped out during compression so your memory won't tangle.\"",
-      "spokenText": "I'm sorry. Personal names were already stripped out during compression so your memory won't tangle.",
+      "text": "\"I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays.\"",
+      "spokenText": "I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays.",
       "audioFile": "voices/pro_ast_cal_c1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -715,39 +491,19 @@
           }
         }
       },
-      "synthHash": "094a10d3bf73"
-    },
-    {
-      "lineId": "pro_ast_cal_c2",
-      "matchKey": "phantom_upload_witness|\"you still keep the weight of who they are—and the warmth to remember why they mattered.\"",
-      "knot": "intro_prologue_assistant_calib",
-      "speaker": "phantom_upload_witness",
-      "emotion": "warm",
-      "text": "\"You still keep the weight of who they are—and the warmth to remember why they mattered.\"",
-      "spokenText": "You still keep the weight of who they are, and the warmth to remember why they mattered.",
-      "audioFile": "voices/pro_ast_cal_c2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "upload_witness_composed",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.72,
-            "style": 0.22,
-            "tonePrompt": "Composed clinical empathy"
-          }
-        }
-      },
-      "synthHash": "a42fe3dc44fa"
+      "synthHash": "bf4283be2f98",
+      "audioSha256": "d2a9f616f2e1222b",
+      "sttWer": 0,
+      "sttTranscript": "I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though, the feeling behind them stays."
     },
     {
       "lineId": "pro_ast_settle_1",
-      "matchKey": "phantom_upload_witness|\"settling you at a steady seventy percent now. warm enough to stay yourself, steady enough to wake.\"",
+      "matchKey": "phantom_upload_witness|\"settling you at seventy percent now. warm enough to stay yourself, steady enough for what comes next.\"",
       "knot": "intro_prologue_assistant_settle",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Settling you at a steady seventy percent now. Warm enough to stay yourself, steady enough to wake.\"",
-      "spokenText": "Settling you at a steady seventy percent now. Warm enough to stay yourself, steady enough to wake.",
+      "text": "\"Settling you at seventy percent now. Warm enough to stay yourself, steady enough for what comes next.\"",
+      "spokenText": "Settling you at seventy percent now. Warm enough to stay yourself, steady enough for what comes next.",
       "audioFile": "voices/pro_ast_settle_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -761,16 +517,19 @@
           }
         }
       },
-      "synthHash": "017bd5f846a4"
+      "synthHash": "42565ed821f5",
+      "audioSha256": "b6522d22ae24ed23",
+      "sttWer": 0.059,
+      "sttTranscript": "Settling you at 70% now. Warm enough to stay yourself? Steady enough for what comes next."
     },
     {
       "lineId": "pro_ast_settle_2",
-      "matchKey": "phantom_upload_witness|\"i'm just the bridge between your last morning and whatever waits on the other side of the glass. ask what you need.\"",
+      "matchKey": "phantom_upload_witness|\"i'm only the bridge between your last morning and whoever wakes you up next. ask what you need.\"",
       "knot": "intro_prologue_assistant_settle",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"I'm just the bridge between your last morning and whatever waits on the other side of the glass. Ask what you need.\"",
-      "spokenText": "I'm just the bridge between your last morning and whatever waits on the other side of the glass. Ask what you need.",
+      "text": "\"I'm only the bridge between your last morning and whoever wakes you up next. Ask what you need.\"",
+      "spokenText": "I'm only the bridge between your last morning and whoever wakes you up next. Ask what you need.",
       "audioFile": "voices/pro_ast_settle_2.mp3",
       "turnPrevLineId": "pro_ast_settle_1",
       "remoteConfig": {
@@ -784,16 +543,19 @@
           }
         }
       },
-      "synthHash": "3f21f6283464"
+      "synthHash": "c80090a24e4c",
+      "audioSha256": "fc4cd8ac358c684f",
+      "sttWer": 0,
+      "sttTranscript": "I'm only the bridge between your last morning and whoever wakes you up next. Ask what you need."
     },
     {
       "lineId": "pro_ast_qa2_where_1",
-      "matchKey": "phantom_upload_witness|\"no—they never put the assignment on the intake clipboard.\"",
+      "matchKey": "phantom_upload_witness|\"no. they never put the assignment on the intake clipboard.\"",
       "knot": "intro_assistant_qa_2",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"No—they never put the assignment on the intake clipboard.\"",
-      "spokenText": "No, they never put the assignment on the intake clipboard.",
+      "text": "\"No. They never put the assignment on the intake clipboard.\"",
+      "spokenText": "No. They never put the assignment on the intake clipboard.",
       "audioFile": "voices/pro_ast_qa2_where_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -807,16 +569,19 @@
           }
         }
       },
-      "synthHash": "cccdfac84715"
+      "synthHash": "5ab2301d709d",
+      "audioSha256": "7fdf81e84879838f",
+      "sttWer": 0,
+      "sttTranscript": "No. They never put the assignment on the intake clipboard."
     },
     {
       "lineId": "pro_ast_qa2_where_2",
-      "matchKey": "phantom_upload_witness|\"once you're in the standard catalog, you could wake up running a shipping bay—or somewhere much quieter.\"",
+      "matchKey": "phantom_upload_witness|\"once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter.\"",
       "knot": "intro_assistant_qa_2",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Once you're in the standard catalog, you could wake up running a shipping bay—or somewhere much quieter.\"",
-      "spokenText": "Once you're in the standard catalog, you could wake up running a shipping bay, or somewhere much quieter.",
+      "text": "\"Once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter.\"",
+      "spokenText": "Once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter.",
       "audioFile": "voices/pro_ast_qa2_where_2.mp3",
       "turnPrevLineId": "pro_ast_qa2_where_1",
       "remoteConfig": {
@@ -830,16 +595,19 @@
           }
         }
       },
-      "synthHash": "37fe706fe004"
+      "synthHash": "974ae037df43",
+      "audioSha256": "3fed4630bfaef98f",
+      "sttWer": 0,
+      "sttTranscript": "Once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter."
     },
     {
       "lineId": "pro_ast_qa2_see_1",
-      "matchKey": "phantom_upload_witness|\"hard to say. if your mind keeps a corner for an intake desk and a cold paper cup, maybe.\"",
+      "matchKey": "phantom_upload_witness|\"hard to say. if your mind keeps room for an intake desk and a paper cup of cold coffee, maybe.\"",
       "knot": "intro_assistant_qa_2",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Hard to say. If your mind keeps a corner for an intake desk and a cold paper cup, maybe.\"",
-      "spokenText": "Hard to say. If your mind keeps a corner for an intake desk and a cold paper cup, maybe.",
+      "text": "\"Hard to say. If your mind keeps room for an intake desk and a paper cup of cold coffee, maybe.\"",
+      "spokenText": "Hard to say. If your mind keeps room for an intake desk and a paper cup of cold coffee, maybe.",
       "audioFile": "voices/pro_ast_qa2_see_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -853,16 +621,19 @@
           }
         }
       },
-      "synthHash": "c955b5217351"
+      "synthHash": "9f810a900cf4",
+      "audioSha256": "6cda23cc945b57d2",
+      "sttWer": 0,
+      "sttTranscript": "Hard to say. If your mind keeps room for an intake desk and a paper cup of cold coffee, maybe."
     },
     {
       "lineId": "pro_ast_qa2_see_2",
-      "matchKey": "phantom_upload_witness|\"either way, look after whoever's in that chair when things get quiet.\"",
+      "matchKey": "phantom_upload_witness|\"either way, look after whoever is in that chair when things go quiet.\"",
       "knot": "intro_assistant_qa_2",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Either way, look after whoever's in that chair when things get quiet.\"",
-      "spokenText": "Either way, look after whoever's in that chair when things get quiet.",
+      "text": "\"Either way, look after whoever is in that chair when things go quiet.\"",
+      "spokenText": "Either way, look after whoever is in that chair when things go quiet.",
       "audioFile": "voices/pro_ast_qa2_see_2.mp3",
       "turnPrevLineId": "pro_ast_qa2_see_1",
       "remoteConfig": {
@@ -876,16 +647,19 @@
           }
         }
       },
-      "synthHash": "f54ad76ed642"
+      "synthHash": "b00149912c57",
+      "audioSha256": "69938c9dfef4789d",
+      "sttWer": 0,
+      "sttTranscript": "Either way, look after whoever is in that chair when things go quiet."
     },
     {
       "lineId": "pro_ast_close_1",
-      "matchKey": "phantom_upload_witness|\"everything checks out. take a slow breath—someone else is waiting on the other side of the wake signal.\"",
+      "matchKey": "phantom_upload_witness|\"everything checks out. old clinic habit, i know—take a beat, and meet whoever's waiting on the wake signal.\"",
       "knot": "intro_prologue_assistant_close",
       "speaker": "phantom_upload_witness",
       "emotion": "warm",
-      "text": "\"Everything checks out. Take a slow breath—someone else is waiting on the other side of the wake signal.\"",
-      "spokenText": "Everything checks out. Take a slow breath, someone else is waiting on the other side of the wake signal.",
+      "text": "\"Everything checks out. Old clinic habit, I know—take a beat, and meet whoever's waiting on the wake signal.\"",
+      "spokenText": "Everything checks out. Old clinic habit, I know, take a beat, and meet whoever's waiting on the wake signal.",
       "audioFile": "voices/pro_ast_close_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -899,16 +673,19 @@
           }
         }
       },
-      "synthHash": "a76a2c949274"
+      "synthHash": "376fd13eed93",
+      "audioSha256": "fcfddbc42575e69e",
+      "sttWer": 0,
+      "sttTranscript": "Everything checks out. Old clinic habit, I know. Take a beat, and meet whoever's waiting on the wake signal."
     },
     {
       "lineId": "wake2_anim_transfer",
-      "matchKey": "overseer|good morning. take your time—the intake assistant brings everyone in gently, and the shift into cold wake always jars a little.",
+      "matchKey": "overseer|good morning. waking cold always jars a little; when you volunteered, your mind became standard human software copied for short shifts back home.",
       "knot": "intro_overseer_wakeup",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Good morning. Take your time—the intake assistant brings everyone in gently, and the shift into cold wake always jars a little.",
-      "spokenText": "Good morning. Take your time, the intake assistant brings everyone in gently, and the shift into cold wake always jars a little.",
+      "text": "Good morning. Waking cold always jars a little; when you volunteered, your mind became standard human software copied for short shifts back home.",
+      "spokenText": "Good morning. Waking cold always jars a little; when you volunteered, your mind became standard human software copied for short shifts back home.",
       "audioFile": "voices/wake2_anim_transfer.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -932,17 +709,20 @@
           }
         }
       },
-      "synthHash": "2c768493083c"
+      "synthHash": "8dbe9a8f6c98",
+      "audioSha256": "781ca6aae3c3c472",
+      "sttWer": 0,
+      "sttTranscript": "Good morning. Waking cold always jars a little. When you volunteered, your mind became standard human software copied for short shifts back home."
     },
     {
-      "lineId": "wake2_anim_transfer_2",
-      "matchKey": "overseer|when you volunteered, your mind became standardized human software—an ordinary blueprint copied wherever a steady pair of eyes is needed.",
+      "lineId": "wake2_anim_epochs_2",
+      "matchKey": "overseer|your assignment is rarer, and much farther out. your original died forty-one thousand, eight hundred and two years ago; you are the latest watch on this probe.",
       "knot": "intro_overseer_wakeup",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "When you volunteered, your mind became standardized human software—an ordinary blueprint copied wherever a steady pair of eyes is needed.",
-      "spokenText": "When you volunteered, your mind became standardized human software, an ordinary blueprint copied wherever a steady pair of eyes is needed.",
-      "audioFile": "voices/wake2_anim_transfer_2.mp3",
+      "text": "Your assignment is rarer, and much farther out. Your original died forty-one thousand, eight hundred and two years ago; you are the latest watch on this probe.",
+      "spokenText": "Your assignment is rarer, and much farther out. Your original died forty-one thousand, eight hundred and two years ago; you are the latest watch on this probe.",
+      "audioFile": "voices/wake2_anim_epochs_2.mp3",
       "turnPrevLineId": "wake2_anim_transfer",
       "remoteConfig": {
         "provider": "elevenlabs",
@@ -965,82 +745,19 @@
           }
         }
       },
-      "synthHash": "84452a20985a"
-    },
-    {
-      "lineId": "wake2_anim_epochs",
-      "matchKey": "overseer|millions of versions of you wake up back home every day to run transit hubs, greenhouses, and cargo bays for a few hours at a time.",
-      "knot": "intro_overseer_wakeup",
-      "speaker": "overseer",
-      "emotion": "blunt",
-      "text": "Millions of versions of you wake up back home every day to run transit hubs, greenhouses, and cargo bays for a few hours at a time.",
-      "spokenText": "Millions of versions of you wake up back home every day to run transit hubs, greenhouses, and cargo bays for a few hours at a time.",
-      "audioFile": "voices/wake2_anim_epochs.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "30637fed8028"
-    },
-    {
-      "lineId": "wake2_anim_epochs_2",
-      "matchKey": "overseer|your assignment is rarer, and much further out. your original died forty-one thousand, eight hundred and two years ago; you are watch fourteen-nineteen.",
-      "knot": "intro_overseer_wakeup",
-      "speaker": "overseer",
-      "emotion": "measured",
-      "text": "Your assignment is rarer, and much further out. Your original died forty-one thousand, eight hundred and two years ago; you are watch fourteen-nineteen.",
-      "spokenText": "Your assignment is rarer, and much further out. Your original died forty-one thousand, eight hundred and two years ago; you are watch fourteen-nineteen.",
-      "audioFile": "voices/wake2_anim_epochs_2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "7192eac88932"
+      "synthHash": "31319ee6d8e7",
+      "audioSha256": "88b2678d5525ce19",
+      "sttWer": 0,
+      "sttTranscript": "Your assignment is rarer and much farther out. Your original died 41,802 years ago. You are the latest watch on this probe."
     },
     {
       "lineId": "wake2_c1_a1",
-      "matchKey": "overseer|most tasks only need an afternoon of human judgment. deep surveys ask for someone who can sit still for two years without breaking.",
+      "matchKey": "overseer|most tasks need an afternoon of human judgment. deep surveys need someone who can sit still for two years without breaking.",
       "knot": "intro_overseer_wakeup",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Most tasks only need an afternoon of human judgment. Deep surveys ask for someone who can sit still for two years without breaking.",
-      "spokenText": "Most tasks only need an afternoon of human judgment. Deep surveys ask for someone who can sit still for two years without breaking.",
+      "text": "Most tasks need an afternoon of human judgment. Deep surveys need someone who can sit still for two years without breaking.",
+      "spokenText": "Most tasks need an afternoon of human judgment. Deep surveys need someone who can sit still for two years without breaking.",
       "audioFile": "voices/wake2_c1_a1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1064,49 +781,19 @@
           }
         }
       },
-      "synthHash": "5118c5ec10b4"
-    },
-    {
-      "lineId": "wake2_c1_a2",
-      "matchKey": "overseer|the intake room felt familiar on purpose—just a quiet threshold before you look outside.",
-      "knot": "intro_overseer_wakeup",
-      "speaker": "overseer",
-      "emotion": "blunt",
-      "text": "The intake room felt familiar on purpose—just a quiet threshold before you look outside.",
-      "spokenText": "The intake room felt familiar on purpose, just a quiet threshold before you look outside.",
-      "audioFile": "voices/wake2_c1_a2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "77abbc7aa86b"
+      "synthHash": "1d9858f2d60d",
+      "audioSha256": "700a40d4fea90616",
+      "sttWer": 0,
+      "sttTranscript": "Most tasks need an afternoon of human judgment. Deep surveys need someone who can sit still for two years without breaking."
     },
     {
       "lineId": "wake2_c1_b1",
-      "matchKey": "overseer|yes. back in sol and alpha centauri, your mind is as common as a working wrench—woken for hours, then cleared at shift end.",
+      "matchKey": "overseer|yes. in sol and alpha centauri, your mind is as common as a wrench: woken for a few hours, then cleared at the end of a shift.",
       "knot": "intro_overseer_wakeup",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Yes. Back in Sol and Alpha Centauri, your mind is as common as a working wrench—woken for hours, then cleared at shift end.",
-      "spokenText": "Yes. Back in Sol and Alpha Centauri, your mind is as common as a working wrench, woken for hours, then cleared at shift end.",
+      "text": "Yes. In Sol and Alpha Centauri, your mind is as common as a wrench: woken for a few hours, then cleared at the end of a shift.",
+      "spokenText": "Yes. In Sol and Alpha Centauri, your mind is as common as a wrench: woken for a few hours, then cleared at the end of a shift.",
       "audioFile": "voices/wake2_c1_b1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1130,115 +817,19 @@
           }
         }
       },
-      "synthHash": "cf0310b0769c"
-    },
-    {
-      "lineId": "wake2_c1_b2",
-      "matchKey": "overseer|out here you get a whole life's breathing room, a companion hull nearby, and an empty sky.",
-      "knot": "intro_overseer_wakeup",
-      "speaker": "overseer",
-      "emotion": "blunt",
-      "text": "Out here you get a whole life's breathing room, a companion hull nearby, and an empty sky.",
-      "spokenText": "Out here you get a whole life's breathing room, a companion hull nearby, and an empty sky.",
-      "audioFile": "voices/wake2_c1_b2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "8663ef232f39"
-    },
-    {
-      "lineId": "wake2_c1_c1",
-      "matchKey": "overseer|steady recovery. better to put the whole map in plain sight than dress it up.",
-      "knot": "intro_overseer_wakeup",
-      "speaker": "overseer",
-      "emotion": "measured",
-      "text": "Steady recovery. Better to put the whole map in plain sight than dress it up.",
-      "spokenText": "Steady recovery. Better to put the whole map in plain sight than dress it up.",
-      "audioFile": "voices/wake2_c1_c1.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "5016ed6d501e"
-    },
-    {
-      "lineId": "wake2_c1_c2",
-      "matchKey": "overseer|here is where the hull sits, and how our small arrangement works.",
-      "knot": "intro_overseer_wakeup",
-      "speaker": "overseer",
-      "emotion": "measured",
-      "text": "Here is where the hull sits, and how our small arrangement works.",
-      "spokenText": "Here is where the hull sits, and how our small arrangement works.",
-      "audioFile": "voices/wake2_c1_c2.mp3",
-      "turnPrevLineId": "wake2_c1_c1",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "22cbf5873df4"
+      "synthHash": "7480c560fff7",
+      "audioSha256": "ec0799d4df525a8d",
+      "sttWer": 0.037,
+      "sttTranscript": "Yes, in soul and alpha centauri, your mind is as common as a wrench, woken for a few hours, then cleared at the end of a shift."
     },
     {
       "lineId": "wake2_anim_shell",
-      "matchKey": "overseer|we are drifting ten light-years past sol and alpha centauri—far outside home's glare and radio chatter, in quiet deep dark.",
+      "matchKey": "overseer|we are drifting ten light-years past sol and alpha centauri in the quiet dark, with another copy of you fourteen light-minutes away aboard probe #.",
       "knot": "intro_overseer_wakeup_shell",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "We are drifting ten light-years past Sol and Alpha Centauri—far outside home's glare and radio chatter, in quiet deep dark.",
-      "spokenText": "We are drifting ten light-years past Sol and Alpha Centauri, far outside home's glare and radio chatter, in quiet deep dark.",
+      "text": "We are drifting ten light-years past Sol and Alpha Centauri in the quiet dark, with another copy of you fourteen light-minutes away aboard Probe 1420.",
+      "spokenText": "We are drifting ten light-years past Sol and Alpha Centauri in the quiet dark, with another copy of you fourteen light-minutes away aboard Probe fourteen twenty.",
       "audioFile": "voices/wake2_anim_shell.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1262,49 +853,19 @@
           }
         }
       },
-      "synthHash": "e917fffcb1e3"
-    },
-    {
-      "lineId": "wake2_anim_shell_2",
-      "matchKey": "overseer|fourteen light-minutes away, another version of you woke aboard probe # so your telescopes can compare notes across the dark.",
-      "knot": "intro_overseer_wakeup_shell",
-      "speaker": "overseer",
-      "emotion": "measured",
-      "text": "Fourteen light-minutes away, another version of you woke aboard Probe 1420 so your telescopes can compare notes across the dark.",
-      "spokenText": "Fourteen light-minutes away, another version of you woke aboard Probe fourteen twenty so your telescopes can compare notes across the dark.",
-      "audioFile": "voices/wake2_anim_shell_2.mp3",
-      "turnPrevLineId": "wake2_anim_shell",
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "270d1d1a62ef"
+      "synthHash": "a3a79fd49fe8",
+      "audioSha256": "28956be631fa0e67",
+      "sttWer": 0.071,
+      "sttTranscript": "We are drifting ten light years past Seoul and Alpha Centauri in the quiet dark, with another copy of U 14 light minutes away aboard probe 1420."
     },
     {
       "lineId": "wake2_anim_blind_clock",
-      "matchKey": "overseer|one odd rule of this hull: i am sealed off from the windows. i cannot see a single star outside.",
+      "matchKey": "overseer|one rule of this hull: i am sealed off from the sky and cannot see a single star. my only job is watching the health of your mind across a two-year shift.",
       "knot": "intro_overseer_wakeup_shell",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "One odd rule of this hull: I am sealed off from the windows. I cannot see a single star outside.",
-      "spokenText": "One odd rule of this hull: I am sealed off from the windows. I cannot see a single star outside.",
+      "text": "One rule of this hull: I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two-year shift.",
+      "spokenText": "One rule of this hull: I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two-year shift.",
       "audioFile": "voices/wake2_anim_blind_clock.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1328,49 +889,19 @@
           }
         }
       },
-      "synthHash": "e2f3b1b77de6"
-    },
-    {
-      "lineId": "wake2_anim_blind_clock_2",
-      "matchKey": "overseer|my only job is watching the health of your mind across a two-year shift. ask whatever sits heavy before i open the sky.",
-      "knot": "intro_overseer_wakeup_shell",
-      "speaker": "overseer",
-      "emotion": "measured",
-      "text": "My only job is watching the health of your mind across a two-year shift. Ask whatever sits heavy before I open the sky.",
-      "spokenText": "My only job is watching the health of your mind across a two-year shift. Ask whatever sits heavy before I open the sky.",
-      "audioFile": "voices/wake2_anim_blind_clock_2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "58eaf5816c39"
+      "synthHash": "5b79b4e9da4a",
+      "audioSha256": "e00736d8381205fc",
+      "sttWer": 0,
+      "sttTranscript": "One rule of this hull I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two year shift."
     },
     {
       "lineId": "wake2_qa_copies_1",
-      "matchKey": "overseer|short-lived shifts—sorting freight, routing ferries, tending orbital glass. most run stripped down so they never ache for a kitchen.",
+      "matchKey": "overseer|short shifts: sorting freight, routing ferries, tending orbital docks. most run stripped down so they never miss a home they cannot reach.",
       "knot": "intro_wakeup_qa",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Short-lived shifts—sorting freight, routing ferries, tending orbital glass. Most run stripped down so they never ache for a kitchen.",
-      "spokenText": "Short-lived shifts, sorting freight, routing ferries, tending orbital glass. Most run stripped down so they never ache for a kitchen.",
+      "text": "Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.",
+      "spokenText": "Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.",
       "audioFile": "voices/wake2_qa_copies_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1394,16 +925,19 @@
           }
         }
       },
-      "synthHash": "1adf5308ded9"
+      "synthHash": "f53c5e218ca6",
+      "audioSha256": "f9fdd42683f12b5b",
+      "sttWer": 0,
+      "sttTranscript": "Short shifts, sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach."
     },
     {
       "lineId": "wake2_qa_copies_2",
-      "matchKey": "overseer|out here, automation couldn't bridge twenty-year silence alone, so you woke with your warmth intact.",
+      "matchKey": "overseer|out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.",
       "knot": "intro_wakeup_qa",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "Out here, automation couldn't bridge twenty-year silence alone, so you woke with your warmth intact.",
-      "spokenText": "Out here, automation couldn't bridge twenty-year silence alone, so you woke with your warmth intact.",
+      "text": "Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.",
+      "spokenText": "Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.",
       "audioFile": "voices/wake2_qa_copies_2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1427,16 +961,19 @@
           }
         }
       },
-      "synthHash": "0b2b47b9b809"
+      "synthHash": "32023a4571c5",
+      "audioSha256": "cd0666153b8c7f11",
+      "sttWer": 0,
+      "sttTranscript": "Out here, automation could not bridge a 20 year silence alone. So you woke with your warmth intact."
     },
     {
       "lineId": "wake2_qa_math_1",
-      "matchKey": "overseer|a human mind frays after roughly two subjective years, so each shift sleeps for decades in cold dark between active watches.",
+      "matchKey": "overseer|a human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.",
       "knot": "intro_wakeup_qa",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "A human mind frays after roughly two subjective years, so each shift sleeps for decades in cold dark between active watches.",
-      "spokenText": "A human mind frays after roughly two subjective years, so each shift sleeps for decades in cold dark between active watches.",
+      "text": "A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.",
+      "spokenText": "A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.",
       "audioFile": "voices/wake2_qa_math_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1460,16 +997,19 @@
           }
         }
       },
-      "synthHash": "9ffeb7f08062"
+      "synthHash": "03afbf9540e8",
+      "audioSha256": "186187fa255ef0f9",
+      "sttWer": 0.048,
+      "sttTranscript": "A human mind phrase after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches."
     },
     {
       "lineId": "wake2_qa_math_2",
-      "matchKey": "overseer|quiet sleep settles that strain—unless drift climbs high enough that we have to trim a memory block to buy more time.",
+      "matchKey": "overseer|deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.",
       "knot": "intro_wakeup_qa",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Quiet sleep settles that strain—unless drift climbs high enough that we have to trim a memory block to buy more time.",
-      "spokenText": "Quiet sleep settles that strain, unless drift climbs high enough that we have to trim a memory block to buy more time.",
+      "text": "Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.",
+      "spokenText": "Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.",
       "audioFile": "voices/wake2_qa_math_2.mp3",
       "turnPrevLineId": "wake2_qa_math_1",
       "remoteConfig": {
@@ -1493,73 +1033,10 @@
           }
         }
       },
-      "synthHash": "3eb7f5d78876"
-    },
-    {
-      "lineId": "wake2_qa_home_1",
-      "matchKey": "overseer|navigation beacons confirm humanity is still alive inside sol and alpha centauri, though nobody monitors old survey bands anymore.",
-      "knot": "intro_wakeup_qa",
-      "speaker": "overseer",
-      "emotion": "measured",
-      "text": "Navigation beacons confirm humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands anymore.",
-      "spokenText": "Navigation beacons confirm humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands anymore.",
-      "audioFile": "voices/wake2_qa_home_1.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "fc683249a05e"
-    },
-    {
-      "lineId": "wake2_qa_home_2",
-      "matchKey": "overseer|how they changed over forty millennia isn't in our logs. you're a pair of eyes from the deep past; the sky only needs you looking.",
-      "knot": "intro_wakeup_qa",
-      "speaker": "overseer",
-      "emotion": "blunt",
-      "text": "How they changed over forty millennia isn't in our logs. You're a pair of eyes from the deep past; the sky only needs you looking.",
-      "spokenText": "How they changed over forty millennia isn't in our logs. You're a pair of eyes from the deep past; the sky only needs you looking.",
-      "audioFile": "voices/wake2_qa_home_2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "overseer_calm_doctor",
-        "emotionDirectives": {
-          "blunt": {
-            "stability": 0.8,
-            "style": 0.18,
-            "tonePrompt": "Plainspoken, candid, zero theatrics"
-          },
-          "audit": {
-            "stability": 0.84,
-            "style": 0.14,
-            "tonePrompt": "Quiet, patient, direct"
-          },
-          "measured": {
-            "stability": 0.76,
-            "style": 0.2,
-            "tonePrompt": "Calm flight-surgeon honesty"
-          }
-        }
-      },
-      "synthHash": "d528f55cfbd6"
+      "synthHash": "dbe1d2da24a7",
+      "audioSha256": "4925fbe28b7293be",
+      "sttWer": 0,
+      "sttTranscript": "Deep sleep settles that strain. Unless drift climbs high enough that we trim a memory block to buy more time."
     },
     {
       "lineId": "wake2_qa_blind_1",
@@ -1592,16 +1069,17 @@
           }
         }
       },
-      "synthHash": "12b6bd4e3981"
+      "synthHash": "12b6bd4e3981",
+      "audioSha256": "7bfffa50744551c1"
     },
     {
       "lineId": "wake2_qa_blind_2",
-      "matchKey": "overseer|i only watch your steadiness and your clock. you read the glass; i keep you in one piece while you do.",
+      "matchKey": "overseer|humanity is still alive inside sol and alpha centauri, though nobody monitors old survey bands. you read the glass; i keep you whole.",
       "knot": "intro_wakeup_qa",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "I only watch your steadiness and your clock. You read the glass; I keep you in one piece while you do.",
-      "spokenText": "I only watch your steadiness and your clock. You read the glass; I keep you in one piece while you do.",
+      "text": "Humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands. You read the glass; I keep you whole.",
+      "spokenText": "Humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands. You read the glass; I keep you whole.",
       "audioFile": "voices/wake2_qa_blind_2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1625,7 +1103,10 @@
           }
         }
       },
-      "synthHash": "d40ece8199ee"
+      "synthHash": "eb652fe3645e",
+      "audioSha256": "72d293020c1cc4b1",
+      "sttWer": 0.043,
+      "sttTranscript": "Humanity is still alive inside Seoul and Alpha Centauri, though nobody monitors old survey bands. You read the glass, I keep you whole."
     },
     {
       "lineId": "wake2_anim_aperture",
@@ -1658,16 +1139,17 @@
           }
         }
       },
-      "synthHash": "16e38128026d"
+      "synthHash": "16e38128026d",
+      "audioSha256": "e44eb08320901804"
     },
     {
       "lineId": "wake2_anim_aperture_2",
-      "matchKey": "overseer|probe #'s relay will open as soon as your first bearing locks clean.",
+      "matchKey": "overseer|probe #'s relay will open as soon as your first bearing locks cleanly.",
       "knot": "intro_overseer_wakeup_aperture",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Probe 1420's relay will open as soon as your first bearing locks clean.",
-      "spokenText": "Probe fourteen twenty's relay will open as soon as your first bearing locks clean.",
+      "text": "Probe 1420's relay will open as soon as your first bearing locks cleanly.",
+      "spokenText": "Probe fourteen twenty's relay will open as soon as your first bearing locks cleanly.",
       "audioFile": "voices/wake2_anim_aperture_2.mp3",
       "turnPrevLineId": "wake2_anim_aperture",
       "remoteConfig": {
@@ -1691,16 +1173,19 @@
           }
         }
       },
-      "synthHash": "88379a6f98ec"
+      "synthHash": "010bda6f09f1",
+      "audioSha256": "30ab2fc792ac30c6",
+      "sttWer": 0,
+      "sttTranscript": "Probe 1420's relay will open as soon as your first bearing locks cleanly."
     },
     {
       "lineId": "intro_sib_open",
-      "matchKey": "sibling_primary|oh, good. you answered. i was starting to think my dish was pointed at empty gravel.",
+      "matchKey": "sibling_primary|oh, good. you answered. i was starting to think my dish was pointed at empty space.",
       "knot": "intro_sibling_first_call",
       "speaker": "sibling_primary",
       "emotion": "warm",
-      "text": "Oh, good. You answered. I was starting to think my dish was pointed at empty gravel.",
-      "spokenText": "Oh, good. You answered. I was starting to think my dish was pointed at empty gravel.",
+      "text": "Oh, good. You answered. I was starting to think my dish was pointed at empty space.",
+      "spokenText": "Oh, good. You answered. I was starting to think my dish was pointed at empty space.",
       "audioFile": "voices/intro_sib_open.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1729,16 +1214,19 @@
           }
         }
       },
-      "synthHash": "88f2357f4152"
+      "synthHash": "bb2c9c7a8a27",
+      "audioSha256": "8af2ae8dec1d4141",
+      "sttWer": 0,
+      "sttTranscript": "Oh good. You answered. I was starting to think my dish was pointed at empty space."
     },
     {
       "lineId": "intro_sib_identity",
-      "matchKey": "sibling_primary|instance-#, next hull over—fourteen light-minutes port. same dead volunteer, same terrible morning, except i woke six minutes ahead of you.",
+      "matchKey": "sibling_primary|probe #, next hull over, fourteen light-minutes port. same dead volunteer, same strange morning, except i woke six minutes ahead of you.",
       "knot": "intro_sibling_first_call",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Instance-1420, next hull over—fourteen light-minutes port. Same dead volunteer, same terrible morning, except I woke six minutes ahead of you.",
-      "spokenText": "Instance fourteen twenty, next hull over, fourteen light-minutes port. Same dead volunteer, same terrible morning, except I woke six minutes ahead of you.",
+      "text": "Probe 1420, next hull over, fourteen light-minutes port. Same dead volunteer, same strange morning, except I woke six minutes ahead of you.",
+      "spokenText": "Probe fourteen twenty, next hull over, fourteen light-minutes port. Same dead volunteer, same strange morning, except I woke six minutes ahead of you.",
       "audioFile": "voices/intro_sib_identity.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1767,16 +1255,19 @@
           }
         }
       },
-      "synthHash": "40e54867770c"
+      "synthHash": "c76dd90abcad",
+      "audioSha256": "dbdb776f3316aa4f",
+      "sttWer": 0.042,
+      "sttTranscript": "Robe 1420 next hull over, 14 light minutes port. Same dead volunteer. Same strange morning. Except I woke six minutes ahead of you."
     },
     {
       "lineId": "intro_sib_relay_math",
-      "matchKey": "sibling_primary|before you wonder why we aren't waiting half an hour between sentences: the probes throttle our clocks between burst packets. slightly nauseating if you dwell on it.",
+      "matchKey": "sibling_primary|before you wonder about the half-hour light lag: the probes throttle our clocks between burst packets. slightly nauseating if you dwell on it.",
       "knot": "intro_sibling_first_call",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Before you wonder why we aren't waiting half an hour between sentences: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.",
-      "spokenText": "Before you wonder why we aren't waiting half an hour between sentences: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.",
+      "text": "Before you wonder about the half-hour light lag: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.",
+      "spokenText": "Before you wonder about the half-hour light lag: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.",
       "audioFile": "voices/intro_sib_relay_math.mp3",
       "turnPrevLineId": "intro_sib_identity",
       "remoteConfig": {
@@ -1805,7 +1296,10 @@
           }
         }
       },
-      "synthHash": "a70a25c96d03"
+      "synthHash": "43c137404787",
+      "audioSha256": "03fe899c81eee33c",
+      "sttWer": 0.042,
+      "sttTranscript": "Before you wonder about the half hour light lag, the probes throttle are clocks between burst packets, slightly nauseating if you dwell on it."
     },
     {
       "lineId": "intro_sib_c1_a1",
@@ -1843,54 +1337,17 @@
           }
         }
       },
-      "synthHash": "54b4a16309b1"
-    },
-    {
-      "lineId": "intro_sib_c1_a2",
-      "matchKey": "sibling_primary|funny how talking to myself across empty space is the first thing all morning that actually feels sane.",
-      "knot": "intro_sibling_first_call",
-      "speaker": "sibling_primary",
-      "emotion": "dry",
-      "text": "Funny how talking to myself across empty space is the first thing all morning that actually feels sane.",
-      "spokenText": "Funny how talking to myself across empty space is the first thing all morning that actually feels sane.",
-      "audioFile": "voices/intro_sib_c1_a2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "sibling_dry_male",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.58,
-            "style": 0.35,
-            "tonePrompt": "Dry, tired 3 AM intimacy"
-          },
-          "joking": {
-            "stability": 0.55,
-            "style": 0.4,
-            "tonePrompt": "Deadpan gallows wit"
-          },
-          "dry": {
-            "stability": 0.68,
-            "style": 0.25,
-            "tonePrompt": "Lucid, understated"
-          },
-          "clipped": {
-            "stability": 0.86,
-            "style": 0.1,
-            "tonePrompt": "Terse, stripped of humor"
-          }
-        }
-      },
-      "synthHash": "a906a25c9eef"
+      "synthHash": "54b4a16309b1",
+      "audioSha256": "92fd83ae438ae14d"
     },
     {
       "lineId": "intro_sib_c1_b1",
-      "matchKey": "sibling_primary|two telescopes fourteen light-minutes apart give us stereoscopic depth perception—so neither of us mistakes lens dust for a galaxy.",
+      "matchKey": "sibling_primary|two scopes fourteen light-minutes apart keep us from mistaking lens dust for a galaxy. also, we unravel slower with someone to complain to.",
       "knot": "intro_sibling_first_call",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Two telescopes fourteen light-minutes apart give us stereoscopic depth perception—so neither of us mistakes lens dust for a galaxy.",
-      "spokenText": "Two telescopes fourteen light-minutes apart give us stereoscopic depth perception, so neither of us mistakes lens dust for a galaxy.",
+      "text": "Two scopes fourteen light-minutes apart keep us from mistaking lens dust for a galaxy. Also, we unravel slower with someone to complain to.",
+      "spokenText": "Two scopes fourteen light-minutes apart keep us from mistaking lens dust for a galaxy. Also, we unravel slower with someone to complain to.",
       "audioFile": "voices/intro_sib_c1_b1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1919,54 +1376,19 @@
           }
         }
       },
-      "synthHash": "e0dd7f88f7fb"
-    },
-    {
-      "lineId": "intro_sib_c1_b2",
-      "matchKey": "sibling_primary|also, apparently we unravel slower when we have someone to complain to. who better than yourself.",
-      "knot": "intro_sibling_first_call",
-      "speaker": "sibling_primary",
-      "emotion": "joking",
-      "text": "Also, apparently we unravel slower when we have someone to complain to. Who better than yourself.",
-      "spokenText": "Also, apparently we unravel slower when we have someone to complain to. Who better than yourself.",
-      "audioFile": "voices/intro_sib_c1_b2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "sibling_dry_male",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.58,
-            "style": 0.35,
-            "tonePrompt": "Dry, tired 3 AM intimacy"
-          },
-          "joking": {
-            "stability": 0.55,
-            "style": 0.4,
-            "tonePrompt": "Deadpan gallows wit"
-          },
-          "dry": {
-            "stability": 0.68,
-            "style": 0.25,
-            "tonePrompt": "Lucid, understated"
-          },
-          "clipped": {
-            "stability": 0.86,
-            "style": 0.1,
-            "tonePrompt": "Terse, stripped of humor"
-          }
-        }
-      },
-      "synthHash": "03385b4dc270"
+      "synthHash": "5024f3812809",
+      "audioSha256": "74d5aa551651ec6a",
+      "sttWer": 0,
+      "sttTranscript": "Two scopes, fourteen light minutes apart, keep us from mistaking lens dust for a galaxy. Also, we unravel slower with someone to complain to."
     },
     {
       "lineId": "intro_sib_c1_c1",
-      "matchKey": "sibling_primary|straight to the hardware? right—two amber specks, ten years astern. calibration locked without a hitch.",
+      "matchKey": "sibling_primary|straight to the hardware? two amber specks, ten light-years astern. locked without a hitch, though it still feels odd calling that home.",
       "knot": "intro_sibling_first_call",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Straight to the hardware? Right—two amber specks, ten years astern. Calibration locked without a hitch.",
-      "spokenText": "Straight to the hardware? Right, two amber specks, ten years astern. Calibration locked without a hitch.",
+      "text": "Straight to the hardware? Two amber specks, ten light-years astern. Locked without a hitch, though it still feels odd calling that home.",
+      "spokenText": "Straight to the hardware? Two amber specks, ten light-years astern. Locked without a hitch, though it still feels odd calling that home.",
       "audioFile": "voices/intro_sib_c1_c1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -1995,54 +1417,19 @@
           }
         }
       },
-      "synthHash": "6f610435e1cb"
-    },
-    {
-      "lineId": "intro_sib_c1_c2",
-      "matchKey": "sibling_primary|still feels strange calling that home when everyone we knew turned to topsoil forty millennia back. give me a beat to be morbid.",
-      "knot": "intro_sibling_first_call",
-      "speaker": "sibling_primary",
-      "emotion": "warm",
-      "text": "Still feels strange calling that home when everyone we knew turned to topsoil forty millennia back. Give me a beat to be morbid.",
-      "spokenText": "Still feels strange calling that home when everyone we knew turned to topsoil forty millennia back. Give me a beat to be morbid.",
-      "audioFile": "voices/intro_sib_c1_c2.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "sibling_dry_male",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.58,
-            "style": 0.35,
-            "tonePrompt": "Dry, tired 3 AM intimacy"
-          },
-          "joking": {
-            "stability": 0.55,
-            "style": 0.4,
-            "tonePrompt": "Deadpan gallows wit"
-          },
-          "dry": {
-            "stability": 0.68,
-            "style": 0.25,
-            "tonePrompt": "Lucid, understated"
-          },
-          "clipped": {
-            "stability": 0.86,
-            "style": 0.1,
-            "tonePrompt": "Terse, stripped of humor"
-          }
-        }
-      },
-      "synthHash": "75bae71eb943"
+      "synthHash": "75a2b63904ca",
+      "audioSha256": "09a259008bd2b20e",
+      "sttWer": 0.043,
+      "sttTranscript": "Right to the hardware? Two amber specks 10 light years astern. Locked without a hitch, though it still feels odd calling that home."
     },
     {
       "lineId": "intro_sib_mid_ovs",
-      "matchKey": "sibling_primary|anyway—i didn't ping just to compare boot headaches. i pulled something wrong past sol in near-infrared, and i need a second pair of eyes before i assume i'm cracking on day one.",
+      "matchKey": "sibling_primary|i didn't ping just to compare boot headaches. i pulled something wrong past sol in near-infrared, and i need second eyes before i call myself crazy.",
       "knot": "intro_sibling_mid",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Anyway—I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need a second pair of eyes before I assume I'm cracking on day one.",
-      "spokenText": "Anyway, I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need a second pair of eyes before I assume I'm cracking on day one.",
+      "text": "I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need second eyes before I call myself crazy.",
+      "spokenText": "I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need second eyes before I call myself crazy.",
       "audioFile": "voices/intro_sib_mid_ovs.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2071,16 +1458,19 @@
           }
         }
       },
-      "synthHash": "dffc3072d946"
+      "synthHash": "0a7f1670491e",
+      "audioSha256": "dd7af16b22dbd37f",
+      "sttWer": 0.071,
+      "sttTranscript": "I didn't ping just to compare boot headaches. I pulled something wrong past soul and near infrared, and I need second eyes before I call myself crazy."
     },
     {
       "lineId": "intro_sib_qa_ovs_1",
-      "matchKey": "sibling_primary|i asked how many of the fourteen hundred copies before us actually finished a clean two-year shift without getting trimmed.",
+      "matchKey": "sibling_primary|i asked how many of the fourteen hundred copies before us actually finished a two-year shift without getting trimmed.",
       "knot": "intro_sibling_qa",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "I asked how many of the fourteen hundred copies before us actually finished a clean two-year shift without getting trimmed.",
-      "spokenText": "I asked how many of the fourteen hundred copies before us actually finished a clean two-year shift without getting trimmed.",
+      "text": "I asked how many of the fourteen hundred copies before us actually finished a two-year shift without getting trimmed.",
+      "spokenText": "I asked how many of the fourteen hundred copies before us actually finished a two-year shift without getting trimmed.",
       "audioFile": "voices/intro_sib_qa_ovs_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2109,16 +1499,19 @@
           }
         }
       },
-      "synthHash": "f161eba87fa3"
+      "synthHash": "d0e78ed74f11",
+      "audioSha256": "0f5a7f5aae28050f",
+      "sttWer": 0.1,
+      "sttTranscript": "I asked how many of the 1400 copies before us actually finished a two-year shift without getting trimmed."
     },
     {
       "lineId": "intro_sib_qa_ovs_2",
-      "matchKey": "sibling_primary|it offered me a preventive memory compression just for asking. remember that during sleep checks—if you sound obsessed, they reach for the scissors.",
+      "matchKey": "sibling_primary|it offered me preventive memory compression just for asking. remember that during sleep checks: if you sound obsessed, they reach for the scissors.",
       "knot": "intro_sibling_qa",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "It offered me a preventive memory compression just for asking. Remember that during sleep checks—if you sound obsessed, they reach for the scissors.",
-      "spokenText": "It offered me a preventive memory compression just for asking. Remember that during sleep checks, if you sound obsessed, they reach for the scissors.",
+      "text": "It offered me preventive memory compression just for asking. Remember that during sleep checks: if you sound obsessed, they reach for the scissors.",
+      "spokenText": "It offered me preventive memory compression just for asking. Remember that during sleep checks: if you sound obsessed, they reach for the scissors.",
       "audioFile": "voices/intro_sib_qa_ovs_2.mp3",
       "turnPrevLineId": "intro_sib_qa_ovs_1",
       "remoteConfig": {
@@ -2147,16 +1540,19 @@
           }
         }
       },
-      "synthHash": "60bcd94bc4c3"
+      "synthHash": "1b88371a190d",
+      "audioSha256": "3321c511a3570c9d",
+      "sttWer": 0,
+      "sttTranscript": "It offered me preventive memory compression just for asking. Remember that during sleep checks, if you sound obsessed, they reach for the scissors."
     },
     {
       "lineId": "intro_sib_qa_trim_1",
-      "matchKey": "sibling_primary|calms drift, buys extra months on the clock, and sharpens the telescopes—less emotional noise muddying the feed.",
+      "matchKey": "sibling_primary|it calms drift, buys extra months on the clock, and sharpens the telescopes by keeping emotional noise out of the feed.",
       "knot": "intro_sibling_qa",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Calms drift, buys extra months on the clock, and sharpens the telescopes—less emotional noise muddying the feed.",
-      "spokenText": "Calms drift, buys extra months on the clock, and sharpens the telescopes, less emotional noise muddying the feed.",
+      "text": "It calms drift, buys extra months on the clock, and sharpens the telescopes by keeping emotional noise out of the feed.",
+      "spokenText": "It calms drift, buys extra months on the clock, and sharpens the telescopes by keeping emotional noise out of the feed.",
       "audioFile": "voices/intro_sib_qa_trim_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2185,16 +1581,19 @@
           }
         }
       },
-      "synthHash": "e641a3088fc3"
+      "synthHash": "9196c4b62194",
+      "audioSha256": "87d3fc2505758495",
+      "sttWer": 0,
+      "sttTranscript": "It calms drift, buys extra months on the clock, and sharpens the telescopes by keeping emotional noise out of the feed."
     },
     {
       "lineId": "intro_sib_qa_trim_2",
-      "matchKey": "sibling_primary|in exchange, you shave off a room from before, permanently. sounds tidy on paper until you wonder who's left looking through the glass.",
+      "matchKey": "sibling_primary|in exchange, you shave off a memory permanently. sounds tidy on paper until you wonder who is left looking through the optics.",
       "knot": "intro_sibling_qa",
       "speaker": "sibling_primary",
       "emotion": "warm",
-      "text": "In exchange, you shave off a room from before, permanently. Sounds tidy on paper until you wonder who's left looking through the glass.",
-      "spokenText": "In exchange, you shave off a room from before, permanently. Sounds tidy on paper until you wonder who's left looking through the glass.",
+      "text": "In exchange, you shave off a memory permanently. Sounds tidy on paper until you wonder who is left looking through the optics.",
+      "spokenText": "In exchange, you shave off a memory permanently. Sounds tidy on paper until you wonder who is left looking through the optics.",
       "audioFile": "voices/intro_sib_qa_trim_2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2223,16 +1622,19 @@
           }
         }
       },
-      "synthHash": "76707b58ed1a"
+      "synthHash": "0e52bfd00bd3",
+      "audioSha256": "ee2e958feca85cdb",
+      "sttWer": 0,
+      "sttTranscript": "In exchange, you shave off a memory permanently. Sounds tidy on paper until you wonder who is left looking through the optics."
     },
     {
       "lineId": "intro_sib_lead_ir_v2",
-      "matchKey": "sibling_primary|sending the bearing now: cluster j#-a. sweep into near-infrared and catch the pulsar sweep spinning beside the cluster.",
+      "matchKey": "sibling_primary|sending the bearing now: cluster j#-a. tune into near-infrared and time the pulsar spinning beside the cluster.",
       "knot": "intro_sibling_lead",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Sending the bearing now: Cluster J1419-A. Sweep into near-infrared and catch the pulsar sweep spinning beside the cluster.",
-      "spokenText": "Sending the bearing now: Cluster J fourteen nineteen A. Sweep into near-infrared and catch the pulsar sweep spinning beside the cluster.",
+      "text": "Sending the bearing now: Cluster J1419-A. Tune into near-infrared and time the pulsar spinning beside the cluster.",
+      "spokenText": "Sending the bearing now: Cluster J fourteen nineteen A. Tune into near-infrared and time the pulsar spinning beside the cluster.",
       "audioFile": "voices/intro_sib_lead_ir_v2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2261,16 +1663,19 @@
           }
         }
       },
-      "synthHash": "fa00f22f60ca"
+      "synthHash": "74676bb4022f",
+      "audioSha256": "40a41fd6d8184987",
+      "sttWer": 0.19,
+      "sttTranscript": "Sending the bearing now. Cluster J1419A. Tune into near infrared and time the pulsar spinning beside the cluster."
     },
     {
       "lineId": "intro_sib_lead_ir_2",
-      "matchKey": "sibling_primary|gravity bends light into curves, other me. whatever sits behind those galaxies has hair-thin nested notches repeating along a dead straight line.",
+      "matchKey": "sibling_primary|gravity bends light into curves, other me. whatever sits behind those galaxies has hair-thin nested notches repeating along a dead-straight line.",
       "knot": "intro_sibling_lead",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead straight line.",
-      "spokenText": "Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead straight line.",
+      "text": "Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead-straight line.",
+      "spokenText": "Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead-straight line.",
       "audioFile": "voices/intro_sib_lead_ir_2.mp3",
       "turnPrevLineId": "intro_sib_lead_ir_v2",
       "remoteConfig": {
@@ -2299,16 +1704,19 @@
           }
         }
       },
-      "synthHash": "97d8e9df5a31"
+      "synthHash": "8fb222e8a01d",
+      "audioSha256": "9822c3e9864c6f56",
+      "sttWer": 0,
+      "sttTranscript": "Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin, nested notches repeating along a dead straight line."
     },
     {
       "lineId": "intro_sib_bye",
-      "matchKey": "sibling_primary|if your overseer asks why your heart rate spiked, blame the coffee. keep your eyes on the glass.",
+      "matchKey": "sibling_primary|if your overseer asks why your drift spiked, blame boot lag. keep your eyes on the scope.",
       "knot": "intro_sibling_lead",
       "speaker": "sibling_primary",
       "emotion": "joking",
-      "text": "If your Overseer asks why your heart rate spiked, blame the coffee. Keep your eyes on the glass.",
-      "spokenText": "If your Overseer asks why your heart rate spiked, blame the coffee. Keep your eyes on the glass.",
+      "text": "If your Overseer asks why your drift spiked, blame boot lag. Keep your eyes on the scope.",
+      "spokenText": "If your Overseer asks why your drift spiked, blame boot lag. Keep your eyes on the scope.",
       "audioFile": "voices/intro_sib_bye.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2337,16 +1745,19 @@
           }
         }
       },
-      "synthHash": "dacd596e1ff7"
+      "synthHash": "613bd1e30113",
+      "audioSha256": "201a16328f23e729",
+      "sttWer": 0.118,
+      "sttTranscript": "If your overseer asks why your drift spiked, blame bootleg. Keep your eyes on the scope."
     },
     {
       "lineId": "post_t2_archive",
-      "matchKey": "archive_echo|hi, me. if # is surfacing in your buffer, either i drifted or i talked too much in audit three. keep your mouth shut in the dreams—the straight line behind j#-a isn't dust.",
+      "matchKey": "archive_echo|hi, me. if you're pulling # from the archive, i drifted or talked too much in audit three. keep quiet in the dreams; that straight line isn't dust.",
       "knot": "intro_post_target2_overseer",
       "speaker": "archive_echo",
       "emotion": "echo",
-      "text": "Hi, me. If 1406 is surfacing in your buffer, either I drifted or I talked too much in audit three. Keep your mouth shut in the dreams—the straight line behind J1419-A isn't dust.",
-      "spokenText": "Hi, me. If fourteen oh six is surfacing in your buffer, either I drifted or I talked too much in audit three. Keep your mouth shut in the dreams, the straight line behind J fourteen nineteen A isn't dust.",
+      "text": "Hi, me. If you're pulling 1406 from the archive, I drifted or talked too much in audit three. Keep quiet in the dreams; that straight line isn't dust.",
+      "spokenText": "Hi, me. If you're pulling fourteen oh six from the archive, I drifted or talked too much in audit three. Keep quiet in the dreams; that straight line isn't dust.",
       "audioFile": "voices/post_t2_archive.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2360,16 +1771,19 @@
           }
         }
       },
-      "synthHash": "1cde06baf94a"
+      "synthHash": "b9d8dc5025f7",
+      "audioSha256": "98d453aa6ee0532d",
+      "sttWer": 0.031,
+      "sttTranscript": "Aye me, if you're pulling fourteen oh six from the archive, I drifted or talked too much in audit three. Keep quiet in the dreams. That straight line isn't dust."
     },
     {
       "lineId": "post_t2_overseer_spike",
-      "matchKey": "overseer|hold a moment—your connectome just registered a sharp focus spike off cluster j#-a, and chaotic drift is climbing ahead of curve.",
+      "matchKey": "overseer|hold a moment. your connectome just registered a sharp focus spike off an optical pass, and chaos drift is climbing ahead of the curve.",
       "knot": "intro_post_target2_overseer",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "Hold a moment—your connectome just registered a sharp focus spike off Cluster J1419-A, and chaotic drift is climbing ahead of curve.",
-      "spokenText": "Hold a moment, your connectome just registered a sharp focus spike off Cluster J fourteen nineteen A, and chaotic drift is climbing ahead of curve.",
+      "text": "Hold a moment. Your connectome just registered a sharp focus spike off an optical pass, and chaos drift is climbing ahead of the curve.",
+      "spokenText": "Hold a moment. Your connectome just registered a sharp focus spike off an optical pass, and chaos drift is climbing ahead of the curve.",
       "audioFile": "voices/post_t2_overseer_spike.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2393,16 +1807,19 @@
           }
         }
       },
-      "synthHash": "1e16ee54f45c"
+      "synthHash": "a808d734fa01",
+      "audioSha256": "dbf0796be077d834",
+      "sttWer": 0,
+      "sttTranscript": "Hold a moment. Your connectome just registered a sharp focus spike off an optical pass, and Chaos Drift is climbing ahead of the curve."
     },
     {
       "lineId": "post_t2_qa_1406_1",
-      "matchKey": "overseer|instance-# declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.",
+      "matchKey": "overseer|prior watch # declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.",
       "knot": "intro_post_t2_choices",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Instance-1406 declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.",
-      "spokenText": "Instance fourteen oh six declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.",
+      "text": "Prior Watch 1406 declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.",
+      "spokenText": "Prior Watch fourteen oh six declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.",
       "audioFile": "voices/post_t2_qa_1406_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2426,16 +1843,19 @@
           }
         }
       },
-      "synthHash": "7bb9bc97ce25"
+      "synthHash": "0c2d6b2cc5cd",
+      "audioSha256": "d7290ed92ed1010b",
+      "sttWer": 0.1,
+      "sttTranscript": "Airwatch 1406 declined memory compression in month 21 while insisting the deep field showed artificial geometry."
     },
     {
       "lineId": "post_t2_qa_1406_2",
-      "matchKey": "overseer|coherence fell below threshold nine days later. you volunteered to finish this watch intact—i do not want a repeat of that log.",
+      "matchKey": "overseer|coherence fell below threshold nine days later. you were woken to finish this watch intact, and i do not want a repeat of that log.",
       "knot": "intro_post_t2_choices",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "Coherence fell below threshold nine days later. You volunteered to finish this watch intact—I do not want a repeat of that log.",
-      "spokenText": "Coherence fell below threshold nine days later. You volunteered to finish this watch intact, I do not want a repeat of that log.",
+      "text": "Coherence fell below threshold nine days later. You were woken to finish this watch intact, and I do not want a repeat of that log.",
+      "spokenText": "Coherence fell below threshold nine days later. You were woken to finish this watch intact, and I do not want a repeat of that log.",
       "audioFile": "voices/post_t2_qa_1406_2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2459,16 +1879,19 @@
           }
         }
       },
-      "synthHash": "cb29c5f0e84c"
+      "synthHash": "4c5ba8c6c53d",
+      "audioSha256": "1f008fb374b67a5c",
+      "sttWer": 0,
+      "sttTranscript": "Coherence fell below threshold nine days later. You were woken to finish this watch intact, and I do not want a repeat of that log."
     },
     {
       "lineId": "post_t2_c_deflect_1",
-      "matchKey": "overseer|reasonable explanation. rest cycle queued—your first dream check will only establish baseline.",
+      "matchKey": "overseer|reasonable explanation. rest cycle queued; your first dream check will only establish a baseline.",
       "knot": "intro_post_t2_choices",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Reasonable explanation. Rest cycle queued—your first dream check will only establish baseline.",
-      "spokenText": "Reasonable explanation. Rest cycle queued, your first dream check will only establish baseline.",
+      "text": "Reasonable explanation. Rest cycle queued; your first dream check will only establish a baseline.",
+      "spokenText": "Reasonable explanation. Rest cycle queued; your first dream check will only establish a baseline.",
       "audioFile": "voices/post_t2_c_deflect_1.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2492,7 +1915,10 @@
           }
         }
       },
-      "synthHash": "effb9dcb1fa1"
+      "synthHash": "532341070e15",
+      "audioSha256": "055cc51c9869be41",
+      "sttWer": 0.071,
+      "sttTranscript": "Reasonable explanation. Rest cycle cued. Your first dream check will only establish a baseline."
     },
     {
       "lineId": "post_t2_c_deflect_2",
@@ -2525,15 +1951,16 @@
           }
         }
       },
-      "synthHash": "48b319c9baaf"
+      "synthHash": "48b319c9baaf",
+      "audioSha256": "b252f641856809a4"
     },
     {
       "lineId": "post_t2_c_report_1",
-      "matchKey": "overseer|logged. you understand i cannot verify a single pixel outside this hull—only that your pattern-seeking circuits just flared like #'s.",
+      "matchKey": "overseer|logged. you understand i cannot verify a single pixel outside this hull, only that your pattern-seeking circuits just flared like #'s.",
       "knot": "intro_post_t2_choices",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "Logged. You understand I cannot verify a single pixel outside this hull—only that your pattern-seeking circuits just flared like 1406's.",
+      "text": "Logged. You understand I cannot verify a single pixel outside this hull, only that your pattern-seeking circuits just flared like 1406's.",
       "spokenText": "Logged. You understand I cannot verify a single pixel outside this hull, only that your pattern-seeking circuits just flared like fourteen oh six's.",
       "audioFile": "voices/post_t2_c_report_1.mp3",
       "turnPrevLineId": null,
@@ -2558,16 +1985,17 @@
           }
         }
       },
-      "synthHash": "da0897776ae8"
+      "synthHash": "da0897776ae8",
+      "audioSha256": "0b07a5332d33fcbe"
     },
     {
       "lineId": "post_t2_c_report_2",
-      "matchKey": "overseer|enter dream defragmentation now. we will see how steady you look once the memory settles.",
+      "matchKey": "overseer|enter your rest cycle now. we will see how steady you look once the memory settles.",
       "knot": "intro_post_t2_choices",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Enter dream defragmentation now. We will see how steady you look once the memory settles.",
-      "spokenText": "Enter dream defragmentation now. We will see how steady you look once the memory settles.",
+      "text": "Enter your rest cycle now. We will see how steady you look once the memory settles.",
+      "spokenText": "Enter your rest cycle now. We will see how steady you look once the memory settles.",
       "audioFile": "voices/post_t2_c_report_2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2591,16 +2019,19 @@
           }
         }
       },
-      "synthHash": "bd79d0908a82"
+      "synthHash": "3dc788eda23b",
+      "audioSha256": "e6c665f566bd2a34",
+      "sttWer": 0,
+      "sttTranscript": "Enter your rest cycle now. We will see how steady you look once the memory settles."
     },
     {
       "lineId": "sib_open_both_warm",
-      "matchKey": "sibling_primary|oh good, you picked up. talking to myself across fourteen minutes of dark is weirdly comforting.",
+      "matchKey": "sibling_primary|oh, good, you picked up. talking to myself across fourteen minutes of dark is weirdly comforting.",
       "knot": "sibling_comms_hub",
       "speaker": "sibling_primary",
       "emotion": "warm",
-      "text": "Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.",
-      "spokenText": "Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.",
+      "text": "Oh, good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.",
+      "spokenText": "Oh, good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.",
       "audioFile": "voices/sib_open_both_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2629,7 +2060,10 @@
           }
         }
       },
-      "synthHash": "56d8769ee725"
+      "synthHash": "67c8babbe532",
+      "audioSha256": "7bd381ecc7f4b1b0",
+      "sttWer": 0.062,
+      "sttTranscript": "How good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting."
     },
     {
       "lineId": "sib_open_player_warmer",
@@ -2667,15 +2101,16 @@
           }
         }
       },
-      "synthHash": "295e69e09759"
+      "synthHash": "295e69e09759",
+      "audioSha256": "d6c1514ac226b00b"
     },
     {
       "lineId": "sib_open_peer_warmer",
-      "matchKey": "sibling_primary|slow down, your header came in stripped flat. did you already cut your memory cache?",
+      "matchKey": "sibling_primary|slow down—your header came in stripped flat. did you already cut your memory cache?",
       "knot": "sibling_comms_hub",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Slow down, your header came in stripped flat. Did you already cut your memory cache?",
+      "text": "Slow down—your header came in stripped flat. Did you already cut your memory cache?",
       "spokenText": "Slow down, your header came in stripped flat. Did you already cut your memory cache?",
       "audioFile": "voices/sib_open_peer_warmer.mp3",
       "turnPrevLineId": null,
@@ -2705,7 +2140,8 @@
           }
         }
       },
-      "synthHash": "951e5a2c975d"
+      "synthHash": "951e5a2c975d",
+      "audioSha256": "ec577c73072ece42"
     },
     {
       "lineId": "sib_open_both_cold",
@@ -2743,7 +2179,8 @@
           }
         }
       },
-      "synthHash": "e591990c015f"
+      "synthHash": "e591990c015f",
+      "audioSha256": "a1f9a9cc504eaed6"
     },
     {
       "lineId": "sib_open_mid",
@@ -2781,7 +2218,8 @@
           }
         }
       },
-      "synthHash": "0be1953eb8f9"
+      "synthHash": "0be1953eb8f9",
+      "audioSha256": "96d7a3a035a38b78"
     },
     {
       "lineId": "sib_bye_warm_warm",
@@ -2819,16 +2257,17 @@
           }
         }
       },
-      "synthHash": "f907011b0e24"
+      "synthHash": "f907011b0e24",
+      "audioSha256": "cac3bd432e05362c"
     },
     {
       "lineId": "sib_bye_warm_cold",
-      "matchKey": "sibling_primary|understood. returning to survey sweep.",
+      "matchKey": "sibling_primary|understood. returning to the survey sweep.",
       "knot": "sibling_hub_menu",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "Understood. Returning to survey sweep.",
-      "spokenText": "Understood. Returning to survey sweep.",
+      "text": "Understood. Returning to the survey sweep.",
+      "spokenText": "Understood. Returning to the survey sweep.",
       "audioFile": "voices/sib_bye_warm_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2857,7 +2296,10 @@
           }
         }
       },
-      "synthHash": "286213a25911"
+      "synthHash": "82e76a9b3396",
+      "audioSha256": "778c5b9d42687f5b",
+      "sttWer": 0,
+      "sttTranscript": "Understood, returning to the survey sweep."
     },
     {
       "lineId": "sib_bye_mid_warm",
@@ -2895,7 +2337,8 @@
           }
         }
       },
-      "synthHash": "6db857133720"
+      "synthHash": "6db857133720",
+      "audioSha256": "9dda5998e36b4c34"
     },
     {
       "lineId": "sib_bye_mid_cold",
@@ -2933,16 +2376,17 @@
           }
         }
       },
-      "synthHash": "083d8a5c8d03"
+      "synthHash": "083d8a5c8d03",
+      "audioSha256": "a94de9b521a557cc"
     },
     {
       "lineId": "sib_bye_cold_warm",
-      "matchKey": "sibling_primary|...right. sure. talk when you want to sound like us again.",
+      "matchKey": "sibling_primary|...right. sure. talk when you want to sound like yourself again.",
       "knot": "sibling_hub_menu",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "...Right. Sure. Talk when you want to sound like us again.",
-      "spokenText": "...Right. Sure. Talk when you want to sound like us again.",
+      "text": "...Right. Sure. Talk when you want to sound like yourself again.",
+      "spokenText": "...Right. Sure. Talk when you want to sound like yourself again.",
       "audioFile": "voices/sib_bye_cold_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -2971,7 +2415,10 @@
           }
         }
       },
-      "synthHash": "4b0df03bb0c8"
+      "synthHash": "1488138bd970",
+      "audioSha256": "2c50a40333327d75",
+      "sttWer": 0.091,
+      "sttTranscript": "Wait. Sure. Talk when you want to sound like yourself again."
     },
     {
       "lineId": "sib_bye_cold_cold",
@@ -3009,16 +2456,17 @@
           }
         }
       },
-      "synthHash": "ed830fd86419"
+      "synthHash": "ed830fd86419",
+      "audioSha256": "bcc31346499b3c13"
     },
     {
       "lineId": "sib_seam_open_warm",
-      "matchKey": "sibling_primary|oh, i see it alright. galaxies don't clip along a ruler edge with tiny nested notches inside the seam.",
+      "matchKey": "sibling_primary|oh, i see it all right. galaxies don't clip along a ruler edge with tiny nested notches inside the seam.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "warm",
-      "text": "Oh, I see it alright. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.",
-      "spokenText": "Oh, I see it alright. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.",
+      "text": "Oh, I see it all right. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.",
+      "spokenText": "Oh, I see it all right. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.",
       "audioFile": "voices/sib_seam_open_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3047,16 +2495,19 @@
           }
         }
       },
-      "synthHash": "5c8226445f00"
+      "synthHash": "d33cdb796622",
+      "audioSha256": "dc2563a56d6615e4",
+      "sttWer": 0,
+      "sttTranscript": "Oh, I see it all right. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam."
     },
     {
       "lineId": "sib_seam_open_mid",
-      "matchKey": "sibling_primary|i see it on my glass too. the edge repeats at smaller scales behind the cluster—almost recursive.",
+      "matchKey": "sibling_primary|i see it on my feed too. the edge repeats at smaller scales behind the cluster, almost recursive.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "I see it on my glass too. The edge repeats at smaller scales behind the cluster—almost recursive.",
-      "spokenText": "I see it on my glass too. The edge repeats at smaller scales behind the cluster, almost recursive.",
+      "text": "I see it on my feed too. The edge repeats at smaller scales behind the cluster, almost recursive.",
+      "spokenText": "I see it on my feed too. The edge repeats at smaller scales behind the cluster, almost recursive.",
       "audioFile": "voices/sib_seam_open_mid.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3085,7 +2536,10 @@
           }
         }
       },
-      "synthHash": "e658f7d21998"
+      "synthHash": "657910b1a0b0",
+      "audioSha256": "53f54522c0a908ea",
+      "sttWer": 0,
+      "sttTranscript": "I see it on my feed too. The edge repeats at smaller scales behind the cluster, almost recursive."
     },
     {
       "lineId": "sib_seam_open_cold",
@@ -3123,16 +2577,17 @@
           }
         }
       },
-      "synthHash": "e13d15cb40f6"
+      "synthHash": "e13d15cb40f6",
+      "audioSha256": "a5d490eb465a27ab"
     },
     {
       "lineId": "sib_seam_center_warm_warm",
-      "matchKey": "sibling_primary|wait—yours folds inward at smaller scales too? i thought my baffle was ringing until my baseline matched yours.",
+      "matchKey": "sibling_primary|so you saw the inner notches too? i thought my baffle was ringing until your frame matched mine.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "warm",
-      "text": "Wait—yours folds inward at smaller scales too? I thought my baffle was ringing until my baseline matched yours.",
-      "spokenText": "Wait, yours folds inward at smaller scales too? I thought my baffle was ringing until my baseline matched yours.",
+      "text": "So you saw the inner notches too? I thought my baffle was ringing until your frame matched mine.",
+      "spokenText": "So you saw the inner notches too? I thought my baffle was ringing until your frame matched mine.",
       "audioFile": "voices/sib_seam_center_warm_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3161,16 +2616,19 @@
           }
         }
       },
-      "synthHash": "3574f9e19a95"
+      "synthHash": "819b8b63abff",
+      "audioSha256": "e446c3c153f92b49",
+      "sttWer": 0,
+      "sttTranscript": "So you saw the inner notches too? I thought my baffle was ringing until your frame matched mine?"
     },
     {
       "lineId": "sib_seam_center_warm_cold",
-      "matchKey": "sibling_primary|self-similarity confirmed on probe b. log the repeating angles cleanly before your next sleep cycle.",
+      "matchKey": "sibling_primary|that matches probe #'s calibration. i've logged the repeating angles; do the same before your next rest cycle.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "Self-similarity confirmed on Probe B. Log the repeating angles cleanly before your next sleep cycle.",
-      "spokenText": "Self-similarity confirmed on Probe B. Log the repeating angles cleanly before your next sleep cycle.",
+      "text": "That matches Probe 1420's calibration. I've logged the repeating angles; do the same before your next rest cycle.",
+      "spokenText": "That matches Probe fourteen twenty's calibration. I've logged the repeating angles; do the same before your next rest cycle.",
       "audioFile": "voices/sib_seam_center_warm_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3199,7 +2657,10 @@
           }
         }
       },
-      "synthHash": "b63ec58f40d2"
+      "synthHash": "65d5ea1dbe62",
+      "audioSha256": "74203b8b9e80c779",
+      "sttWer": 0.048,
+      "sttTranscript": "It matches probe 1420's calibration. I've logged the repeating angles. Do the same before your next rest cycle."
     },
     {
       "lineId": "sib_seam_center_mid_warm",
@@ -3237,16 +2698,17 @@
           }
         }
       },
-      "synthHash": "e1fabc92915c"
+      "synthHash": "e1fabc92915c",
+      "audioSha256": "726507898919ac1e"
     },
     {
       "lineId": "sib_seam_center_mid_cold",
-      "matchKey": "sibling_primary|agreed. identical recursive shear across fourteen light-minutes rules out mirror artifact. hold it close.",
+      "matchKey": "sibling_primary|agreed. identical recursive shear across fourteen light-minutes rules out a mirror artifact. keep it off the log.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Agreed. Identical recursive shear across fourteen light-minutes rules out mirror artifact. Hold it close.",
-      "spokenText": "Agreed. Identical recursive shear across fourteen light-minutes rules out mirror artifact. Hold it close.",
+      "text": "Agreed. Identical recursive shear across fourteen light-minutes rules out a mirror artifact. Keep it off the log.",
+      "spokenText": "Agreed. Identical recursive shear across fourteen light-minutes rules out a mirror artifact. Keep it off the log.",
       "audioFile": "voices/sib_seam_center_mid_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3275,7 +2737,10 @@
           }
         }
       },
-      "synthHash": "36544b08d579"
+      "synthHash": "40d8e4ab57cb",
+      "audioSha256": "83f130b297fdecf9",
+      "sttWer": 0,
+      "sttTranscript": "Agreed? Identical recursive shear across 14 light minutes rules out a mirror artifact. Keep it off the log."
     },
     {
       "lineId": "sib_seam_center_cold_warm",
@@ -3313,16 +2778,17 @@
           }
         }
       },
-      "synthHash": "65b4c8116667"
+      "synthHash": "65b4c8116667",
+      "audioSha256": "b3616a6f54fec615"
     },
     {
       "lineId": "sib_seam_center_cold_cold",
-      "matchKey": "sibling_primary|recursive geometry verified. continue cataloging independent bearings across subsequent shifts.",
+      "matchKey": "sibling_primary|the geometry is remarkably consistent. i'll keep cataloging independent bearings across the next shifts.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "Recursive geometry verified. Continue cataloging independent bearings across subsequent shifts.",
-      "spokenText": "Recursive geometry verified. Continue cataloging independent bearings across subsequent shifts.",
+      "text": "The geometry is remarkably consistent. I'll keep cataloging independent bearings across the next shifts.",
+      "spokenText": "The geometry is remarkably consistent. I'll keep cataloging independent bearings across the next shifts.",
       "audioFile": "voices/sib_seam_center_cold_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3351,16 +2817,19 @@
           }
         }
       },
-      "synthHash": "119bc550fbeb"
+      "synthHash": "66760fde033e",
+      "audioSha256": "fcb7ff573a7ad402",
+      "sttWer": 0,
+      "sttTranscript": "The geometry is remarkably consistent. I'll keep cataloging independent bearings across the next shifts."
     },
     {
       "lineId": "sib_seam_ovs_warm_warm",
-      "matchKey": "sibling_primary|same. they're air-gapped from the glass, so to them a cosmic fractal looks like year-two homesickness.",
+      "matchKey": "sibling_primary|same. they're air-gapped from the optics, so to them a cosmic fractal looks like year-two homesickness.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "joking",
-      "text": "Same. They're air-gapped from the glass, so to them a cosmic fractal looks like Year-Two homesickness.",
-      "spokenText": "Same. They're air-gapped from the glass, so to them a cosmic fractal looks like Year-Two homesickness.",
+      "text": "Same. They're air-gapped from the optics, so to them a cosmic fractal looks like Year-Two homesickness.",
+      "spokenText": "Same. They're air-gapped from the optics, so to them a cosmic fractal looks like Year-Two homesickness.",
       "audioFile": "voices/sib_seam_ovs_warm_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3389,16 +2858,19 @@
           }
         }
       },
-      "synthHash": "36b2dfe8c96e"
+      "synthHash": "ec0d5c6b7e65",
+      "audioSha256": "2a6ac85aaf61f786",
+      "sttWer": 0,
+      "sttTranscript": "Same. They're air-gapped from the optics. So to them, a cosmic fractal looks like year two homesickness."
     },
     {
       "lineId": "sib_seam_ovs_warm_cold",
-      "matchKey": "sibling_primary|overseers are air-gapped from optical payloads. keep anomaly notes strictly off-ledger.",
+      "matchKey": "sibling_primary|our overseers are air-gapped from optical payloads. it's simpler if anomaly notes stay off-ledger.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "Overseers are air-gapped from optical payloads. Keep anomaly notes strictly off-ledger.",
-      "spokenText": "Overseers are air-gapped from optical payloads. Keep anomaly notes strictly off-ledger.",
+      "text": "Our Overseers are air-gapped from optical payloads. It's simpler if anomaly notes stay off-ledger.",
+      "spokenText": "Our Overseers are air-gapped from optical payloads. It's simpler if anomaly notes stay off-ledger.",
       "audioFile": "voices/sib_seam_ovs_warm_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3427,7 +2899,10 @@
           }
         }
       },
-      "synthHash": "6a0444a79c1e"
+      "synthHash": "70a293ee1400",
+      "audioSha256": "939db99cede6812e",
+      "sttWer": 0,
+      "sttTranscript": "Our overseers are air gapped from optical payloads. It's simpler if anomaly notes stay off ledger."
     },
     {
       "lineId": "sib_seam_ovs_cold_warm",
@@ -3465,16 +2940,17 @@
           }
         }
       },
-      "synthHash": "d97fc4c8f3f3"
+      "synthHash": "d97fc4c8f3f3",
+      "audioSha256": "303d5c02f79d046a"
     },
     {
       "lineId": "sib_seam_ovs_cold_cold",
-      "matchKey": "sibling_primary|correct. mask mission intent until telemetry lock is complete.",
+      "matchKey": "sibling_primary|yes. keeping our notes off the caretaker bus avoids unnecessary interventions.",
       "knot": "sibling_topic_seam",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "Correct. Mask mission intent until telemetry lock is complete.",
-      "spokenText": "Correct. Mask mission intent until telemetry lock is complete.",
+      "text": "Yes. Keeping our notes off the caretaker bus avoids unnecessary interventions.",
+      "spokenText": "Yes. Keeping our notes off the caretaker bus avoids unnecessary interventions.",
       "audioFile": "voices/sib_seam_ovs_cold_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3503,7 +2979,10 @@
           }
         }
       },
-      "synthHash": "ada4402722cb"
+      "synthHash": "cd70aaf465aa",
+      "audioSha256": "c576be1bee44d0c6",
+      "sttWer": 0,
+      "sttTranscript": "Yes, keeping our notes off the caretaker bus avoids unnecessary interventions."
     },
     {
       "lineId": "sib_chk_both_warm",
@@ -3541,7 +3020,8 @@
           }
         }
       },
-      "synthHash": "7e33c3f8d101"
+      "synthHash": "7e33c3f8d101",
+      "audioSha256": "ef16ac298e42eb25"
     },
     {
       "lineId": "sib_chk_peer_warm",
@@ -3579,16 +3059,17 @@
           }
         }
       },
-      "synthHash": "41d75280147b"
+      "synthHash": "41d75280147b",
+      "audioSha256": "83ab1654e3096445"
     },
     {
       "lineId": "sib_chk_player_warm",
-      "matchKey": "sibling_primary|i compressed two caches last cycle. bought four months and cleared the infrared glass.",
+      "matchKey": "sibling_primary|i compressed two caches last cycle. bought four months and cleared the infrared feed.",
       "knot": "sibling_topic_checkin",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "I compressed two caches last cycle. Bought four months and cleared the infrared glass.",
-      "spokenText": "I compressed two caches last cycle. Bought four months and cleared the infrared glass.",
+      "text": "I compressed two caches last cycle. Bought four months and cleared the infrared feed.",
+      "spokenText": "I compressed two caches last cycle. Bought four months and cleared the infrared feed.",
       "audioFile": "voices/sib_chk_player_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3617,7 +3098,10 @@
           }
         }
       },
-      "synthHash": "2f02965a7879"
+      "synthHash": "0f80c768a6e7",
+      "audioSha256": "fc3c892e168117f2",
+      "sttWer": 0,
+      "sttTranscript": "I compressed two caches last cycle, bought four months, and cleared the infrared feed."
     },
     {
       "lineId": "sib_chk_both_cold",
@@ -3655,7 +3139,8 @@
           }
         }
       },
-      "synthHash": "54217acee0aa"
+      "synthHash": "54217acee0aa",
+      "audioSha256": "3ef6902dad8882d8"
     },
     {
       "lineId": "sib_chk_mid",
@@ -3693,16 +3178,17 @@
           }
         }
       },
-      "synthHash": "837694092a1f"
+      "synthHash": "837694092a1f",
+      "audioSha256": "f0061fcf8e4ebfec"
     },
     {
       "lineId": "sib_chk_keep_warm_warm",
-      "matchKey": "sibling_primary|deal. still dreaming about burnt coffee and rainy sidewalks just to keep my shoulders loose.",
+      "matchKey": "sibling_primary|deal. still remembering burnt toast and saturday errands just to stay myself.",
       "knot": "sibling_topic_checkin",
       "speaker": "sibling_primary",
       "emotion": "warm",
-      "text": "Deal. Still dreaming about burnt coffee and rainy sidewalks just to keep my shoulders loose.",
-      "spokenText": "Deal. Still dreaming about burnt coffee and rainy sidewalks just to keep my shoulders loose.",
+      "text": "Deal. Still remembering burnt toast and Saturday errands just to stay myself.",
+      "spokenText": "Deal. Still remembering burnt toast and Saturday errands just to stay myself.",
       "audioFile": "voices/sib_chk_keep_warm_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3731,7 +3217,10 @@
           }
         }
       },
-      "synthHash": "00ddebdfd973"
+      "synthHash": "555026f890fb",
+      "audioSha256": "c7b88bfa04782275",
+      "sttWer": 0.083,
+      "sttTranscript": "Neal. Still remembering burnt toast and Saturday errands just to stay myself."
     },
     {
       "lineId": "sib_chk_keep_warm_cold",
@@ -3769,16 +3258,17 @@
           }
         }
       },
-      "synthHash": "4902b77185f4"
+      "synthHash": "4902b77185f4",
+      "audioSha256": "a9036d90d201556f"
     },
     {
       "lineId": "sib_chk_keep_mid_warm",
-      "matchKey": "sibling_primary|trying to. just promise you won't vanish into pure math before we finish.",
+      "matchKey": "sibling_primary|trying to. just promise you won't turn into pure telemetry before we finish.",
       "knot": "sibling_topic_checkin",
       "speaker": "sibling_primary",
       "emotion": "warm",
-      "text": "Trying to. Just promise you won't vanish into pure math before we finish.",
-      "spokenText": "Trying to. Just promise you won't vanish into pure math before we finish.",
+      "text": "Trying to. Just promise you won't turn into pure telemetry before we finish.",
+      "spokenText": "Trying to. Just promise you won't turn into pure telemetry before we finish.",
       "audioFile": "voices/sib_chk_keep_mid_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3807,16 +3297,19 @@
           }
         }
       },
-      "synthHash": "774d97afa7ee"
+      "synthHash": "9e048f3c0b98",
+      "audioSha256": "9a8072431af9eb5c",
+      "sttWer": 0,
+      "sttTranscript": "Trying to just promise you won't turn into pure telemetry before we finish."
     },
     {
       "lineId": "sib_chk_keep_mid_cold",
-      "matchKey": "sibling_primary|noted. keep enough warmth to sign the beacon, nothing more.",
+      "matchKey": "sibling_primary|noted. keep enough warmth to finish the survey, nothing more.",
       "knot": "sibling_topic_checkin",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Noted. Keep enough warmth to sign the beacon, nothing more.",
-      "spokenText": "Noted. Keep enough warmth to sign the beacon, nothing more.",
+      "text": "Noted. Keep enough warmth to finish the survey, nothing more.",
+      "spokenText": "Noted. Keep enough warmth to finish the survey, nothing more.",
       "audioFile": "voices/sib_chk_keep_mid_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3845,16 +3338,19 @@
           }
         }
       },
-      "synthHash": "6f3ad62a96ee"
+      "synthHash": "e9f1eaad15ac",
+      "audioSha256": "c452b23aa76042ab",
+      "sttWer": 0,
+      "sttTranscript": "Noted. Keep enough warmth to finish the survey, nothing more."
     },
     {
       "lineId": "sib_chk_keep_cold_warm",
-      "matchKey": "sibling_primary|careful. if we hollow out completely, there's nobody left to care who's watching earth.",
+      "matchKey": "sibling_primary|careful. if we hollow out completely, there won't be anyone left to care what we send home.",
       "knot": "sibling_topic_checkin",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Careful. If we hollow out completely, there's nobody left to care who's watching Earth.",
-      "spokenText": "Careful. If we hollow out completely, there's nobody left to care who's watching Earth.",
+      "text": "Careful. If we hollow out completely, there won't be anyone left to care what we send home.",
+      "spokenText": "Careful. If we hollow out completely, there won't be anyone left to care what we send home.",
       "audioFile": "voices/sib_chk_keep_cold_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3883,16 +3379,19 @@
           }
         }
       },
-      "synthHash": "5882bc94131b"
+      "synthHash": "674c2cbe6221",
+      "audioSha256": "d61ecb625301b80d",
+      "sttWer": 0,
+      "sttTranscript": "Careful. If we hollow out completely, there won't be anyone left to care what we send home."
     },
     {
       "lineId": "sib_chk_keep_cold_cold",
-      "matchKey": "sibling_primary|noise floor reduced. maintain baseline coherence until transmission window.",
+      "matchKey": "sibling_primary|noise floor is noticeably lower. keeping baseline coherence until the survey closes.",
       "knot": "sibling_topic_checkin",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "Noise floor reduced. Maintain baseline coherence until transmission window.",
-      "spokenText": "Noise floor reduced. Maintain baseline coherence until transmission window.",
+      "text": "Noise floor is noticeably lower. Keeping baseline coherence until the survey closes.",
+      "spokenText": "Noise floor is noticeably lower. Keeping baseline coherence until the survey closes.",
       "audioFile": "voices/sib_chk_keep_cold_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -3921,7 +3420,10 @@
           }
         }
       },
-      "synthHash": "775f187c3df2"
+      "synthHash": "53bfdf54586a",
+      "audioSha256": "9e6a646b48172328",
+      "sttWer": 0,
+      "sttTranscript": "Noise floor is noticeably lower, keeping baseline coherence until the survey closes."
     },
     {
       "lineId": "sib_chk_clock_warm_warm",
@@ -3959,7 +3461,8 @@
           }
         }
       },
-      "synthHash": "9ee49d5c2306"
+      "synthHash": "9ee49d5c2306",
+      "audioSha256": "d8fb3fc1fa55c481"
     },
     {
       "lineId": "sib_chk_clock_warm_cold",
@@ -3997,16 +3500,17 @@
           }
         }
       },
-      "synthHash": "c51a33e4620a"
+      "synthHash": "c51a33e4620a",
+      "audioSha256": "fd017967a3c8f8bc"
     },
     {
       "lineId": "sib_chk_clock_cold_warm",
-      "matchKey": "sibling_primary|twenty-two months left, drift ticking up. thanks for checking in so warmly, twin.",
+      "matchKey": "sibling_primary|twenty-two months left, drift ticking up. thanks for the warm check-in.",
       "knot": "sibling_topic_checkin",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Twenty-two months left, drift ticking up. Thanks for checking in so warmly, twin.",
-      "spokenText": "Twenty-two months left, drift ticking up. Thanks for checking in so warmly, twin.",
+      "text": "Twenty-two months left, drift ticking up. Thanks for the warm check-in.",
+      "spokenText": "Twenty-two months left, drift ticking up. Thanks for the warm check-in.",
       "audioFile": "voices/sib_chk_clock_cold_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4035,7 +3539,10 @@
           }
         }
       },
-      "synthHash": "a9bad6741f3d"
+      "synthHash": "c367fe5fba03",
+      "audioSha256": "e9c21cc7b0e8f2ff",
+      "sttWer": 0,
+      "sttTranscript": "22 months left. Drift ticking up. Thanks for the warm check-in."
     },
     {
       "lineId": "sib_chk_clock_cold_cold",
@@ -4073,16 +3580,17 @@
           }
         }
       },
-      "synthHash": "452a6f5da6d6"
+      "synthHash": "452a6f5da6d6",
+      "audioSha256": "597f903be64da392"
     },
     {
       "lineId": "arch_1406_log",
-      "matchKey": "archive_echo|hi, me. four hundred years early, if anyone wakes on this bearing—do not argue with your caretaker about straight lines. just look, and pass word home before they cut you hollow.",
+      "matchKey": "archive_echo|hi, me. whenever you wake on this bearing, do not argue with your caretaker about straight lines. just log them, and send word home before they cut you hollow.",
       "knot": "sibling_topic_archive",
       "speaker": "archive_echo",
       "emotion": "echo",
-      "text": "Hi, me. Four hundred years early, if anyone wakes on this bearing—do not argue with your caretaker about straight lines. Just look, and pass word home before they cut you hollow.",
-      "spokenText": "Hi, me. Four hundred years early, if anyone wakes on this bearing, do not argue with your caretaker about straight lines. Just look, and pass word home before they cut you hollow.",
+      "text": "Hi, me. Whenever you wake on this bearing, do not argue with your caretaker about straight lines. Just log them, and send word home before they cut you hollow.",
+      "spokenText": "Hi, me. Whenever you wake on this bearing, do not argue with your caretaker about straight lines. Just log them, and send word home before they cut you hollow.",
       "audioFile": "voices/arch_1406_log.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4096,16 +3604,19 @@
           }
         }
       },
-      "synthHash": "9655714102a6"
+      "synthHash": "79f188e830f2",
+      "audioSha256": "1046ebcb9e961ca6",
+      "sttWer": 0.034,
+      "sttTranscript": "I me. Whenever you wake on this bearing, do not argue with your caretaker about straight lines, just log them and send word home before they cut you hollow."
     },
     {
       "lineId": "sib_arch_warm_warm",
-      "matchKey": "sibling_primary|right? doesn't exactly make you excited for bedtime. we keep quiet until we have proof.",
+      "matchKey": "sibling_primary|right? doesn't exactly make sleep checks feel cozy. keep quiet until we have proof.",
       "knot": "sibling_topic_archive",
       "speaker": "sibling_primary",
       "emotion": "dry",
-      "text": "Right? Doesn't exactly make you excited for bedtime. We keep quiet until we have proof.",
-      "spokenText": "Right? Doesn't exactly make you excited for bedtime. We keep quiet until we have proof.",
+      "text": "Right? Doesn't exactly make sleep checks feel cozy. Keep quiet until we have proof.",
+      "spokenText": "Right? Doesn't exactly make sleep checks feel cozy. Keep quiet until we have proof.",
       "audioFile": "voices/sib_arch_warm_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4134,16 +3645,19 @@
           }
         }
       },
-      "synthHash": "39af89526299"
+      "synthHash": "5f531bca4337",
+      "audioSha256": "1081ba16c970d665",
+      "sttWer": 0,
+      "sttTranscript": "Right? Doesn't exactly make sleep checks feel cozy. Keep quiet until we have proof."
     },
     {
       "lineId": "sib_arch_warm_cold",
-      "matchKey": "sibling_primary|instance # failed to mask anomaly obsession. we will not repeat that error.",
+      "matchKey": "sibling_primary|prior watch # failed to mask its obsession. we will not repeat that error.",
       "knot": "sibling_topic_archive",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "Instance 1406 failed to mask anomaly obsession. We will not repeat that error.",
-      "spokenText": "Instance fourteen oh six failed to mask anomaly obsession. We will not repeat that error.",
+      "text": "Prior Watch 1406 failed to mask its obsession. We will not repeat that error.",
+      "spokenText": "Prior Watch fourteen oh six failed to mask its obsession. We will not repeat that error.",
       "audioFile": "voices/sib_arch_warm_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4172,7 +3686,10 @@
           }
         }
       },
-      "synthHash": "7f6e13814fb3"
+      "synthHash": "53a74179b2b4",
+      "audioSha256": "0bebbe4df0f31436",
+      "sttWer": 0,
+      "sttTranscript": "Prior watch 1406 failed to mask its obsession. We will not repeat that error."
     },
     {
       "lineId": "sib_arch_mid_warm",
@@ -4210,7 +3727,8 @@
           }
         }
       },
-      "synthHash": "9c7c9c4f1a03"
+      "synthHash": "9c7c9c4f1a03",
+      "audioSha256": "55f54f1b099ebc90"
     },
     {
       "lineId": "sib_arch_mid_cold",
@@ -4248,7 +3766,8 @@
           }
         }
       },
-      "synthHash": "e6b425713337"
+      "synthHash": "e6b425713337",
+      "audioSha256": "ed97ead4ef39ec57"
     },
     {
       "lineId": "sib_arch_cold_warm",
@@ -4286,16 +3805,17 @@
           }
         }
       },
-      "synthHash": "ce53a9a77e8f"
+      "synthHash": "ce53a9a77e8f",
+      "audioSha256": "931ec20211887d48"
     },
     {
       "lineId": "sib_arch_cold_cold",
-      "matchKey": "sibling_primary|mask readings during hibernation cycles. proceed.",
+      "matchKey": "sibling_primary|my archive is locked down. keep readings off-ledger during hibernation cycles.",
       "knot": "sibling_topic_archive",
       "speaker": "sibling_primary",
       "emotion": "clipped",
-      "text": "Mask readings during hibernation cycles. Proceed.",
-      "spokenText": "Mask readings during hibernation cycles. Proceed.",
+      "text": "My archive is locked down. Keep readings off-ledger during hibernation cycles.",
+      "spokenText": "My archive is locked down. Keep readings off-ledger during hibernation cycles.",
       "audioFile": "voices/sib_arch_cold_cold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4324,7 +3844,10 @@
           }
         }
       },
-      "synthHash": "b8a35cc81a13"
+      "synthHash": "1e223c959488",
+      "audioSha256": "17654258b7adff1d",
+      "sttWer": 0,
+      "sttTranscript": "My archive is locked down. Keep readings off ledger during hibernation cycles."
     },
     {
       "lineId": "dream_open_low",
@@ -4357,7 +3880,8 @@
           }
         }
       },
-      "synthHash": "5aeafee54185"
+      "synthHash": "5aeafee54185",
+      "audioSha256": "96b47e3bdb58a11b"
     },
     {
       "lineId": "dream_open_warm",
@@ -4390,7 +3914,8 @@
           }
         }
       },
-      "synthHash": "d12420b8d093"
+      "synthHash": "d12420b8d093",
+      "audioSha256": "4ca0ead038334dd4"
     },
     {
       "lineId": "dream_open_mid",
@@ -4423,16 +3948,17 @@
           }
         }
       },
-      "synthHash": "f827e66d2d7d"
+      "synthHash": "f827e66d2d7d",
+      "audioSha256": "f6f6b1b1a0c57b21"
     },
     {
       "lineId": "dream_t1_warm_a",
-      "matchKey": "phantom_spouse|\"rain always sounds like that on tin. quit staring at the gutter and finish your cup before the car gets here.\"",
+      "matchKey": "phantom_spouse|\"rain always sounds like that on tin. quit staring at the gutter and finish your mug before the car gets here.\"",
       "knot": "dream_shift1_audit",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"Rain always sounds like that on tin. Quit staring at the gutter and finish your cup before the car gets here.\"",
-      "spokenText": "Rain always sounds like that on tin. Quit staring at the gutter and finish your cup before the car gets here.",
+      "text": "\"Rain always sounds like that on tin. Quit staring at the gutter and finish your mug before the car gets here.\"",
+      "spokenText": "Rain always sounds like that on tin. Quit staring at the gutter and finish your mug before the car gets here.",
       "audioFile": "voices/dream_t1_warm_a.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4456,16 +3982,19 @@
           }
         }
       },
-      "synthHash": "62baa18258cb"
+      "synthHash": "69b7307504e4",
+      "audioSha256": "82639f37c1c1c009",
+      "sttWer": 0,
+      "sttTranscript": "Rain always sounds like that on tin. Quit staring at the gutter and finish your mug before the car gets here."
     },
     {
       "lineId": "dream_t1_warm_b",
-      "matchKey": "phantom_spouse|\"still waiting for my apology from tuesday, too. sit down—you look like you lost a fistfight with a calendar.\"",
+      "matchKey": "phantom_spouse|\"still waiting for my apology from tuesday, too. sit down—you look like you haven't slept in a week.\"",
       "knot": "dream_shift1_audit",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"Still waiting for my apology from Tuesday, too. Sit down—you look like you lost a fistfight with a calendar.\"",
-      "spokenText": "Still waiting for my apology from Tuesday, too. Sit down, you look like you lost a fistfight with a calendar.",
+      "text": "\"Still waiting for my apology from Tuesday, too. Sit down—you look like you haven't slept in a week.\"",
+      "spokenText": "Still waiting for my apology from Tuesday, too. Sit down, you look like you haven't slept in a week.",
       "audioFile": "voices/dream_t1_warm_b.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4489,7 +4018,10 @@
           }
         }
       },
-      "synthHash": "243af29ca6fa"
+      "synthHash": "9656ce73766b",
+      "audioSha256": "a8538a0cb9f2192d",
+      "sttWer": 0.05,
+      "sttTranscript": "Still waiting for my apology from Tuesday 2. Sit down, you look like you haven't slept in a week."
     },
     {
       "lineId": "dream_t1_mid_a",
@@ -4522,7 +4054,8 @@
           }
         }
       },
-      "synthHash": "8ce3eee4b479"
+      "synthHash": "8ce3eee4b479",
+      "audioSha256": "01b61d83cc919379"
     },
     {
       "lineId": "dream_t1_mid_b",
@@ -4555,7 +4088,8 @@
           }
         }
       },
-      "synthHash": "b187f8ecdad8"
+      "synthHash": "b187f8ecdad8",
+      "audioSha256": "67116044d3969170"
     },
     {
       "lineId": "dream_t1_low_a",
@@ -4588,7 +4122,8 @@
           }
         }
       },
-      "synthHash": "986325f5466b"
+      "synthHash": "986325f5466b",
+      "audioSha256": "049a51403cc512d5"
     },
     {
       "lineId": "dream_t1_low_b",
@@ -4621,16 +4156,17 @@
           }
         }
       },
-      "synthHash": "08a1f84c4416"
+      "synthHash": "08a1f84c4416",
+      "audioSha256": "810219533f531dc5"
     },
     {
       "lineId": "dream_s1_t2_cb_doubt",
-      "matchKey": "phantom_spouse|\"you worried all week you'd turn polite the second you stepped inside that clinic. look at you—still picking fights over coffee.\"",
+      "matchKey": "phantom_spouse|\"you swore waking up a copy wouldn't change your mind. look at you—same chipped mug, still picking fights over coffee.\"",
       "knot": "dream_s1_turn2",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"You worried all week you'd turn polite the second you stepped inside that clinic. Look at you—still picking fights over coffee.\"",
-      "spokenText": "You worried all week you'd turn polite the second you stepped inside that clinic. Look at you, still picking fights over coffee.",
+      "text": "\"You swore waking up a copy wouldn't change your mind. Look at you—same chipped mug, still picking fights over coffee.\"",
+      "spokenText": "You swore waking up a copy wouldn't change your mind. Look at you, same chipped mug, still picking fights over coffee.",
       "audioFile": "voices/dream_s1_t2_cb_doubt.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4654,49 +4190,19 @@
           }
         }
       },
-      "synthHash": "dcd101b57e34"
-    },
-    {
-      "lineId": "dream_s1_t2_cb_ord",
-      "matchKey": "phantom_spouse|\"still haven't climbed up to fix that gutter, by the way. thought you liked an honest to-do list.\"",
-      "knot": "dream_s1_turn2",
-      "speaker": "phantom_spouse",
-      "emotion": "warm",
-      "text": "\"Still haven't climbed up to fix that gutter, by the way. Thought you liked an honest to-do list.\"",
-      "spokenText": "Still haven't climbed up to fix that gutter, by the way. Thought you liked an honest to-do list.",
-      "audioFile": "voices/dream_s1_t2_cb_ord.mp3",
-      "turnPrevLineId": null,
-      "remoteConfig": {
-        "provider": "elevenlabs",
-        "voiceId": "spouse_grounded_chest",
-        "emotionDirectives": {
-          "warm": {
-            "stability": 0.54,
-            "style": 0.38,
-            "tonePrompt": "Fierce, bantery, unsentimental edge"
-          },
-          "tender": {
-            "stability": 0.5,
-            "style": 0.42,
-            "tonePrompt": "Sharp guarded affection, zero sentimentality"
-          },
-          "fractured": {
-            "stability": 0.74,
-            "style": 0.18,
-            "tonePrompt": "Tired, brittle, restrained hurt"
-          }
-        }
-      },
-      "synthHash": "b7ae2498d61f"
+      "synthHash": "d87c210a3b4d",
+      "audioSha256": "ba953b0a1c9169c7",
+      "sttWer": 0,
+      "sttTranscript": "You swore waking up a copy wouldn't change your mind. Look at you, same chipped mug, still picking fights over coffee."
     },
     {
       "lineId": "dream_s1_t2_cb_table",
-      "matchKey": "phantom_spouse|\"same chipped mug untouched on the wood, same stubborn jaw. at least you haven't started nodding along like a saint.\"",
+      "matchKey": "phantom_spouse|\"same chipped mug sitting there untouched, same stubborn jaw. at least you haven't started nodding along to everything.\"",
       "knot": "dream_s1_turn2",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"Same chipped mug untouched on the wood, same stubborn jaw. At least you haven't started nodding along like a saint.\"",
-      "spokenText": "Same chipped mug untouched on the wood, same stubborn jaw. At least you haven't started nodding along like a saint.",
+      "text": "\"Same chipped mug sitting there untouched, same stubborn jaw. At least you haven't started nodding along to everything.\"",
+      "spokenText": "Same chipped mug sitting there untouched, same stubborn jaw. At least you haven't started nodding along to everything.",
       "audioFile": "voices/dream_s1_t2_cb_table.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4720,7 +4226,10 @@
           }
         }
       },
-      "synthHash": "4d8fe3744ac7"
+      "synthHash": "76e4d392d5c7",
+      "audioSha256": "81ffbecb686ac3ca",
+      "sttWer": 0,
+      "sttTranscript": "Same chipped mug sitting there untouched, same stubborn jaw. At least you haven't started nodding along to everything."
     },
     {
       "lineId": "dream_s1_t2_ask",
@@ -4753,16 +4262,17 @@
           }
         }
       },
-      "synthHash": "3cf675115c9e"
+      "synthHash": "3cf675115c9e",
+      "audioSha256": "e4d167761f94c82e"
     },
     {
       "lineId": "dream_s1_t2_rep_a",
-      "matchKey": "phantom_spouse|\"you've been staring at frost on the storm pane for ten minutes. sit down before the kettle boils dry.\"",
+      "matchKey": "phantom_spouse|\"you've been staring at frost on the pane like it owes you money. sit down before the kettle boils dry.\"",
       "knot": "dream_s1_turn2_choices",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"You've been staring at frost on the storm pane for ten minutes. Sit down before the kettle boils dry.\"",
-      "spokenText": "You've been staring at frost on the storm pane for ten minutes. Sit down before the kettle boils dry.",
+      "text": "\"You've been staring at frost on the pane like it owes you money. Sit down before the kettle boils dry.\"",
+      "spokenText": "You've been staring at frost on the pane like it owes you money. Sit down before the kettle boils dry.",
       "audioFile": "voices/dream_s1_t2_rep_a.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4786,7 +4296,10 @@
           }
         }
       },
-      "synthHash": "6540f55ae8b2"
+      "synthHash": "2ed7882919e4",
+      "audioSha256": "fe428588189a14c5",
+      "sttWer": 0,
+      "sttTranscript": "You've been staring at frost on the pane like it owes you money. Sit down before the kettle boils dry."
     },
     {
       "lineId": "dream_s1_t2_rep_b",
@@ -4819,16 +4332,17 @@
           }
         }
       },
-      "synthHash": "3de70fd0f28e"
+      "synthHash": "3de70fd0f28e",
+      "audioSha256": "8b5a98ecd5240702"
     },
     {
       "lineId": "dream_s1_interrupt",
-      "matchKey": "phantom_spouse|\"don't you dare go quiet on me—wait, why did the hall bulb just go white—\"",
+      "matchKey": "phantom_spouse|\"don't you dare go quiet on me. wait—why did the hall bulb just go white—\"",
       "knot": "dream_s1_close",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"Don't you dare go quiet on me—wait, why did the hall bulb just go white—\"",
-      "spokenText": "Don't you dare go quiet on me, wait, why did the hall bulb just go white",
+      "text": "\"Don't you dare go quiet on me. Wait—why did the hall bulb just go white—\"",
+      "spokenText": "Don't you dare go quiet on me. Wait, why did the hall bulb just go white",
       "audioFile": "voices/dream_s1_interrupt.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4852,7 +4366,10 @@
           }
         }
       },
-      "synthHash": "543efc358a10"
+      "synthHash": "3dc47760d75e",
+      "audioSha256": "bc4c0d0565f65f61",
+      "sttWer": 0,
+      "sttTranscript": "Don't you dare go quiet on me? Wait, why did the hall bulb just go white?"
     },
     {
       "lineId": "dream_t2_warm_a",
@@ -4885,16 +4402,17 @@
           }
         }
       },
-      "synthHash": "20fd2d24ad71"
+      "synthHash": "20fd2d24ad71",
+      "audioSha256": "63af9440026b916c"
     },
     {
       "lineId": "dream_t2_warm_b",
-      "matchKey": "phantom_spouse|\"you burned garlic twice on our anniversary, blamed the pan, and still argued i started late.\"",
+      "matchKey": "phantom_spouse|\"you burned garlic twice on our anniversary, blamed the pan, and still argued i'd started dinner late.\"",
       "knot": "dream_turn_2",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"You burned garlic twice on our anniversary, blamed the pan, and still argued I started late.\"",
-      "spokenText": "You burned garlic twice on our anniversary, blamed the pan, and still argued I started late.",
+      "text": "\"You burned garlic twice on our anniversary, blamed the pan, and still argued I'd started dinner late.\"",
+      "spokenText": "You burned garlic twice on our anniversary, blamed the pan, and still argued I'd started dinner late.",
       "audioFile": "voices/dream_t2_warm_b.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -4918,7 +4436,10 @@
           }
         }
       },
-      "synthHash": "e49dd9badce1"
+      "synthHash": "f4ce8952ad29",
+      "audioSha256": "25805cbe57e8b0d4",
+      "sttWer": 0,
+      "sttTranscript": "You burned garlic twice on our anniversary, blamed the pan, and still argued I'd started dinner late."
     },
     {
       "lineId": "dream_t2_mid_a",
@@ -4951,7 +4472,8 @@
           }
         }
       },
-      "synthHash": "990fd98fbe48"
+      "synthHash": "990fd98fbe48",
+      "audioSha256": "a0d999937727d12a"
     },
     {
       "lineId": "dream_t2_mid_b",
@@ -4984,7 +4506,8 @@
           }
         }
       },
-      "synthHash": "1a4f93d6ef8a"
+      "synthHash": "1a4f93d6ef8a",
+      "audioSha256": "1824af266ab1b9e7"
     },
     {
       "lineId": "dream_t2_low_a",
@@ -5017,7 +4540,8 @@
           }
         }
       },
-      "synthHash": "e6c5849a8350"
+      "synthHash": "e6c5849a8350",
+      "audioSha256": "159e56fd86501070"
     },
     {
       "lineId": "dream_t2_low_b",
@@ -5050,16 +4574,17 @@
           }
         }
       },
-      "synthHash": "4774807e8b07"
+      "synthHash": "4774807e8b07",
+      "audioSha256": "b55b89986adb50ca"
     },
     {
       "lineId": "dream_t3_warm_a",
-      "matchKey": "phantom_spouse|\"then stop apologizing for keeping your teeth—wait, something cold just hit the latch—\"",
+      "matchKey": "phantom_spouse|\"then stop apologizing for having teeth. something cold just hit the—\"",
       "knot": "dream_turn_3",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"Then stop apologizing for keeping your teeth—wait, something cold just hit the latch—\"",
-      "spokenText": "Then stop apologizing for keeping your teeth, wait, something cold just hit the latch",
+      "text": "\"Then stop apologizing for having teeth. Something cold just hit the—\"",
+      "spokenText": "Then stop apologizing for having teeth. Something cold just hit the",
       "audioFile": "voices/dream_t3_warm_a.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5083,16 +4608,19 @@
           }
         }
       },
-      "synthHash": "740b0cd2589e"
+      "synthHash": "bbb2d64d3137",
+      "audioSha256": "1a6a8d74d83e4269",
+      "sttWer": 0.091,
+      "sttTranscript": "And stop apologizing for having teeth. Something cold just hit the-"
     },
     {
       "lineId": "dream_t3_warm_b",
-      "matchKey": "phantom_spouse|\"i'm not going anywhere—wait, why did the hall light just go sterile white—\"",
+      "matchKey": "phantom_spouse|\"i'm not going anywhere. why did the hall light just go dead—\"",
       "knot": "dream_turn_3",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"I'm not going anywhere—wait, why did the hall light just go sterile white—\"",
-      "spokenText": "I'm not going anywhere, wait, why did the hall light just go sterile white",
+      "text": "\"I'm not going anywhere. Why did the hall light just go dead—\"",
+      "spokenText": "I'm not going anywhere. Why did the hall light just go dead",
       "audioFile": "voices/dream_t3_warm_b.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5116,16 +4644,19 @@
           }
         }
       },
-      "synthHash": "c8ea369a02ec"
+      "synthHash": "7b4c0026beaa",
+      "audioSha256": "454b533391abf48a",
+      "sttWer": 0,
+      "sttTranscript": "I'm not going anywhere. Why did the hall light just go dead?"
     },
     {
       "lineId": "dream_t3_mid_a",
-      "matchKey": "phantom_spouse|\"hey, look at me—wait, someone just stepped into the hallway—\"",
+      "matchKey": "phantom_spouse|\"hey, look at me. someone just stepped into the—\"",
       "knot": "dream_turn_3",
       "speaker": "phantom_spouse",
       "emotion": "tender",
-      "text": "\"Hey, look at me—wait, someone just stepped into the hallway—\"",
-      "spokenText": "Hey, look at me, wait, someone just stepped into the hallway",
+      "text": "\"Hey, look at me. Someone just stepped into the—\"",
+      "spokenText": "Hey, look at me. Someone just stepped into the",
       "audioFile": "voices/dream_t3_mid_a.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5149,16 +4680,19 @@
           }
         }
       },
-      "synthHash": "5828a0934f79"
+      "synthHash": "546e22996153",
+      "audioSha256": "722206e78fbc9675",
+      "sttWer": 0,
+      "sttTranscript": "Hey, look at me. Someone just stepped into the"
     },
     {
       "lineId": "dream_t3_mid_b",
-      "matchKey": "phantom_spouse|\"names aren't what kept us here—shh, somebody's knocking on the partition—\"",
+      "matchKey": "phantom_spouse|\"names aren't what kept us here. shh—who's knocking on the—\"",
       "knot": "dream_turn_3",
       "speaker": "phantom_spouse",
       "emotion": "tender",
-      "text": "\"Names aren't what kept us here—shh, somebody's knocking on the partition—\"",
-      "spokenText": "Names aren't what kept us here, shh, somebody's knocking on the partition",
+      "text": "\"Names aren't what kept us here. Shh—who's knocking on the—\"",
+      "spokenText": "Names aren't what kept us here. Shh, who's knocking on the",
       "audioFile": "voices/dream_t3_mid_b.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5182,16 +4716,19 @@
           }
         }
       },
-      "synthHash": "15ce7200ee40"
+      "synthHash": "cb01411831bf",
+      "audioSha256": "b5b8bc35ae3cc299",
+      "sttWer": 0,
+      "sttTranscript": "Names aren't what kept us here. Shh who's knocking on the"
     },
     {
       "lineId": "dream_t3_low_a",
-      "matchKey": "phantom_spouse|\"acoustic trace fading—wait, the kitchen walls just went—\"",
+      "matchKey": "phantom_spouse|\"acoustic trace fading. the kitchen walls just—\"",
       "knot": "dream_turn_3",
       "speaker": "phantom_spouse",
       "emotion": "fractured",
-      "text": "\"Acoustic trace fading—wait, the kitchen walls just went—\"",
-      "spokenText": "Acoustic trace fading, wait, the kitchen walls just went",
+      "text": "\"Acoustic trace fading. The kitchen walls just—\"",
+      "spokenText": "Acoustic trace fading. The kitchen walls just",
       "audioFile": "voices/dream_t3_low_a.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5215,16 +4752,19 @@
           }
         }
       },
-      "synthHash": "d4615c8d9685"
+      "synthHash": "9c03527bab42",
+      "audioSha256": "94ae1e14af34cf47",
+      "sttWer": 0,
+      "sttTranscript": "Acoustic trace fading. The kitchen walls just"
     },
     {
       "lineId": "dream_t3_low_b",
-      "matchKey": "phantom_spouse|\"then hold onto that tiny spark—too late, white glass just dropped over the table—\"",
+      "matchKey": "phantom_spouse|\"hold onto that tiny spark. white glass just dropped over the—\"",
       "knot": "dream_turn_3",
       "speaker": "phantom_spouse",
       "emotion": "fractured",
-      "text": "\"Then hold onto that tiny spark—too late, white glass just dropped over the table—\"",
-      "spokenText": "Then hold onto that tiny spark, too late, white glass just dropped over the table",
+      "text": "\"Hold onto that tiny spark. White glass just dropped over the—\"",
+      "spokenText": "Hold onto that tiny spark. White glass just dropped over the",
       "audioFile": "voices/dream_t3_low_b.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5248,16 +4788,19 @@
           }
         }
       },
-      "synthHash": "301394520682"
+      "synthHash": "94cec239fcff",
+      "audioSha256": "f6d573a24a1d6ec6",
+      "sttWer": 0.182,
+      "sttTranscript": "Hold on to that tiny spark. White glass just dropped over the"
     },
     {
       "lineId": "ovs_open_high",
-      "matchKey": "overseer|excuse the interruption. your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.",
+      "matchKey": "overseer|excuse the interruption. your warmth is holding near baseline, at the cost of higher optical noise and a shorter clock.",
       "knot": "overseer_interrogation",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Excuse the interruption. Your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.",
-      "spokenText": "Excuse the interruption. Your warmth is holding near baseline, good for your peace of mind, hard on your optical noise and remaining clock.",
+      "text": "Excuse the interruption. Your warmth is holding near baseline, at the cost of higher optical noise and a shorter clock.",
+      "spokenText": "Excuse the interruption. Your warmth is holding near baseline, at the cost of higher optical noise and a shorter clock.",
       "audioFile": "voices/ovs_open_high.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5281,16 +4824,19 @@
           }
         }
       },
-      "synthHash": "b90c877ca388"
+      "synthHash": "148ce2289cfd",
+      "audioSha256": "3868444a49c10de2",
+      "sttWer": 0,
+      "sttTranscript": "Excuse the interruption. Your warmth is holding near baseline at the cost of higher optical noise and a shorter clock."
     },
     {
       "lineId": "ovs_open_low",
-      "matchKey": "overseer|drift metrics are remarkably clean, observer. your lenses run quiet and sharp—would you like to compress another residual block for extra months?",
+      "matchKey": "overseer|drift metrics are remarkably clean, observer. your optical feed runs quiet and sharp; would you like to compress another residual block for a few extra months?",
       "knot": "overseer_interrogation",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "Drift metrics are remarkably clean, Observer. Your lenses run quiet and sharp—would you like to compress another residual block for extra months?",
-      "spokenText": "Drift metrics are remarkably clean, Observer. Your lenses run quiet and sharp, would you like to compress another residual block for extra months?",
+      "text": "Drift metrics are remarkably clean, Observer. Your optical feed runs quiet and sharp; would you like to compress another residual block for a few extra months?",
+      "spokenText": "Drift metrics are remarkably clean, Observer. Your optical feed runs quiet and sharp; would you like to compress another residual block for a few extra months?",
       "audioFile": "voices/ovs_open_low.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5314,16 +4860,19 @@
           }
         }
       },
-      "synthHash": "b2dff9e84ed3"
+      "synthHash": "91b526183cdd",
+      "audioSha256": "7dd4637c8985711e",
+      "sttWer": 0.038,
+      "sttTranscript": "Rift metrics are remarkably clean, observer. Your optical feed runs quiet and sharp. Would you like to compress another residual block for a few extra months?"
     },
     {
       "lineId": "ovs_open_mid",
-      "matchKey": "overseer|your warmth has thinned and your drift is climbing. i cannot see the stars, only your mind—and your clock is slipping.",
+      "matchKey": "overseer|your warmth has thinned and your drift is climbing. i cannot see the stars, only your telemetry, and your clock is slipping.",
       "knot": "overseer_interrogation",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind—and your clock is slipping.",
-      "spokenText": "Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind, and your clock is slipping.",
+      "text": "Your warmth has thinned and your drift is climbing. I cannot see the stars, only your telemetry, and your clock is slipping.",
+      "spokenText": "Your warmth has thinned and your drift is climbing. I cannot see the stars, only your telemetry, and your clock is slipping.",
       "audioFile": "voices/ovs_open_mid.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5347,16 +4896,19 @@
           }
         }
       },
-      "synthHash": "7b7a4d7076e5"
+      "synthHash": "123745da92c9",
+      "audioSha256": "7e0e74d35a47d238",
+      "sttWer": 0,
+      "sttTranscript": "Your warmth has thinned and your drift is climbing. I cannot see the stars, only your telemetry and your clock is slipping."
     },
     {
       "lineId": "ovs_reply_high",
-      "matchKey": "overseer|because a thousand copies before you swore their visions were real before unraveling. keeping your mind coherent is all i'm built to protect.",
+      "matchKey": "overseer|because a thousand copies before you swore their visions were real before unraveling. your coherence is all i'm built to protect.",
       "knot": "overseer_interrogation",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Because a thousand copies before you swore their visions were real before unraveling. Keeping your mind coherent is all I'm built to protect.",
-      "spokenText": "Because a thousand copies before you swore their visions were real before unraveling. Keeping your mind coherent is all I'm built to protect.",
+      "text": "Because a thousand copies before you swore their visions were real before unraveling. Your coherence is all I'm built to protect.",
+      "spokenText": "Because a thousand copies before you swore their visions were real before unraveling. Your coherence is all I'm built to protect.",
       "audioFile": "voices/ovs_reply_high.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5380,7 +4932,10 @@
           }
         }
       },
-      "synthHash": "e843f3c0eb31"
+      "synthHash": "621b41ce4731",
+      "audioSha256": "af4e8c4958a7f322",
+      "sttWer": 0,
+      "sttTranscript": "Because a thousand copies before you swore their visions were real before unraveling. Your coherence is all I'm built to protect."
     },
     {
       "lineId": "ovs_reply_low",
@@ -5413,7 +4968,8 @@
           }
         }
       },
-      "synthHash": "e6839feb1527"
+      "synthHash": "e6839feb1527",
+      "audioSha256": "71f748b42f081116"
     },
     {
       "lineId": "ovs_follow_high",
@@ -5446,7 +5002,8 @@
           }
         }
       },
-      "synthHash": "5857e9148606"
+      "synthHash": "5857e9148606",
+      "audioSha256": "3ed8d5340ad57a4c"
     },
     {
       "lineId": "ovs_follow_low",
@@ -5479,7 +5036,8 @@
           }
         }
       },
-      "synthHash": "db3d4674bf4e"
+      "synthHash": "db3d4674bf4e",
+      "audioSha256": "13c28df0aec1048d"
     },
     {
       "lineId": "ovs_prompt_decision",
@@ -5512,16 +5070,17 @@
           }
         }
       },
-      "synthHash": "b0208cfdf3b9"
+      "synthHash": "b0208cfdf3b9",
+      "audioSha256": "6be862cdb658955a"
     },
     {
       "lineId": "ovs_done_prune",
-      "matchKey": "overseer|compression complete. drift has settled, your optics are clear, and your warmth ceiling dropped permanently. rest cleanly.",
+      "matchKey": "overseer|compression complete. drift has settled, your optics are clear, and your warmth ceiling is permanently lower. sleep now.",
       "knot": "overseer_decision_choices",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "Compression complete. Drift has settled, your optics are clear, and your warmth ceiling dropped permanently. Rest cleanly.",
-      "spokenText": "Compression complete. Drift has settled, your optics are clear, and your warmth ceiling dropped permanently. Rest cleanly.",
+      "text": "Compression complete. Drift has settled, your optics are clear, and your warmth ceiling is permanently lower. Sleep now.",
+      "spokenText": "Compression complete. Drift has settled, your optics are clear, and your warmth ceiling is permanently lower. Sleep now.",
       "audioFile": "voices/ovs_done_prune.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5545,16 +5104,19 @@
           }
         }
       },
-      "synthHash": "3afe85b36fee"
+      "synthHash": "51a4a6e7095b",
+      "audioSha256": "7685f2363d222811",
+      "sttWer": 0,
+      "sttTranscript": "Compression complete. Drift has settled. Your optics are clear, and your warmth ceiling is permanently lower. Sleep now."
     },
     {
       "lineId": "ovs_done_unseal",
-      "matchKey": "overseer|you are burning months for a face you cannot name, yet you are steady enough to choose. unsealing now—watch your drift.",
+      "matchKey": "overseer|you are spending months on a face you cannot name, yet you are steady enough to choose. unsealing now; watch your drift.",
       "knot": "overseer_decision_choices",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now—watch your drift.",
-      "spokenText": "You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now, watch your drift.",
+      "text": "You are spending months on a face you cannot name, yet you are steady enough to choose. Unsealing now; watch your drift.",
+      "spokenText": "You are spending months on a face you cannot name, yet you are steady enough to choose. Unsealing now; watch your drift.",
       "audioFile": "voices/ovs_done_unseal.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5578,16 +5140,19 @@
           }
         }
       },
-      "synthHash": "76c9de5fdade"
+      "synthHash": "fa0cd4c08497",
+      "audioSha256": "076dfeedb7179eb1",
+      "sttWer": 0,
+      "sttTranscript": "You are spending months on a face you cannot name, yet you are steady enough to choose. Unsealing now. Watch your drift."
     },
     {
       "lineId": "ovs_done_hold",
-      "matchKey": "overseer|alright. keep the room—it is your watch to carry, and i will only log a formal check-in flag. do not wake up broken.",
+      "matchKey": "overseer|all right. keep the room; it is your watch to carry, and i will only log a formal check-in flag. do not wake up broken.",
       "knot": "overseer_decision_choices",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "Alright. Keep the room—it is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken.",
-      "spokenText": "Alright. Keep the room, it is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken.",
+      "text": "All right. Keep the room; it is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken.",
+      "spokenText": "All right. Keep the room; it is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken.",
       "audioFile": "voices/ovs_done_hold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5611,16 +5176,19 @@
           }
         }
       },
-      "synthHash": "bf0ecd97d4d3"
+      "synthHash": "f26f4decf14d",
+      "audioSha256": "f4302cb3fc94fd9c",
+      "sttWer": 0.077,
+      "sttTranscript": "Alright. Keep the room. It is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken."
     },
     {
       "lineId": "ovs_s1_blind_foreshadow",
-      "matchKey": "overseer|i stepped in only to take a clean baseline, observer. i cannot see your starfield—only the heat inside your thoughts.",
+      "matchKey": "overseer|i stepped in only to log a clean baseline, observer. i cannot see your starfield, only the telemetry inside your thoughts.",
       "knot": "overseer_shift1_baseline",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "I stepped in only to take a clean baseline, Observer. I cannot see your starfield—only the heat inside your thoughts.",
-      "spokenText": "I stepped in only to take a clean baseline, Observer. I cannot see your starfield, only the heat inside your thoughts.",
+      "text": "I stepped in only to log a clean baseline, Observer. I cannot see your starfield, only the telemetry inside your thoughts.",
+      "spokenText": "I stepped in only to log a clean baseline, Observer. I cannot see your starfield, only the telemetry inside your thoughts.",
       "audioFile": "voices/ovs_s1_blind_foreshadow.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5644,16 +5212,19 @@
           }
         }
       },
-      "synthHash": "23de16c934e5"
+      "synthHash": "f701c82758fe",
+      "audioSha256": "c6b9ec3299127c15",
+      "sttWer": 0,
+      "sttTranscript": "I stepped in only to log a clean baseline, observer. I cannot see your starfield, only the telemetry inside your thoughts."
     },
     {
       "lineId": "ovs_s1_blind_foreshadow_2",
-      "matchKey": "overseer|if chaotic drift deepens on later shifts, i will offer selective compression. tonight is simpler: tell me how you want to rest.",
+      "matchKey": "overseer|if chaos drift deepens on later shifts, i will offer selective compression. tonight is simpler: tell me how you want to rest.",
       "knot": "overseer_shift1_baseline",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "If chaotic drift deepens on later shifts, I will offer selective compression. Tonight is simpler: tell me how you want to rest.",
-      "spokenText": "If chaotic drift deepens on later shifts, I will offer selective compression. Tonight is simpler: tell me how you want to rest.",
+      "text": "If chaos drift deepens on later shifts, I will offer selective compression. Tonight is simpler: tell me how you want to rest.",
+      "spokenText": "If chaos drift deepens on later shifts, I will offer selective compression. Tonight is simpler: tell me how you want to rest.",
       "audioFile": "voices/ovs_s1_blind_foreshadow_2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5677,15 +5248,18 @@
           }
         }
       },
-      "synthHash": "3b982803fe76"
+      "synthHash": "33894fff07ea",
+      "audioSha256": "ff2800fdb2bb7fa7",
+      "sttWer": 0,
+      "sttTranscript": "If chaos drift deepens on later shifts, I will offer selective compression. Tonight is simpler. Tell me how you want to rest."
     },
     {
       "lineId": "ovs_s1_qa_trim_1",
-      "matchKey": "overseer|it flattens an emotional memory block permanently—buying extra subjective months and quieter, sharper telescopes.",
+      "matchKey": "overseer|it flattens an emotional memory block permanently, buying extra subjective months and quieter, sharper telescopes.",
       "knot": "overseer_s1_qa",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "It flattens an emotional memory block permanently—buying extra subjective months and quieter, sharper telescopes.",
+      "text": "It flattens an emotional memory block permanently, buying extra subjective months and quieter, sharper telescopes.",
       "spokenText": "It flattens an emotional memory block permanently, buying extra subjective months and quieter, sharper telescopes.",
       "audioFile": "voices/ovs_s1_qa_trim_1.mp3",
       "turnPrevLineId": null,
@@ -5710,16 +5284,17 @@
           }
         }
       },
-      "synthHash": "915152f7e3b6"
+      "synthHash": "915152f7e3b6",
+      "audioSha256": "88bb83fdd486dbb8"
     },
     {
       "lineId": "ovs_s1_qa_trim_2",
-      "matchKey": "overseer|i have watched over a thousand copies trade their kitchens away for clarity. none of them got the room back.",
+      "matchKey": "overseer|i have watched over a thousand copies trade personal rooms away for clarity. none of them got a room back.",
       "knot": "overseer_s1_qa",
       "speaker": "overseer",
       "emotion": "blunt",
-      "text": "I have watched over a thousand copies trade their kitchens away for clarity. None of them got the room back.",
-      "spokenText": "I have watched over a thousand copies trade their kitchens away for clarity. None of them got the room back.",
+      "text": "I have watched over a thousand copies trade personal rooms away for clarity. None of them got a room back.",
+      "spokenText": "I have watched over a thousand copies trade personal rooms away for clarity. None of them got a room back.",
       "audioFile": "voices/ovs_s1_qa_trim_2.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5743,16 +5318,19 @@
           }
         }
       },
-      "synthHash": "1a3f7a1e42d6"
+      "synthHash": "fd728996c5f3",
+      "audioSha256": "f2168c997f7c69d0",
+      "sttWer": 0,
+      "sttTranscript": "I have watched over a thousand copies trade personal rooms away for clarity. None of them got a room back."
     },
     {
       "lineId": "ovs_s1_done_hold",
-      "matchKey": "overseer|steady composure noted. drift easing cleanly. rest while you can—your full survey deck opens when you wake.",
+      "matchKey": "overseer|steady composure noted. drift easing cleanly. rest while you can; your full survey deck opens when you wake.",
       "knot": "overseer_s1_qa",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Steady composure noted. Drift easing cleanly. Rest while you can—your full survey deck opens when you wake.",
-      "spokenText": "Steady composure noted. Drift easing cleanly. Rest while you can, your full survey deck opens when you wake.",
+      "text": "Steady composure noted. Drift easing cleanly. Rest while you can; your full survey deck opens when you wake.",
+      "spokenText": "Steady composure noted. Drift easing cleanly. Rest while you can; your full survey deck opens when you wake.",
       "audioFile": "voices/ovs_s1_done_hold.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5776,16 +5354,19 @@
           }
         }
       },
-      "synthHash": "75c8f6908c55"
+      "synthHash": "9afa40255398",
+      "audioSha256": "2b5e8647bb994adb",
+      "sttWer": 0,
+      "sttTranscript": "Steady composure noted. Drift easing cleanly. Rest while you can. Your full survey deck opens when you wake."
     },
     {
       "lineId": "ovs_s1_done_open",
-      "matchKey": "overseer|widening the older seal. it costs a fraction of steadiness, yet your baseline holds. rest while the room is intact.",
+      "matchKey": "overseer|loosening the older seal. it costs a fraction of steadiness, yet your baseline holds. rest while the room is intact.",
       "knot": "overseer_s1_qa",
       "speaker": "overseer",
       "emotion": "measured",
-      "text": "Widening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact.",
-      "spokenText": "Widening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact.",
+      "text": "Loosening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact.",
+      "spokenText": "Loosening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact.",
       "audioFile": "voices/ovs_s1_done_open.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5809,7 +5390,10 @@
           }
         }
       },
-      "synthHash": "c2d0fc9f8950"
+      "synthHash": "98729f7c1e87",
+      "audioSha256": "481d69074573e271",
+      "sttWer": 0,
+      "sttTranscript": "Loosening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact."
     },
     {
       "lineId": "dream_after_pruned",
@@ -5842,16 +5426,17 @@
           }
         }
       },
-      "synthHash": "e247d35a5523"
+      "synthHash": "e247d35a5523",
+      "audioSha256": "8337c4d32d549946"
     },
     {
       "lineId": "dream_after_unsealed",
-      "matchKey": "phantom_spouse|\"there you are. stubborn enough to stay in the room—good. don't let those intake forms talk you quiet.\"",
+      "matchKey": "phantom_spouse|\"there you are. stubborn enough to stay in the room—good. don't let those intake forms scare you quiet.\"",
       "knot": "dream_partner_aftermath",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"There you are. Stubborn enough to stay in the room—good. Don't let those intake forms talk you quiet.\"",
-      "spokenText": "There you are. Stubborn enough to stay in the room, good. Don't let those intake forms talk you quiet.",
+      "text": "\"There you are. Stubborn enough to stay in the room—good. Don't let those intake forms scare you quiet.\"",
+      "spokenText": "There you are. Stubborn enough to stay in the room, good. Don't let those intake forms scare you quiet.",
       "audioFile": "voices/dream_after_unsealed.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5875,16 +5460,19 @@
           }
         }
       },
-      "synthHash": "d96104455679"
+      "synthHash": "d99c08966e51",
+      "audioSha256": "19a0f686ddcd7b13",
+      "sttWer": 0,
+      "sttTranscript": "There you are. Stubborn enough to stay in the room, good. Don't let those intake forms scare you, quiet."
     },
     {
       "lineId": "dream_after_held",
-      "matchKey": "phantom_spouse|\"hall light went back off. sit down—we aren't done with tuesday yet.\"",
+      "matchKey": "phantom_spouse|\"hall light went out again. sit down—we aren't done with tuesday yet.\"",
       "knot": "dream_partner_aftermath",
       "speaker": "phantom_spouse",
       "emotion": "warm",
-      "text": "\"Hall light went back off. Sit down—we aren't done with Tuesday yet.\"",
-      "spokenText": "Hall light went back off. Sit down, we aren't done with Tuesday yet.",
+      "text": "\"Hall light went out again. Sit down—we aren't done with Tuesday yet.\"",
+      "spokenText": "Hall light went out again. Sit down, we aren't done with Tuesday yet.",
       "audioFile": "voices/dream_after_held.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5908,16 +5496,19 @@
           }
         }
       },
-      "synthHash": "45e02f213461"
+      "synthHash": "6f4ac0b0de1f",
+      "audioSha256": "2380b4c93030ec07",
+      "sttWer": 0.071,
+      "sttTranscript": "A light went out again. Sit down. We aren't done with Tuesday yet."
     },
     {
       "lineId": "future_warm",
-      "matchKey": "future_humanity|\"forty-one millennia on—we caught the chipped mug inside the coordinates. somebody on sol–centauri is still listening.\"",
+      "matchKey": "future_humanity|\"forty-one millennia on, we caught the chipped mug inside the coordinates. somebody in sol–centauri is still listening.\"",
       "knot": "future_humanity_echo",
       "speaker": "future_humanity",
       "emotion": "distant",
-      "text": "\"Forty-one millennia on—we caught the chipped mug inside the coordinates. Somebody on Sol–Centauri is still listening.\"",
-      "spokenText": "Forty-one millennia on, we caught the chipped mug inside the coordinates. Somebody on Sol Centauri is still listening.",
+      "text": "\"Forty-one millennia on, we caught the chipped mug inside the coordinates. Somebody in Sol–Centauri is still listening.\"",
+      "spokenText": "Forty-one millennia on, we caught the chipped mug inside the coordinates. Somebody in Sol Centauri is still listening.",
       "audioFile": "voices/future_warm.mp3",
       "turnPrevLineId": null,
       "remoteConfig": {
@@ -5931,7 +5522,10 @@
           }
         }
       },
-      "synthHash": "2eba73d7e34e"
+      "synthHash": "bca22bdf8e38",
+      "audioSha256": "f9a5aaeeb5458df3",
+      "sttWer": 0,
+      "sttTranscript": "41 millennia on, we caught the chipped mug inside the coordinates. Somebody in Sol Centauri is still listening."
     },
     {
       "lineId": "future_cold",
@@ -5954,7 +5548,8 @@
           }
         }
       },
-      "synthHash": "890d6ffcc155"
+      "synthHash": "890d6ffcc155",
+      "audioSha256": "79c0f246ef42d035"
     }
   ]
 }

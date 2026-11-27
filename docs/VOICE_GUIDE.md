@@ -5,13 +5,29 @@ Every `.ink` script must obey this guide. The `consistency-auditor` checks all d
 ---
 
 ## 1. Locked Creative Director Preferences & Global Prose Rules
-* **Non-Abrupt, Explanatory Pacing:** Give conversations room to breathe (~2,000-word intro scale, 2-line beats, and optional `◇` Q&A hubs via `# kind:ask # weight:explore` so players can unpack world/physics details without ending the scene). Avoid 1-line trailer ping-pong.
+* **Tight Spoken Bursts & Lean Choice Menus:**
+  * **1–3 spoken lines max** per uninterrupted character turn (ideally 2 lines, or 1 fuller 1–2-sentence line; this budget counts *across* choice-reply → next-knot jumps before the next choice appears). Never stack 4–6 uninterrupted sentences.
+  * **≤ 5 total visible choices** in standard dialogue menus (e.g. `0–3` `◇ ASK` exploration questions + `1–2` consequential replies/actions, separated by the visible group divider). Reserve larger menus only for rare pivotal hubs.
+  * **Optional `◇` Q&A hubs** (`# kind:ask # weight:explore`) let curious players unpack world/physics details without stalling the core flow.
 * **Tone DNA (Dry Humor + Cosmic Horror):** Austere *Solaris* / *Moon* realism—reserved, adult, and grounded, never grandiose sci-fi melodrama or sitcom pep. Let concrete domestic or engineering detail sit beside eerie cosmic scale. Rare clerical rebellion allows forcing **one deadpan minimal glyph (`crude_smiley`)** onto the Overseer—never cartoon props (`rubber_duck`, `traffic_cone`).
 * **Choice Tagging Contract (Zero Warm/Cold Spoiler Dots):** Tag choices cleanly with `# kind:ask|reply|action|prune`, `# weight:explore|consequential|permanent`, and `# hint:<plain-language cost>` (never surface `.choice-affinity-dot` Warm/Cold stat indicators on conversational choices).
-* **Reserved Cast 2 Voice Discipline:** Always understated, natural, and zero-theatrics—grounded female **Spouse** (chest voice, fierce unsentimental banter, zero ASMR breathiness, `warm`/`fractured` anchors, no `aecho`), dry early-30s **male** **Sibling 1420** (`warm`/`clipped` anchors) sharing the **same biological-original male voice** on probe-tape EQ for **Archive 1406**, calm late-40s neutral **male** **Overseer**, and **unvoiced** Internal Psyche (`"voiced": false`). Keep voiced lines `<=160` chars (`~10s`) per line, splitting longer thoughts into consecutive turn-grouped lines.
-* **Mobile-Legible Cadence:** Short paragraphs (1–3 sentences max per beat). High emotional density per line.
+* **Reserved Cast 2 Voice Discipline:** Always understated, natural, and zero-theatrics—grounded female **Spouse** (chest voice, fierce unsentimental banter, zero ASMR breathiness, `warm`/`fractured` anchors, no `aecho`), dry early-30s **male** **Sibling 1420** (`warm`/`clipped` anchors) sharing the **same biological-original male voice** on probe-tape EQ for **Archive 1406**, calm late-40s neutral **male** **Overseer**, and **unvoiced** Internal Psyche (`"voiced": false`). Keep voiced lines `<=160` chars (`~10s`) per line, splitting longer thoughts cleanly across lines without exceeding the 3-line burst budget.
+* **Mobile-Legible Cadence:** Short paragraphs (1–2 sentences max per line). Let subtext carry meaning instead of summarizing the game's thesis out loud.
 * **Name Redaction & Humane Address Rules:** Never write a proper name for any loved one or dream persona (use `[RELATION:SPOUSE_01]` or sensory substitutes, keeping the Kitchen Prologue header spoiler-free `ACROSS THE TABLE`). Equally, **never address the willing volunteer protagonist as `"Instance-1419"` or `"1419"`** in spoken dialogue or speaker headers (`YOU`, `OVERSEER`, `OTHER ME`)—Overseer uses direct `"you"` or respectful `"Observer"`, Sibling uses `"hey, me"` / `"other me"` / `"twin"`, and `1419` stays reserved strictly for the title and technical probe/watch logs.
 * **Originality Boundary:** 100% original idioms, telemetry formats, and character voices—zero borrowed phrases or concepts from external CC BY-SA fiction.
+
+## 1.5 Native-English Line-Edit, Physical Sanity & Anti-Cliché Checklist
+Before any `.ink` edit or `ui_copy.json` change is considered ready, both the writer and an **independent Prose & English Critic subagent** must run this 5-point audit:
+1. **5-Second Nitpicker Test:** Every sentence must read cleanly on its own with natural articles (`a full hundred percent`, `in the cold dark`, `a twenty-year silence`), standard collocations (`Sleep now` / `Rest easy`, not `Rest cleanly`; `a memory`, not `a warmth`), and zero ESL slips or telegraphese.
+2. **Read-Aloud Rhythm Check:** Speak every line aloud mentally at ~14–16 chars/s. Break up essay-style `—` aphorisms (`[Setup]—[punchy contrast]` must stay well under 35% of lines) and vary sentence openings/lengths.
+3. **Physical, Logic & Continuity Sanity:** Check concrete nouns and physics (`a paper cup of cold coffee`, not `a cold paper cup`; `ten light-years astern`, not `ten years astern`; no literal `heart rate` on digitized connectomes; no air-gap leaks or forgetting prior scenes).
+4. **No Cross-Character Prop Leakage:** Do not reuse Spouse-specific domestic props (`chipped mug`, `gutter`, `Tuesday`) inside the Intake Assistant, Overseer, or Sibling unless deliberately echoing a specific motif.
+5. **Blind Speaker-Voice Test:** Strip `# speaker:` tags from a cross-cast sample (`phantom_upload_witness`, `overseer`, `sibling_primary`, `phantom_spouse`, `archive_echo`). Each character must be identifiable from syntax, diction, and attitude alone.
+
+## 1.6 Two-Tier Voice Sync & Selective Regeneration Contract
+* **Selective Regeneration:** `scripts/generate-voices.mjs` keys every clip by `synthHash` + `audioSha256`. Unchanged lines are **never** re-synthesized; only new or modified lines are sent to VoxCPM2-8bit, and removed lines are pruned cleanly.
+* **No Dynamic `{var}` in Voiced Lines:** Never embed `{humanity}` or other Ink variables inside voiced dialogue (use static conditional branches with separate `# id:` tags).
+* **Warn on Drafts, Hard-Block on `main`:** `scripts/lint-narrative.mjs` warns on `.ink` ↔ `voice_script.json` drift on local dev and draft branches, and **hard-fails** on PRs to `main`, pushes to `main`, releases, or when `VOICE_SYNC_STRICT=1` is set.
 
 ---
 

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { dedupeEntries, extractLinesFromInk, sha256File } from './voice-extract.mjs';
 
 const ROOT = path.resolve(process.cwd());
 const DIALOGUE_DIR = path.join(ROOT, 'src', 'content', 'dialogue');
@@ -364,10 +365,204 @@ if (fs.existsSync(VOICE_PROFILES_PATH)) {
   }
 }
 
+const strictVoiceSync =
+  process.argv.includes('--strict-voice-sync') ||
+  process.env.VOICE_SYNC_STRICT === '1' ||
+  process.env.GITHUB_BASE_REF === 'main' ||
+  process.env.GITHUB_REF_NAME === 'main' ||
+  process.env.GITHUB_EVENT_NAME === 'release';
+
+const BAD_COLLOCATIONS = [
+  { rx: /\b(?<!a\s)full\s+(?:100\s*%|hundred\s+percent)\b/i, msg: 'missing article before "full hundred percent / 100%"' },
+  { rx: /\ba\s+(?:surface\s+|forgotten\s+)?warmth\b/i, msg: 'uncountable "warmth" used with indefinite article "a"' },
+  { rx: /\ba\s+(?:\[\[cold:)?preventive\s+memory\s+compression\b/i, msg: 'uncountable "compression" used with indefinite article "a"' },
+  { rx: /\brest\s+cleanly\b/i, msg: 'unidiomatic "Rest cleanly"' },
+  { rx: /\b([a-z]{3,})\s+\1\b/i, msg: 'accidental doubled word', allow: new Set(['had', 'that']) },
+];
+
+const warnings = [];
+function warn(msg) {
+  warnings.push(msg);
+  console.warn(`[lint-narrative] WARN: ${msg}`);
+}
+
 let softLongVoLines = 0;
-if (fs.existsSync(VOICE_SCRIPT)) {
+const extractedInkEntries = [];
+if (fs.existsSync(VOICE_PROFILES_PATH) && fs.existsSync(VOICE_SCRIPT)) {
   const vs = JSON.parse(fs.readFileSync(VOICE_SCRIPT, 'utf8'));
   const profiles = voiceProfiles?.profiles ?? {};
+  const provider = vs.provider ?? voiceProfiles.defaultProvider ?? 'voxcpm2';
+
+  for (const file of fs.readdirSync(DIALOGUE_DIR)) {
+    if (!file.endsWith('.ink')) continue;
+    const fullPath = path.join(DIALOGUE_DIR, file);
+    const lines = extractLinesFromInk(fullPath, voiceProfiles, provider, { includeMeta: true });
+    for (const entry of lines) {
+      extractedInkEntries.push({ ...entry, file });
+      if (entry._meta?.hasDynamicInterpolation) {
+        console.error(
+          `[lint-narrative] Dynamic Ink "{var}" interpolation inside voiced line "${entry.lineId}" (${file}:${entry._meta.lineNum}); use static conditional branches instead.`
+        );
+        errors++;
+      }
+      if (!entry._meta?.hasExplicitId) {
+        warn(`Voiced line at ${file}:${entry._meta?.lineNum} lacks an explicit # id: tag (generated "${entry.lineId}").`);
+      }
+      const quoteCount = (entry.text.match(/"/g) ?? []).length;
+      if (quoteCount % 2 === 1 && !entry.text.startsWith('"...') && !entry.text.endsWith('..."')) {
+        console.error(`[lint-narrative] Unbalanced quotation marks in voiced line "${entry.lineId}" (${file}:${entry._meta?.lineNum})`);
+        errors++;
+      }
+    }
+
+    // Prose collocations, em-dash density, and burst/choice pacing checks per .ink file
+    const rawInk = fs.readFileSync(fullPath, 'utf8');
+    const rawLines = rawInk.split(/\r?\n/);
+    let spokenLineCount = 0;
+    let emDashLines = 0;
+    let currentKnotName = 'root';
+    let currentBurst = 0;
+    let inFunc = false;
+    let activeChoiceGroup = 0;
+    const burstStack = [];
+    const knotEntryBursts = new Map();
+    const knotChainTargets = [];
+
+    for (let idx = 0; idx < rawLines.length; idx++) {
+      const ln = idx + 1;
+      const t = rawLines[idx].trim();
+      if (!t || t.startsWith('//')) continue;
+      if (t.startsWith('===')) {
+        const m = t.match(/^===\s*(function\s+)?([a-zA-Z0-9_]+)/);
+        inFunc = Boolean(m?.[1]);
+        currentKnotName = m?.[2] ?? currentKnotName;
+        currentBurst = 0;
+        activeChoiceGroup = 0;
+        burstStack.length = 0;
+        continue;
+      }
+      if (inFunc) continue;
+      if (t.startsWith('*') || t.startsWith('+')) {
+        currentBurst = 0;
+        activeChoiceGroup++;
+        const condMatch = t.match(/^[\*\+]+\s*\{([^}]+)\}/);
+        const cond = condMatch?.[1]?.trim() ?? '';
+        if (!cond && activeChoiceGroup > 5) {
+          warn(`${file}:${ln} (${currentKnotName}) has ${activeChoiceGroup} unconditional choice lines in one block (target <=5).`);
+        }
+        const choiceText = t.replace(/#.*$/, '');
+        for (const rule of BAD_COLLOCATIONS) {
+          const hit = choiceText.match(rule.rx);
+          if (hit && !(rule.allow && rule.allow.has(hit[1]?.toLowerCase()))) {
+            console.error(`[lint-narrative] Prose error in ${file}:${ln}: ${rule.msg} ("${hit[0]}")`);
+            errors++;
+          }
+        }
+        continue;
+      }
+      if (t.startsWith('->')) {
+        const targetMatch = t.match(/^->\s*([a-zA-Z0-9_]+)/);
+        if (targetMatch && targetMatch[1] !== 'DONE' && currentBurst > 0) {
+          knotChainTargets.push({ from: currentKnotName, to: targetMatch[1], preBurst: currentBurst, line: ln });
+        }
+        activeChoiceGroup = 0;
+        continue;
+      }
+      if (t === '{') {
+        burstStack.push({ base: currentBurst, max: currentBurst });
+        activeChoiceGroup = 0;
+        continue;
+      }
+      if (t.startsWith('- ')) {
+        if (burstStack.length > 0) {
+          const top = burstStack[burstStack.length - 1];
+          top.max = Math.max(top.max, currentBurst);
+          currentBurst = top.base;
+        }
+        activeChoiceGroup = 0;
+        continue;
+      }
+      if (t === '}') {
+        if (burstStack.length > 0) {
+          const top = burstStack.pop();
+          currentBurst = Math.max(top.max, currentBurst);
+        }
+        activeChoiceGroup = 0;
+        continue;
+      }
+      if (t.startsWith('#') || t.startsWith('VAR ') || t.startsWith('EXTERNAL ') || t.startsWith('~')) {
+        continue;
+      }
+
+      // Dialogue/prose line
+      activeChoiceGroup = 0;
+      const proseOnly = t.replace(/#.*$/, '').trim();
+      if (!proseOnly) continue;
+      spokenLineCount++;
+      if (proseOnly.includes('—')) emDashLines++;
+      currentBurst++;
+      if (!knotEntryBursts.has(currentKnotName)) {
+        knotEntryBursts.set(currentKnotName, currentBurst);
+      } else {
+        knotEntryBursts.set(currentKnotName, Math.max(knotEntryBursts.get(currentKnotName), currentBurst));
+      }
+      if (currentBurst > 3) {
+        warn(`${file}:${ln} (${currentKnotName}) reaches ${currentBurst} uninterrupted lines before a player choice (target 1–3).`);
+      }
+
+      for (const rule of BAD_COLLOCATIONS) {
+        const hit = proseOnly.match(rule.rx);
+        if (hit && !(rule.allow && rule.allow.has(hit[1]?.toLowerCase()))) {
+          console.error(`[lint-narrative] Prose error in ${file}:${ln}: ${rule.msg} ("${hit[0]}")`);
+          errors++;
+        }
+      }
+    }
+
+    if (spokenLineCount > 0 && emDashLines / spokenLineCount > 0.35) {
+      warn(`${file} uses em-dashes in ${emDashLines}/${spokenLineCount} lines (${Math.round((emDashLines / spokenLineCount) * 100)}%, target <=35%).`);
+    }
+  }
+
+  // Check ui_copy.json for objective bad collocations
+  const uiCopyPath = path.join(ROOT, 'src', 'content', 'ui_copy.json');
+  if (fs.existsSync(uiCopyPath)) {
+    const uiRaw = fs.readFileSync(uiCopyPath, 'utf8');
+    for (const rule of BAD_COLLOCATIONS) {
+      const hit = uiRaw.match(rule.rx);
+      if (hit && !(rule.allow && rule.allow.has(hit[1]?.toLowerCase()))) {
+        console.error(`[lint-narrative] Prose error in ui_copy.json: ${rule.msg} ("${hit[0]}")`);
+        errors++;
+      }
+    }
+  }
+
+  // Check voice_script.json integrity + .ink sync
+  const dedupedInk = dedupeEntries(extractedInkEntries);
+  const inkById = new Map(dedupedInk.map((e) => [e.lineId, e]));
+  const vsById = new Map((vs.lines ?? []).map((l) => [l.lineId, l]));
+  const syncIssues = [];
+
+  for (const [lineId, inkEntry] of inkById) {
+    const rec = vsById.get(lineId);
+    if (!rec) {
+      syncIssues.push(`missing from voice_script.json: "${lineId}"`);
+      continue;
+    }
+    if (rec.text !== inkEntry.text || rec.spokenText !== inkEntry.spokenText) {
+      syncIssues.push(`text/spokenText changed for "${lineId}"`);
+    } else if (rec.speaker !== inkEntry.speaker || rec.emotion !== inkEntry.emotion) {
+      syncIssues.push(`speaker/emotion changed for "${lineId}"`);
+    } else if (rec.synthHash !== inkEntry.synthHash) {
+      syncIssues.push(`synthHash stale for "${lineId}" (${rec.synthHash} != ${inkEntry.synthHash})`);
+    }
+  }
+  for (const lineId of vsById.keys()) {
+    if (!inkById.has(lineId)) {
+      syncIssues.push(`stale extra entry in voice_script.json: "${lineId}"`);
+    }
+  }
+
   for (const line of vs.lines ?? []) {
     const speakerProfile = profiles[line.speaker];
     if (speakerProfile && speakerProfile.voiced === false) {
@@ -387,6 +582,19 @@ if (fs.existsSync(VOICE_SCRIPT)) {
     if (!fs.existsSync(mp3Path) || fs.statSync(mp3Path).size <= 512) {
       console.error(`[lint-narrative] Missing or corrupt voice audio for lineId "${line.lineId}": ${line.audioFile}`);
       errors++;
+    } else if (line.audioSha256 && sha256File(mp3Path) !== line.audioSha256) {
+      syncIssues.push(`MP3 file sha256 mismatch on disk for "${line.lineId}"`);
+    }
+  }
+
+  if (syncIssues.length > 0) {
+    const sample = syncIssues.slice(0, 6).join('; ') + (syncIssues.length > 6 ? ` (+${syncIssues.length - 6} more)` : '');
+    const msg = `Voice-sync drift (${syncIssues.length} issue(s)): ${sample}. Run \`npm run generate:voices\`.`;
+    if (strictVoiceSync) {
+      console.error(`[lint-narrative] ERROR (strict voice-sync): ${msg}`);
+      errors++;
+    } else {
+      warn(`Draft voice-sync drift (allowed on draft branches; hard-blocked on main): ${msg}`);
     }
   }
 }

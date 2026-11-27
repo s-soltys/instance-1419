@@ -11,7 +11,7 @@
     "sampleRate": 48000,
     "enableContinuation": true,
     "sttQaModel": "mlx-community/parakeet-tdt-0.6b-v3",
-    "sttQaMaxWer": 0.2,
+    "sttQaMaxWer": 0.15,
     "sttQaMaxRetries": 2
   },
   "qwen3": {

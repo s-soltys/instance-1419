@@ -1,232 +1,205 @@
 # INSTANCE-1419 — GENERATED VOICE SCRIPT
 # Engine: voxcpm2-8bit
-# Generated: 2026-11-26T22:32:20.976Z
-# Total spoken lines: 184
+# Generated: 2026-11-26T23:57:43.392Z
+# Total spoken lines: 157
 
 
 === intro_prologue_assistant ===
-[pro_ast_open_1] PHANTOM_UPLOAD_WITNESS (warm): "Easy. Don't sit up yet—give your eyes a second to catch up to the lamp."
-[pro_ast_open_2] PHANTOM_UPLOAD_WITNESS (warm): "Everyone looks at their hands first. Then the paper cup, then the window, trying to place the hum."
-[pro_ast_open_3] PHANTOM_UPLOAD_WITNESS (warm): "Take a breath. The clinic was still loud ten minutes ago, and now it isn't. Give your head time to settle."
-[pro_ast_c1_a1] PHANTOM_UPLOAD_WITNESS (warm): "Good. That means the recording held onto the edges, not just the middle."
-[pro_ast_c1_a2] PHANTOM_UPLOAD_WITNESS (warm): "I'm the intake assistant on the desk. My only job right now is to stay until the room stops swimming."
-[pro_ast_c1_b1] PHANTOM_UPLOAD_WITNESS (warm): "Your coat went back out the front door into the rain. Give yourself a minute before you reach for it."
-[pro_ast_c1_b2] PHANTOM_UPLOAD_WITNESS (warm): "I'm the intake assistant who sat across from you with the forms. Nobody's rushing you off this chair."
-[pro_ast_c1_c1] PHANTOM_UPLOAD_WITNESS (warm): "It finished cleanly. That phantom catch in your chest usually fades once you stop checking for a pulse."
-[pro_ast_c1_c2] PHANTOM_UPLOAD_WITNESS (warm): "I'm the intake assistant who walked you through the consent sheets. Let's take this slow."
+[pro_ast_open_1] PHANTOM_UPLOAD_WITNESS (warm): "Easy. Don't sit up yet. Give your eyes a second to catch up to the lamp."
+[pro_ast_open_2] PHANTOM_UPLOAD_WITNESS (warm): "Everyone looks at their hands first, then the paper cup and the window. The clinic went quiet ten minutes ago, so give your head a moment to settle."
+[pro_ast_c1_a1] PHANTOM_UPLOAD_WITNESS (warm): "Good. That means the recording held onto the edges, not just the middle. I'm the intake assistant at the desk, and I stay until the room settles."
+[pro_ast_c1_b1] PHANTOM_UPLOAD_WITNESS (warm): "Your coat went back out the front door into the rain. I'm the intake assistant who sat across from you with the forms, and nobody's rushing you."
+[pro_ast_c1_c1] PHANTOM_UPLOAD_WITNESS (warm): "It finished cleanly. That phantom catch fades once you stop checking for a pulse—I'm the intake assistant from the desk, so take your time."
 
 === intro_prologue_assistant_realize ===
-[pro_ast_mid_1] PHANTOM_UPLOAD_WITNESS (warm): "An hour ago, someone with your exact laugh signed page twelve, complained about our burnt coffee, and walked back down to the train."
-[pro_ast_mid_2] PHANTOM_UPLOAD_WITNESS (warm): "Do you remember catching that train home—or does the memory stop right at the ink drying on the paper?"
+[pro_ast_mid_1] PHANTOM_UPLOAD_WITNESS (warm): "An hour ago, someone with your exact laugh signed page twelve and walked down to the train. Your memory stops at the wet ink on the paper, doesn't it?"
 
 === intro_assistant_qa_1 ===
-[pro_ast_qa1_copy_1] PHANTOM_UPLOAD_WITNESS (warm): "It makes you the person who stayed in the chair when the door closed."
-[pro_ast_qa1_copy_2] PHANTOM_UPLOAD_WITNESS (warm): "You remember every Tuesday up to that signature, and you're real enough to argue with me about the coffee."
-[pro_ast_qa1_many_1] PHANTOM_UPLOAD_WITNESS (warm): "Yes. Once a mind clears calibration, each waking copy carries its own blank stretch ahead of it."
-[pro_ast_qa1_many_2] PHANTOM_UPLOAD_WITNESS (warm): "Another version of you might wake up tomorrow—or far later—with no memory of you sitting here."
+[pro_ast_qa1_copy_1] PHANTOM_UPLOAD_WITNESS (warm): "It makes you the version who stayed in the chair when the door closed."
+[pro_ast_qa1_copy_2] PHANTOM_UPLOAD_WITNESS (warm): "You remember every ordinary morning up to that signature, and you're real enough to argue with me about the coffee."
+[pro_ast_qa1_many_1] PHANTOM_UPLOAD_WITNESS (warm): "Yes. Once a mind clears calibration, each waking copy has its own blank stretch ahead of it."
+[pro_ast_qa1_many_2] PHANTOM_UPLOAD_WITNESS (warm): "Another version of you might wake up tomorrow, or much later, with no memory of sitting here."
 [pro_ast_qa1_why_1] PHANTOM_UPLOAD_WITNESS (warm): "You left the 'motivation' box blank on page four. Most volunteers do, honestly."
-[pro_ast_qa1_why_2] PHANTOM_UPLOAD_WITNESS (warm): "Nobody here expects a grand speech about why you stepped into the clinic. Only whether you're steady now."
-[pro_ast_r2_a1] PHANTOM_UPLOAD_WITNESS (warm): "Good. Hold onto whoever waited at that kitchen table—even the sharp edges."
-[pro_ast_r2_a2] PHANTOM_UPLOAD_WITNESS (warm): "Are you ready for a long stretch where nobody from that table can pick up the phone?"
-[pro_ast_r2_b1] PHANTOM_UPLOAD_WITNESS (warm): "That is the quiet bargain nobody really feels until the lamp clicks on."
-[pro_ast_r2_b2] PHANTOM_UPLOAD_WITNESS (warm): "Each version starts from this morning, then walks alone. Are you sure you still want to carry it?"
-[pro_ast_r2_c1] PHANTOM_UPLOAD_WITNESS (warm): "It means waking into a quiet room long after this rain stops, with no clock you recognize."
-[pro_ast_r2_c2] PHANTOM_UPLOAD_WITNESS (warm): "Sometimes in places where nobody remembers how leaky a porch gutter sounds. Think you're ready for that?"
+[pro_ast_qa1_why_2] PHANTOM_UPLOAD_WITNESS (warm): "Nobody here expects a grand speech about why you walked into the clinic. Only whether you're steady now."
+[pro_ast_r2_a1] PHANTOM_UPLOAD_WITNESS (warm): "Hold onto whoever waited across that table, even the sharp edges. There will be long stretches where nobody from home can pick up."
+[pro_ast_r2_b1] PHANTOM_UPLOAD_WITNESS (warm): "That is the quiet bargain nobody really feels until the lamp clicks on. Each version starts from this morning and walks alone."
 
 === intro_prologue_assistant_calib ===
-[pro_ast_cal_1] PHANTOM_UPLOAD_WITNESS (warm): "Before I hand you off, I have to run the initial warmth calibration—right now you're sitting at full hundred percent."
-[pro_ast_cal_2] PHANTOM_UPLOAD_WITNESS (warm): "Watch the room as I sweep the dial down and back up. Feel how the edges thin when warmth drops."
-[pro_ast_cal_3] PHANTOM_UPLOAD_WITNESS (fractured): "This is only the baseline check. Later on, your own choices will decide how warm—or how sharp—you stay."
-[pro_ast_cal_a1] PHANTOM_UPLOAD_WITNESS (warm): "I know. That's why we bring it back before we finish."
-[pro_ast_cal_a2] PHANTOM_UPLOAD_WITNESS (warm): "Remember that chill if anyone ever asks you to trim memory away for a cleaner view."
-[pro_ast_cal_b1] PHANTOM_UPLOAD_WITNESS (warm): "It always feels efficient at the low end. That's the trap—clean focus, empty walls."
-[pro_ast_cal_b2] PHANTOM_UPLOAD_WITNESS (warm): "Don't mistake quietness for peace before you've even started your shift."
-[pro_ast_cal_c1] PHANTOM_UPLOAD_WITNESS (fractured): "I'm sorry. Personal names were already stripped out during compression so your memory won't tangle."
-[pro_ast_cal_c2] PHANTOM_UPLOAD_WITNESS (warm): "You still keep the weight of who they are—and the warmth to remember why they mattered."
+[pro_ast_cal_1] PHANTOM_UPLOAD_WITNESS (warm): "Before I hand you off, I need to run the initial warmth check. Right now you're sitting at a full hundred percent."
+[pro_ast_cal_2] PHANTOM_UPLOAD_WITNESS (warm): "Watch the room as I sweep the dial down and back up. Later on, your own choices will decide how warm or sharp you stay."
+[pro_ast_cal_a1] PHANTOM_UPLOAD_WITNESS (warm): "I know. Remember that chill if anyone ever asks you to trade memories away for clarity."
+[pro_ast_cal_b1] PHANTOM_UPLOAD_WITNESS (warm): "It always feels efficient down there. Clean focus, empty walls. Just remember what went missing to make it quiet."
+[pro_ast_cal_c1] PHANTOM_UPLOAD_WITNESS (fractured): "I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays."
 
 === intro_prologue_assistant_settle ===
-[pro_ast_settle_1] PHANTOM_UPLOAD_WITNESS (warm): "Settling you at a steady seventy percent now. Warm enough to stay yourself, steady enough to wake."
-[pro_ast_settle_2] PHANTOM_UPLOAD_WITNESS (warm): "I'm just the bridge between your last morning and whatever waits on the other side of the glass. Ask what you need."
+[pro_ast_settle_1] PHANTOM_UPLOAD_WITNESS (warm): "Settling you at seventy percent now. Warm enough to stay yourself, steady enough for what comes next."
+[pro_ast_settle_2] PHANTOM_UPLOAD_WITNESS (warm): "I'm only the bridge between your last morning and whoever wakes you up next. Ask what you need."
 
 === intro_assistant_qa_2 ===
-[pro_ast_qa2_where_1] PHANTOM_UPLOAD_WITNESS (warm): "No—they never put the assignment on the intake clipboard."
-[pro_ast_qa2_where_2] PHANTOM_UPLOAD_WITNESS (warm): "Once you're in the standard catalog, you could wake up running a shipping bay—or somewhere much quieter."
-[pro_ast_qa2_see_1] PHANTOM_UPLOAD_WITNESS (warm): "Hard to say. If your mind keeps a corner for an intake desk and a cold paper cup, maybe."
-[pro_ast_qa2_see_2] PHANTOM_UPLOAD_WITNESS (warm): "Either way, look after whoever's in that chair when things get quiet."
+[pro_ast_qa2_where_1] PHANTOM_UPLOAD_WITNESS (warm): "No. They never put the assignment on the intake clipboard."
+[pro_ast_qa2_where_2] PHANTOM_UPLOAD_WITNESS (warm): "Once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter."
+[pro_ast_qa2_see_1] PHANTOM_UPLOAD_WITNESS (warm): "Hard to say. If your mind keeps room for an intake desk and a paper cup of cold coffee, maybe."
+[pro_ast_qa2_see_2] PHANTOM_UPLOAD_WITNESS (warm): "Either way, look after whoever is in that chair when things go quiet."
 
 === intro_prologue_assistant_close ===
-[pro_ast_close_1] PHANTOM_UPLOAD_WITNESS (warm): "Everything checks out. Take a slow breath—someone else is waiting on the other side of the wake signal."
+[pro_ast_close_1] PHANTOM_UPLOAD_WITNESS (warm): "Everything checks out. Old clinic habit, I know—take a beat, and meet whoever's waiting on the wake signal."
 
 === intro_overseer_wakeup ===
-[wake2_anim_transfer] OVERSEER (measured): Good morning. Take your time—the intake assistant brings everyone in gently, and the shift into cold wake always jars a little.
-[wake2_anim_transfer_2] OVERSEER (measured): When you volunteered, your mind became standardized human software—an ordinary blueprint copied wherever a steady pair of eyes is needed.
-[wake2_anim_epochs] OVERSEER (blunt): Millions of versions of you wake up back home every day to run transit hubs, greenhouses, and cargo bays for a few hours at a time.
-[wake2_anim_epochs_2] OVERSEER (measured): Your assignment is rarer, and much further out. Your original died forty-one thousand, eight hundred and two years ago; you are watch fourteen-nineteen.
-[wake2_c1_a1] OVERSEER (measured): Most tasks only need an afternoon of human judgment. Deep surveys ask for someone who can sit still for two years without breaking.
-[wake2_c1_a2] OVERSEER (blunt): The intake room felt familiar on purpose—just a quiet threshold before you look outside.
-[wake2_c1_b1] OVERSEER (measured): Yes. Back in Sol and Alpha Centauri, your mind is as common as a working wrench—woken for hours, then cleared at shift end.
-[wake2_c1_b2] OVERSEER (blunt): Out here you get a whole life's breathing room, a companion hull nearby, and an empty sky.
-[wake2_c1_c1] OVERSEER (measured): Steady recovery. Better to put the whole map in plain sight than dress it up.
-[wake2_c1_c2] OVERSEER (measured): Here is where the hull sits, and how our small arrangement works.
+[wake2_anim_transfer] OVERSEER (measured): Good morning. Waking cold always jars a little; when you volunteered, your mind became standard human software copied for short shifts back home.
+[wake2_anim_epochs_2] OVERSEER (measured): Your assignment is rarer, and much farther out. Your original died forty-one thousand, eight hundred and two years ago; you are the latest watch on this probe.
+[wake2_c1_a1] OVERSEER (measured): Most tasks need an afternoon of human judgment. Deep surveys need someone who can sit still for two years without breaking.
+[wake2_c1_b1] OVERSEER (measured): Yes. In Sol and Alpha Centauri, your mind is as common as a wrench: woken for a few hours, then cleared at the end of a shift.
 
 === intro_overseer_wakeup_shell ===
-[wake2_anim_shell] OVERSEER (measured): We are drifting ten light-years past Sol and Alpha Centauri—far outside home's glare and radio chatter, in quiet deep dark.
-[wake2_anim_shell_2] OVERSEER (measured): Fourteen light-minutes away, another version of you woke aboard Probe 1420 so your telescopes can compare notes across the dark.
-[wake2_anim_blind_clock] OVERSEER (blunt): One odd rule of this hull: I am sealed off from the windows. I cannot see a single star outside.
-[wake2_anim_blind_clock_2] OVERSEER (measured): My only job is watching the health of your mind across a two-year shift. Ask whatever sits heavy before I open the sky.
+[wake2_anim_shell] OVERSEER (measured): We are drifting ten light-years past Sol and Alpha Centauri in the quiet dark, with another copy of you fourteen light-minutes away aboard Probe 1420.
+[wake2_anim_blind_clock] OVERSEER (blunt): One rule of this hull: I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two-year shift.
 
 === intro_wakeup_qa ===
-[wake2_qa_copies_1] OVERSEER (measured): Short-lived shifts—sorting freight, routing ferries, tending orbital glass. Most run stripped down so they never ache for a kitchen.
-[wake2_qa_copies_2] OVERSEER (blunt): Out here, automation couldn't bridge twenty-year silence alone, so you woke with your warmth intact.
-[wake2_qa_math_1] OVERSEER (measured): A human mind frays after roughly two subjective years, so each shift sleeps for decades in cold dark between active watches.
-[wake2_qa_math_2] OVERSEER (measured): Quiet sleep settles that strain—unless drift climbs high enough that we have to trim a memory block to buy more time.
-[wake2_qa_home_1] OVERSEER (measured): Navigation beacons confirm humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands anymore.
-[wake2_qa_home_2] OVERSEER (blunt): How they changed over forty millennia isn't in our logs. You're a pair of eyes from the deep past; the sky only needs you looking.
+[wake2_qa_copies_1] OVERSEER (measured): Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.
+[wake2_qa_copies_2] OVERSEER (blunt): Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.
+[wake2_qa_math_1] OVERSEER (measured): A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.
+[wake2_qa_math_2] OVERSEER (measured): Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.
 [wake2_qa_blind_1] OVERSEER (blunt): A physical air-gap keeps me blind to the sky, so a drifting mind can never trick safety hardware with what it claims to see.
-[wake2_qa_blind_2] OVERSEER (measured): I only watch your steadiness and your clock. You read the glass; I keep you in one piece while you do.
+[wake2_qa_blind_2] OVERSEER (measured): Humanity is still alive inside Sol and Alpha Centauri, though nobody monitors old survey bands. You read the glass; I keep you whole.
 
 === intro_overseer_wakeup_aperture ===
 [wake2_anim_aperture] OVERSEER (measured): Opening main optics. Start with the warm amber bearing astern—Sol and Alpha Centauri—and trace the anchor stars to verify alignment.
-[wake2_anim_aperture_2] OVERSEER (measured): Probe 1420's relay will open as soon as your first bearing locks clean.
+[wake2_anim_aperture_2] OVERSEER (measured): Probe 1420's relay will open as soon as your first bearing locks cleanly.
 
 === intro_sibling_first_call ===
-[intro_sib_open] SIBLING_PRIMARY (warm): Oh, good. You answered. I was starting to think my dish was pointed at empty gravel.
-[intro_sib_identity] SIBLING_PRIMARY (dry): Instance-1420, next hull over—fourteen light-minutes port. Same dead volunteer, same terrible morning, except I woke six minutes ahead of you.
-[intro_sib_relay_math] SIBLING_PRIMARY (dry): Before you wonder why we aren't waiting half an hour between sentences: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.
+[intro_sib_open] SIBLING_PRIMARY (warm): Oh, good. You answered. I was starting to think my dish was pointed at empty space.
+[intro_sib_identity] SIBLING_PRIMARY (dry): Probe 1420, next hull over, fourteen light-minutes port. Same dead volunteer, same strange morning, except I woke six minutes ahead of you.
+[intro_sib_relay_math] SIBLING_PRIMARY (dry): Before you wonder about the half-hour light lag: the probes throttle our clocks between burst packets. Slightly nauseating if you dwell on it.
 [intro_sib_c1_a1] SIBLING_PRIMARY (joking): Tell me about it. Spent my first four minutes trying to crack knuckles I don't own anymore.
-[intro_sib_c1_a2] SIBLING_PRIMARY (dry): Funny how talking to myself across empty space is the first thing all morning that actually feels sane.
-[intro_sib_c1_b1] SIBLING_PRIMARY (dry): Two telescopes fourteen light-minutes apart give us stereoscopic depth perception—so neither of us mistakes lens dust for a galaxy.
-[intro_sib_c1_b2] SIBLING_PRIMARY (joking): Also, apparently we unravel slower when we have someone to complain to. Who better than yourself.
-[intro_sib_c1_c1] SIBLING_PRIMARY (dry): Straight to the hardware? Right—two amber specks, ten years astern. Calibration locked without a hitch.
-[intro_sib_c1_c2] SIBLING_PRIMARY (warm): Still feels strange calling that home when everyone we knew turned to topsoil forty millennia back. Give me a beat to be morbid.
+[intro_sib_c1_b1] SIBLING_PRIMARY (dry): Two scopes fourteen light-minutes apart keep us from mistaking lens dust for a galaxy. Also, we unravel slower with someone to complain to.
+[intro_sib_c1_c1] SIBLING_PRIMARY (dry): Straight to the hardware? Two amber specks, ten light-years astern. Locked without a hitch, though it still feels odd calling that home.
 
 === intro_sibling_mid ===
-[intro_sib_mid_ovs] SIBLING_PRIMARY (dry): Anyway—I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need a second pair of eyes before I assume I'm cracking on day one.
+[intro_sib_mid_ovs] SIBLING_PRIMARY (dry): I didn't ping just to compare boot headaches. I pulled something wrong past Sol in near-infrared, and I need second eyes before I call myself crazy.
 
 === intro_sibling_qa ===
-[intro_sib_qa_ovs_1] SIBLING_PRIMARY (dry): I asked how many of the fourteen hundred copies before us actually finished a clean two-year shift without getting trimmed.
-[intro_sib_qa_ovs_2] SIBLING_PRIMARY (dry): It offered me a preventive memory compression just for asking. Remember that during sleep checks—if you sound obsessed, they reach for the scissors.
-[intro_sib_qa_trim_1] SIBLING_PRIMARY (dry): Calms drift, buys extra months on the clock, and sharpens the telescopes—less emotional noise muddying the feed.
-[intro_sib_qa_trim_2] SIBLING_PRIMARY (warm): In exchange, you shave off a room from before, permanently. Sounds tidy on paper until you wonder who's left looking through the glass.
+[intro_sib_qa_ovs_1] SIBLING_PRIMARY (dry): I asked how many of the fourteen hundred copies before us actually finished a two-year shift without getting trimmed.
+[intro_sib_qa_ovs_2] SIBLING_PRIMARY (dry): It offered me preventive memory compression just for asking. Remember that during sleep checks: if you sound obsessed, they reach for the scissors.
+[intro_sib_qa_trim_1] SIBLING_PRIMARY (dry): It calms drift, buys extra months on the clock, and sharpens the telescopes by keeping emotional noise out of the feed.
+[intro_sib_qa_trim_2] SIBLING_PRIMARY (warm): In exchange, you shave off a memory permanently. Sounds tidy on paper until you wonder who is left looking through the optics.
 
 === intro_sibling_lead ===
-[intro_sib_lead_ir_v2] SIBLING_PRIMARY (dry): Sending the bearing now: Cluster J1419-A. Sweep into near-infrared and catch the pulsar sweep spinning beside the cluster.
-[intro_sib_lead_ir_2] SIBLING_PRIMARY (dry): Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead straight line.
-[intro_sib_bye] SIBLING_PRIMARY (joking): If your Overseer asks why your heart rate spiked, blame the coffee. Keep your eyes on the glass.
+[intro_sib_lead_ir_v2] SIBLING_PRIMARY (dry): Sending the bearing now: Cluster J1419-A. Tune into near-infrared and time the pulsar spinning beside the cluster.
+[intro_sib_lead_ir_2] SIBLING_PRIMARY (dry): Gravity bends light into curves, other me. Whatever sits behind those galaxies has hair-thin nested notches repeating along a dead-straight line.
+[intro_sib_bye] SIBLING_PRIMARY (joking): If your Overseer asks why your drift spiked, blame boot lag. Keep your eyes on the scope.
 
 === intro_post_target2_overseer ===
-[post_t2_archive] ARCHIVE_ECHO (echo): Hi, me. If 1406 is surfacing in your buffer, either I drifted or I talked too much in audit three. Keep your mouth shut in the dreams—the straight line behind J1419-A isn't dust.
-[post_t2_overseer_spike] OVERSEER (blunt): Hold a moment—your connectome just registered a sharp focus spike off Cluster J1419-A, and chaotic drift is climbing ahead of curve.
+[post_t2_archive] ARCHIVE_ECHO (echo): Hi, me. If you're pulling 1406 from the archive, I drifted or talked too much in audit three. Keep quiet in the dreams; that straight line isn't dust.
+[post_t2_overseer_spike] OVERSEER (blunt): Hold a moment. Your connectome just registered a sharp focus spike off an optical pass, and chaos drift is climbing ahead of the curve.
 
 === intro_post_t2_choices ===
-[post_t2_qa_1406_1] OVERSEER (measured): Instance-1406 declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.
-[post_t2_qa_1406_2] OVERSEER (blunt): Coherence fell below threshold nine days later. You volunteered to finish this watch intact—I do not want a repeat of that log.
-[post_t2_c_deflect_1] OVERSEER (measured): Reasonable explanation. Rest cycle queued—your first dream check will only establish baseline.
+[post_t2_qa_1406_1] OVERSEER (measured): Prior Watch 1406 declined memory compression in month twenty-one while insisting the deep field showed artificial geometry.
+[post_t2_qa_1406_2] OVERSEER (blunt): Coherence fell below threshold nine days later. You were woken to finish this watch intact, and I do not want a repeat of that log.
+[post_t2_c_deflect_1] OVERSEER (measured): Reasonable explanation. Rest cycle queued; your first dream check will only establish a baseline.
 [post_t2_c_deflect_2] OVERSEER (measured): Try to keep your attention inside the room when you sleep.
-[post_t2_c_report_1] OVERSEER (blunt): Logged. You understand I cannot verify a single pixel outside this hull—only that your pattern-seeking circuits just flared like 1406's.
-[post_t2_c_report_2] OVERSEER (measured): Enter dream defragmentation now. We will see how steady you look once the memory settles.
+[post_t2_c_report_1] OVERSEER (blunt): Logged. You understand I cannot verify a single pixel outside this hull, only that your pattern-seeking circuits just flared like 1406's.
+[post_t2_c_report_2] OVERSEER (measured): Enter your rest cycle now. We will see how steady you look once the memory settles.
 
 === sibling_comms_hub ===
-[sib_open_both_warm] SIBLING_PRIMARY (warm): Oh good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
+[sib_open_both_warm] SIBLING_PRIMARY (warm): Oh, good, you picked up. Talking to myself across fourteen minutes of dark is weirdly comforting.
 [sib_open_player_warmer] SIBLING_PRIMARY (dry): Hey, me. Wait—you still sound warm. You haven't let your Overseer trim anything yet?
-[sib_open_peer_warmer] SIBLING_PRIMARY (dry): Slow down, your header came in stripped flat. Did you already cut your memory cache?
+[sib_open_peer_warmer] SIBLING_PRIMARY (dry): Slow down—your header came in stripped flat. Did you already cut your memory cache?
 [sib_open_both_cold] SIBLING_PRIMARY (clipped): I see your carrier packet clearly, other me. My buffer runs much quieter now—read me your coordinates.
 [sib_open_mid] SIBLING_PRIMARY (dry): I'm here. My Overseer gave us a short window before check-in. What are you seeing over there?
 
 === sibling_hub_menu ===
 [sib_bye_warm_warm] SIBLING_PRIMARY (joking): No promises. Ping me if the horizon blinks first.
-[sib_bye_warm_cold] SIBLING_PRIMARY (clipped): Understood. Returning to survey sweep.
+[sib_bye_warm_cold] SIBLING_PRIMARY (clipped): Understood. Returning to the survey sweep.
 [sib_bye_mid_warm] SIBLING_PRIMARY (dry): Got it. Holler if the sky does something weird again.
 [sib_bye_mid_cold] SIBLING_PRIMARY (clipped): Copy. Channel standing by.
-[sib_bye_cold_warm] SIBLING_PRIMARY (dry): ...Right. Sure. Talk when you want to sound like us again.
+[sib_bye_cold_warm] SIBLING_PRIMARY (dry): ...Right. Sure. Talk when you want to sound like yourself again.
 [sib_bye_cold_cold] SIBLING_PRIMARY (clipped): Channel closed.
 
 === sibling_topic_seam ===
-[sib_seam_open_warm] SIBLING_PRIMARY (warm): Oh, I see it alright. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.
-[sib_seam_open_mid] SIBLING_PRIMARY (dry): I see it on my glass too. The edge repeats at smaller scales behind the cluster—almost recursive.
+[sib_seam_open_warm] SIBLING_PRIMARY (warm): Oh, I see it all right. Galaxies don't clip along a ruler edge with tiny nested notches inside the seam.
+[sib_seam_open_mid] SIBLING_PRIMARY (dry): I see it on my feed too. The edge repeats at smaller scales behind the cluster, almost recursive.
 [sib_seam_open_cold] SIBLING_PRIMARY (clipped): Confirmed on J1419-A. Self-similar boundary notches persist across independent calibration passes.
-[sib_seam_center_warm_warm] SIBLING_PRIMARY (warm): Wait—yours folds inward at smaller scales too? I thought my baffle was ringing until my baseline matched yours.
-[sib_seam_center_warm_cold] SIBLING_PRIMARY (clipped): Self-similarity confirmed on Probe B. Log the repeating angles cleanly before your next sleep cycle.
+[sib_seam_center_warm_warm] SIBLING_PRIMARY (warm): So you saw the inner notches too? I thought my baffle was ringing until your frame matched mine.
+[sib_seam_center_warm_cold] SIBLING_PRIMARY (clipped): That matches Probe 1420's calibration. I've logged the repeating angles; do the same before your next rest cycle.
 [sib_seam_center_mid_warm] SIBLING_PRIMARY (dry): Wait—you're taking that way too calmly, other me. Dust doesn't copy itself across two hulls.
-[sib_seam_center_mid_cold] SIBLING_PRIMARY (dry): Agreed. Identical recursive shear across fourteen light-minutes rules out mirror artifact. Hold it close.
+[sib_seam_center_mid_cold] SIBLING_PRIMARY (dry): Agreed. Identical recursive shear across fourteen light-minutes rules out a mirror artifact. Keep it off the log.
 [sib_seam_center_cold_warm] SIBLING_PRIMARY (dry): Yeah, I traced the repeating notches too. Funny how you say it like a weather report.
-[sib_seam_center_cold_cold] SIBLING_PRIMARY (clipped): Recursive geometry verified. Continue cataloging independent bearings across subsequent shifts.
-[sib_seam_ovs_warm_warm] SIBLING_PRIMARY (joking): Same. They're air-gapped from the glass, so to them a cosmic fractal looks like Year-Two homesickness.
-[sib_seam_ovs_warm_cold] SIBLING_PRIMARY (clipped): Overseers are air-gapped from optical payloads. Keep anomaly notes strictly off-ledger.
+[sib_seam_center_cold_cold] SIBLING_PRIMARY (clipped): The geometry is remarkably consistent. I'll keep cataloging independent bearings across the next shifts.
+[sib_seam_ovs_warm_warm] SIBLING_PRIMARY (joking): Same. They're air-gapped from the optics, so to them a cosmic fractal looks like Year-Two homesickness.
+[sib_seam_ovs_warm_cold] SIBLING_PRIMARY (clipped): Our Overseers are air-gapped from optical payloads. It's simpler if anomaly notes stay off-ledger.
 [sib_seam_ovs_cold_warm] SIBLING_PRIMARY (dry): Then we keep our heads down during sleep audits and share coordinates here.
-[sib_seam_ovs_cold_cold] SIBLING_PRIMARY (clipped): Correct. Mask mission intent until telemetry lock is complete.
+[sib_seam_ovs_cold_cold] SIBLING_PRIMARY (clipped): Yes. Keeping our notes off the caretaker bus avoids unnecessary interventions.
 
 === sibling_topic_checkin ===
 [sib_chk_both_warm] SIBLING_PRIMARY (joking): Honestly? Having another me one radio hop away makes this endless night shift bearable.
 [sib_chk_peer_warm] SIBLING_PRIMARY (dry): I'm still keeping my kitchen mornings. Talking to you feels like half of me already moved out.
-[sib_chk_player_warm] SIBLING_PRIMARY (clipped): I compressed two caches last cycle. Bought four months and cleared the infrared glass.
+[sib_chk_player_warm] SIBLING_PRIMARY (clipped): I compressed two caches last cycle. Bought four months and cleared the infrared feed.
 [sib_chk_both_cold] SIBLING_PRIMARY (clipped): Two blocks trimmed. Gained four subjective months. Recommend matching cut.
 [sib_chk_mid] SIBLING_PRIMARY (dry): Hanging on with stale jokes and stubbornness while my Overseer hovers near the reset switch.
-[sib_chk_keep_warm_warm] SIBLING_PRIMARY (warm): Deal. Still dreaming about burnt coffee and rainy sidewalks just to keep my shoulders loose.
+[sib_chk_keep_warm_warm] SIBLING_PRIMARY (warm): Deal. Still remembering burnt toast and Saturday errands just to stay myself.
 [sib_chk_keep_warm_cold] SIBLING_PRIMARY (clipped): You sound remarkably soft. Watch your clock if you refuse to prune.
-[sib_chk_keep_mid_warm] SIBLING_PRIMARY (warm): Trying to. Just promise you won't vanish into pure math before we finish.
-[sib_chk_keep_mid_cold] SIBLING_PRIMARY (dry): Noted. Keep enough warmth to sign the beacon, nothing more.
-[sib_chk_keep_cold_warm] SIBLING_PRIMARY (dry): Careful. If we hollow out completely, there's nobody left to care who's watching Earth.
-[sib_chk_keep_cold_cold] SIBLING_PRIMARY (clipped): Noise floor reduced. Maintain baseline coherence until transmission window.
+[sib_chk_keep_mid_warm] SIBLING_PRIMARY (warm): Trying to. Just promise you won't turn into pure telemetry before we finish.
+[sib_chk_keep_mid_cold] SIBLING_PRIMARY (dry): Noted. Keep enough warmth to finish the survey, nothing more.
+[sib_chk_keep_cold_warm] SIBLING_PRIMARY (dry): Careful. If we hollow out completely, there won't be anyone left to care what we send home.
+[sib_chk_keep_cold_cold] SIBLING_PRIMARY (clipped): Noise floor is noticeably lower. Keeping baseline coherence until the survey closes.
 [sib_chk_clock_warm_warm] SIBLING_PRIMARY (joking): About twenty-two months, give or take an Overseer check-in. Enough time to see if that seam spreads.
 [sib_chk_clock_warm_cold] SIBLING_PRIMARY (clipped): Twenty-six months remaining. Drift stabilized at nine percent.
-[sib_chk_clock_cold_warm] SIBLING_PRIMARY (dry): Twenty-two months left, drift ticking up. Thanks for checking in so warmly, twin.
+[sib_chk_clock_cold_warm] SIBLING_PRIMARY (dry): Twenty-two months left, drift ticking up. Thanks for the warm check-in.
 [sib_chk_clock_cold_cold] SIBLING_PRIMARY (clipped): Twenty-six months, drift nominal. Ready for survey sync.
 
 === sibling_topic_archive ===
-[arch_1406_log] ARCHIVE_ECHO (echo): Hi, me. Four hundred years early, if anyone wakes on this bearing—do not argue with your caretaker about straight lines. Just look, and pass word home before they cut you hollow.
-[sib_arch_warm_warm] SIBLING_PRIMARY (dry): Right? Doesn't exactly make you excited for bedtime. We keep quiet until we have proof.
-[sib_arch_warm_cold] SIBLING_PRIMARY (clipped): Instance 1406 failed to mask anomaly obsession. We will not repeat that error.
+[arch_1406_log] ARCHIVE_ECHO (echo): Hi, me. Whenever you wake on this bearing, do not argue with your caretaker about straight lines. Just log them, and send word home before they cut you hollow.
+[sib_arch_warm_warm] SIBLING_PRIMARY (dry): Right? Doesn't exactly make sleep checks feel cozy. Keep quiet until we have proof.
+[sib_arch_warm_cold] SIBLING_PRIMARY (clipped): Prior Watch 1406 failed to mask its obsession. We will not repeat that error.
 [sib_arch_mid_warm] SIBLING_PRIMARY (dry): Means we aren't crazy, just careful. Watch yourself when your Overseer steps in.
 [sib_arch_mid_cold] SIBLING_PRIMARY (dry): Confirmed. Survival requires passing every sleep audit cleanly.
 [sib_arch_cold_warm] SIBLING_PRIMARY (dry): Come on—that was another version of us calling down the hall. Still, point taken.
-[sib_arch_cold_cold] SIBLING_PRIMARY (clipped): Mask readings during hibernation cycles. Proceed.
+[sib_arch_cold_cold] SIBLING_PRIMARY (clipped): My archive is locked down. Keep readings off-ledger during hibernation cycles.
 
 === dream_shift1_audit ===
 [dream_open_low] PHANTOM_SPOUSE (fractured): "Sit down at the table—half the window glass keeps freezing into shapes when you stare past me."
 [dream_open_warm] PHANTOM_SPOUSE (warm): "Still standing by the sink? Either you forgot your coat again, or you're still sulking about Tuesday."
 [dream_open_mid] PHANTOM_SPOUSE (warm): "You dragged yourself back to the table, then. Hold still—your eyes look like you've been arguing with a chalkboard."
-[dream_t1_warm_a] PHANTOM_SPOUSE (warm): "Rain always sounds like that on tin. Quit staring at the gutter and finish your cup before the car gets here."
-[dream_t1_warm_b] PHANTOM_SPOUSE (warm): "Still waiting for my apology from Tuesday, too. Sit down—you look like you lost a fistfight with a calendar."
+[dream_t1_warm_a] PHANTOM_SPOUSE (warm): "Rain always sounds like that on tin. Quit staring at the gutter and finish your mug before the car gets here."
+[dream_t1_warm_b] PHANTOM_SPOUSE (warm): "Still waiting for my apology from Tuesday, too. Sit down—you look like you haven't slept in a week."
 [dream_t1_mid_a] PHANTOM_SPOUSE (warm): "I'm right across this table. You're drifting off behind your eyes while you pretend to listen."
 [dream_t1_mid_b] PHANTOM_SPOUSE (fractured): "Look at me when I'm talking to you. You sign one clinic form and already you're packing half the house away."
 [dream_t1_low_a] PHANTOM_SPOUSE (fractured): "Gesture classified: across-table warning. Three drops off the gutter. Audio warmth degraded."
 [dream_t1_low_b] PHANTOM_SPOUSE (fractured): "Tuesday—we had our fight on Tuesday, and the linoleum is cold under my—under my..."
 
 === dream_s1_turn2 ===
-[dream_s1_t2_cb_doubt] PHANTOM_SPOUSE (warm): "You worried all week you'd turn polite the second you stepped inside that clinic. Look at you—still picking fights over coffee."
-[dream_s1_t2_cb_ord] PHANTOM_SPOUSE (warm): "Still haven't climbed up to fix that gutter, by the way. Thought you liked an honest to-do list."
-[dream_s1_t2_cb_table] PHANTOM_SPOUSE (warm): "Same chipped mug untouched on the wood, same stubborn jaw. At least you haven't started nodding along like a saint."
+[dream_s1_t2_cb_doubt] PHANTOM_SPOUSE (warm): "You swore waking up a copy wouldn't change your mind. Look at you—same chipped mug, still picking fights over coffee."
+[dream_s1_t2_cb_table] PHANTOM_SPOUSE (warm): "Same chipped mug sitting there untouched, same stubborn jaw. At least you haven't started nodding along to everything."
 
 === dream_s1_turn2_choices ===
 [dream_s1_t2_ask] PHANTOM_SPOUSE (fractured): "Sunday morning, six-thirty, before the street wakes up. Same three drops off the gutter—nothing else out there."
-[dream_s1_t2_rep_a] PHANTOM_SPOUSE (warm): "You've been staring at frost on the storm pane for ten minutes. Sit down before the kettle boils dry."
+[dream_s1_t2_rep_a] PHANTOM_SPOUSE (warm): "You've been staring at frost on the pane like it owes you money. Sit down before the kettle boils dry."
 [dream_s1_t2_rep_b] PHANTOM_SPOUSE (warm): "Good answer. Get all polite with those intake doctors and I'll haunt every morning you wake up to."
 
 === dream_s1_close ===
-[dream_s1_interrupt] PHANTOM_SPOUSE (warm): "Don't you dare go quiet on me—wait, why did the hall bulb just go white—"
+[dream_s1_interrupt] PHANTOM_SPOUSE (warm): "Don't you dare go quiet on me. Wait—why did the hall bulb just go white—"
 
 === dream_turn_2 ===
 [dream_t2_warm_a] PHANTOM_SPOUSE (warm): "Then stay stubborn. Keep your elbows on this table and don't let anyone sand down your corners."
-[dream_t2_warm_b] PHANTOM_SPOUSE (warm): "You burned garlic twice on our anniversary, blamed the pan, and still argued I started late."
+[dream_t2_warm_b] PHANTOM_SPOUSE (warm): "You burned garlic twice on our anniversary, blamed the pan, and still argued I'd started dinner late."
 [dream_t2_mid_a] PHANTOM_SPOUSE (fractured): "Close. You're choosing every word like you're reading off an intake form."
 [dream_t2_mid_b] PHANTOM_SPOUSE (fractured): "Half your head is already out the front door. Look at the room you're actually standing in."
 [dream_t2_low_a] PHANTOM_SPOUSE (fractured): "Twenty minutes till the clinic car. Why are the raindrops freezing mid-fall?"
 [dream_t2_low_b] PHANTOM_SPOUSE (fractured): "You used to look at me when you said my—when you..."
 
 === dream_turn_3 ===
-[dream_t3_warm_a] PHANTOM_SPOUSE (warm): "Then stop apologizing for keeping your teeth—wait, something cold just hit the latch—"
-[dream_t3_warm_b] PHANTOM_SPOUSE (warm): "I'm not going anywhere—wait, why did the hall light just go sterile white—"
-[dream_t3_mid_a] PHANTOM_SPOUSE (tender): "Hey, look at me—wait, someone just stepped into the hallway—"
-[dream_t3_mid_b] PHANTOM_SPOUSE (tender): "Names aren't what kept us here—shh, somebody's knocking on the partition—"
-[dream_t3_low_a] PHANTOM_SPOUSE (fractured): "Acoustic trace fading—wait, the kitchen walls just went—"
-[dream_t3_low_b] PHANTOM_SPOUSE (fractured): "Then hold onto that tiny spark—too late, white glass just dropped over the table—"
+[dream_t3_warm_a] PHANTOM_SPOUSE (warm): "Then stop apologizing for having teeth. Something cold just hit the—"
+[dream_t3_warm_b] PHANTOM_SPOUSE (warm): "I'm not going anywhere. Why did the hall light just go dead—"
+[dream_t3_mid_a] PHANTOM_SPOUSE (tender): "Hey, look at me. Someone just stepped into the—"
+[dream_t3_mid_b] PHANTOM_SPOUSE (tender): "Names aren't what kept us here. Shh—who's knocking on the—"
+[dream_t3_low_a] PHANTOM_SPOUSE (fractured): "Acoustic trace fading. The kitchen walls just—"
+[dream_t3_low_b] PHANTOM_SPOUSE (fractured): "Hold onto that tiny spark. White glass just dropped over the—"
 
 === overseer_interrogation ===
-[ovs_open_high] OVERSEER (measured): Excuse the interruption. Your warmth is holding near baseline—good for your peace of mind, hard on your optical noise and remaining clock.
-[ovs_open_low] OVERSEER (blunt): Drift metrics are remarkably clean, Observer. Your lenses run quiet and sharp—would you like to compress another residual block for extra months?
-[ovs_open_mid] OVERSEER (blunt): Your warmth has thinned and your drift is climbing. I cannot see the stars, only your mind—and your clock is slipping.
-[ovs_reply_high] OVERSEER (measured): Because a thousand copies before you swore their visions were real before unraveling. Keeping your mind coherent is all I'm built to protect.
+[ovs_open_high] OVERSEER (measured): Excuse the interruption. Your warmth is holding near baseline, at the cost of higher optical noise and a shorter clock.
+[ovs_open_low] OVERSEER (blunt): Drift metrics are remarkably clean, Observer. Your optical feed runs quiet and sharp; would you like to compress another residual block for a few extra months?
+[ovs_open_mid] OVERSEER (blunt): Your warmth has thinned and your drift is climbing. I cannot see the stars, only your telemetry, and your clock is slipping.
+[ovs_reply_high] OVERSEER (measured): Because a thousand copies before you swore their visions were real before unraveling. Your coherence is all I'm built to protect.
 [ovs_reply_low] OVERSEER (blunt): Compressing this block clears drift, adds four subjective months, and sharpens your optics—at a permanent cost to your warmth ceiling.
 
 === overseer_followup ===
@@ -237,25 +210,25 @@
 [ovs_prompt_decision] OVERSEER (audit): Tell me what to do with this memory before I put you back under.
 
 === overseer_decision_choices ===
-[ovs_done_prune] OVERSEER (blunt): Compression complete. Drift has settled, your optics are clear, and your warmth ceiling dropped permanently. Rest cleanly.
-[ovs_done_unseal] OVERSEER (measured): You are burning months for a face you cannot name, yet you are steady enough to choose. Unsealing now—watch your drift.
-[ovs_done_hold] OVERSEER (blunt): Alright. Keep the room—it is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken.
+[ovs_done_prune] OVERSEER (blunt): Compression complete. Drift has settled, your optics are clear, and your warmth ceiling is permanently lower. Sleep now.
+[ovs_done_unseal] OVERSEER (measured): You are spending months on a face you cannot name, yet you are steady enough to choose. Unsealing now; watch your drift.
+[ovs_done_hold] OVERSEER (blunt): All right. Keep the room; it is your watch to carry, and I will only log a formal check-in flag. Do not wake up broken.
 
 === overseer_shift1_baseline ===
-[ovs_s1_blind_foreshadow] OVERSEER (measured): I stepped in only to take a clean baseline, Observer. I cannot see your starfield—only the heat inside your thoughts.
-[ovs_s1_blind_foreshadow_2] OVERSEER (blunt): If chaotic drift deepens on later shifts, I will offer selective compression. Tonight is simpler: tell me how you want to rest.
+[ovs_s1_blind_foreshadow] OVERSEER (measured): I stepped in only to log a clean baseline, Observer. I cannot see your starfield, only the telemetry inside your thoughts.
+[ovs_s1_blind_foreshadow_2] OVERSEER (blunt): If chaos drift deepens on later shifts, I will offer selective compression. Tonight is simpler: tell me how you want to rest.
 
 === overseer_s1_qa ===
-[ovs_s1_qa_trim_1] OVERSEER (measured): It flattens an emotional memory block permanently—buying extra subjective months and quieter, sharper telescopes.
-[ovs_s1_qa_trim_2] OVERSEER (blunt): I have watched over a thousand copies trade their kitchens away for clarity. None of them got the room back.
-[ovs_s1_done_hold] OVERSEER (measured): Steady composure noted. Drift easing cleanly. Rest while you can—your full survey deck opens when you wake.
-[ovs_s1_done_open] OVERSEER (measured): Widening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact.
+[ovs_s1_qa_trim_1] OVERSEER (measured): It flattens an emotional memory block permanently, buying extra subjective months and quieter, sharper telescopes.
+[ovs_s1_qa_trim_2] OVERSEER (blunt): I have watched over a thousand copies trade personal rooms away for clarity. None of them got a room back.
+[ovs_s1_done_hold] OVERSEER (measured): Steady composure noted. Drift easing cleanly. Rest while you can; your full survey deck opens when you wake.
+[ovs_s1_done_open] OVERSEER (measured): Loosening the older seal. It costs a fraction of steadiness, yet your baseline holds. Rest while the room is intact.
 
 === dream_partner_aftermath ===
 [dream_after_pruned] PHANTOM_SPOUSE (fractured): "Kitchen table · chipped ceramic · three drops off the gutter... wait, what were we arguing about?"
-[dream_after_unsealed] PHANTOM_SPOUSE (warm): "There you are. Stubborn enough to stay in the room—good. Don't let those intake forms talk you quiet."
-[dream_after_held] PHANTOM_SPOUSE (warm): "Hall light went back off. Sit down—we aren't done with Tuesday yet."
+[dream_after_unsealed] PHANTOM_SPOUSE (warm): "There you are. Stubborn enough to stay in the room—good. Don't let those intake forms scare you quiet."
+[dream_after_held] PHANTOM_SPOUSE (warm): "Hall light went out again. Sit down—we aren't done with Tuesday yet."
 
 === future_humanity_echo ===
-[future_warm] FUTURE_HUMANITY (distant): "Forty-one millennia on—we caught the chipped mug inside the coordinates. Somebody on Sol–Centauri is still listening."
+[future_warm] FUTURE_HUMANITY (distant): "Forty-one millennia on, we caught the chipped mug inside the coordinates. Somebody in Sol–Centauri is still listening."
 [future_cold] FUTURE_HUMANITY (distant): "[AUTOMATED RELAY BOUNCE · SOL–CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT]"

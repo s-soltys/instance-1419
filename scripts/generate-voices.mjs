@@ -1,7 +1,17 @@
 import { execFileSync } from 'node:child_process';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
+import {
+  computeSynthHash,
+  dedupeEntries,
+  extractLinesFromInk,
+  normalizeMatchKey,
+  prepareSpokenText,
+  sha256File,
+  stripInlineMarkup,
+} from './voice-extract.mjs';
+
+export { stripInlineMarkup, normalizeMatchKey, prepareSpokenText };
 
 const ROOT = path.resolve(process.cwd());
 const DIALOGUE_DIR = path.join(ROOT, 'src', 'content', 'dialogue');
@@ -32,323 +42,15 @@ const batchSizeArg = args.find((a) => a.startsWith('--batch-size='))?.split('=')
 const idsArg = args.find((a) => a.startsWith('--ids='))?.split('=')[1];
 const onlyIds = idsArg ? new Set(idsArg.split(',').map((s) => s.trim()).filter(Boolean)) : null;
 
-export function stripInlineMarkup(text) {
-  return text.replace(/\[\[(?:warm|cold):([^\]]+)\]\]/gi, '$1');
-}
-
-export function normalizeMatchKey(speaker, text) {
-  const cleaned = stripInlineMarkup(text)
-    .replace(/\{[^}]+\}/g, '#')
-    .replace(/\d+/g, '#')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
-  return `${speaker}|${cleaned}`;
-}
-
-function makeLineId(speaker, text) {
-  const key = normalizeMatchKey(speaker, text);
-  const hash = crypto.createHash('sha1').update(key).digest('hex').slice(0, 10);
-  return `${speaker}_${hash}`;
-}
-
-export function prepareSpokenText(rawText, lineId = '') {
-  let out = stripInlineMarkup(rawText)
-    .replace(/\[RELATION:SPOUSE_01\]'s/g, 'their')
-    .replace(/\[RELATION:SPOUSE_01\]/g, 'your partner')
-    .replace(/\{humanity\}/g, 'seventy')
-    .replace(/\{max_humanity\}/g, 'seventy eight')
-    .replace(/\{chaos_drift\}/g, 'fourteen')
-    .replace(/\{subjective_months\}/g, 'twenty four');
-
-  if (/\{[^}]+\}/.test(out)) {
-    const unresolved = out.match(/\{[^}]+\}/g);
-    console.warn(
-      `[generate-voices] WARN unresolved Ink interpolation in ${lineId || 'line'}: ${unresolved?.join(', ')}`
-    );
-    out = out.replace(/\{[^}]+\}/g, '');
-  }
-
-  out = out
-    .replace(/^\(ARCHIVE\s*[·•-]\s*\d+\):\s*/i, '')
-    .replace(/\bInstance[-\s]1419\b/g, 'Instance fourteen nineteen')
-    .replace(/\bInstance[-\s]1420\b/g, 'Instance fourteen twenty')
-    .replace(/\bInstance[-\s]1418\b/g, 'Instance fourteen eighteen')
-    .replace(/\bInstance[-\s]1411\b/g, 'Instance fourteen eleven')
-    .replace(/\bInstance[-\s]1406\b/g, 'Instance fourteen oh six')
-    .replace(/\bProbe\s+1419\b/g, 'Probe fourteen nineteen')
-    .replace(/\bProbe\s+1420\b/g, 'Probe fourteen twenty')
-    .replace(/\bProbe\s+1418\b/g, 'Probe fourteen eighteen')
-    .replace(/\bCluster\s+J1419-A\b/g, 'Cluster J fourteen nineteen A')
-    .replace(/\bJ1419-A\b/g, 'J fourteen nineteen A')
-    .replace(/\bS-04\b/g, 'S zero four')
-    .replace(/\bSol[–—-]Centauri\b/g, 'Sol Centauri')
-    .replace(/\b1419\b/g, 'fourteen nineteen')
-    .replace(/\b1420\b/g, 'fourteen twenty')
-    .replace(/\b1418\b/g, 'fourteen eighteen')
-    .replace(/\b1411\b/g, 'fourteen eleven')
-    .replace(/\b1406\b/g, 'fourteen oh six')
-    .replace(/\b0812\b/g, 'oh eight twelve')
-    .replace(/—(["']?)$/g, '$1')
-    .replace(/—/g, ', ')
-    .replace(/–/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // Strip outer quotation marks around full spoken lines so TTS doesn't insert odd quote pauses
-  if (
-    (out.startsWith('"') && out.endsWith('"')) ||
-    (out.startsWith('“') && out.endsWith('”'))
-  ) {
-    out = out.slice(1, -1).trim();
-  }
-  out = out.replace(/^(Archive fourteen oh six\.\.\.\s*)"\.\.\./i, '$1');
-  out = out.replace(/^"\.\.\./, '');
-  if (out.endsWith('..."')) {
-    out = out.slice(0, -1);
-  } else if (out.endsWith('"') && (out.match(/"/g) ?? []).length % 2 === 1) {
-    out = out.slice(0, -1).trim();
-  }
-
-  // Unwrap bracketed relay/telemetry notices and normalize ALL-CAPS telemetry blocks for natural TTS
-  if (out.startsWith('[') && out.endsWith(']')) {
-    out = out.slice(1, -1).trim();
-  }
-  out = out.replace(/\s*[·•]\s*/g, ', ');
-  if (out.length > 12 && out === out.toUpperCase() && /[A-Z]/.test(out)) {
-    out = out
-      .toLowerCase()
-      .replace(/(^\s*|[.!?]\s+|,\s+)([a-z])/g, (_, p, c) => p + c.toUpperCase())
-      .replace(/\b(sol|centauri|overseer)\b/g, (w) => w[0].toUpperCase() + w.slice(1));
-  }
-
-  return out.replace(/\s+/g, ' ').trim();
-}
-
-function computeSynthHash(entry) {
-  const prof = profiles[entry.speaker] ?? profiles.narrator ?? {};
-  const voxCfg = profilesJson.voxcpm2 ?? {};
-  const qwenCfg = profilesJson.qwen3 ?? {};
-  const v = prof.voxcpm2 ?? {};
-  const q = prof.qwen3 ?? {};
-
-  let payload;
-  if (providerArg === 'voxcpm2') {
-    const instruct =
-      v.emotionInstructs?.[entry.emotion] ?? v.defaultInstruct ?? q.voiceDesignInstruct ?? '';
-    payload = [
-      'voxcpm2',
-      voxCfg.model ?? 'mlx-community/VoxCPM2-8bit',
-      String(voxCfg.inferenceTimesteps ?? 10),
-      String(voxCfg.cfgValue ?? 2.0),
-      String(voxCfg.bitrate ?? '128k'),
-      String(voxCfg.sampleRate ?? 48000),
-      String(Boolean(voxCfg.enableContinuation) && !noContinuation),
-      v.anchorFile ?? q.anchorFile ?? '',
-      entry.emotion,
-      instruct,
-      entry.spokenText,
-      prof.ffmpegFilter ?? '',
-      entry.turnPrevLineId ?? '',
-    ].join('|');
-  } else if (providerArg === 'qwen3') {
-    const emoSpec = q.emotionAnchors?.[entry.emotion];
-    const resolvedSpec = typeof emoSpec === 'string' ? q.emotionAnchors?.[emoSpec] : emoSpec;
-    const anchorFile = resolvedSpec?.anchorFile ?? q.anchorFile ?? '';
-    payload = [
-      'qwen3',
-      qwenCfg.baseModel ?? '',
-      anchorFile,
-      entry.emotion,
-      entry.spokenText,
-      prof.ffmpegFilter ?? '',
-    ].join('|');
-  } else {
-    payload = [providerArg, entry.speaker, entry.emotion, entry.spokenText].join('|');
-  }
-
-  return crypto.createHash('sha1').update(payload).digest('hex').slice(0, 12);
-}
-
-function extractLinesFromInk(filePath) {
-  const raw = fs.readFileSync(filePath, 'utf8');
-  const lines = raw.split(/\r?\n/);
-
-  let currentKnot = 'root';
-  let currentSpeaker = 'narrator';
-  let currentEmotion = 'neutral';
-  let currentExplicitId = null;
-  let inFunction = false;
-  let prevTurnLine = null;
-  const scopeStack = [];
-  const collected = [];
-
-  for (const rawLine of lines) {
-    const trimmed = rawLine.trim();
-    if (!trimmed || trimmed.startsWith('//')) continue;
-
-    if (trimmed.startsWith('===')) {
-      const nameMatch = trimmed.match(/^===\s*(function\s+)?([a-zA-Z0-9_]+)/);
-      if (nameMatch) {
-        inFunction = Boolean(nameMatch[1]);
-        currentKnot = nameMatch[2];
-        currentSpeaker = 'narrator';
-        currentEmotion = 'neutral';
-        currentExplicitId = null;
-        prevTurnLine = null;
-        scopeStack.length = 0;
-      }
-      continue;
-    }
-
-    if (inFunction) continue;
-
-    if (trimmed === '{') {
-      scopeStack.push({ speaker: currentSpeaker, emotion: currentEmotion });
-      currentExplicitId = null;
-      prevTurnLine = null;
-      continue;
-    }
-
-    if (trimmed === '}') {
-      if (scopeStack.length > 0) {
-        const prev = scopeStack.pop();
-        currentSpeaker = prev.speaker;
-        currentEmotion = prev.emotion;
-      }
-      currentExplicitId = null;
-      prevTurnLine = null;
-      continue;
-    }
-
-    if (trimmed.startsWith('- ')) {
-      if (scopeStack.length > 0) {
-        const top = scopeStack[scopeStack.length - 1];
-        currentSpeaker = top.speaker;
-        currentEmotion = top.emotion;
-      }
-      currentExplicitId = null;
-      prevTurnLine = null;
-      continue;
-    }
-
-    if (
-      trimmed.startsWith('VAR ') ||
-      trimmed.startsWith('EXTERNAL ') ||
-      trimmed.startsWith('~') ||
-      trimmed.startsWith('->') ||
-      trimmed.startsWith('*') ||
-      trimmed.startsWith('+')
-    ) {
-      currentExplicitId = null;
-      prevTurnLine = null;
-      continue;
-    }
-
-    if (trimmed.startsWith('#')) {
-      const speakerMatch = trimmed.match(/# *speaker:([a-zA-Z0-9_-]+)/);
-      if (speakerMatch) currentSpeaker = speakerMatch[1];
-      const emotionMatch = trimmed.match(/# *emotion:([a-zA-Z0-9_-]+)/);
-      if (emotionMatch) currentEmotion = emotionMatch[1];
-      const idMatch = trimmed.match(/# *id:([a-zA-Z0-9_-]+)/);
-      if (idMatch) currentExplicitId = idMatch[1];
-      continue;
-    }
-
-    let text = trimmed;
-    const tagIdx = trimmed.indexOf(' #');
-    if (tagIdx !== -1) {
-      const tagPart = trimmed.slice(tagIdx);
-      const speakerMatch = tagPart.match(/# *speaker:([a-zA-Z0-9_-]+)/);
-      if (speakerMatch) currentSpeaker = speakerMatch[1];
-      const emotionMatch = tagPart.match(/# *emotion:([a-zA-Z0-9_-]+)/);
-      if (emotionMatch) currentEmotion = emotionMatch[1];
-      const idMatch = tagPart.match(/# *id:([a-zA-Z0-9_-]+)/);
-      if (idMatch) currentExplicitId = idMatch[1];
-      text = trimmed.slice(0, tagIdx).trim();
-    }
-
-    if (!text) continue;
-    // Skip bracketed stage directions like [STATIC] but NEVER skip [[warm:...]] inline highlights
-    if (text.startsWith('[') && !text.startsWith('[[') && text.endsWith(']')) {
-      currentExplicitId = null;
-      prevTurnLine = null;
-      continue;
-    }
-
-    const lineId = currentExplicitId ?? makeLineId(currentSpeaker, text);
-    currentExplicitId = null;
-    const profile = profiles[currentSpeaker] ?? profiles.narrator;
-    if (profile?.voiced === false) {
-      prevTurnLine = null;
-      continue;
-    }
-
-    const spokenText = prepareSpokenText(text, lineId);
-    const matchKey = normalizeMatchKey(currentSpeaker, text);
-
-    let turnPrevLineId = null;
-    let turnPrevSpokenText = null;
-    let chainLen = 1;
-    if (
-      prevTurnLine &&
-      prevTurnLine.speaker === currentSpeaker &&
-      prevTurnLine.emotion === currentEmotion &&
-      prevTurnLine.chainLen < 3
-    ) {
-      turnPrevLineId = prevTurnLine.lineId;
-      turnPrevSpokenText = prevTurnLine.spokenText;
-      chainLen = prevTurnLine.chainLen + 1;
-    }
-
-    const entry = {
-      lineId,
-      matchKey,
-      knot: currentKnot,
-      speaker: currentSpeaker,
-      emotion: currentEmotion,
-      text: stripInlineMarkup(text),
-      spokenText,
-      audioFile: `voices/${lineId}.mp3`,
-      turnPrevLineId,
-      turnPrevSpokenText,
-      remoteConfig: profile?.remoteConfig ?? null,
-    };
-    entry.synthHash = computeSynthHash(entry);
-
-    prevTurnLine = {
-      lineId,
-      spokenText,
-      speaker: currentSpeaker,
-      emotion: currentEmotion,
-      chainLen,
-    };
-
-    collected.push(entry);
-  }
-
-  return collected;
-}
-
-function dedupeEntries(entries) {
-  const byId = new Map();
-  for (const e of entries) {
-    if (!byId.has(e.lineId)) {
-      byId.set(e.lineId, e);
-    }
-  }
-  return [...byId.values()];
-}
-
-function loadPreviousHashes() {
+function loadPreviousEntries() {
   const map = new Map();
   if (!fs.existsSync(VOICE_SCRIPT_PATH)) return map;
   try {
     const prev = JSON.parse(fs.readFileSync(VOICE_SCRIPT_PATH, 'utf8'));
     if (prev.provider === providerArg) {
       for (const l of prev.lines ?? []) {
-        if (l.lineId && l.synthHash) {
-          map.set(l.lineId, l.synthHash);
+        if (l.lineId) {
+          map.set(l.lineId, l);
         }
       }
     }
@@ -358,7 +60,7 @@ function loadPreviousHashes() {
   return map;
 }
 
-function writeScriptArtifacts(entries) {
+function writeScriptArtifacts(entries, prevById, synthesizedIds) {
   const engineName =
     providerArg === 'voxcpm2'
       ? 'voxcpm2-8bit'
@@ -367,7 +69,43 @@ function writeScriptArtifacts(entries) {
         : providerArg === 'kokoro'
           ? 'kokoro-82m-q8'
           : providerArg;
-  const serializedLines = entries.map(({ turnPrevSpokenText: _omit, ...rest }) => rest);
+  const serializedLines = entries.map(({ turnPrevSpokenText: _omit, ...rest }) => {
+    const prev = prevById.get(rest.lineId);
+    const outPath = path.join(ROOT, 'public', rest.audioFile);
+    const hasFile = fs.existsSync(outPath) && fs.statSync(outPath).size > 512;
+
+    // When --ids= is used, avoid overwriting synthHash/metadata for unrequested lines so stale clips are not marked current
+    if (onlyIds && !synthesizedIds.has(rest.lineId) && prev) {
+      return {
+        ...rest,
+        synthHash: prev.synthHash ?? rest.synthHash,
+        audioSha256: hasFile ? (prev.audioSha256 ?? sha256File(outPath)) : null,
+        ...(typeof prev.sttWer === 'number' ? { sttWer: prev.sttWer } : {}),
+        ...(typeof prev.sttTranscript === 'string' ? { sttTranscript: prev.sttTranscript } : {}),
+      };
+    }
+
+    const audioSha256 = hasFile ? sha256File(outPath) : null;
+    const sttWer =
+      typeof rest.sttWer === 'number'
+        ? rest.sttWer
+        : prev?.synthHash === rest.synthHash && typeof prev?.sttWer === 'number'
+          ? prev.sttWer
+          : undefined;
+    const sttTranscript =
+      typeof rest.sttTranscript === 'string'
+        ? rest.sttTranscript
+        : prev?.synthHash === rest.synthHash && typeof prev?.sttTranscript === 'string'
+          ? prev.sttTranscript
+          : undefined;
+
+    return {
+      ...rest,
+      audioSha256,
+      ...(typeof sttWer === 'number' ? { sttWer } : {}),
+      ...(typeof sttTranscript === 'string' ? { sttTranscript } : {}),
+    };
+  });
   const jsonOut = {
     schema_version: 3,
     generated_at: new Date().toISOString(),
@@ -410,22 +148,26 @@ function resolveVoicePython() {
   return 'python3';
 }
 
-function getPendingEntries(entries, prevHashById) {
+function getPendingEntries(entries, prevById) {
   const filtered = onlyIds ? entries.filter((e) => onlyIds.has(e.lineId)) : entries;
   const pending = filtered.filter((entry) => {
     const outPath = path.join(ROOT, 'public', entry.audioFile);
     const missingOrTiny = !fs.existsSync(outPath) || fs.statSync(outPath).size <= 512;
-    const hashChanged = prevHashById.get(entry.lineId) !== entry.synthHash;
-    return forceRegen || missingOrTiny || hashChanged;
+    if (forceRegen || missingOrTiny) return true;
+    const prev = prevById.get(entry.lineId);
+    if (!prev || prev.synthHash !== entry.synthHash) return true;
+    if (prev.audioSha256 && sha256File(outPath) !== prev.audioSha256) return true;
+    return false;
   });
   return { filtered, pending };
 }
 
-function synthesizeVoxcpm2(entries, prevHashById) {
-  const { filtered, pending } = getPendingEntries(entries, prevHashById);
+function synthesizeVoxcpm2(entries, prevById) {
+  const { filtered, pending } = getPendingEntries(entries, prevById);
+  const synthesizedIds = new Set();
   if (pending.length === 0) {
     console.log(`[generate-voices] VoxCPM2-8bit: 0 generated, ${filtered.length} cached.`);
-    return;
+    return synthesizedIds;
   }
 
   const pythonBin = resolveVoicePython();
@@ -459,21 +201,40 @@ function synthesizeVoxcpm2(entries, prevHashById) {
     if (skipSttQa) workerArgs.push('--skip-stt-qa');
     if (noContinuation) workerArgs.push('--no-continuation');
     execFileSync(pythonBin, workerArgs, { stdio: 'inherit', cwd: ROOT });
+
+    if (fs.existsSync(reportPath)) {
+      const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+      const byId = new Map((report.lines ?? []).map((r) => [r.lineId, r]));
+      for (const entry of pending) {
+        const rec = byId.get(entry.lineId);
+        if (rec) {
+          synthesizedIds.add(entry.lineId);
+          if (typeof rec.wer === 'number') entry.sttWer = rec.wer;
+          if (typeof rec.transcript === 'string') entry.sttTranscript = rec.transcript;
+        }
+      }
+      fs.unlinkSync(reportPath);
+    } else {
+      for (const entry of pending) synthesizedIds.add(entry.lineId);
+    }
   } finally {
     if (fs.existsSync(jobPath)) fs.unlinkSync(jobPath);
+    if (fs.existsSync(reportPath)) fs.unlinkSync(reportPath);
   }
 
   const cached = filtered.length - pending.length;
   console.log(
     `[generate-voices] VoxCPM2-8bit complete: ${pending.length} generated, ${cached} cached.`
   );
+  return synthesizedIds;
 }
 
-function synthesizeQwen3(entries, prevHashById) {
-  const { filtered, pending } = getPendingEntries(entries, prevHashById);
+function synthesizeQwen3(entries, prevById) {
+  const { filtered, pending } = getPendingEntries(entries, prevById);
+  const synthesizedIds = new Set();
   if (pending.length === 0) {
     console.log(`[generate-voices] Qwen3-TTS: 0 generated, ${filtered.length} cached.`);
-    return;
+    return synthesizedIds;
   }
 
   const pythonBin = resolveVoicePython();
@@ -507,21 +268,25 @@ function synthesizeQwen3(entries, prevHashById) {
     const workerArgs = [QWEN3_WORKER, '--jobs', jobPath];
     if (forceAnchors) workerArgs.push('--force-anchors');
     execFileSync(pythonBin, workerArgs, { stdio: 'inherit', cwd: ROOT });
+    for (const entry of pending) synthesizedIds.add(entry.lineId);
   } finally {
     if (fs.existsSync(jobPath)) fs.unlinkSync(jobPath);
+    if (fs.existsSync(reportPath)) fs.unlinkSync(reportPath);
   }
 
   const cached = filtered.length - pending.length;
   console.log(
     `[generate-voices] Qwen3-TTS complete: ${pending.length} generated, ${cached} cached.`
   );
+  return synthesizedIds;
 }
 
-async function synthesizeKokoro(entries, prevHashById) {
-  const { filtered, pending } = getPendingEntries(entries, prevHashById);
+async function synthesizeKokoro(entries, prevById) {
+  const { filtered, pending } = getPendingEntries(entries, prevById);
+  const synthesizedIds = new Set();
   if (pending.length === 0) {
     console.log(`[generate-voices] Kokoro-82M: 0 generated, ${filtered.length} cached.`);
-    return;
+    return synthesizedIds;
   }
 
   console.log(`[generate-voices] Loading Kokoro-82M neural TTS (q8, cpu) for ${pending.length} lines...`);
@@ -549,6 +314,7 @@ async function synthesizeKokoro(entries, prevHashById) {
         { stdio: 'ignore' }
       );
       if (fs.existsSync(tmpWav)) fs.unlinkSync(tmpWav);
+      synthesizedIds.add(entry.lineId);
       generated++;
       if (generated % 10 === 0 || generated === pending.length) {
         console.log(`[generate-voices] Kokoro-82M progress: ${generated}/${pending.length}`);
@@ -562,10 +328,12 @@ async function synthesizeKokoro(entries, prevHashById) {
 
   const cached = filtered.length - pending.length;
   console.log(`[generate-voices] Kokoro-82M complete: ${generated} generated, ${cached} cached.`);
+  return synthesizedIds;
 }
 
 function synthesizeSay(entries) {
   const filtered = onlyIds ? entries.filter((e) => onlyIds.has(e.lineId)) : entries;
+  const synthesizedIds = new Set();
   let generated = 0;
   let skipped = 0;
 
@@ -592,6 +360,7 @@ function synthesizeSay(entries) {
         { stdio: 'ignore' }
       );
       if (fs.existsSync(tmpAiff)) fs.unlinkSync(tmpAiff);
+      synthesizedIds.add(entry.lineId);
       generated++;
     } catch (err) {
       if (fs.existsSync(tmpAiff)) fs.unlinkSync(tmpAiff);
@@ -600,26 +369,30 @@ function synthesizeSay(entries) {
   }
 
   console.log(`[generate-voices] say TTS complete: ${generated} generated, ${skipped} cached.`);
+  return synthesizedIds;
 }
 
 async function main() {
-  const prevHashById = loadPreviousHashes();
+  const prevById = loadPreviousEntries();
   const inkFiles = fs
     .readdirSync(DIALOGUE_DIR)
     .filter((f) => f.endsWith('.ink'))
     .map((f) => path.join(DIALOGUE_DIR, f));
 
-  const rawEntries = inkFiles.flatMap(extractLinesFromInk);
+  const rawEntries = inkFiles.flatMap((filePath) =>
+    extractLinesFromInk(filePath, profilesJson, providerArg, { noContinuation })
+  );
   const entries = dedupeEntries(rawEntries);
 
+  let synthesizedIds = new Set();
   if (providerArg === 'voxcpm2') {
-    synthesizeVoxcpm2(entries, prevHashById);
+    synthesizedIds = synthesizeVoxcpm2(entries, prevById);
   } else if (providerArg === 'qwen3') {
-    synthesizeQwen3(entries, prevHashById);
+    synthesizedIds = synthesizeQwen3(entries, prevById);
   } else if (providerArg === 'kokoro') {
-    await synthesizeKokoro(entries, prevHashById);
+    synthesizedIds = await synthesizeKokoro(entries, prevById);
   } else if (providerArg === 'say') {
-    synthesizeSay(entries);
+    synthesizedIds = synthesizeSay(entries);
   } else if (providerArg === 'remote') {
     const apiKey = process.env.VOICE_API_KEY;
     if (!apiKey) {
@@ -634,7 +407,7 @@ async function main() {
   }
 
   // Write manifest only after synthesis succeeds so interrupted runs don't mark stale lines current
-  writeScriptArtifacts(entries);
+  writeScriptArtifacts(entries, prevById, synthesizedIds);
 
   if (
     !onlyIds &&
@@ -663,3 +436,4 @@ main().catch((err) => {
   console.error('[generate-voices] Fatal error:', err);
   process.exit(1);
 });
+

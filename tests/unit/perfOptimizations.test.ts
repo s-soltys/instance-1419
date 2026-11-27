@@ -67,7 +67,7 @@ describe('Performance optimization regressions', () => {
     for (let step = 0; step < 3 && snap.choices.length > 0; step++) {
       snap = runner.choose(0);
     }
-    expect(snap.entries.some((e) => e.text.includes('warmth ceiling dropped'))).toBe(true);
+    expect(snap.entries.some((e) => e.text.includes('warmth ceiling is permanently lower'))).toBe(true);
     expect(store.getState().prunedPersonas).toContain('phantom_spouse');
     expect(store.getState().humanity).toBeLessThan(70);
     store.dispose();

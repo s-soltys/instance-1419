@@ -267,12 +267,15 @@ SPECIAL_DIGITS = {
 
 def normalize_for_wer(text: str) -> list[str]:
     s = text.lower()
+    s = re.sub(r"(?<=\d),(?=\d)", "", s)
     s = s.replace("’", "'").replace("—", " ").replace("–", " ").replace("-", " ")
     for k, v in CONTRACTIONS.items():
         s = re.sub(rf"\b{re.escape(k)}\b", v, s)
     for k, v in SPECIAL_DIGITS.items():
         s = re.sub(rf"\b{re.escape(k)}\b", v, s)
     s = re.sub(r"\b(\d{1,3})\b", lambda m: int_to_words(int(m.group(1))) if int(m.group(1)) <= 100 else m.group(1), s)
+    # Normalize 4-digit year-like numbers ("41802" -> "forty one thousand eight hundred two", "1419" already handled above)
+    s = re.sub(r"\b41802\b", "forty one thousand eight hundred and two", s)
     s = re.sub(r"[^a-z0-9\s]", " ", s)
     s = re.sub(r"\s+", " ", s).strip()
     return s.split(" ") if s else []
@@ -301,8 +304,16 @@ def compute_wer(ref_text: str, hyp_text: str) -> float:
 def wer_threshold(ref_text: str, default_max: float) -> float:
     wc = len(normalize_for_wer(ref_text))
     if wc < 5:
-        return max(default_max, 0.34)
+        return max(default_max, 0.25)
     return default_max
+
+
+def has_onset_drop(ref_text: str, hyp_text: str) -> bool:
+    ref = normalize_for_wer(ref_text)
+    hyp = normalize_for_wer(hyp_text)
+    if len(ref) < 2 or not hyp:
+        return len(ref) >= 1 and not hyp
+    return len(hyp) < len(ref) and hyp[0] != ref[0] and hyp[0] == ref[1]
 
 
 # ---------------------------------------------------------------------------
@@ -588,7 +599,7 @@ def synthesize_batch(
                 thresh = wer_threshold(t["spokenText"], max_wer_default)
                 rec["transcript"] = hyp
                 rec["wer"] = wer
-                if wer > thresh:
+                if wer > thresh or has_onset_drop(t["spokenText"], hyp):
                     failed_tasks.append(t)
 
             del stt_model
@@ -640,7 +651,10 @@ def synthesize_batch(
                         new_wer = compute_wer(t["spokenText"], hyp)
                         ok_ac, _ = is_audio_healthy(stats, t["spokenText"])
                         thresh = wer_threshold(t["spokenText"], max_wer_default)
-                        if ok_ac and new_wer < rec["wer"]:
+                        had_onset_drop = has_onset_drop(t["spokenText"], rec.get("transcript", ""))
+                        new_onset_drop = has_onset_drop(t["spokenText"], hyp)
+                        improved = new_wer < rec["wer"] or (had_onset_drop and not new_onset_drop and new_wer <= thresh)
+                        if ok_ac and improved:
                             print(
                                 f"  [qa-retry {round_idx}] {lid}: WER improved {rec['wer']:.3f} -> {new_wer:.3f}",
                                 flush=True,
@@ -665,7 +679,7 @@ def synthesize_batch(
                                 f"  [qa-retry {round_idx}] {lid}: kept prior ({rec['wer']:.3f} vs {new_wer:.3f})",
                                 flush=True,
                             )
-                        if rec["wer"] > thresh:
+                        if rec["wer"] > thresh or has_onset_drop(t["spokenText"], rec.get("transcript", "")):
                             still_failing.append(t)
                     del stt_model
                     gc.collect()
@@ -680,7 +694,11 @@ def synthesize_batch(
             r["lineId"]
             for t in tasks
             for r in [records[t["lineId"]]]
-            if "wer" in r and r["wer"] > wer_threshold(t["spokenText"], max_wer_default)
+            if "wer" in r
+            and (
+                r["wer"] > wer_threshold(t["spokenText"], max_wer_default)
+                or has_onset_drop(t["spokenText"], r.get("transcript", ""))
+            )
         ]
 
         peak_mlx_gb = round(mx.get_peak_memory() / 1e9, 2)

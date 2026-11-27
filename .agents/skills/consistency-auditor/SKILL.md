@@ -25,6 +25,6 @@ Run at the end of every feature or milestone before marking anything `"passing"`
    * `assets/MANIFEST.json` 100% coverage & commercial-safe licenses, `vite build`, and targeted `e2e-visual.mjs` (`--smoke` or `--flows=...`). Full 21-instrument + mobile matrix runs automatically in `.github/workflows/ci.yml` (or via `npm run verify` on final phase sign-off).
 2. **Qualitative SSOT Review:**
    * Audit lore & hard numbers against `docs/CANON.md` (`Instance-1419`, `41,802 years`, `1,417 prior copies`, `~10 ly`, `93B ly`, `~2 subjective years`, `20-year freeze`, `2 required + optional` shift scans, `8–12` Dream Personas with `2 Fixed Anchors + 2 rotating`).
-   * Audit prose, choice UX, layout, and Cast 2 VO fidelity against `docs/VOICE_GUIDE.md`, `docs/ART_DIRECTION.md`, and the 4-point Taste Compass (`docs/HARNESS.md`).
+   * Audit prose, choice UX, burst/choice pacing (`1–3` spoken lines, `<= 5` visible choices), native-English/physical sanity (`docs/VOICE_GUIDE.md` §1.5), persisted `voice_script.json` sync & `sttWer` diffs, layout, and Cast 2 VO fidelity against `docs/VOICE_GUIDE.md`, `docs/ART_DIRECTION.md`, and the 4-point Taste Compass (`docs/HARNESS.md`).
 3. **Output Format:**
    * Write concise audit reports under `docs/audits/<milestone>.md` with `PASS / BLOCKED` verdict and file/line-referenced fix tickets. Never silently rewrite creative work.

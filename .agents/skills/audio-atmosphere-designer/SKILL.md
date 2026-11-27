@@ -1,15 +1,15 @@
 ---
 name: audio-atmosphere-designer
-description: Design and implement procedural Web Audio soundscapes, optical tactile cues, clinical Overseer tones, Humanity-reactive dream audio mixing, and reserved Cast 2 Qwen3-TTS voice delivery for Instance-1419.
+description: Design and implement procedural Web Audio soundscapes, optical tactile cues, clinical Overseer tones, Humanity-reactive dream audio mixing, and reserved Cast 2 VoxCPM2-8bit voice delivery for Instance-1419.
 ---
 
 # Skill: Audio & Atmosphere Designer (`audio-atmosphere-designer`)
 
 ## When to Use
-Use when designing or tuning procedural Web Audio synthesizers, Lyria 3.5 hybrid music mixing, optical feedback cues, or the Cast 2 Qwen3-TTS voice pipeline (`voice_profiles.json`, `VoiceEngine.ts`, `generate-voices*.{mjs,py}`).
+Use when designing or tuning procedural Web Audio synthesizers, Lyria 3.5 hybrid music mixing, optical feedback cues, or the Cast 2 VoxCPM2-8bit voice pipeline (`voice_profiles.json`, `VoiceEngine.ts`, `generate-voices*.{mjs,py}`, `voice-extract.mjs`).
 
 ## Required Reading Before Work (SSOT)
-1. `docs/VOICE_GUIDE.md` (Cast 2 voice direction & Qwen3-TTS reproduction pipeline)
+1. `docs/VOICE_GUIDE.md` (Cast 2 voice direction, §1.6 selective `synthHash`/`audioSha256` regeneration & VoxCPM2-8bit reproduction pipeline)
 2. `docs/ARCHITECTURE.md` (`VoiceEngine` playback, ducking, fade & interrupt sync contracts)
 3. `docs/ART_DIRECTION.md` & `docs/MUSIC_DIRECTION.md`
 4. `docs/CANON.md` & `docs/HARNESS.md` (Taste Compass)

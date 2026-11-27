@@ -57,13 +57,20 @@ export function normalizeVoiceMatchKey(speaker: string, text: string): string {
 function findScriptRecord(req: VoiceRequest): VoiceLineRecord | undefined {
   if (req.lineId) {
     const byId = SCRIPT_BY_ID.get(req.lineId);
-    if (byId) return byId;
+    if (byId) {
+      if (
+        import.meta.env?.DEV &&
+        normalizeVoiceMatchKey(req.speaker, req.text) !== byId.matchKey
+      ) {
+        console.warn(
+          `[VoiceEngine] Spoken/text mismatch for lineId "${req.lineId}": runtime="${req.text}" vs script="${byId.text}"`
+        );
+      }
+      return byId;
+    }
   }
   const key = normalizeVoiceMatchKey(req.speaker, req.text);
-  const exact = SCRIPT_LINES.find((l) => l.matchKey === key);
-  if (exact) return exact;
-  const shortPrefix = key.slice(0, req.speaker.length + 1 + 36);
-  return SCRIPT_LINES.find((l) => l.matchKey.startsWith(shortPrefix));
+  return SCRIPT_LINES.find((l) => l.matchKey === key);
 }
 
 function sanitizeForSpeech(text: string): string {
