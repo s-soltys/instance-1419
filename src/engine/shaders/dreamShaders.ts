@@ -34,6 +34,7 @@ uniform float uTexAspect;   // texture width / height
 uniform vec2 uFaceAnchor;   // per-persona normalized face center (0..1)
 uniform float uAnomalyProgress; // 0.0..1.0 global anomaly discovery progress
 uniform float uFractalStage;    // 1.0..6.0 current fractal shell stage
+uniform float uDreamCrackBleed; // 0.0..1.0 shifts.json anomalyPhase.dreamCrackBleed
 
 vec2 hash22(vec2 p) {
   p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
@@ -171,7 +172,7 @@ void main() {
 
   // Cohesive Voronoi stained-glass fracture (outer margins first; max 0.032 offset preserves general silhouette at 20-30%)
   float shardFaceScale = 1.0 - faceProtect * 0.88;
-  float anomalyBleed = clamp(uAnomalyProgress * smoothstep(1.0, 6.0, uFractalStage), 0.0, 1.0);
+  float anomalyBleed = clamp(max(uDreamCrackBleed, uAnomalyProgress * smoothstep(1.0, 6.0, uFractalStage)), 0.0, 1.0);
   vec4 vor = vec4(0.0, 0.0, 0.0, 1.0);
   vec4 vorMicro = vec4(0.0, 0.0, 0.0, 1.0);
   vec2 sampleUv = uv;

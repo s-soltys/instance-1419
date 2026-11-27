@@ -328,7 +328,7 @@ export class CoronagraphMaskGame extends BaseCosmicMinigame {
     if (this.planets.every((item) => item.found)) {
       const { sx, sy } = this.getStarCenterPx(this.width, this.height);
       this.triggerStageClear(
-        `CORONAGRAPH SCAN ${this.stage}/3 COMPLETE`,
+        `CORONAGRAPH SCAN ${this.stage}/${this.maxStages} COMPLETE`,
         this.stage < 3 ? 0.6 : 0.45,
         sx,
         sy

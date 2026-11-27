@@ -676,7 +676,7 @@ export class GravitySlingshotGame extends BaseCosmicMinigame {
         };
         this.particles.emitPhotonSparks(gx, gy, 6, 44, this.palette.lockHex);
         this.triggerStageClear(
-          `SLINGSHOT INSERTION ${this.stage}/3 LOCKED`,
+          `SLINGSHOT INSERTION ${this.stage}/${this.maxStages} LOCKED`,
           0.88,
           gx,
           gy

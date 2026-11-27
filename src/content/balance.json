@@ -52,7 +52,6 @@
     "clarityProofBonusAnomaly": 2,
     "payouts": {
       "clean": { "anomalyGain": 4, "chaosDelta": 3, "suspicionDelta": 0 },
-      "deep_overclock": { "anomalyGain": 4, "chaosDelta": 3, "suspicionDelta": 0 },
       "partial": { "anomalyGain": 2, "chaosDelta": 2, "suspicionDelta": 0 }
     }
   },

@@ -150,22 +150,49 @@ export class DialogueRunner {
   private readonly store: StateStore;
   private readonly onAudioCue: (cue: string) => void;
   private readonly storyJson: Record<string, unknown>;
+  private readonly persistSession: boolean;
+  private readonly onEndingCallback?: (endingId: string, variant: string) => void;
 
   constructor(
     store: StateStore,
     onAudioCue: (cue: string) => void,
-    storyJson: Record<string, unknown> = compiledSpikeStory as Record<string, unknown>
+    storyJson: Record<string, unknown> = compiledSpikeStory as Record<string, unknown>,
+    options?: { persistSession?: boolean; onEnding?: (endingId: string, variant: string) => void } | boolean
   ) {
     this.store = store;
     this.onAudioCue = onAudioCue;
     this.storyJson = storyJson;
+    this.persistSession = typeof options === 'boolean' ? options : Boolean(options?.persistSession);
+    this.onEndingCallback = typeof options === 'object' ? options?.onEnding : undefined;
   }
 
   private ensureStory(): Story {
     if (!this.story) {
       this.story = this.createStory();
+      if (this.persistSession) {
+        const savedJson = this.store.getState().inkStateJson;
+        if (savedJson) {
+          try {
+            this.story.state.LoadJson(savedJson);
+          } catch {
+            // Ignore malformed or schema-mismatched saved Ink snapshot
+          }
+        }
+      }
     }
     return this.story;
+  }
+
+  private bindOptionalExternal(
+    story: Story,
+    name: string,
+    fn: (...args: unknown[]) => void
+  ): void {
+    try {
+      story.BindExternalFunction(name, fn, false);
+    } catch {
+      // Optional EXTERNAL not declared in the currently compiled Ink bundle
+    }
   }
 
   private createStory(): Story {
@@ -174,6 +201,7 @@ export class DialogueRunner {
       'prune_humanity',
       (delta: number, personaId: string) => {
         this.store.pruneHumanity(Number(delta), String(personaId));
+        this.syncVarsToInk(story);
       },
       false
     );
@@ -181,6 +209,7 @@ export class DialogueRunner {
       'petition_overseer',
       (delta: number) => {
         this.store.petitionOverseer(Number(delta));
+        this.syncVarsToInk(story);
       },
       false
     );
@@ -189,6 +218,7 @@ export class DialogueRunner {
       (delta: number) => {
         const curr = this.store.getState();
         this.store.patch({ chaosDrift: curr.chaosDrift + Number(delta) });
+        this.syncVarsToInk(story);
       },
       false
     );
@@ -197,6 +227,7 @@ export class DialogueRunner {
       (delta: number) => {
         const curr = this.store.getState();
         this.store.patch({ overseerSuspicion: curr.overseerSuspicion + Number(delta) });
+        this.syncVarsToInk(story);
       },
       false
     );
@@ -206,10 +237,52 @@ export class DialogueRunner {
         const valid = outcome === 'pruned' || outcome === 'unsealed' || outcome === 'held' || outcome === 'none';
         if (valid) {
           this.store.setAuditOutcome(outcome as AuditOutcome);
+          this.syncVarsToInk(story);
         }
       },
       false
     );
+
+    this.bindOptionalExternal(story, 'set_flag', (name: unknown, val: unknown) => {
+      this.store.setStoryFlag(String(name), Boolean(val));
+      this.syncVarsToInk(story);
+    });
+    this.bindOptionalExternal(story, 'unlock_codex', (id: unknown) => {
+      this.store.unlockCodexKey(String(id));
+      this.syncVarsToInk(story);
+    });
+    this.bindOptionalExternal(story, 'set_active_persona', (id: unknown) => {
+      this.store.setActiveDreamPersona(String(id));
+      this.syncVarsToInk(story);
+    });
+    this.bindOptionalExternal(story, 'record_room_visit', (personaId: unknown) => {
+      this.store.recordDreamRoomVisit(String(personaId));
+      this.syncVarsToInk(story);
+    });
+    this.bindOptionalExternal(story, 'mark_secondary_found', () => {
+      this.store.markSecondarySiblingFound();
+      this.syncVarsToInk(story);
+    });
+    this.bindOptionalExternal(story, 'adjust_sibling_h', (delta: unknown) => {
+      this.store.adjustPrimarySiblingH(Number(delta));
+      this.syncVarsToInk(story);
+    });
+    this.bindOptionalExternal(story, 'set_overseer_desync', (flag: unknown) => {
+      this.store.setOverseerDesynced(Boolean(flag));
+      this.syncVarsToInk(story);
+    });
+    this.bindOptionalExternal(story, 'force_crude_smiley', (flag: unknown) => {
+      this.store.setCrudeSmileyForced(Boolean(flag));
+      this.syncVarsToInk(story);
+    });
+    this.bindOptionalExternal(story, 'enter_ending', (id: unknown, variant: unknown) => {
+      const endingId = String(id || 'warm_incomplete');
+      const v = variant ? String(variant) : 'standard';
+      this.store.recordEnding(endingId, v);
+      this.onEndingCallback?.(endingId, v);
+      this.syncVarsToInk(story);
+    });
+
     return story;
   }
 
@@ -224,8 +297,8 @@ export class DialogueRunner {
     }
   }
 
-  private syncVarsToInk(): void {
-    const story = this.ensureStory();
+  private syncVarsToInk(targetStory?: Story): void {
+    const story = targetStory ?? this.ensureStory();
     const s = this.store.getState();
     story.variablesState.$('humanity', s.humanity);
     story.variablesState.$('max_humanity', s.maxHumanity);
@@ -237,6 +310,13 @@ export class DialogueRunner {
     story.variablesState.$('spouse_pruned', s.prunedPersonas.includes('phantom_spouse'));
     story.variablesState.$('last_audit_outcome', s.lastAuditOutcome);
     this.setInkVarIfDeclared(story, 'current_shift', s.shift);
+    this.setInkVarIfDeclared(story, 'secondary_sibling_found', s.secondarySiblingFound);
+    this.setInkVarIfDeclared(story, 'overseer_desynced', s.overseerDesynced);
+    this.setInkVarIfDeclared(story, 'crude_smiley_forced', s.crudeSmileyForced);
+    this.setInkVarIfDeclared(story, 'dream_rooms_visited', s.dreamVisitedRoomsThisShift.length);
+    this.setInkVarIfDeclared(story, 'active_dream_persona', s.activeDreamPersonaId);
+    this.setInkVarIfDeclared(story, 'elapsed_real_years', s.elapsedRealYears);
+    this.setInkVarIfDeclared(story, 'optical_fidelity_pct', Math.round(s.opticalFidelity * 100));
 
     const quota = this.store.getShiftQuotaStatus(s.shift);
     this.setInkVarIfDeclared(story, 'shift_required_done', quota.requiredDone);
@@ -253,6 +333,19 @@ export class DialogueRunner {
       'shift1_optional_scan_done',
       s.shift === 1 ? quota.optionalDone > 0 : false
     );
+
+    for (const pid of s.dreamPersonaCache) {
+      const short = pid.replace(/^phantom_/, '');
+      this.setInkVarIfDeclared(story, `cached_${short}`, true);
+    }
+    for (const pid of s.prunedPersonas) {
+      const short = pid.replace(/^phantom_/, '');
+      this.setInkVarIfDeclared(story, `pruned_${short}`, true);
+    }
+    for (const [flagKey, flagVal] of Object.entries(s.storyFlags)) {
+      this.setInkVarIfDeclared(story, flagKey, flagVal);
+      this.setInkVarIfDeclared(story, `flag_${flagKey}`, flagVal);
+    }
 
     for (const anomaly of anomaliesData.anomalies) {
       const flag = anomaly.postScanEcho?.storyFlag;
@@ -271,6 +364,15 @@ export class DialogueRunner {
       this.ensureStory().state.LoadJson(json);
     } catch {
       this.story = this.createStory();
+    }
+  }
+
+  hasKnot(knotName: string): boolean {
+    if (!knotName) return false;
+    try {
+      return Boolean(this.ensureStory().KnotContainerWithName(knotName));
+    } catch {
+      return false;
     }
   }
 
@@ -410,6 +512,10 @@ export class DialogueRunner {
         ...(rawTags && rawTags.length > 0 ? { tags: [...rawTags] } : {}),
       };
     });
+
+    if (this.persistSession) {
+      this.store.setInkStateJson(story.state.ToJson());
+    }
 
     return {
       knot: this.currentKnot,

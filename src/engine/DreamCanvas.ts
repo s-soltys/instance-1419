@@ -65,6 +65,7 @@ export class DreamCanvas {
   private overseerActive = false;
   private anomalyProgress = 0;
   private fractalStage = 1;
+  private dreamCrackBleed = 0;
   private active = false;
   private rafId = 0;
   private revealProgress = 1.0;
@@ -125,6 +126,7 @@ export class DreamCanvas {
         uFaceAnchor: { value: new THREE.Vector2(initialAnchor[0], initialAnchor[1]) },
         uAnomalyProgress: { value: this.anomalyProgress },
         uFractalStage: { value: this.fractalStage },
+        uDreamCrackBleed: { value: this.dreamCrackBleed },
       },
     });
 
@@ -212,12 +214,13 @@ export class DreamCanvas {
     this.lastRenderMs = 0;
   }
 
-  setAnomalyState(anomalyProgress: number, fractalStage: number): void {
+  setAnomalyState(anomalyProgress: number, fractalStage: number, dreamCrackBleed = 0): void {
     this.anomalyProgress =
       anomalyProgress > 1
         ? Math.max(0, Math.min(1, anomalyProgress / 100))
         : Math.max(0, Math.min(1, anomalyProgress));
     this.fractalStage = Math.max(1, Math.min(6, fractalStage));
+    this.dreamCrackBleed = Math.max(0, Math.min(1, dreamCrackBleed));
     this.lastRenderMs = 0;
   }
 
@@ -417,7 +420,8 @@ export class DreamCanvas {
       Math.abs(targetPruned - u.uPruned.value) < 0.002 &&
       Math.abs(targetOverseer - u.uOverseer.value) < 0.002 &&
       Math.abs(this.anomalyProgress - u.uAnomalyProgress.value) < 0.002 &&
-      Math.abs(this.fractalStage - u.uFractalStage.value) < 0.01;
+      Math.abs(this.fractalStage - u.uFractalStage.value) < 0.01 &&
+      Math.abs(this.dreamCrackBleed - u.uDreamCrackBleed.value) < 0.002;
 
     if (isSettled && this.lastRenderMs > 0 && now - this.lastRenderMs < 32) {
       return;
@@ -432,6 +436,7 @@ export class DreamCanvas {
     u.uOverseer.value += (targetOverseer - u.uOverseer.value) * 0.15;
     u.uAnomalyProgress.value += (this.anomalyProgress - u.uAnomalyProgress.value) * 0.12;
     u.uFractalStage.value += (this.fractalStage - u.uFractalStage.value) * 0.12;
+    u.uDreamCrackBleed.value += (this.dreamCrackBleed - u.uDreamCrackBleed.value) * 0.12;
     u.uReveal.value = easedReveal;
     u.uWakeProgress.value = this.wakeProgress;
     u.uHeadTilt.value = this.headTiltRad;

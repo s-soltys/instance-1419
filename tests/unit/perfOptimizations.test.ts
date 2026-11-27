@@ -25,28 +25,28 @@ describe('Performance optimization regressions', () => {
 
   it('StateStore debounces localStorage writes by 250ms and flushes cleanly via flushSave / reset', () => {
     const store = new StateStore();
-    expect(localStorage.getItem('instance_1419_state_v7')).toBeNull();
+    expect(localStorage.getItem('instance_1419_state_v8')).toBeNull();
 
     store.patch({ wavelengthNm: 920 });
     store.patch({ wavelengthNm: 1140 });
     // Debounced: not written synchronously during rapid vernier drags
-    expect(localStorage.getItem('instance_1419_state_v7')).toBeNull();
+    expect(localStorage.getItem('instance_1419_state_v8')).toBeNull();
 
     vi.advanceTimersByTime(260);
-    const savedRaw = localStorage.getItem('instance_1419_state_v7');
+    const savedRaw = localStorage.getItem('instance_1419_state_v8');
     expect(savedRaw).not.toBeNull();
     expect(JSON.parse(savedRaw!).wavelengthNm).toBe(1140);
 
     // Explicit flushSave writes immediately before timer fires
     store.patch({ wavelengthNm: 1480 });
     store.flushSave();
-    expect(JSON.parse(localStorage.getItem('instance_1419_state_v7')!).wavelengthNm).toBe(1480);
+    expect(JSON.parse(localStorage.getItem('instance_1419_state_v8')!).wavelengthNm).toBe(1480);
 
     // reset() cancels pending timer and synchronously resets saved state
     store.patch({ humanity: 30 });
     store.reset();
     vi.advanceTimersByTime(300);
-    expect(JSON.parse(localStorage.getItem('instance_1419_state_v7')!).humanity).toBe(70);
+    expect(JSON.parse(localStorage.getItem('instance_1419_state_v8')!).humanity).toBe(70);
     store.dispose();
   });
 

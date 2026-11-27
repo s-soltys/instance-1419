@@ -276,7 +276,7 @@ export class PulsarEchoGame extends BaseCosmicMinigame {
 
       if (this.catches >= this.catchesNeeded) {
         this.triggerStageClear(
-          this.stage === 3 ? 'RELATIVISTIC JETS SYNCHRONIZED' : `BEACON BANK ${this.stage}/3 CAUGHT`,
+          this.stage === 3 ? 'RELATIVISTIC JETS SYNCHRONIZED' : `BEACON BANK ${this.stage}/${this.maxStages} CAUGHT`,
           0.62,
           cx,
           cy

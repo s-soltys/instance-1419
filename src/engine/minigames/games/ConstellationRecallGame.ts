@@ -421,7 +421,7 @@ export class ConstellationRecallGame extends BaseCosmicMinigame {
       if (this.recallIndex >= this.sequence.length) {
         this.mode = 'stage_clear';
         this.triggerStageClear(
-          `CONSTELLATION ${this.stage}/3 LOCKED`,
+          `CONSTELLATION ${this.stage}/${this.maxStages} LOCKED`,
           this.stage === 3 ? 0.55 : 0.7,
           sx,
           sy

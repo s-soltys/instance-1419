@@ -471,7 +471,7 @@ export class ChromaticDispersionGame extends BaseCosmicMinigame {
         const py = box.top + this.prism.ty * box.scale;
         this.particles.emitPhotonSparks(px, py, 5, 44, this.palette.lockHex);
         this.triggerStageClear(
-          this.stage === 3 ? 'FULL SPECTRUM DISPERSED' : `SPECTRUM SPLIT ${this.stage}/3 CALIBRATED`,
+          this.stage === 3 ? 'FULL SPECTRUM DISPERSED' : `SPECTRUM SPLIT ${this.stage}/${this.maxStages} CALIBRATED`,
           this.stage === 3 ? 0 : 0.45,
           px,
           py

@@ -536,3 +536,17 @@ Each agent session reads the latest entries here before starting work and append
   * Slowed sky optics (`panDampRate: 5.2`, `0.6x` lock rate), minigame holds/veils (`BaseCosmicMinigame.ts`), finale reveal (`1350ms`, `finaleAutoCloseEnabled: false` in `MinigameHostView.ts`), `AudioEngine.ts` sky chimes (`11.5s`, 35% silence), and post-scan stillness (moving whispers/toasts to `onComplete`, converting Target 2 forced popup into clickable incoming toast).
 * **Verified:** `node scripts/verify.mjs --fast` PASS (13 test files / 183 tests) + `node scripts/e2e-visual.mjs --flows=prologue,sky,dream` PASS (0 errors).
 
+---
+
+## Session 33 (Prep Sprint 3) — 2026-11-27 — Multi-Shift Engine, Observatory Polish & Shift 6 Capstone
+* **Schema v8, Persistent Ink Session & Meta-Profile (`StateStore.ts`, `DialogueRunner.ts`, `StoryletScheduler.ts`):**
+  * Upgraded `StateStore.ts` to schema v8 (`storyFlags`, `elapsedRealYears`, `overseerDesynced`, `crudeSmileyForced`, `dreamVisitedRoomsThisShift`, `personaBeatIndex`, `expiredOptionalTargets`, `composedSignal`, `endingId`, `endingVariant`, `inkStateJson`), added deterministic 2 Fixed + 2 of 6 Rotating `selectDreamPersonaCache`, Dynamic Counterweight `evolvePrimarySiblingH`, optional target expiration across `advanceShift()`, `startFromShift()`, and persistent `instance_1419_meta_v1` post-ending Shift Select unlock.
+  * Upgraded `DialogueRunner.ts` with optional `persistSession`, immediate `syncVarsToInk()` inside every `EXTERNAL`, 9 new multi-shift `EXTERNAL`s (`set_flag`, `unlock_codex`, `set_active_persona`, `record_room_visit`, `mark_secondary_found`, `adjust_sibling_h`, `set_overseer_desync`, `force_crude_smiley`, `enter_ending`), and `hasKnot()`.
+* **Modular Directors, Multi-Room Dreams, Signal Board & Endings (`src/ui/directors/*`, `SignalComposerView.ts`, `EndingView.ts`, `BootView.ts`, `CodexEngine.ts`, `CodexView.ts`, `UIController.ts`):**
+  * Extracted `ShiftDirector`, `DreamDirector`, and `CommsDirector`, enforcing the 2-required mandate gate, collapsible `PRIOR SHIFTS` archive group, Multi-Room Dream Hub with `# tableau:` painting swaps and visible `Max_H` ceiling marker, dynamic Overseer SVG variants, `1420`/`1418`/`archive_echo` relay routing, Shift 6 Zeiss Signal Board (`SignalComposerView`), `EndingView` + Credits roll, post-ending `SHIFT SELECT` + visible Title `SETTINGS`, extended `CodexEngine` conditions (`flag`, `ending`, `personaPruned`), shift-grouped `EVD` Dossier, and `SIG-06` Signal Board CTA.
+* **2-Stage Baselines, Retired Overclock & Observatory Shader Calibration (`BaseCosmicMinigame.ts`, `MinigameHostView.ts`, `OpticsScene.ts`, `opticsShaders.ts`, `DreamCanvas.ts`, `dreamShaders.ts`, `balance.json`):**
+  * Retired Stage-3 `[O]` Overclock / `deep_overclock`, added `maxStages: 2 | 3` (`baseline` = 2 stages, anomaly = 3 stages), subtle ambient `anomalyBleed` border hairline, and pause-safe `setPaused()` across Settings/Codex modals.
+  * Fixed `STAR_VERTEX` Shift 1→6 floor (`~913 -> 18,000`), added `uAnomalyRole` gating on target plates, plumbed `uShellCoverage`/`uConstellationGuideAlpha`/`uDreamCrackBleed`, and added Shift 5–6 Sol–Centauri Antipode meridian etch.
+* **Verified:** `node scripts/verify.mjs --fast` PASS (13 test files / 183 tests) + `node scripts/e2e-visual.mjs --flows=prologue,sky,dream,mobile` PASS (0 errors).
+
+

@@ -17,8 +17,8 @@ import {
 interface InspectableMinigame {
   profile: CognitiveInstrumentProfile;
   stage: 1 | 2 | 3;
+  maxStages: 2 | 3;
   elapsedSec: number;
-  overclockEngaged: boolean;
 }
 
 const WARM_SHIFT1_LOW_CLARITY: MinigameStateVector = {
@@ -86,62 +86,61 @@ describe('Minigame Lean 3-Axis contract across all 21 cosmic instruments', () =>
     });
   }
 
-  it('supports Stage-3 Anomaly Overclock when anomalyBleed >= 0.30 and resolves clean when ignored', async () => {
+  it('runs 2 stages for baseline targets and 3 stages for boundary_bleed / direct_anomaly targets, and pauses cleanly', async () => {
     const mountEl = document.createElement('div');
     document.body.appendChild(mountEl);
 
-    // 1. With anomalyBleed >= 0.30 and [O] hotkey toggled on Stage 3 -> resolves deep_overclock
-    let armedResult: MinigameResult | null = null;
-    const instArmed = await reg.createAsync('lens_focus');
-    instArmed.mount({
+    // 1. Baseline target completes cleanly after Stage 2
+    let baselineRes: MinigameResult | null = null;
+    const baseInst = await reg.createAsync('constellation_recall');
+    baseInst.mount({
       container: mountEl,
-      targetId: 'cluster_j1419_a',
-      targetName: 'CLUSTER J1419-A',
-      minigameId: 'lens_focus',
-      state: { ...COLD_SHIFT5_HIGH_CLARITY, anomalyBleed: 0.48 },
+      targetId: 'sol_centauri_bearing',
+      targetName: 'SOL–CENTAURI BEARING',
+      minigameId: 'constellation_recall',
+      state: { ...WARM_SHIFT1_LOW_CLARITY, anomalyRole: 'baseline', anomalyBleed: 0 },
       iterationIndex: 0,
       showcase: createMockShowcaseScene()._bridge,
       audio: createMockAudioEngine()._instrumentHandle,
       onComplete: (res) => {
-        armedResult = res;
+        baselineRes = res;
       },
     });
-    const harnessArmed = instArmed.getSolvabilityHarness!();
-    harnessArmed.solveStage(1);
-    harnessArmed.solveStage(2);
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'o' }));
-    expect((instArmed as unknown as InspectableMinigame).overclockEngaged).toBe(true);
-    harnessArmed.solveStage(3);
-    expect(armedResult).not.toBeNull();
-    expect(armedResult!.grade).toBe('deep_overclock');
-    expect(armedResult!.anomalyGain).toBeGreaterThan(0);
-    instArmed.destroy();
+    expect((baseInst as unknown as InspectableMinigame).maxStages).toBe(2);
+    const harnessBase = baseInst.getSolvabilityHarness!();
+    harnessBase.solveStage(1);
+    expect(baselineRes).toBeNull();
+    harnessBase.solveStage(2);
+    expect(baselineRes).not.toBeNull();
+    expect(baselineRes!.grade).toBe('clean');
+    baseInst.destroy();
 
-    // 2. Ignoring Stage-3 overclock resolves clean; below 0.30 [O] cannot arm
-    let cleanResult: MinigameResult | null = null;
-    const instLow = await reg.createAsync('lens_focus');
-    instLow.mount({
+    // 2. Anomaly target runs 3 stages and resolves clean without Stage-3 Overclock
+    let anomRes: MinigameResult | null = null;
+    const instAnom = await reg.createAsync('lens_focus');
+    instAnom.mount({
       container: mountEl,
       targetId: 'cluster_j1419_a',
       targetName: 'CLUSTER J1419-A',
       minigameId: 'lens_focus',
-      state: { ...WARM_SHIFT1_LOW_CLARITY, anomalyBleed: 0.15 },
+      state: { ...COLD_SHIFT5_HIGH_CLARITY, anomalyRole: 'direct_anomaly', anomalyBleed: 0.48 },
       iterationIndex: 0,
       showcase: createMockShowcaseScene()._bridge,
       audio: createMockAudioEngine()._instrumentHandle,
       onComplete: (res) => {
-        cleanResult = res;
+        anomRes = res;
       },
     });
-    const harnessLow = instLow.getSolvabilityHarness!();
-    harnessLow.solveStage(1);
-    harnessLow.solveStage(2);
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'o' }));
-    expect((instLow as unknown as InspectableMinigame).overclockEngaged).toBe(false);
-    harnessLow.solveStage(3);
-    expect(cleanResult!.grade).toBe('clean');
-    expect(cleanResult!.anomalyGain).toBeGreaterThan(0);
-    instLow.destroy();
+    expect((instAnom as unknown as InspectableMinigame).maxStages).toBe(3);
+    const harnessAnom = instAnom.getSolvabilityHarness!();
+    harnessAnom.solveStage(1);
+    harnessAnom.solveStage(2);
+    expect(anomRes).toBeNull();
+    harnessAnom.solveStage(3);
+    expect(anomRes).not.toBeNull();
+    expect(anomRes!.grade).toBe('clean');
+    expect(anomRes!.anomalyGain).toBeGreaterThan(0);
+    instAnom.destroy();
   });
 
   it('pauses elapsedSec during briefingHold and resumes cleanly on setBriefingHold(false)', async () => {

@@ -509,7 +509,7 @@ export class ExposureStackerGame extends BaseCosmicMinigame {
             this.stageFlashText = '4 SUB-FRAMES CAPTURED · REJECT ARTIFACT';
             this.emitHud(true);
           } else {
-            this.triggerStageClear(`EXPOSURE FRAME ${this.stage}/3 STACKED`, 0.85, cx, cy);
+            this.triggerStageClear(`EXPOSURE FRAME ${this.stage}/${this.maxStages} STACKED`, 0.85, cx, cy);
           }
         }
       }

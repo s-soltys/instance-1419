@@ -348,7 +348,7 @@ export class TelescopeLensFocusGame extends BaseCosmicMinigame {
         const { cx, cy } = this.getGeometry(this.width, this.height);
         this.particles.emitPhotonSparks(cx, cy, 5, 48, this.palette.lockHex);
         this.triggerStageClear(
-          this.stage === 3 ? 'GRAVITATIONAL LENS DE-WARPED' : `LENS SHELL ${this.stage}/3 LOCKED`,
+          this.stage === 3 ? 'GRAVITATIONAL LENS DE-WARPED' : `LENS SHELL ${this.stage}/${this.maxStages} LOCKED`,
           this.stage === 3 ? 0 : 0.45,
           cx,
           cy

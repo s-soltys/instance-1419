@@ -8,7 +8,6 @@ export type HapticPattern =
   | 'proximityPulse'
   | 'detentResistance'
   | 'phaseSnapLock'
-  | 'overclockHeartbeat'
   | 'rejectThud'
   | 'shutterCommit';
 
@@ -32,7 +31,6 @@ const HAPTIC_SPECS: Record<HapticPattern, { ms: number | number[]; weak: number;
   proximityPulse: { ms: 11, weak: 0.28, strong: 0.12, durationMs: 26 },
   detentResistance: { ms: 14, weak: 0.36, strong: 0.24, durationMs: 32 },
   phaseSnapLock: { ms: [18, 22, 28], weak: 0.48, strong: 0.65, durationMs: 75 },
-  overclockHeartbeat: { ms: [18, 36, 22], weak: 0.42, strong: 0.58, durationMs: 80 },
   rejectThud: { ms: 34, weak: 0.62, strong: 0.72, durationMs: 65 },
   shutterCommit: { ms: [22, 18, 40], weak: 0.52, strong: 0.82, durationMs: 95 },
 };

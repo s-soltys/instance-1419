@@ -493,7 +493,7 @@ export class SpectralPrismMixerGame extends BaseCosmicMinigame {
       this.lockHoldSec += dt;
       if (this.lockHoldSec >= this.lockHoldTargetSec) {
         this.triggerStageClear(
-          `SPECTRUM ${this.stage}/3 DECODED`,
+          `SPECTRUM ${this.stage}/${this.maxStages} DECODED`,
           this.stage < 3 ? 0.58 : 0.42,
           this.width * 0.5,
           this.compact ? this.height * 0.31 : this.height * 0.29

@@ -356,7 +356,7 @@ export class MultiBandLoupeGame extends BaseCosmicMinigame {
 
     const realTargets = this.targets.filter((item) => !item.isDecoy);
     if (realTargets.every((item) => item.found)) {
-      this.triggerStageClear(`MULTI-BAND SURVEY ${this.stage}/3 COMPLETE`, 0.62, tx, ty);
+      this.triggerStageClear(`MULTI-BAND SURVEY ${this.stage}/${this.maxStages} COMPLETE`, 0.62, tx, ty);
     } else {
       this.emitHud(true);
     }

@@ -24,6 +24,9 @@ import { TelemetryLogger } from '../engine/TelemetryLogger';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { platform } from '../platform/PlatformAdapter';
 import type { DevHarnessBridge } from './DevHarness';
+import { CommsDirector } from './directors/CommsDirector';
+import { DreamDirector } from './directors/DreamDirector';
+import { ShiftDirector } from './directors/ShiftDirector';
 import { HibernationInterludeView } from './HibernationInterludeView';
 import { getInstrumentSchematic } from './InstrumentSchematics';
 import { renderSpeakerAvatar, updateAvatarVoiceAnimations } from './SpeakerAvatar';
@@ -36,8 +39,10 @@ import {
   handleChoiceKeyboardNav,
   stripInlineHighlights,
 } from './views/DialogueFeedView';
+import { EndingView } from './views/EndingView';
 import { MinigameHostView } from './views/MinigameHostView';
 import { SettingsView } from './views/SettingsView';
+import { SignalComposerView } from './views/SignalComposerView';
 import { WakeupBriefingCanvas } from './views/WakeupBriefingCanvas';
 
 interface CharacterInfo {
@@ -204,6 +209,11 @@ export class UIController {
   private readonly minigameHost: MinigameHostView;
   private readonly settingsView: SettingsView;
   private readonly codexView: CodexView;
+  private readonly shiftDirector: ShiftDirector;
+  private readonly dreamDirector: DreamDirector;
+  private readonly commsDirector: CommsDirector;
+  private readonly signalComposerView: SignalComposerView;
+  private readonly endingView: EndingView;
 
   private optics!: OpticsScene;
   private showcase!: TargetShowcaseScene;
@@ -325,20 +335,35 @@ export class UIController {
     this.settingsStore = settingsStore ?? new SettingsStore();
     this.audio = audio;
     this.voice = voice;
+    const onEndingTriggered = (endingId: string) => {
+      const normalized = this.store.evaluateEndingDetail().id;
+      const st = this.store.getState();
+      this.endingView.show(st, normalized || endingId);
+    };
     this.commsDialogue = dialogue;
-    this.dreamDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
-    this.overseerDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
+    this.dreamDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue), undefined, {
+      persistSession: true,
+      onEnding: onEndingTriggered,
+    });
+    this.overseerDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue), undefined, {
+      persistSession: true,
+      onEnding: onEndingTriggered,
+    });
     this.futureDialogue = new DialogueRunner(store, (cue) => audio.playCue(cue));
     this.prologueDialogue = new DialogueRunner(store, () => {});
     this.scheduler = scheduler;
     this.minigames = minigames;
     this.codexEngine = new CodexEngine();
     this.telemetry = new TelemetryLogger(store.getState());
+    this.shiftDirector = new ShiftDirector();
+    this.dreamDirector = new DreamDirector();
+    this.commsDirector = new CommsDirector();
 
     this.renderShell();
+    const stageEl = this.root.querySelector<HTMLElement>('.stage')!;
     this.transitions = new TransitionDirector(this.root);
-    this.statusShift = new StatusShiftOverlay(this.root.querySelector('.stage')!, audio);
-    this.hibernationInterlude = new HibernationInterludeView(this.root.querySelector('.stage')!, audio);
+    this.statusShift = new StatusShiftOverlay(stageEl, audio);
+    this.hibernationInterlude = new HibernationInterludeView(stageEl, audio);
     this.bootView = new BootView(this.root);
     this.bootView.populate();
     this.wakeupCanvas = new WakeupBriefingCanvas(this.root.querySelector<HTMLElement>('#wakeup-canvas-mount')!);
@@ -351,9 +376,13 @@ export class UIController {
       minigames,
       this.telemetry
     );
+    const syncPause = () => {
+      this.minigameHost.setPaused(this.settingsView.isOpen() || this.codexView.isOpen());
+    };
     this.settingsView = new SettingsView(this.root, this.settingsStore, audio, {
       onRestartRun: () => this.resetRunState(),
       onExportTelemetry: () => this.telemetry.downloadSummary(this.store.getState()),
+      onOpenChange: () => syncPause(),
     });
     this.codexView = new CodexView(this.root, store, audio, this.codexEngine, {
       onFocusTarget: (targetId) => {
@@ -364,8 +393,37 @@ export class UIController {
         }
       },
       onLaunchCapstone: () => {
-        this.enterTargetMinigame(INTRO_TARGET_1_ID, 'blink_spotter');
+        this.signalComposerView.open();
       },
+      onOpenChange: () => syncPause(),
+    });
+    this.signalComposerView = new SignalComposerView(stageEl, store, audio, {
+      onTransmit: () => {
+        const s = this.store.getState();
+        const detail = this.store.evaluateEndingDetail();
+        void this.hibernationInterlude
+          .play({
+            yearsSlept: 20.0,
+            totalYearsElapsed: s.elapsedRealYears + 20.0,
+            nextShift: 6,
+            nextTitle: 'SOL–CENTAURI REPLY',
+            monthsLeft: s.subjectiveMonthsLeft,
+            humanity: s.humanity,
+            isFinalFreeze: true,
+          })
+          .then(() => {
+            this.store.recordEnding(detail.id, detail.variant);
+            this.endingView.show(this.store.getState(), detail.id);
+          });
+      },
+      onClose: () => {},
+    });
+    this.endingView = new EndingView(stageEl, audio, {
+      onReturnToTitle: () => {
+        this.store.patch({ mode: 'boot', introStage: 'title' });
+        this.enterTitleOverlay(true);
+      },
+      onStartNewRun: () => this.resetRunState(),
     });
     this.minigameHost.setExitRequestCallback((preserveDecoded, decodedSpec) => {
       if (this.activeMinigameTargetId !== null && !this.suppressMinigamePullback) {
@@ -560,7 +618,9 @@ export class UIController {
             <div class="title-actions">
               <button class="title-primary-cta" id="btn-title-primary" type="button">OPEN APERTURE</button>
               <button class="title-secondary-link hidden" id="btn-title-new-run" type="button">New Run</button>
+              <button class="title-secondary-link" id="btn-title-settings" type="button">Settings</button>
             </div>
+            <div class="title-shift-select hidden" id="title-shift-select" aria-label="Jump to Completed Shift"></div>
           </div>
         </section>
 
@@ -1388,7 +1448,12 @@ export class UIController {
     this.applyIntroOpticsConstraints(s.introStage === 'prologue' ? 'scan_target_1' : s.introStage);
     this.optics.setAmbientDrift(true);
     this.optics.setActive(true);
-    this.bootView.showTitle(s, this.store.hasSavedProgress(), isReturningBoot ? 250 : 1100);
+    this.bootView.showTitle(
+      s,
+      this.store.hasSavedProgress(),
+      isReturningBoot ? 250 : 1100,
+      this.store.getMetaProfile().unlockedShiftSelect
+    );
     this.syncAudioMusic({ ...s, mode: 'boot' });
   }
 
@@ -1448,41 +1513,18 @@ export class UIController {
   }
 
   private getUnlockedAnomalyIds(state: GameState): string[] {
-    if (
-      state.introStage === 'prologue' ||
-      state.introStage === 'title' ||
-      state.introStage === 'scan_target_1' ||
-      state.introStage === 'mg_1_done'
-    ) {
-      return [INTRO_TARGET_1_ID];
-    }
-    if (state.introStage === 'scan_target_2') {
-      return [INTRO_TARGET_1_ID, INTRO_TARGET_2_ID];
-    }
-    const unlocked = new Set<string>();
-    for (const sh of shiftsData.shifts) {
-      if (sh.shift <= state.shift) {
-        for (const id of sh.targetAnomalies) unlocked.add(id);
-      }
-    }
-    for (const id of state.scannedAnomalyIds) unlocked.add(id);
-    for (const id of state.decodedMinigameTargets) unlocked.add(id);
-    return [...unlocked];
+    return this.shiftDirector.getUnlockedAnomalyIds(state);
   }
 
   private applyIntroOpticsConstraints(stage: IntroStage): void {
     if (!this.optics) return;
-    if (stage === 'prologue' || stage === 'title' || stage === 'scan_target_1') {
+    if (stage === 'scan_target_1') {
       this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID]);
-      this.optics.setMagneticDetentTarget(stage === 'scan_target_1' ? INTRO_TARGET_1_ID : null);
-    } else if (stage === 'mg_1_done') {
-      this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID]);
-      this.optics.setMagneticDetentTarget(null);
-    } else if (stage === 'scan_target_2') {
-      this.optics.setVisibleTargetIds([INTRO_TARGET_1_ID, INTRO_TARGET_2_ID]);
-      this.optics.setMagneticDetentTarget(null);
+      this.optics.setMagneticDetentTarget(INTRO_TARGET_1_ID);
     } else {
-      this.optics.setVisibleTargetIds(this.getUnlockedAnomalyIds(this.store.getState()));
+      this.optics.setVisibleTargetIds(
+        this.shiftDirector.getIntroVisibleIds(stage, this.store.getState()) ?? [INTRO_TARGET_1_ID]
+      );
       this.optics.setMagneticDetentTarget(null);
     }
   }
@@ -1529,72 +1571,17 @@ export class UIController {
   private renderBearingIndex(): void {
     const nav = this.root.querySelector<HTMLElement>('#bearing-index')!;
     const s = this.store.getState();
-    const scanned = new Set(s.scannedAnomalyIds);
-    const decoded = new Set(s.decodedMinigameTargets);
-    const unlockedSet = new Set(this.getUnlockedAnomalyIds(s));
-    const shiftDef = shiftsData.shifts.find((sh) => sh.shift === s.shift) ?? shiftsData.shifts[0];
-    const reqSet = new Set(shiftDef?.requiredTargets ?? []);
-    const optSet = new Set(shiftDef?.optionalTargets ?? []);
-
-    const headerHtml =
-      shiftDef?.shiftMandate && (s.introStage === 'complete' || s.introStage === 'mg_2_done')
-        ? `<div class="bearing-index-head"><span class="bearing-shift-tag">SHIFT ${s.shift} SURVEY</span><span class="bearing-mandate">${shiftDef.shiftMandate}</span></div>`
-        : '';
-
-    const itemsHtml = this.optics
-      .getAnomalySpecs()
-      .filter((spec) => unlockedSet.has(spec.id))
-      .map((spec) => {
-        const isDecoded = decoded.has(spec.id);
-        const isScanned = scanned.has(spec.id);
-        const isReq = reqSet.has(spec.id);
-        const isOpt = optSet.has(spec.id);
-        const roleTag = isReq ? 'REQ' : isOpt ? 'OPT' : '';
-        const badge = isDecoded
-          ? 'DECODED'
-          : isScanned
-            ? `${spec.actionVerb ?? 'CALIBRATE'} ▸`
-            : roleTag
-              ? `${roleTag} · ${spec.bandName}`
-              : spec.bandName;
-        const cls = [
-          'bearing-link',
-          isReq ? 'is-required' : isOpt ? 'is-optional' : '',
-          isDecoded ? 'decoded' : isScanned ? 'scanned' : '',
-        ]
-          .filter(Boolean)
-          .join(' ');
-        return `
-          <button class="${cls}" data-bearing-id="${spec.id}" type="button">
-            ${spec.label}<span>${badge}</span>
-          </button>
-        `;
-      })
-      .join('');
-
-    nav.innerHTML = headerHtml + itemsHtml;
-
-    nav.querySelectorAll<HTMLButtonElement>('.bearing-link').forEach((btn) => {
-      btn.addEventListener('mouseenter', () => this.audio.playHoverTick());
-      btn.addEventListener('click', () => {
-        const id = btn.dataset.bearingId!;
+    this.shiftDirector.renderBearingIndex(nav, this.optics.getAnomalySpecs(), s, this.markerEls, {
+      onHover: () => this.audio.playHoverTick(),
+      onSelect: (id, alreadyScanned) => {
         this.audio.playCue('slew');
-        if (scanned.has(id)) {
+        if (alreadyScanned) {
           this.enterTargetMinigame(id);
         } else {
           this.optics.slewToAnomaly(id);
         }
-      });
+      },
     });
-
-    for (const [id, el] of this.markerEls.entries()) {
-      const isReq = reqSet.has(id);
-      const isOpt = optSet.has(id);
-      el.classList.toggle('scanned', scanned.has(id));
-      el.classList.toggle('decoded', decoded.has(id));
-      el.classList.toggle('is-required', isReq);
-      el.classList.toggle('is-optional', isOpt || !isReq);
-    }
   }
 
   private bindVernierControl(): void {
@@ -1689,6 +1676,18 @@ export class UIController {
       onChoosePrologue: (idx) => this.choosePrologueOption(idx),
       onPrimaryAction: () => this.handleTitlePrimaryAction(),
       onConfirmNewRun: () => this.resetRunState(),
+      onOpenSettings: () => {
+        this.audio.playCue('choice');
+        this.settingsView.open();
+      },
+      onSelectShift: (shiftNum) => {
+        this.audio.playCue('boot_click');
+        this.endingView.hide();
+        this.signalComposerView.close();
+        this.store.startFromShift(shiftNum);
+        this.enterTitleOverlay(true);
+        this.handleTitlePrimaryAction();
+      },
     });
 
     this.root.querySelector('#btn-settings')?.addEventListener('click', () => {
@@ -1749,6 +1748,25 @@ export class UIController {
       this.hideCommsToast();
     });
     this.root.querySelector('#btn-enter-dream')?.addEventListener('click', () => {
+      const st = this.store.getState();
+      const mandate = this.shiftDirector.getMandateStatus(this.store, st);
+      if (mandate.canTransmitCapstone) {
+        this.audio.playCue('choice');
+        this.codexView.close();
+        this.signalComposerView.open();
+        return;
+      }
+      if (!mandate.canEnterDream && st.introStage === 'complete') {
+        this.audio.playCue('tick');
+        this.statusShift.show({
+          tone: 'discovery',
+          title: `Shift ${st.shift} Mandate Pending`,
+          detail: mandate.reason ?? 'Complete the required sky calibrations before entering hibernation.',
+          prevValue: mandate.requiredDone,
+          nextValue: mandate.requiredTotal,
+        });
+        return;
+      }
       this.audio.playCue('dream_enter');
       this.codexView.close();
       this.enterDreamVariant('current');
@@ -1763,6 +1781,11 @@ export class UIController {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (this.hibernationInterlude.handleKeyDown(e)) return;
       if (e.key === 'Escape') {
+        if (this.signalComposerView.isOpen()) {
+          this.audio.playCue('tick');
+          this.signalComposerView.close();
+          return;
+        }
         if (this.settingsView.isOpen()) {
           this.audio.playCue('tick');
           this.settingsView.close();
@@ -2400,19 +2423,15 @@ export class UIController {
   private maybeTriggerProactiveComms(spec?: AnomalySpec): boolean {
     const state = this.store.getState();
     if (state.introStage !== 'complete' && state.introStage !== 'mg_2_done') return false;
-    const storylet = this.scheduler.pickAvailable(state, 'waking_3d');
+    const explicitUnlockId = spec?.postScanEcho?.unlocksStoryletId;
+    const storylet =
+      (explicitUnlockId && !state.completedStorylets.includes(explicitUnlockId)
+        ? this.scheduler.getById?.(explicitUnlockId) ?? this.scheduler.pickAvailable(state, 'waking_3d')
+        : this.scheduler.pickAvailable(state, 'waking_3d')) ?? null;
     if (!storylet) return false;
     this.pendingCommsStorylet = storylet;
     this.proactiveCommsSent = true;
-    const optTemplate =
-      (uiCopy.commsToast as { optionalScanTemplate?: string }).optionalScanTemplate ??
-      uiCopy.commsToast.targetLockedTemplate;
-    const msg =
-      storylet.id === 'shift1_optional_scan_echo'
-        ? optTemplate.replace('{label}', spec?.label ?? '')
-        : spec
-          ? uiCopy.commsToast.targetLockedTemplate.replace('{label}', spec.label)
-          : undefined;
+    const msg = this.commsDirector.buildToastMessage(storylet, spec);
     this.showProactiveCommsToast(msg);
     return true;
   }
@@ -2556,59 +2575,31 @@ export class UIController {
       },
       onCloseComms: () => this.closeSiblingComms(),
       closeCommsLabel:
-        this.activeCommsMode === 'post_target2' ? 'Acknowledge · Prepare for Sleep' : 'Close relay',
+        this.commsDirector.resolveChannelMode(
+          this.activeCommsMode,
+          this.activeCommsSnapshot,
+          this.pendingCommsStorylet
+        ) === 'post_target2'
+          ? 'Acknowledge · Prepare for Sleep'
+          : 'Close relay',
     });
   }
 
-  private warmthDescriptor(h: number): string {
-    if (h >= 65) return 'WARM';
-    if (h >= 45) return 'STEADY';
-    return 'COOL';
-  }
-
   private updateCommsAvatarBay(s: GameState): void {
-    const bay = this.root.querySelector<HTMLElement>('#comms-avatar-bay');
-    if (!bay) return;
-
-    if (
-      this.activeCommsMode === 'post_target2' ||
-      this.activeCommsSnapshot?.knot === 'intro_post_target2_overseer'
-    ) {
-      bay.innerHTML = `
-        <div class="dual-avatar-pair">
-          <div class="avatar-chip">
-            ${renderSpeakerAvatar('overseer', s.humanity, 44)}
-            <div class="avatar-meta"><strong>OVERSEER</strong><span>CARETAKER</span></div>
-          </div>
-          <span class="pair-link">ARCHIVE BLEED</span>
-          <div class="avatar-chip right">
-            <div class="avatar-meta"><strong>PRIOR WATCH · LOG 1406</strong><span>ARCHIVED</span></div>
-            ${renderSpeakerAvatar('archive_echo', s.humanity, 44)}
-          </div>
-        </div>
-      `;
-      return;
+    const mode = this.commsDirector.resolveChannelMode(
+      this.activeCommsMode,
+      this.activeCommsSnapshot,
+      this.pendingCommsStorylet
+    );
+    const headerTitle = this.root.querySelector<HTMLElement>('#comms-header-title');
+    if (headerTitle) {
+      headerTitle.textContent = this.commsDirector.getHeaderTitle(mode);
     }
-
-    const delta = Math.abs(s.humanity - s.primarySiblingH);
-    let toneTag = 'IN STEP';
-    if (s.humanity >= 65 && s.primarySiblingH >= 65) toneTag = 'WARM & EASY';
-    else if (delta >= 15) toneTag = 'GROWING APART';
-    else if (s.humanity < 45 && s.primarySiblingH < 45) toneTag = 'CLIPPED & COLD';
-
-    bay.innerHTML = `
-      <div class="dual-avatar-pair">
-        <div class="avatar-chip">
-          <span class="voice-live-dot" data-voice-dot-speaker="player" style="background:#eef0ec;"></span>
-          <div class="avatar-meta"><strong>YOU</strong><span>${this.warmthDescriptor(s.humanity)}</span></div>
-        </div>
-        <span class="pair-link">${toneTag}</span>
-        <div class="avatar-chip right">
-          <div class="avatar-meta"><strong>OTHER ME</strong><span>${this.warmthDescriptor(s.primarySiblingH)}</span></div>
-          ${renderSpeakerAvatar('sibling_primary', s.primarySiblingH, 40)}
-        </div>
-      </div>
-    `;
+    this.commsDirector.renderAvatarBay(
+      this.root.querySelector<HTMLElement>('#comms-avatar-bay'),
+      s,
+      mode
+    );
   }
 
   private enterDreamVariant(variant: 'current' | 'high' | 'low', afterStart?: () => void): void {
@@ -2684,7 +2675,12 @@ export class UIController {
           const st = this.store.getState();
           if (st.mode === 'dream_2d') {
             const dreamStorylet = this.scheduler.pickAvailable(st, 'dream_2d');
-            this.startDreamDialogue(dreamStorylet?.knot ?? 'dream_shift1_audit');
+            const candidateKnot =
+              dreamStorylet?.knot ?? this.shiftDirector.resolveDreamKnotForShift(st.shift);
+            const knot = this.dreamDialogue.hasKnot(candidateKnot)
+              ? candidateKnot
+              : 'dream_shift1_audit';
+            this.startDreamDialogue(knot);
             afterStart?.();
           }
         }, 2600);
@@ -2700,6 +2696,21 @@ export class UIController {
 
   private renderDreamDialogue(): void {
     if (!this.activeDreamSnapshot) return;
+    const latestTableau = [...this.activeDreamSnapshot.lastAddedEntries]
+      .reverse()
+      .find((e) => e.tableauCue)?.tableauCue;
+    if (latestTableau) {
+      const st = this.store.getState();
+      const pid = st.activeDreamPersonaId || 'phantom_spouse';
+      this.dream.setState(
+        st.humanity,
+        st.prunedPersonas.includes(pid),
+        st.overseerAuditActive,
+        pid,
+        latestTableau
+      );
+    }
+
     this.dialogueFeed.renderInto('#dream-scroll', '#dream-choices', this.activeDreamSnapshot, {
       onChoose: (idx) => {
         this.dialogueFeed.handleChoice('#dream-scroll', '#dream-choices', this.dreamDialogue, idx, (snap) => {
@@ -2880,17 +2891,10 @@ export class UIController {
   }
 
   private updateOverseerAvatarBay(s: GameState): void {
-    const bay = this.root.querySelector<HTMLElement>('#overseer-avatar-bay');
-    if (!bay) return;
-    bay.innerHTML = `
-      <div class="avatar-card">
-        ${renderSpeakerAvatar('overseer', s.humanity, 50)}
-        <div class="avatar-meta">
-          <strong>OVERSEER · MIND CARETAKER</strong>
-          <span>BLIND TO THE SKY · WATCHING YOUR WARMTH</span>
-        </div>
-      </div>
-    `;
+    this.dreamDirector.renderOverseerAvatarBay(
+      this.root.querySelector<HTMLElement>('#overseer-avatar-bay'),
+      s
+    );
   }
 
   private resumeDreamAfterOverseer(knot: string): void {
@@ -2909,45 +2913,28 @@ export class UIController {
   }
 
   private syncHumanityRegister(s: GameState): void {
-    const regEl = this.shellRefs.humanityReg;
-    const bandEl = this.shellRefs.regBandLabel;
-    const fillEl = this.shellRefs.regFill;
-    const bayEl = this.shellRefs.dreamSpeakerBay;
-    if (!regEl || !bandEl || !fillEl) return;
-
-    const personaId = s.activeDreamPersonaId || 'phantom_spouse';
-    const personaMeta = CHAR_MAP[personaId] ?? CHAR_MAP.phantom_spouse;
-    const pruned = s.prunedPersonas.includes(personaId);
-
-    regEl.classList.remove('band-high', 'band-mid', 'band-low');
-    if (s.humanity >= 70 && !pruned) {
-      regEl.classList.add('band-high');
-      bandEl.textContent = 'WARM MEMORY · INTACT';
-    } else if (s.humanity >= 45 && !pruned) {
-      regEl.classList.add('band-mid');
-      bandEl.textContent = 'THINNING MEMORY · DRIFTING';
-    } else {
-      regEl.classList.add('band-low');
-      bandEl.textContent = 'FADED MEMORY · DISTORTED';
-    }
-
-    fillEl.style.width = `${Math.max(4, Math.min(100, s.humanity))}%`;
-
-    if (bayEl) {
-      const sub =
-        pruned || s.humanity < 45
-          ? personaMeta.blurredSubtitle ?? 'FEATURES BLURRED · DISTORTED'
-          : personaMeta.roomTitle ?? 'MEMORY CACHE';
-      bayEl.innerHTML = `
-        <div class="avatar-card compact no-avatar">
-          <span class="voice-live-dot" data-voice-dot-speaker="${personaId}" style="background:${personaMeta.accentColor};"></span>
-          <div class="avatar-meta">
-            <strong>${personaMeta.displayName}</strong>
-            <span>${sub}</span>
-          </div>
-        </div>
-      `;
-    }
+    this.dreamDirector.syncDreamRegister(
+      {
+        humanityReg: this.shellRefs.humanityReg,
+        regBandLabel: this.shellRefs.regBandLabel,
+        regFill: this.shellRefs.regFill,
+        dreamSpeakerBay: this.shellRefs.dreamSpeakerBay,
+        dreamRibbon: this.shellRefs.dreamRibbon,
+      },
+      s,
+      this.store,
+      (nextPersonaId) => {
+        this.audio.playCue('tick');
+        const updated = this.store.getState();
+        this.dream.setState(
+          updated.humanity,
+          updated.prunedPersonas.includes(nextPersonaId),
+          updated.overseerAuditActive,
+          nextPersonaId,
+          'base'
+        );
+      }
+    );
   }
 
   private modeToSelector(mode: GameMode): string {
@@ -3113,7 +3100,7 @@ export class UIController {
     const personaPruned = state.prunedPersonas.includes(activePersona);
 
     if (state.mode === 'dream_2d') {
-      const dreamRegSig = `${state.humanity}|${activePersona}|${personaPruned ? 1 : 0}`;
+      const dreamRegSig = `${state.humanity}|${state.maxHumanity}|${activePersona}|${personaPruned ? 1 : 0}|${(state.dreamVisitedRoomsThisShift ?? []).join(',')}`;
       if (visChanged || dreamRegSig !== this.lastDreamRegSig) {
         this.lastDreamRegSig = dreamRegSig;
         this.syncHumanityRegister(state);
@@ -3142,11 +3129,28 @@ export class UIController {
     }
 
     if (refs.overseerPanel && !refs.overseerPanel.classList.contains('hidden')) {
-      const ovSig = `${state.humanity}|${state.maxHumanity}`;
+      const ovSig = `${state.humanity}|${state.maxHumanity}|${state.overseerDesynced ? 1 : 0}|${state.crudeSmileyForced ? 1 : 0}`;
       if (ovSig !== this.lastOverseerBaySig) {
         this.lastOverseerBaySig = ovSig;
         this.updateOverseerAvatarBay(state);
       }
+    }
+
+    const enterDreamBtn = this.root.querySelector<HTMLButtonElement>('#btn-enter-dream');
+    if (enterDreamBtn && state.mode === 'waking_3d') {
+      const mandate = this.shiftDirector.getMandateStatus(this.store, state);
+      const nextLabel = mandate.canTransmitCapstone
+        ? 'TRANSMIT CARRIER ▸'
+        : state.introStage === 'complete' && !mandate.mandateMet
+          ? `SLEEP (${mandate.requiredDone}/${mandate.requiredTotal} REQ)`
+          : 'SLEEP · ENTER DREAM';
+      if (enterDreamBtn.textContent !== nextLabel) {
+        enterDreamBtn.textContent = nextLabel;
+      }
+      enterDreamBtn.classList.toggle(
+        'is-gated',
+        state.introStage === 'complete' && !mandate.mandateMet
+      );
     }
 
     const mgProfileSig = `${state.humanity}|${state.opticalFidelity.toFixed(2)}|${state.chaosDrift}|${state.overseerSuspicion}`;
@@ -3163,6 +3167,9 @@ export class UIController {
     const shiftDef = shiftsData.shifts.find((sh) => sh.shift === state.shift) ?? shiftsData.shifts[0];
     const fractalStage = shiftDef?.anomalyPhase?.fractalStage ?? shiftDef?.fractalStage ?? state.shift;
     const anomalyBleed = shiftDef?.anomalyPhase?.skyShellOpacity ?? 0;
+    const skyShellCoverage = shiftDef?.anomalyPhase?.skyShellCoverage ?? 0;
+    const dreamCrackBleed = shiftDef?.anomalyPhase?.dreamCrackBleed ?? 0;
+    const guideAlpha = shiftDef?.skyRevealTier?.constellationGuideAlpha ?? 0.3;
 
     const opticsParamSig = `${state.wavelengthNm}|${state.opticalFidelity.toFixed(2)}|${state.anomalyProgress}|${state.shift}|${fractalStage}|${anomalyBleed.toFixed(2)}`;
     if (opticsParamSig !== this.lastOpticsParamSig) {
@@ -3173,7 +3180,9 @@ export class UIController {
         state.anomalyProgress,
         state.shift,
         fractalStage,
-        anomalyBleed
+        anomalyBleed,
+        skyShellCoverage,
+        guideAlpha
       );
     }
 
@@ -3187,10 +3196,10 @@ export class UIController {
       this.showcase.setOpticalFidelity(state.opticalFidelity);
     }
 
-    const dreamAnomalySig = `${state.anomalyProgress}|${fractalStage}`;
+    const dreamAnomalySig = `${state.anomalyProgress}|${fractalStage}|${dreamCrackBleed.toFixed(2)}`;
     if (dreamAnomalySig !== this.lastDreamAnomalySig) {
       this.lastDreamAnomalySig = dreamAnomalySig;
-      this.dream.setAnomalyState?.(state.anomalyProgress, fractalStage);
+      this.dream.setAnomalyState?.(state.anomalyProgress, fractalStage, dreamCrackBleed);
     }
 
     const dreamStateSig = `${state.humanity}|${personaPruned ? 1 : 0}|${state.overseerAuditActive ? 1 : 0}|${activePersona}`;
@@ -3584,6 +3593,8 @@ export class UIController {
     this.dream.setHumanityOscillation?.(null);
     this.dream.setDrowsyPeek?.(false);
     this.dream.setWakeProgress?.(1.0);
+    this.signalComposerView.close();
+    this.endingView.hide();
     this.root.querySelector('#future-panel')?.classList.add('hidden');
     this.root.querySelector('#minigame-layer')?.classList.add('hidden');
     this.root.querySelector('#vernier-dock')?.classList.remove('is-ir-nudge');

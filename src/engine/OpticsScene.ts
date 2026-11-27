@@ -279,6 +279,8 @@ export class OpticsScene {
   private fractalStage = 1;
   private targetFractalStage = 1;
   private anomalyBleed = 0;
+  private skyShellCoverage = 0;
+  private constellationGuideAlpha = 0.42;
   private readonly solDir = raDecToVec3(46.0, -16.0, 1).normalize();
   private lockProgress = 0;
   private lastLockedId = '';
@@ -387,6 +389,8 @@ export class OpticsScene {
         uOpticalFidelity: { value: this.opticalFidelity },
         uAnomalyProgress: { value: this.anomalyProgress },
         uFractalStage: { value: this.fractalStage },
+        uShellCoverage: { value: this.skyShellCoverage },
+        uConstellationGuideAlpha: { value: this.constellationGuideAlpha },
         uSolDir: { value: this.solDir.clone() },
         uGalAxis: { value: J2000_GAL_AXIS.clone() },
         uGalCenter: { value: J2000_GAL_CENTER.clone() },
@@ -684,6 +688,14 @@ export class OpticsScene {
           uFractalStage: { value: this.fractalStage },
           uAnomalyProgress: { value: this.anomalyProgress },
           uAnomalyBleed: { value: this.computeTargetBleed(spec) },
+          uAnomalyRole: {
+            value:
+              spec.anomalyRole === 'direct_anomaly'
+                ? 2.0
+                : spec.anomalyRole === 'boundary_bleed'
+                  ? 1.0
+                  : 0.0,
+          },
           uDecoded: { value: this.decodedTargetIds.has(spec.id) ? 1.0 : 0.0 },
           uDecodePulse: { value: 0.0 },
           uAmbientScale: { value: 1.0 },
@@ -929,7 +941,9 @@ export class OpticsScene {
     anomalyProgress: number,
     shift = 1,
     fractalStage = shift,
-    anomalyBleed = 0
+    anomalyBleed = 0,
+    skyShellCoverage?: number,
+    constellationGuideAlpha?: number
   ): void {
     this.wavelengthNm = THREE.MathUtils.clamp(wavelengthNm, 200, 1800);
     this.opticalFidelity = opticalFidelity;
@@ -938,6 +952,15 @@ export class OpticsScene {
     this.targetSkySurveyTier = this.currentShift;
     this.targetFractalStage = THREE.MathUtils.clamp(fractalStage, 1, 6);
     this.anomalyBleed = THREE.MathUtils.clamp(anomalyBleed, 0, 1);
+    const shiftDef = (shiftsData.shifts as Array<{
+      shift: number;
+      anomalyPhase?: { skyShellCoverage?: number };
+      skyRevealTier?: { constellationGuideAlpha?: number };
+    }>).find((s) => s.shift === this.currentShift);
+    this.skyShellCoverage =
+      skyShellCoverage ?? shiftDef?.anomalyPhase?.skyShellCoverage ?? 0;
+    this.constellationGuideAlpha =
+      constellationGuideAlpha ?? shiftDef?.skyRevealTier?.constellationGuideAlpha ?? 0.3;
   }
 
   setDecodedTargetIds(ids: ReadonlySet<string>, justDecodedId?: string): void {
@@ -1216,6 +1239,12 @@ export class OpticsScene {
     this.skyMat.uniforms.uOpticalFidelity.value = this.opticalFidelity;
     this.skyMat.uniforms.uAnomalyProgress.value = this.anomalyProgress;
     this.skyMat.uniforms.uFractalStage.value = this.fractalStage;
+    if (this.skyMat.uniforms.uShellCoverage) {
+      this.skyMat.uniforms.uShellCoverage.value = this.skyShellCoverage;
+    }
+    if (this.skyMat.uniforms.uConstellationGuideAlpha) {
+      this.skyMat.uniforms.uConstellationGuideAlpha.value = this.constellationGuideAlpha;
+    }
     this.skyMat.uniforms.uSurveyCosEdge.value = surveyCosEdge;
 
     this.starMat.uniforms.uTime.value = elapsed;

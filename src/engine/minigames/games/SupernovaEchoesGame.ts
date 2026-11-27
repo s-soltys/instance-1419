@@ -431,7 +431,7 @@ export class SupernovaEchoesGame extends BaseCosmicMinigame {
         if (this.lockHoldSec >= this.lockHoldTargetSec) {
           if (this.stage === 1) {
             this.triggerStageClear(
-              `SUPERNOVA ORIGIN 1/3 · ${this.variantProfile.remnantTag} LOCKED`,
+              `SUPERNOVA ORIGIN 1/${this.maxStages} · ${this.variantProfile.remnantTag} LOCKED`,
               0.55,
               ux,
               uy
@@ -455,7 +455,7 @@ export class SupernovaEchoesGame extends BaseCosmicMinigame {
         this.lockHoldSec += dt;
         if (this.lockHoldSec >= 0.48) {
           this.triggerStageClear(
-            `DETONATION t = 0.0 yr RESTORED (${this.stage}/3)`,
+            `DETONATION t = 0.0 yr RESTORED (${this.stage}/${this.maxStages})`,
             0.55,
             this.epicenterNx * this.width,
             this.epicenterNy * this.height

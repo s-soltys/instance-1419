@@ -334,7 +334,7 @@ export class MichelsonFringeGame extends BaseCosmicMinigame {
       this.lockHoldSec += dt;
       if (this.lockHoldSec >= this.lockHoldTargetSec) {
         const g = this.getBenchGeometry(this.width, this.height);
-        this.triggerStageClear(`FRINGE LOCK ${this.stage}/3 COHERENT`, 0.56, g.cx, g.cy);
+        this.triggerStageClear(`FRINGE LOCK ${this.stage}/${this.maxStages} COHERENT`, 0.56, g.cx, g.cy);
       }
     } else {
       this.lockHoldSec = Math.max(0, this.lockHoldSec - dt * 1.45);

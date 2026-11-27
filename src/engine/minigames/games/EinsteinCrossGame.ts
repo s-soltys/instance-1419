@@ -379,7 +379,7 @@ export class EinsteinCrossGame extends BaseCosmicMinigame {
       if (mirages.every((s) => s.selected)) {
         const ring = this.getEinsteinRingPx(this.width, this.height);
         this.triggerStageClear(
-          `EINSTEIN CROSS ${this.stage}/3 · Δt COLLAPSED`,
+          `EINSTEIN CROSS ${this.stage}/${this.maxStages} · Δt COLLAPSED`,
           0.85,
           ring.cx,
           ring.cy

@@ -33,8 +33,6 @@
     "calibrateCtaFallback": "CALIBRATE INSTRUMENT ▸",
     "diveEntering": "SLEWING APERTURE · {label}",
     "briefReady": "OBJECTIVE LOCKED · ENTER INSTRUMENT",
-    "overclockCta": "ANOMALY OVERCLOCK",
-    "overclockHint": "Push deeper past the seam (+drift, +suspicion)",
     "scaleLabels": {
       "planet": "EXOPLANET",
       "star_system": "STAR SYSTEM",
@@ -96,10 +94,6 @@
       "titleSuffix": "Decoded",
       "detailFirst": "Observation archived.",
       "detailRepeat": "Pattern re-verified cleanly across the horizon."
-    },
-    "deepOverclock": {
-      "title": "Anomaly Overclock Logged",
-      "detail": "Deep seam telemetry extracted — drift and Overseer attention increased."
     },
     "partialScan": {
       "titleSuffix": "Partially Logged",

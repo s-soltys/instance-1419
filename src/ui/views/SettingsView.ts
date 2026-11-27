@@ -16,6 +16,7 @@ interface ManifestAsset {
 export interface SettingsViewCallbacks {
   onRestartRun: () => void;
   onExportTelemetry: () => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 /**
@@ -65,6 +66,7 @@ export class SettingsView {
       this.syncResetConfirmUI();
       this.syncUI(this.settingsStore.getSettings());
     }
+    this.callbacks.onOpenChange?.(true);
   }
 
   close(): void {
@@ -73,6 +75,7 @@ export class SettingsView {
     this.confirmingReset = false;
     this.root.querySelector<HTMLElement>('#settings-overlay')?.classList.add('hidden');
     this.syncResetConfirmUI();
+    this.callbacks.onOpenChange?.(false);
   }
 
   toggle(): void {

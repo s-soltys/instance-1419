@@ -342,7 +342,7 @@ export class BinaryMassScaleGame extends BaseCosmicMinigame {
       if (this.lockHoldSec >= this.lockHoldTargetSec) {
         const g = this.getDisplayScale(this.width, this.height);
         this.triggerStageClear(
-          `BARYCENTER ${this.stage}/3 WEIGHED`,
+          `BARYCENTER ${this.stage}/${this.maxStages} WEIGHED`,
           this.stage < 3 ? 0.58 : 0.42,
           g.cx,
           g.cy

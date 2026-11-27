@@ -74,6 +74,7 @@ uniform float uWavelengthNorm;   // 0.0 = 200nm (UV/X-ray), 0.225 = Visible, 0.6
 uniform float uOpticalFidelity;  // 0.3..1.0 (higher when pruned)
 uniform float uAnomalyProgress;  // 0.0..1.0
 uniform float uFractalStage;     // 1.0..6.0 (6-stage filigree fractal progression)
+uniform float uShellCoverage;    // 0.0..1.0 (shifts.json anomalyPhase.skyShellCoverage)
 uniform vec3 uSolDir;            // Bearing toward Sol (10 ly astern)
 uniform vec3 uGalAxis;           // True J2000 Galactic North Pole (RA 192.8595°, Dec +27.1283°)
 uniform vec3 uGalCenter;         // True J2000 Galactic Center (RA 266.405°, Dec -28.936°)
@@ -179,6 +180,7 @@ void main() {
     float sectorBridge = smoothstep(0.28, 0.78, poleAlign);
     float spatialMask = mix(polarGhost, sectorBridge, smoothstep(2.0, 3.0, uFractalStage));
     spatialMask = mix(spatialMask, 1.0, smoothstep(3.1, 4.6, uFractalStage));
+    spatialMask = max(spatialMask, smoothstep(0.04, 0.96, uShellCoverage));
 
     // Spectral envelope: Near/Mid-IR in Shifts 2-3, leaking into Visible at higher fidelity in Shifts 4-6
     float irWindow = smoothstep(0.46, 0.92, uWavelengthNorm);
@@ -197,6 +199,16 @@ void main() {
       0.34 + 0.26 * sin(recursiveDist * 10.0 + uTime * 0.22)
     );
     col += filigreeCol * filigree * strength * causalWave;
+
+    // Shift 5–6 Sol–Centauri Antipode Axis subtle meridian etch
+    if (uFractalStage >= 4.5) {
+      float meridianGain =
+        smoothstep(4.5, 5.6, uFractalStage) *
+        smoothstep(0.28, 0.92, max(uWavelengthNorm, uOpticalFidelity));
+      float eqDist = abs(dot(d, solN));
+      float meridian = exp(-pow(eqDist / 0.0024, 2.0));
+      col += vec3(0.92, 0.78, 0.56) * meridian * meridianGain * 0.32;
+    }
   }
 
   gl_FragColor = vec4(col, 1.0);
@@ -228,11 +240,11 @@ void main() {
   vColor = aColor;
   vPhase = aPhase;
 
-  // Lush global baseline (~Shift 1 floor 3.4 -> Shift 6 floor 6.0) + lateral outward swath + ~35° decoded cones
+  // Authentic Shift 1 (~913 stars) -> Shift 6 (18,000 stars) floor + lateral swath + ~35° decoded cones
   vec3 starDir = normalize(position);
   float swathVis = smoothstep(uSurveyCosEdge - 0.16, uSurveyCosEdge + 0.12, dot(starDir, normalize(uSurveyCenterDir)));
-  float globalFloor = 3.4 + clamp(uSkySurveyTier - 1.0, 0.0, 5.0) * 0.52;
-  float localBoost = swathVis * 2.6;
+  float globalFloor = clamp(uSkySurveyTier, 1.0, 6.0);
+  float localBoost = swathVis * 2.2;
   for (int i = 0; i < 21; i++) {
     if (float(i) < uDecodedCount) {
       if (dot(starDir, uDecodedDirs[i]) > 0.82) {
@@ -335,6 +347,7 @@ uniform float uZoomFactor;      // 0..1
 uniform float uFractalStage;    // 1.0..6.0
 uniform float uAnomalyProgress; // 0.0..1.0
 uniform float uAnomalyBleed;    // 0.0..1.0 per-target fractal bleed
+uniform float uAnomalyRole;     // 0.0 = baseline, 1.0 = boundary_bleed, 2.0 = direct_anomaly
 uniform float uDecoded;         // 0.0 or 1.0
 uniform float uDecodePulse;     // 0.0..1.0 arrival pulse
 uniform float uAmbientScale;    // 1.0 for active targets, ~0.26 for outer-flank next-shift silhouettes
@@ -387,7 +400,7 @@ void main() {
 
     vec2 g = abs(fract(p * 4.5 + 0.5) - 0.5);
     float grid = exp(-min(g.x, g.y) * 42.0 * sharpness);
-    float reveal = smoothstep(0.45, 0.95, uWavelengthMatch) * (0.20 + 0.65 * uOpticalFidelity);
+    float reveal = smoothstep(0.45, 0.95, uWavelengthMatch) * (0.20 + 0.65 * uOpticalFidelity) * step(0.5, uAnomalyRole);
     col += vec3(0.56, 0.86, 1.0) * grid * reveal * 0.54;
 
     alpha = clamp(max(blackFloor * (0.3 + 0.7 * uWavelengthMatch), max(jet, grid * reveal)) * feather, 0.0, 1.0);
@@ -431,8 +444,10 @@ void main() {
     alpha = clamp(blackFloor * (0.35 + 0.65 * uWavelengthMatch) * feather, 0.0, 1.0);
   }
 
-  // Recursive fractal filament bleed across anomaly/bleeding targets
-  float bleedAmt = clamp(uAnomalyBleed * (0.35 + 0.65 * smoothstep(1.0, 5.5, uFractalStage)), 0.0, 1.0);
+  // Recursive fractal filament bleed across anomaly/bleeding targets (strictly gated off for pure baseline plates)
+  float bleedAmt = uAnomalyRole > 0.5
+    ? clamp(uAnomalyBleed * (0.35 + 0.65 * smoothstep(1.0, 5.5, uFractalStage)), 0.0, 1.0)
+    : 0.0;
   if (bleedAmt > 0.01) {
     vec2 q = p;
     float fracFil = 0.0;

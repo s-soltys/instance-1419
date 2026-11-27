@@ -20,6 +20,11 @@ function buildOverlayDom(): HTMLElement {
           <span id="mg-instrument-code"></span>
           <span id="mg-instrument-title"></span>
           <span id="mg-instrument-sub"></span>
+          <div id="mg-stage-pips">
+            <span class="mg-pip" data-stage="1"></span>
+            <span class="mg-pip" data-stage="2"></span>
+            <span class="mg-pip" data-stage="3"></span>
+          </div>
           <span id="mg-stage-label"></span>
           <i id="mg-stage-fill" style="width:0%"></i>
           <span id="mg-vibe-pill"></span>
@@ -258,13 +263,13 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
     }
   });
 
-  it('supports Stage-3 Anomaly Overclock (deep_overclock) in Shift 5 and logs overclock consequences', async () => {
+  it('supports 2-stage baseline completion (hiding pip 3) and 3-stage anomaly completion cleanly', async () => {
     vi.useFakeTimers();
     try {
       const mockAudio = createMockAudioEngine();
       const reg = new MinigameRegistry();
-      const spec = anomaliesData.anomalies.find((a) => a.id === 'michelson_delay_node') as AnomalySpec;
-      store.patch({ shift: 5, introStage: 'complete' });
+      const spec = anomaliesData.anomalies.find((a) => a.id === 'sol_centauri_bearing') as AnomalySpec;
+      store.patch({ shift: 1, introStage: 'complete' });
 
       host = new MinigameHostView(
         root,
@@ -275,17 +280,16 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       );
 
       await host.launch(spec, spec.minigameId);
+      const pips = root.querySelectorAll('#mg-stage-pips .mg-pip');
+      expect(pips[2]?.classList.contains('hidden')).toBe(true);
       const mg = (host as unknown as { activeMinigame: { getSolvabilityHarness: () => { solveStage: (s: 1 | 2 | 3) => void } } }).activeMinigame;
       const harness = mg.getSolvabilityHarness();
       harness.solveStage(1);
       harness.solveStage(2);
-      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'o' }));
-      harness.solveStage(3);
 
-      expect(store.getState().decodedGrades.michelson_delay_node).toBe('deep_overclock');
-      expect(root.querySelector('#mg-finale-outcome')?.getAttribute('data-grade')).toBe('deep_overclock');
-      expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('DEEP OVERCLOCK');
-      expect(root.querySelector('.mg-finale-ring-delta')?.textContent).toContain('HORIZON');
+      expect(store.getState().decodedGrades.sol_centauri_bearing).toBe('clean');
+      expect(root.querySelector('#mg-finale-outcome')?.getAttribute('data-grade')).toBe('clean');
+      expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('CLEAN LOCK');
 
       vi.advanceTimersByTime(1400);
       expect(root.querySelector('#mg-capture-finale')?.classList.contains('hidden')).toBe(false);

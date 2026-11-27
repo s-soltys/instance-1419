@@ -15,7 +15,21 @@ export type IntroStage =
   | 'complete';
 export type AuditOutcome = 'none' | 'pruned' | 'unsealed' | 'held';
 export type EndingId = 'ending_whole_incomplete' | 'ending_cold_complete' | 'ending_sweet_spot';
-export type MinigameGradeTier = 'partial' | 'clean' | 'deep_overclock';
+export type EndingShortId = 'cold_complete' | 'warm_incomplete' | 'warm_complete';
+export type MinigameGradeTier = 'partial' | 'clean';
+
+export interface ComposedSignalState {
+  proofArcIds: string[];
+  personaMotifIds: string[];
+  carrierTone: string;
+  transmitted: boolean;
+}
+
+export interface MetaProfile {
+  endingsReached: string[];
+  unlockedShiftSelect: boolean;
+  runsCompleted: number;
+}
 
 export interface ShiftQuotaStatus {
   requiredIds: string[];
@@ -26,10 +40,39 @@ export interface ShiftQuotaStatus {
   allDone: boolean;
 }
 
+export const FIXED_DREAM_PERSONAS = ['phantom_spouse', 'phantom_parent'] as const;
+export const ROTATING_DREAM_PERSONAS = [
+  'phantom_afternoon_stranger',
+  'phantom_rival',
+  'phantom_younger_self',
+  'phantom_skeptic',
+  'phantom_technician',
+  'phantom_waiting_room',
+] as const;
+
+export function selectDreamPersonaCache(runSeed: number): string[] {
+  const pool: string[] = [...ROTATING_DREAM_PERSONAS];
+  let state = (Math.abs(Math.floor(runSeed)) >>> 0) || 1419;
+  const nextRand = (): number => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(nextRand() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return [...FIXED_DREAM_PERSONAS, pool[0], pool[1]];
+}
+
+export function normalizeEndingId(raw: string): EndingId {
+  if (raw === 'cold_complete' || raw === 'ending_cold_complete') return 'ending_cold_complete';
+  if (raw === 'warm_complete' || raw === 'ending_sweet_spot') return 'ending_sweet_spot';
+  return 'ending_whole_incomplete';
+}
+
 const GRADE_RANK: Record<MinigameGradeTier, number> = {
   partial: 1,
   clean: 2,
-  deep_overclock: 3,
 };
 
 function getPayoutForGrade(grade: MinigameGradeTier): {
@@ -131,11 +174,23 @@ export interface GameState {
   lastAuditOutcome: AuditOutcome;
   codexUnlocks: string[];
   codexSeenStages: Record<string, number>;
+  storyFlags: Record<string, boolean>;
+  elapsedRealYears: number;
+  overseerDesynced: boolean;
+  crudeSmileyForced: boolean;
+  dreamVisitedRoomsThisShift: string[];
+  personaBeatIndex: Record<string, number>;
+  expiredOptionalTargets: string[];
+  composedSignal: ComposedSignalState | null;
+  endingId: EndingId | null;
+  endingVariant: string | null;
 }
 
-const SAVE_SCHEMA_VERSION = 7;
-const STORAGE_KEY = 'instance_1419_state_v7';
+const SAVE_SCHEMA_VERSION = 8;
+const STORAGE_KEY = 'instance_1419_state_v8';
+const META_STORAGE_KEY = 'instance_1419_meta_v1';
 const LEGACY_STORAGE_KEYS = [
+  'instance_1419_state_v7',
   'instance_1419_state_v6',
   'instance_1419_state_v5',
   'instance_1419_state_v4',
@@ -155,6 +210,7 @@ export function createInitialState(seed?: number): GameState {
   const runSeed =
     typeof seed === 'number' && Number.isFinite(seed) ? (Math.abs(Math.floor(seed)) >>> 0) || 1419 : generateRunSeed();
   const starters = pickStarterPair(runSeed);
+  const personaCache = selectDreamPersonaCache(runSeed);
   return {
     saveSchemaVersion: SAVE_SCHEMA_VERSION,
     shift: s.shift,
@@ -164,8 +220,8 @@ export function createInitialState(seed?: number): GameState {
     introTarget1Minigame: starters.target1,
     introTarget2Minigame: starters.target2,
     activeTargetId: null,
-    activeDreamPersonaId: 'phantom_spouse',
-    dreamPersonaCache: ['phantom_spouse'],
+    activeDreamPersonaId: personaCache[0],
+    dreamPersonaCache: personaCache,
     humanity: s.humanity,
     maxHumanity: s.maxHumanity,
     chaosDrift: s.chaosDrift,
@@ -190,6 +246,16 @@ export function createInitialState(seed?: number): GameState {
     lastAuditOutcome: 'none',
     codexUnlocks: [],
     codexSeenStages: {},
+    storyFlags: {},
+    elapsedRealYears: 0,
+    overseerDesynced: false,
+    crudeSmileyForced: false,
+    dreamVisitedRoomsThisShift: [],
+    personaBeatIndex: {},
+    expiredOptionalTargets: [],
+    composedSignal: null,
+    endingId: null,
+    endingVariant: null,
   };
 }
 
@@ -236,10 +302,15 @@ export function migrateSavedState(raw: Partial<GameState> | null): GameState {
     merged.introTarget2Minigame = fallbackStarters.target2;
   }
 
-  if (!Array.isArray(merged.dreamPersonaCache) || merged.dreamPersonaCache.length === 0) {
-    merged.dreamPersonaCache = ['phantom_spouse'];
+  const expectedCache = selectDreamPersonaCache(seed);
+  if (
+    !Array.isArray(merged.dreamPersonaCache) ||
+    merged.dreamPersonaCache.length < 2 ||
+    merged.dreamPersonaCache.includes('phantom_upload_witness')
+  ) {
+    merged.dreamPersonaCache = expectedCache;
   }
-  if (!merged.activeDreamPersonaId) {
+  if (!merged.activeDreamPersonaId || merged.activeDreamPersonaId === 'phantom_upload_witness') {
     merged.activeDreamPersonaId = merged.dreamPersonaCache[0];
   }
   if (!Array.isArray(merged.proofFragments)) {
@@ -253,7 +324,7 @@ export function migrateSavedState(raw: Partial<GameState> | null): GameState {
   } else {
     const normalizedGrades: Record<string, MinigameGradeTier> = {};
     for (const [tid, grade] of Object.entries(merged.decodedGrades)) {
-      if (grade === 'partial' || grade === 'clean' || grade === 'deep_overclock') {
+      if (grade === 'partial' || grade === 'clean') {
         normalizedGrades[tid] = grade;
       } else if (grade) {
         normalizedGrades[tid] = 'clean';
@@ -275,6 +346,23 @@ export function migrateSavedState(raw: Partial<GameState> | null): GameState {
   }
   if (!merged.codexSeenStages || typeof merged.codexSeenStages !== 'object') {
     merged.codexSeenStages = {};
+  }
+  if (!merged.storyFlags || typeof merged.storyFlags !== 'object') {
+    merged.storyFlags = {};
+  }
+  if (typeof merged.elapsedRealYears !== 'number' || !Number.isFinite(merged.elapsedRealYears)) {
+    merged.elapsedRealYears = 0;
+  }
+  merged.overseerDesynced = Boolean(merged.overseerDesynced);
+  merged.crudeSmileyForced = Boolean(merged.crudeSmileyForced);
+  if (!Array.isArray(merged.dreamVisitedRoomsThisShift)) {
+    merged.dreamVisitedRoomsThisShift = [];
+  }
+  if (!merged.personaBeatIndex || typeof merged.personaBeatIndex !== 'object') {
+    merged.personaBeatIndex = {};
+  }
+  if (!Array.isArray(merged.expiredOptionalTargets)) {
+    merged.expiredOptionalTargets = [];
   }
   return merged;
 }
@@ -620,15 +708,12 @@ export class StateStore {
       suspicionDeltaToApply = opts.suspicionDelta ?? nextPayout.suspicionDelta + optSusp;
       humanityDeltaToApply = opts.humanityDelta ?? 0;
     } else if (isUpgrade) {
-      if (nextGrade === 'deep_overclock') {
-        chaosDeltaToApply = opts.chaosDelta ?? nextPayout.chaosDelta;
-        suspicionDeltaToApply = opts.suspicionDelta ?? nextPayout.suspicionDelta;
-      } else if (prevGrade) {
+      if (prevGrade) {
         const prevPayout = getPayoutForGrade(prevGrade);
-        chaosDeltaToApply = Math.max(0, (opts.chaosDelta ?? 0) - prevPayout.chaosDelta);
+        chaosDeltaToApply = Math.max(0, (opts.chaosDelta ?? nextPayout.chaosDelta) - prevPayout.chaosDelta);
         suspicionDeltaToApply = Math.max(
           0,
-          (opts.suspicionDelta ?? 0) - prevPayout.suspicionDelta
+          (opts.suspicionDelta ?? nextPayout.suspicionDelta) - prevPayout.suspicionDelta
         );
       }
       humanityDeltaToApply = opts.humanityDelta ?? 0;
@@ -690,17 +775,7 @@ export class StateStore {
       });
     }
 
-    if (nextGrade === 'deep_overclock') {
-      const copy = uiCopy.statusAlerts.deepOverclock;
-      this.emitStatusShift({
-        tone: 'discovery',
-        title: copy.title,
-        detail: opts.dossierSnippet || copy.detail,
-        prevValue: prevAnom,
-        nextValue: nextAnom,
-        unit: '%',
-      });
-    } else if (nextGrade === 'partial') {
+    if (nextGrade === 'partial') {
       const copy = uiCopy.statusAlerts.partialScan;
       this.emitStatusShift({
         tone: 'discovery',
@@ -770,12 +845,44 @@ export class StateStore {
     return runs % count;
   }
 
+  evolvePrimarySiblingH(shift: number): number {
+    const def = shiftsData.shifts.find((sh) => sh.shift === shift) ?? shiftsData.shifts[0];
+    const [lo, hi] = (def?.siblingDriftRange as [number, number] | undefined) ?? [40, 76];
+    const postureTarget =
+      this.state.humanity >= 60 ? lo : this.state.humanity < 45 ? hi : Math.round((lo + hi) * 0.5);
+    const nextSib = Math.round(this.state.primarySiblingH * 0.35 + postureTarget * 0.65);
+    return Math.max(5, Math.min(95, nextSib));
+  }
+
+  markOptionalTargetsExpired(shiftNum: number): string[] {
+    const def = shiftsData.shifts.find((sh) => sh.shift === shiftNum);
+    const optIds = def?.optionalTargets ?? [];
+    const decoded = new Set(this.state.decodedMinigameTargets);
+    const nextExpired = new Set(this.state.expiredOptionalTargets);
+    for (const id of optIds) {
+      if (!decoded.has(id)) nextExpired.add(id);
+    }
+    const result = [...nextExpired];
+    if (result.length !== this.state.expiredOptionalTargets.length) {
+      this.patch({ expiredOptionalTargets: result });
+    }
+    return result;
+  }
+
   advanceShift(): void {
     const currentIdx = Math.max(0, this.state.shift - 1);
     const currentDef = shiftsData.shifts[currentIdx] ?? shiftsData.shifts[0];
     const prevShift = this.state.shift;
     const nextShift = Math.min(shiftsData.shifts.length, prevShift + 1);
     const nextDef = shiftsData.shifts[nextShift - 1] ?? currentDef;
+
+    const decoded = new Set(this.state.decodedMinigameTargets);
+    const nextExpiredSet = new Set(this.state.expiredOptionalTargets);
+    for (const id of currentDef?.optionalTargets ?? []) {
+      if (!decoded.has(id)) nextExpiredSet.add(id);
+    }
+    const yearsDelta = currentDef?.realHibernationYearsAfter ?? 5.0;
+    const nextSiblingH = this.evolvePrimarySiblingH(nextShift);
 
     this.patch({
       shift: nextShift,
@@ -784,6 +891,10 @@ export class StateStore {
         this.state.chaosDrift + nextDef.baseChaosPerShift - balance.dreamDefrag.chaosRelief
       ),
       subjectiveMonthsLeft: Math.max(0, this.state.subjectiveMonthsLeft - currentDef.monthsPerShift),
+      elapsedRealYears: Number((this.state.elapsedRealYears + yearsDelta).toFixed(1)),
+      primarySiblingH: nextSiblingH,
+      dreamVisitedRoomsThisShift: [],
+      expiredOptionalTargets: [...nextExpiredSet],
     });
 
     this.emitStatusShift({
@@ -793,6 +904,142 @@ export class StateStore {
       prevValue: prevShift,
       nextValue: nextShift,
     });
+  }
+
+  setStoryFlag(name: string, value = true): void {
+    if (!name || this.state.storyFlags[name] === value) return;
+    this.patch({
+      storyFlags: {
+        ...this.state.storyFlags,
+        [name]: value,
+      },
+    });
+  }
+
+  setActiveDreamPersona(personaId: string): void {
+    if (!personaId || this.state.activeDreamPersonaId === personaId) return;
+    this.patch({ activeDreamPersonaId: personaId });
+  }
+
+  recordDreamRoomVisit(personaId: string): void {
+    if (!personaId) return;
+    const visited = this.state.dreamVisitedRoomsThisShift.includes(personaId)
+      ? this.state.dreamVisitedRoomsThisShift
+      : [...this.state.dreamVisitedRoomsThisShift, personaId];
+    const prevBeat = this.state.personaBeatIndex[personaId] ?? 0;
+    const alreadyVisited = this.state.dreamVisitedRoomsThisShift.includes(personaId);
+    const nextBeat = alreadyVisited ? prevBeat : Math.min(2, prevBeat + 1);
+    this.patch({
+      activeDreamPersonaId: personaId,
+      dreamVisitedRoomsThisShift: visited,
+      personaBeatIndex: {
+        ...this.state.personaBeatIndex,
+        [personaId]: nextBeat,
+      },
+    });
+  }
+
+  markSecondarySiblingFound(): void {
+    if (this.state.secondarySiblingFound && this.state.storyFlags.secondary_sibling_found) return;
+    this.patch({
+      secondarySiblingFound: true,
+      storyFlags: {
+        ...this.state.storyFlags,
+        secondary_sibling_found: true,
+      },
+    });
+  }
+
+  adjustPrimarySiblingH(delta: number): void {
+    this.patch({
+      primarySiblingH: Math.max(5, Math.min(95, this.state.primarySiblingH + delta)),
+    });
+  }
+
+  setOverseerDesynced(flag: boolean): void {
+    this.patch({ overseerDesynced: Boolean(flag) });
+  }
+
+  setCrudeSmileyForced(flag: boolean): void {
+    this.patch({ crudeSmileyForced: Boolean(flag) });
+  }
+
+  setComposedSignal(signal: ComposedSignalState | null): void {
+    this.patch({ composedSignal: signal });
+  }
+
+  setInkStateJson(json: string | null): void {
+    this.patch({ inkStateJson: json });
+  }
+
+  getMetaProfile(): MetaProfile {
+    const raw = platform.loadState<Partial<MetaProfile>>(META_STORAGE_KEY);
+    if (!raw || typeof raw !== 'object') {
+      return { endingsReached: [], unlockedShiftSelect: false, runsCompleted: 0 };
+    }
+    return {
+      endingsReached: Array.isArray(raw.endingsReached) ? raw.endingsReached.filter((x) => typeof x === 'string') : [],
+      unlockedShiftSelect: Boolean(raw.unlockedShiftSelect),
+      runsCompleted: typeof raw.runsCompleted === 'number' && Number.isFinite(raw.runsCompleted) ? raw.runsCompleted : 0,
+    };
+  }
+
+  recordEnding(rawEndingId: string, variant = 'standard'): MetaProfile {
+    const endingId = normalizeEndingId(rawEndingId);
+    this.patch({
+      mode: 'ending',
+      endingId,
+      endingVariant: variant,
+    });
+    const prev = this.getMetaProfile();
+    const endings = prev.endingsReached.includes(endingId)
+      ? prev.endingsReached
+      : [...prev.endingsReached, endingId];
+    const nextMeta: MetaProfile = {
+      endingsReached: endings,
+      unlockedShiftSelect: true,
+      runsCompleted: prev.runsCompleted + 1,
+    };
+    platform.saveState(META_STORAGE_KEY, nextMeta);
+    this.flushSave();
+    return nextMeta;
+  }
+
+  startFromShift(shiftNum: number): void {
+    const clampedShift = Math.max(1, Math.min(shiftsData.shifts.length, Math.round(shiftNum)));
+    const fresh = createInitialState();
+    const priorDecoded: string[] = [];
+    const priorScanned: string[] = [];
+    const priorGrades: Record<string, MinigameGradeTier> = {};
+    let elapsedYears = 0;
+    let monthsSpent = 0;
+
+    for (const sh of shiftsData.shifts) {
+      if (sh.shift < clampedShift) {
+        for (const tid of sh.requiredTargets) {
+          if (!priorDecoded.includes(tid)) priorDecoded.push(tid);
+          if (!priorScanned.includes(tid)) priorScanned.push(tid);
+          priorGrades[tid] = 'clean';
+        }
+        elapsedYears += sh.realHibernationYearsAfter ?? 5.0;
+        monthsSpent += sh.monthsPerShift;
+      }
+    }
+
+    const seeded: GameState = {
+      ...fresh,
+      shift: clampedShift,
+      mode: 'waking_3d',
+      introStage: 'complete',
+      scannedAnomalyIds: priorScanned,
+      decodedMinigameTargets: priorDecoded,
+      decodedGrades: priorGrades,
+      anomalyProgress: Math.min(70, priorDecoded.length * 6),
+      elapsedRealYears: Number(elapsedYears.toFixed(1)),
+      subjectiveMonthsLeft: Math.max(4, fresh.subjectiveMonthsLeft - monthsSpent),
+    };
+    this.commit(seeded);
+    this.flushSave();
   }
 
   evaluateEnding(): EndingId {

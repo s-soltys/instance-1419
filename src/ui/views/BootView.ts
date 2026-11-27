@@ -31,6 +31,8 @@ export interface BootViewCallbacks {
   onChoosePrologue: (choiceIndex: number) => void;
   onPrimaryAction: () => void;
   onConfirmNewRun: () => void;
+  onOpenSettings?: () => void;
+  onSelectShift?: (shift: number) => void;
 }
 
 /**
@@ -81,6 +83,13 @@ export class BootView {
     const screen = this.root.querySelector<HTMLElement>('#boot-screen');
     const primaryBtn = this.root.querySelector<HTMLButtonElement>('#btn-title-primary');
     const newRunBtn = this.root.querySelector<HTMLButtonElement>('#btn-title-new-run');
+    const titleSettingsBtn = this.root.querySelector<HTMLButtonElement>('#btn-title-settings');
+
+    titleSettingsBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.inputLocked) return;
+      this.callbacks?.onOpenSettings?.();
+    });
 
     primaryBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -256,7 +265,12 @@ export class BootView {
     this.root.querySelector('#prologue-convo-ribbon')?.classList.add('is-dissolving');
   }
 
-  showTitle(state: GameState, hasSavedRun: boolean, holdMs = 1100): void {
+  showTitle(
+    state: GameState,
+    hasSavedRun: boolean,
+    holdMs = 1100,
+    shiftSelectUnlocked = false
+  ): void {
     const wasTitle = this.visualMode === 'title';
     this.hasActiveChoices = false;
     this.inputLocked = false;
@@ -273,6 +287,17 @@ export class BootView {
 
     const primaryBtn = this.root.querySelector<HTMLButtonElement>('#btn-title-primary');
     const newRunBtn = this.root.querySelector<HTMLButtonElement>('#btn-title-new-run');
+    const titleSettingsBtn = this.root.querySelector<HTMLButtonElement>('#btn-title-settings');
+    const shiftSelectEl = this.root.querySelector<HTMLElement>('#title-shift-select');
+
+    if (titleSettingsBtn && !titleSettingsBtn.dataset.bound) {
+      titleSettingsBtn.dataset.bound = '1';
+      titleSettingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (this.inputLocked) return;
+        this.callbacks?.onOpenSettings?.();
+      });
+    }
 
     const isReturningProgress =
       hasSavedRun &&
@@ -290,6 +315,30 @@ export class BootView {
     }
     if (newRunBtn) {
       newRunBtn.classList.toggle('hidden', !isReturningProgress);
+    }
+    if (shiftSelectEl) {
+      if (shiftSelectUnlocked) {
+        shiftSelectEl.classList.remove('hidden');
+        shiftSelectEl.innerHTML =
+          '<span class="title-shift-label">SHIFT SELECT</span>' +
+          [1, 2, 3, 4, 5, 6]
+            .map(
+              (n) =>
+                `<button class="title-shift-btn" data-select-shift="${n}" type="button">S${n}</button>`
+            )
+            .join('');
+        shiftSelectEl.querySelectorAll<HTMLButtonElement>('[data-select-shift]').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (this.inputLocked) return;
+            const n = Number(btn.dataset.selectShift ?? '1');
+            this.callbacks?.onSelectShift?.(n);
+          });
+        });
+      } else {
+        shiftSelectEl.classList.add('hidden');
+        shiftSelectEl.innerHTML = '';
+      }
     }
   }
 

@@ -14,10 +14,14 @@ describe('StateStore invariants & economy', () => {
     localStorage.clear();
   });
 
-  it('initializes with valid canon defaults, introStage prologue, fixed starter pair, and schema version 7', () => {
+  it('initializes with valid canon defaults, introStage prologue, fixed starter pair, and schema version 8', () => {
     const store = new StateStore();
     const s = store.getState();
-    expect(s.saveSchemaVersion).toBe(7);
+    expect(s.saveSchemaVersion).toBe(8);
+    expect(s.dreamPersonaCache).toHaveLength(4);
+    expect(s.dreamPersonaCache).toContain('phantom_spouse');
+    expect(s.dreamPersonaCache).toContain('phantom_parent');
+    expect(s.dreamPersonaCache).not.toContain('phantom_upload_witness');
     expect(s.introStage).toBe('prologue');
     expect(store.hasSavedProgress()).toBe(false);
     expect(s.introTarget1Minigame).toBe('constellation_recall');
@@ -59,7 +63,7 @@ describe('StateStore invariants & economy', () => {
     reloaded.dispose();
   });
 
-  it('migrates legacy v4/v6 saves (including removed target_inspect mode) seamlessly to v7', () => {
+  it('migrates legacy v4/v6 saves (including removed target_inspect mode) seamlessly to v8', () => {
     localStorage.setItem(
       'instance_1419_state_v6',
       JSON.stringify({
@@ -74,7 +78,7 @@ describe('StateStore invariants & economy', () => {
     );
     const store = new StateStore();
     const s = store.getState();
-    expect(s.saveSchemaVersion).toBe(7);
+    expect(s.saveSchemaVersion).toBe(8);
     expect(s.mode).toBe('waking_3d');
     expect(s.introStage).toBe('complete');
     expect(s.shift).toBe(3);
@@ -210,14 +214,27 @@ describe('StateStore invariants & economy', () => {
     expect(store.evaluateEndingDetail()).toEqual({ id: 'ending_sweet_spot', variant: 'standard' });
   });
 
-  it('advances shift cleanly and bounds chaos inside 0..100', () => {
+  it('advances shift cleanly, expires uncompleted optionals, evolves sibling counterweight, and unlocks Shift Select meta', () => {
     const store = new StateStore();
-    const base = createInitialState();
-    store.patch({ ...base, chaosDrift: 10 });
+    const base = createInitialState(1419);
+    store.patch({ ...base, chaosDrift: 10, humanity: 82 });
     store.advanceShift();
     const s = store.getState();
     expect(s.shift).toBe(2);
     expect(s.chaosDrift).toBeGreaterThanOrEqual(0);
     expect(s.chaosDrift).toBeLessThanOrEqual(100);
+    expect(s.elapsedRealYears).toBeCloseTo(5.0, 1);
+    expect(s.expiredOptionalTargets).toContain('carina_rift_nebula');
+    expect(s.dreamVisitedRoomsThisShift).toEqual([]);
+    expect(s.primarySiblingH).toBeLessThan(70);
+
+    const meta = store.recordEnding('ending_sweet_spot', 'standard');
+    expect(meta.unlockedShiftSelect).toBe(true);
+    expect(meta.endingsReached).toContain('ending_sweet_spot');
+    store.startFromShift(3);
+    expect(store.getState().shift).toBe(3);
+    expect(store.getState().introStage).toBe('complete');
+    expect(store.getMetaProfile().unlockedShiftSelect).toBe(true);
+    store.dispose();
   });
 });

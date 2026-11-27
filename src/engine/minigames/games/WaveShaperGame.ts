@@ -453,7 +453,7 @@ export class WaveShaperGame extends BaseCosmicMinigame {
         const waveCy = this.compact ? this.height * 0.38 : this.height * 0.44;
         this.particles.emitPhotonSparks(this.width * 0.5, waveCy, 5, 52, this.palette.lockHex);
         this.triggerStageClear(
-          this.stage === 3 ? 'HARMONIC SPECTRUM LOCKED' : `STAGE ${this.stage}/3 HARMONIC LOCKED`,
+          this.stage === 3 ? 'HARMONIC SPECTRUM LOCKED' : `STAGE ${this.stage}/${this.maxStages} HARMONIC LOCKED`,
           this.stage === 3 ? 0 : 0.42,
           this.width * 0.5,
           waveCy

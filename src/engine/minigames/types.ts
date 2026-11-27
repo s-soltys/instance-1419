@@ -17,7 +17,7 @@ export type TargetScaleClass =
 
 export type AnomalyRole = 'baseline' | 'boundary_bleed' | 'direct_anomaly';
 
-export type MinigameGrade = 'aborted' | 'partial' | 'clean' | 'deep_overclock';
+export type MinigameGrade = 'aborted' | 'partial' | 'clean';
 
 export type CosmicPlateId =
   | 'carina'
@@ -249,6 +249,7 @@ export interface IMinigame {
   mount(ctx: MinigameContext): void;
   updateState?(nextState: MinigameStateVector): void;
   setBriefingHold?(active: boolean): void;
+  setPaused?(paused: boolean): void;
   onHelperAction?(actionId: string): void;
   getFieldGuide?(): InstrumentFieldGuide;
   getSolvabilityHarness?(): SolvabilityHarness;

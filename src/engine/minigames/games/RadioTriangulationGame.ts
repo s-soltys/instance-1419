@@ -472,7 +472,7 @@ export class RadioTriangulationGame extends BaseCosmicMinigame {
         const { cx, cy, radius } = this.getGeometry(this.width, this.height);
         const src = this.getCurrentSourceUnit();
         this.triggerStageClear(
-          `VLBI SOURCE ${this.stage}/3 TRIANGULATED`,
+          `VLBI SOURCE ${this.stage}/${this.maxStages} TRIANGULATED`,
           this.stage < 3 ? 0.58 : 0.42,
           cx + src.sx * radius,
           cy + src.sy * radius

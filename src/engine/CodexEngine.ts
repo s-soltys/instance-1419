@@ -13,6 +13,9 @@ export interface CodexCategorySpec {
 export interface CodexUnlockCondition {
   always?: boolean;
   minShift?: number;
+  flag?: string;
+  ending?: string;
+  personaPruned?: string;
   scannedAnomaly?: string;
   decodedTarget?: string;
   minScannedCount?: number;
@@ -80,6 +83,13 @@ const ENTRIES = codexJson.entries as CodexEntrySpec[];
 export function evaluateUnlockCondition(cond: CodexUnlockCondition, state: GameState): boolean {
   if (cond.always) return true;
   if (typeof cond.minShift === 'number' && state.shift < cond.minShift) return false;
+  if (cond.flag && !state.storyFlags?.[cond.flag] && !state.codexUnlocks.includes(cond.flag)) {
+    return false;
+  }
+  if (cond.ending && state.endingId !== cond.ending && state.endingVariant !== cond.ending) {
+    return false;
+  }
+  if (cond.personaPruned && !state.prunedPersonas.includes(cond.personaPruned)) return false;
   if (cond.scannedAnomaly && !state.scannedAnomalyIds.includes(cond.scannedAnomaly)) return false;
   if (cond.decodedTarget && !state.decodedMinigameTargets.includes(cond.decodedTarget)) return false;
   if (typeof cond.minScannedCount === 'number' && state.scannedAnomalyIds.length < cond.minScannedCount) {

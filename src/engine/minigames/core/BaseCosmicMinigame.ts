@@ -103,6 +103,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   protected startedAt = 0;
   protected completed = false;
   protected postCompleteAmbient = false;
+  protected maxStages: 2 | 3 = 3;
   protected stage: 1 | 2 | 3 = 1;
   protected stageEnterT = 1;
   protected stageFlash = 0;
@@ -150,15 +151,16 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   private lastHudSentMs = 0;
   private briefingHold = false;
   private briefingHoldRemainingSec = 0;
-  protected overclockEngaged = false;
-  private overclockPointerId: number | null = null;
+  private paused = false;
 
   mount(ctx: MinigameContext): void {
     this.ctx = ctx;
     this.startedAt = performance.now();
     this.completed = false;
     this.postCompleteAmbient = false;
+    this.paused = false;
     this.elapsedSec = 0;
+    this.maxStages = ctx.state.anomalyRole === 'baseline' ? 2 : 3;
     this.stage = 1;
     this.stageEnterT = 1;
     this.stageFlash = 0;
@@ -177,8 +179,6 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     this.pointerNormY = 0;
     this.lastHudSig = '';
     this.lastHudSentMs = 0;
-    this.overclockEngaged = false;
-    this.overclockPointerId = null;
     this.briefingHold = Boolean(ctx.briefingHoldMs && ctx.briefingHoldMs > 0);
     this.briefingHoldRemainingSec = this.briefingHold ? (ctx.briefingHoldMs ?? 0) / 1000 : 0;
 
@@ -233,7 +233,9 @@ export abstract class BaseCosmicMinigame implements IMinigame {
       if (this.completed && !this.postCompleteAmbient) return;
       const dt = Math.min(0.05, Math.max(0.001, (now - this.lastTs) / 1000));
       this.lastTs = now;
-      if (this.postCompleteAmbient) {
+      if (this.paused && !this.postCompleteAmbient) {
+        this.renderFrame();
+      } else if (this.postCompleteAmbient) {
         this.elapsedSec += dt * 0.45;
         this.stageFlash = Math.max(0, this.stageFlash - dt * 0.85);
         this.lockRingAlpha = Math.max(0, this.lockRingAlpha - dt * 2.2);
@@ -260,9 +262,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   updateState(nextState: MinigameStateVector): void {
     if (!this.ctx || this.completed) return;
     this.ctx.state = nextState;
-    if ((nextState.anomalyBleed ?? 0) < 0.3 && this.overclockEngaged) {
-      this.overclockEngaged = false;
-    }
+    this.maxStages = nextState.anomalyRole === 'baseline' ? 2 : 3;
     this.palette = getCosmicPalette(nextState.humanity);
     this.profile = computeInstrumentProfile(nextState);
     this.clarity01 = this.profile.clarity01;
@@ -279,45 +279,9 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     }
   }
 
-  protected isOverclockAvailable(): boolean {
-    return this.stage === 3 && !this.completed && (this.ctx?.state?.anomalyBleed ?? 0) >= 0.3;
-  }
-
-  private getOverclockPillBounds(): { x: number; y: number; w: number; h: number } {
-    const pillW = this.compact ? 176 : 204;
-    const pillH = this.compact ? 24 : 26;
-    return {
-      x: Math.max(12, this.width - pillW - 16),
-      y: this.compact ? 44 : 52,
-      w: pillW,
-      h: pillH,
-    };
-  }
-
-  private hitOverclockPill(x: number, y: number): boolean {
-    if (!this.isOverclockAvailable()) return false;
-    const b = this.getOverclockPillBounds();
-    const pad = 6;
-    return x >= b.x - pad && x <= b.x + b.w + pad && y >= b.y - pad && y <= b.y + b.h + pad;
-  }
-
-  private toggleOverclock(): void {
-    if (!this.isOverclockAvailable()) return;
-    this.overclockEngaged = !this.overclockEngaged;
-    this.ctx.audio?.playSolenoidClack(this.overclockEngaged);
-    this.ctx.audio?.playHapticThump?.(this.overclockEngaged ? 0.78 : 0.35);
-    if (this.overclockEngaged) {
-      this.ctx.audio?.updateBeatSynth({
-        beatHz: 2.4,
-        harmonicLock: 0.72,
-        warmth: this.profile.warmth01,
-        strain: 0.85,
-      });
-      platform.triggerHaptic('overclockHeartbeat', 0.85);
-    } else {
-      platform.triggerHaptic('vernierTick', 0.5);
-    }
-    this.emitHud(true);
+  setPaused(paused: boolean): void {
+    this.paused = paused;
+    this.lastTs = performance.now();
   }
 
   getBackdrop3DConfig(): Minigame3DConfig {
@@ -398,7 +362,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     }
 
     const onDown = (e: PointerEvent) => {
-      if (this.completed || this.briefingHold) return;
+      if (this.completed || this.briefingHold || this.paused) return;
       this.refreshCachedRect();
       this.activePointerId = e.pointerId;
       if (typeof this.canvas.setPointerCapture === 'function') {
@@ -411,16 +375,11 @@ export abstract class BaseCosmicMinigame implements IMinigame {
       const ev = this.toPointerEvent(e);
       this.pointerNormX = ev.nx;
       this.pointerNormY = ev.ny;
-      if (this.hitOverclockPill(ev.x, ev.y)) {
-        this.overclockPointerId = e.pointerId;
-        this.toggleOverclock();
-        return;
-      }
       this.onPointerDown(ev);
     };
 
     const onMove = (e: PointerEvent) => {
-      if (this.completed) return;
+      if (this.completed || this.paused) return;
       const ev = this.toPointerEvent(e);
       this.pointerNormX = ev.nx;
       this.pointerNormY = ev.ny;
@@ -443,10 +402,6 @@ export abstract class BaseCosmicMinigame implements IMinigame {
           // Ignore synthetic pointer ids
         }
       }
-      if (this.overclockPointerId === e.pointerId) {
-        this.overclockPointerId = null;
-        return;
-      }
       const ev = this.toPointerEvent(e);
       if (e.type === 'pointercancel') {
         this.onPointerCancel(ev);
@@ -456,19 +411,14 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     };
 
     const onWheel = (e: WheelEvent) => {
-      if (this.completed || this.briefingHold) return;
+      if (this.completed || this.briefingHold || this.paused) return;
       if (this.onWheel(e.deltaY, e)) {
         e.preventDefault();
       }
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (this.completed || this.briefingHold) return;
-      if (!e.repeat && (e.key === 'o' || e.key === 'O') && this.isOverclockAvailable()) {
-        e.preventDefault();
-        this.toggleOverclock();
-        return;
-      }
+      if (this.completed || this.briefingHold || this.paused) return;
       this.onKeyDown(e);
     };
 
@@ -552,11 +502,11 @@ export abstract class BaseCosmicMinigame implements IMinigame {
       this.lockRingSpec = null;
     }
 
-    // Two-phase optical aperture cross-dissolve between Stage 1 -> 2 -> 3
+    // Two-phase optical aperture cross-dissolve between Stage 1 -> 2 (-> 3 for anomalies)
     if (this.stageTransitionPhase === 'holding') {
       this.stageClearTimer -= dt;
       if (this.stageClearTimer <= 0) {
-        if (this.stage < 3) {
+        if (this.stage < this.maxStages) {
           this.stageTransitionPhase = 'closing';
           this.stageTransitionElapsed = 0;
           this.stageTransitionDuration = pacing.minigames.stageVeilCloseSec;
@@ -595,7 +545,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
       this.stageClearTimer -= dt;
       if (this.stageClearTimer <= 0) {
         this.stageClearTimer = 0;
-        if (this.stage < 3) {
+        if (this.stage < this.maxStages) {
           this.setupStage((this.stage + 1) as 2 | 3);
           this.emitHud(true);
         } else {
@@ -613,9 +563,6 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   private renderFrame(): void {
     this.lockRingRequestedThisFrame = false;
     this.onRender(this.c2d, this.width, this.height);
-    if (this.isOverclockAvailable()) {
-      this.renderOverclockOverlay(this.c2d, this.width, this.height);
-    }
     const veilAlpha = Math.max(
       this.stageVeilAlpha,
       this.stageEnterT < 0.995
@@ -698,6 +645,18 @@ export abstract class BaseCosmicMinigame implements IMinigame {
       parallaxY: this.pointerNormY,
       reticleDuck: opts?.reticleDuck,
     });
+
+    // Subtle non-blocking atmospheric enclosure bleed hairline on non-baseline anomaly targets
+    const bleed = clamp(this.ctx?.state?.anomalyBleed ?? 0, 0, 1);
+    if (this.ctx?.state?.anomalyRole !== 'baseline' && bleed > 0.05) {
+      const pulse = 0.5 + 0.5 * Math.sin(this.elapsedSec * 1.4);
+      const inset = this.compact ? 8 : 12;
+      c2d.save();
+      c2d.strokeStyle = `rgba(148, 224, 255, ${(bleed * (0.08 + 0.08 * pulse)).toFixed(3)})`;
+      c2d.lineWidth = 0.85;
+      c2d.strokeRect(inset, inset, Math.max(10, w - inset * 2), Math.max(10, h - inset * 2));
+      c2d.restore();
+    }
   }
 
   protected drawSharedOverlays(
@@ -746,90 +705,8 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     }
   }
 
-  private renderOverclockOverlay(c2d: CanvasRenderingContext2D, w: number, h: number): void {
-    const b = this.getOverclockPillBounds();
-    const bleed = clamp(this.ctx?.state?.anomalyBleed ?? 0, 0.3, 1);
-    const engaged = this.overclockEngaged;
-    const pulse = 0.72 + 0.28 * Math.sin(this.elapsedSec * (engaged ? 4.2 : 2.1));
-
-    c2d.save();
-
-    // Outer bezel recursive filigree seam fracture when Overclock is engaged
-    if (engaged) {
-      const inset = this.compact ? 8 : 11;
-      const notch = this.compact ? 9 : 13;
-      const subNotch = notch * 0.42;
-      const cx = w * 0.5;
-      const cy = h * 0.5;
-
-      c2d.strokeStyle = `rgba(158, 232, 255, ${(0.34 + bleed * 0.24 * pulse).toFixed(3)})`;
-      c2d.lineWidth = 1.05;
-      c2d.beginPath();
-      // Top edge with centered recursive right-angle notch
-      c2d.moveTo(inset, inset);
-      c2d.lineTo(cx - notch * 2, inset);
-      c2d.lineTo(cx - notch * 2, inset + subNotch);
-      c2d.lineTo(cx - notch, inset + subNotch);
-      c2d.lineTo(cx - notch, inset + notch);
-      c2d.lineTo(cx + notch, inset + notch);
-      c2d.lineTo(cx + notch, inset + subNotch);
-      c2d.lineTo(cx + notch * 2, inset + subNotch);
-      c2d.lineTo(cx + notch * 2, inset);
-      c2d.lineTo(w - inset, inset);
-      // Right edge
-      c2d.lineTo(w - inset, cy - notch);
-      c2d.lineTo(w - inset - subNotch, cy - notch);
-      c2d.lineTo(w - inset - subNotch, cy + notch);
-      c2d.lineTo(w - inset, cy + notch);
-      c2d.lineTo(w - inset, h - inset);
-      // Bottom edge
-      c2d.lineTo(cx + notch * 2, h - inset);
-      c2d.lineTo(cx + notch * 2, h - inset - subNotch);
-      c2d.lineTo(cx + notch, h - inset - subNotch);
-      c2d.lineTo(cx + notch, h - inset - notch);
-      c2d.lineTo(cx - notch, h - inset - notch);
-      c2d.lineTo(cx - notch, h - inset - subNotch);
-      c2d.lineTo(cx - notch * 2, h - inset - subNotch);
-      c2d.lineTo(cx - notch * 2, h - inset);
-      c2d.lineTo(inset, h - inset);
-      // Left edge
-      c2d.lineTo(inset, cy + notch);
-      c2d.lineTo(inset + subNotch, cy + notch);
-      c2d.lineTo(inset + subNotch, cy - notch);
-      c2d.lineTo(inset, cy - notch);
-      c2d.closePath();
-      c2d.stroke();
-    }
-
-    // Subtle etched bezel toggle pill in safe top-right corner
-    c2d.fillStyle = engaged ? 'rgba(12, 28, 38, 0.84)' : 'rgba(8, 12, 20, 0.72)';
-    c2d.fillRect(b.x, b.y, b.w, b.h);
-    c2d.strokeStyle = engaged
-      ? `rgba(158, 232, 255, ${(0.78 + 0.18 * pulse).toFixed(3)})`
-      : `rgba(${this.palette.accentRgb}, ${(0.42 + 0.18 * pulse).toFixed(3)})`;
-    c2d.lineWidth = engaged ? 1.25 : 0.9;
-    c2d.strokeRect(b.x, b.y, b.w, b.h);
-
-    // Tiny Zeiss corner ticks on pill
-    c2d.fillStyle = engaged ? '#9ee8ff' : this.palette.accentHex;
-    c2d.fillRect(b.x, b.y, 4, 1.5);
-    c2d.fillRect(b.x + b.w - 4, b.y + b.h - 1.5, 4, 1.5);
-
-    c2d.font = `${this.compact ? 9 : 10}px ui-monospace, SFMono-Regular, Menlo, monospace`;
-    c2d.textAlign = 'center';
-    c2d.textBaseline = 'middle';
-    c2d.fillStyle = engaged ? '#e6f7ff' : this.palette.secondaryHex;
-    const label = engaged ? '[O] SEAM OVERCLOCK ARMED' : '[O] CAPTURE SEAM BLEED';
-    c2d.fillText(label, b.x + b.w * 0.5, b.y + b.h * 0.5 + 0.5);
-
-    c2d.restore();
-  }
-
   protected setupStage(stage: 1 | 2 | 3): void {
     this.stage = stage;
-    if (stage !== 3) {
-      this.overclockEngaged = false;
-    }
     this.stageEnterT = stage === 1 ? 1 : 0;
     this.lockHoldSec = 0;
     this.stageClearTimer = 0;
@@ -846,7 +723,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
 
   /**
    * Triggers a clean stage-clear pulse + caustic ring and advances to the next stage
-   * (or completes the instrument after Stage 3) once the calm optical hold & cross-dissolve finish.
+   * (or completes the instrument after maxStages) once the calm optical hold & cross-dissolve finish.
    */
   protected triggerStageClear(flashText: string, delaySec = 0.85, ringCx?: number, ringCy?: number): void {
     if (this.completed || this.stageClearTimer > 0) return;
@@ -864,7 +741,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     );
 
     if (delaySec <= 0) {
-      if (this.stage < 3) {
+      if (this.stage < this.maxStages) {
         this.setupStage((this.stage + 1) as 2 | 3);
       } else {
         this.onAllStagesCleared();
@@ -912,13 +789,9 @@ export abstract class BaseCosmicMinigame implements IMinigame {
     if (this.completed) return;
     this.completed = true;
     this.postCompleteAmbient = true;
-    const resolvedGrade: Exclude<MinigameGrade, 'aborted'> =
-      opts.grade ?? (this.overclockEngaged ? 'deep_overclock' : 'clean');
+    const resolvedGrade: Exclude<MinigameGrade, 'aborted'> = opts.grade ?? 'clean';
     this.ctx.audio?.stopInstrumentAudio();
     this.ctx.audio?.playCaptureShutter(resolvedGrade);
-    if (resolvedGrade === 'deep_overclock') {
-      this.ctx.audio?.playPhaseLock?.(3);
-    }
     platform.triggerHaptic('shutterCommit', 1.0);
 
     const totalSec = Math.max(this.elapsedSec, (performance.now() - this.startedAt) / 1000);
@@ -949,7 +822,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
           );
         }
         if (!this.completed) {
-          if (targetStage < 3) {
+          if (targetStage < this.maxStages) {
             this.setupStage((targetStage + 1) as 2 | 3);
             this.emitHud(true);
           } else {
@@ -963,7 +836,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
         stageProgress: this.completed ? 1 : this.getStageProgress01(),
         variantIndex: this.iterationIndex,
         variantId: this.activeVariant?.id ?? `${this.id}_v${this.iterationIndex}`,
-        stageCount: 3,
+        stageCount: this.maxStages,
       }),
     };
   }

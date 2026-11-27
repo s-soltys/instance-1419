@@ -26,6 +26,7 @@ export interface StoryletSpec {
 
 function hasStoryletFlag(state: GameState, flag: string): boolean {
   if (!flag) return true;
+  if (state.storyFlags?.[flag]) return true;
   if (state.codexUnlocks.includes(flag)) return true;
   if (state.completedStorylets.includes(flag)) return true;
   if (state.prunedPersonas.includes(flag)) return true;
@@ -45,6 +46,10 @@ export class StoryletScheduler {
 
   constructor() {
     this.specs = storyletsData.storylets as StoryletSpec[];
+  }
+
+  getById(id: string): StoryletSpec | null {
+    return this.specs.find((s) => s.id === id) ?? null;
   }
 
   pickAvailable(state: GameState, targetMode: GameMode): StoryletSpec | null {

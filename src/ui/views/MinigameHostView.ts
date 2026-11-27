@@ -240,7 +240,7 @@ export class MinigameHostView {
     if (freshRefs.titleEl) freshRefs.titleEl.textContent = spec.label;
     if (freshRefs.subEl) freshRefs.subEl.textContent = mg.title;
 
-    this.renderStagePips(1, 'PASS I · COARSE');
+    this.renderStagePips(1, 'PASS I · COARSE', spec.anomalyRole === 'baseline' ? 2 : 3);
     if (freshRefs.helperBtn) {
       freshRefs.helperBtn.classList.add('hidden');
       freshRefs.helperBtn.classList.remove('active');
@@ -316,7 +316,7 @@ export class MinigameHostView {
     if (ctrlEl) ctrlEl.textContent = isCoarse ? guide.controlsTouch : guide.controlsDesktop;
   }
 
-  private renderStagePips(stageIndex: 1 | 2 | 3, label: string): void {
+  private renderStagePips(stageIndex: 1 | 2 | 3, label: string, maxStages: 2 | 3 = 3): void {
     const refs = this.getHudRefs();
     if (refs.stageLabelEl && refs.stageLabelEl.textContent !== label) {
       refs.stageLabelEl.textContent = label;
@@ -327,9 +327,14 @@ export class MinigameHostView {
     for (let i = 0; i < refs.stagePips.length; i++) {
       const pip = refs.stagePips[i];
       const idx = Number(pip.dataset.stage ?? '1');
+      pip.classList.toggle('hidden', idx > maxStages);
       pip.classList.toggle('done', idx < stageIndex);
       pip.classList.toggle('active', idx === stageIndex);
     }
+  }
+
+  setPaused(paused: boolean): void {
+    this.activeMinigame?.setPaused?.(paused);
   }
 
   private requestExit(preserveDecoded: boolean, decodedSpec: AnomalySpec | null = null): void {
@@ -383,7 +388,7 @@ export class MinigameHostView {
     const prevAnomaly = prevState.anomalyProgress;
     const wasAlreadyDecoded = prevState.decodedMinigameTargets.includes(spec.id);
     const resolvedGrade: MinigameGradeTier =
-      result.grade === 'deep_overclock' || result.grade === 'partial' ? result.grade : 'clean';
+      result.grade === 'partial' ? 'partial' : 'clean';
     const dossierFinding = spec.postScanEcho?.dossierFinding ?? result.dossierSnippet ?? '';
     const proofFragmentId = result.proofFragmentId ?? `proof_${spec.id}`;
 
@@ -439,18 +444,8 @@ export class MinigameHostView {
       gainEl.textContent = spec.label;
 
       if (outcomeEl) {
-        const badgeLabel =
-          resolvedGrade === 'deep_overclock'
-            ? 'DEEP OVERCLOCK'
-            : resolvedGrade === 'partial'
-              ? 'PARTIAL'
-              : 'CLEAN LOCK';
-        const consequence =
-          resolvedGrade === 'deep_overclock'
-            ? '+DRIFT · +SUSPICION'
-            : resolvedGrade === 'partial'
-              ? 'BASELINE TRACE'
-              : '';
+        const badgeLabel = resolvedGrade === 'partial' ? 'PARTIAL' : 'CLEAN LOCK';
+        const consequence = resolvedGrade === 'partial' ? 'BASELINE TRACE' : '';
         outcomeEl.dataset.grade = resolvedGrade;
         outcomeEl.innerHTML = `<span class="mg-outcome-badge">${badgeLabel}</span>${
           consequence ? `<span class="mg-outcome-consequence">${consequence}</span>` : ''
@@ -593,7 +588,11 @@ export class MinigameHostView {
     this.lastHudSig = sig;
 
     const refs = this.getHudRefs();
-    this.renderStagePips(hud.stageIndex, hud.stageLabel);
+    this.renderStagePips(
+      hud.stageIndex,
+      hud.stageLabel,
+      this.activeSpec?.anomalyRole === 'baseline' ? 2 : 3
+    );
 
     if (refs.cueEl && refs.cueEl.textContent !== hud.promptText) {
       refs.cueEl.textContent = hud.promptText;

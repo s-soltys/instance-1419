@@ -286,7 +286,7 @@ export class PolarizationFilterGame extends BaseCosmicMinigame {
     if (this.knots.every((item) => item.found)) {
       const { cx, cy } = this.getLensGeometry(this.width, this.height);
       this.triggerStageClear(
-        `POLARIZATION ${this.stage}/3 EXTINGUISHED`,
+        `POLARIZATION ${this.stage}/${this.maxStages} EXTINGUISHED`,
         this.stage < 3 ? 0.6 : 0.45,
         cx,
         cy

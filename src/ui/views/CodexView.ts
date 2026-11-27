@@ -1,4 +1,5 @@
 import anomaliesData from '../../content/anomalies.json';
+import shiftsData from '../../content/shifts.json';
 import uiCopy from '../../content/ui_copy.json';
 import type { AudioEngine } from '../../engine/AudioEngine';
 import {
@@ -27,6 +28,7 @@ function resolvePlateUrl(plateAsset?: string): string | null {
 export interface CodexViewCallbacks {
   onFocusTarget: (targetId: string) => void;
   onLaunchCapstone: () => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 /**
@@ -82,12 +84,14 @@ export class CodexView {
       overlay.classList.remove('hidden');
     }
     this.syncState(state);
+    this.callbacks.onOpenChange?.(true);
   }
 
   close(): void {
     if (!this.openState) return;
     this.openState = false;
     this.root.querySelector<HTMLElement>('#codex-overlay')?.classList.add('hidden');
+    this.callbacks.onOpenChange?.(false);
   }
 
   toggle(): void {
@@ -355,27 +359,53 @@ export class CodexView {
       `
       : '';
 
-    // Merged Proof Dossier cards when viewing the Evidence category
+    // Merged Shift-Grouped Proof Dossier cards when viewing the Evidence category
     let proofDossierHtml = '';
     if (entry.spec.category === 'evidence') {
       const totalProofCount = anomaliesData.anomalies.length;
       const canCapstone = state.shift >= 5 || state.proofDossier.length >= 4;
-      const cards =
-        state.proofDossier.length === 0
-          ? `<p class="codex-dossier-empty">${uiCopy.codex.emptyProofHint}</p>`
-          : state.proofDossier
-              .map(
-                (item) => `
-              <div class="codex-proof-card">
-                <div class="codex-proof-head">
-                  <strong>[${item.instrumentCode}] ${item.title}</strong>
-                  <span>${item.grade.replace('_', ' ').toUpperCase()}</span>
-                </div>
-                <p>${item.snippet || item.principle}</p>
+      const targetShiftMap = new Map<string, number>();
+      for (const sh of shiftsData.shifts) {
+        for (const tid of sh.targetAnomalies) {
+          targetShiftMap.set(tid, sh.shift);
+        }
+      }
+
+      let cards = '';
+      if (state.proofDossier.length === 0) {
+        cards = `<p class="codex-dossier-empty">${uiCopy.codex.emptyProofHint}</p>`;
+      } else {
+        const grouped = new Map<number, typeof state.proofDossier>();
+        for (const item of state.proofDossier) {
+          const sh = targetShiftMap.get(item.targetId) ?? 1;
+          const arr = grouped.get(sh) ?? [];
+          arr.push(item);
+          grouped.set(sh, arr);
+        }
+        cards = [...grouped.entries()]
+          .sort((a, b) => a[0] - b[0])
+          .map(
+            ([shiftNum, items]) => `
+              <div class="codex-proof-shift-group">
+                <div class="codex-proof-shift-head">SHIFT ${shiftNum} ARCHIVE</div>
+                ${items
+                  .map(
+                    (item) => `
+                  <div class="codex-proof-card">
+                    <div class="codex-proof-head">
+                      <strong>[${item.instrumentCode}] ${item.title}</strong>
+                      <span>${item.grade.replace('_', ' ').toUpperCase()}</span>
+                    </div>
+                    <p>${item.snippet || item.principle}</p>
+                  </div>
+                `
+                  )
+                  .join('')}
               </div>
             `
-              )
-              .join('');
+          )
+          .join('');
+      }
 
       proofDossierHtml = `
         <section class="codex-proof-section" aria-label="Decoded Proof Fragments">

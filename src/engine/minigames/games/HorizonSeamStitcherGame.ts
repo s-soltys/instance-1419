@@ -512,7 +512,7 @@ export class HorizonSeamStitcherGame extends BaseCosmicMinigame {
       this.lockHoldSec += dt;
       if (this.lockHoldSec >= this.lockHoldTargetSec) {
         this.triggerStageClear(
-          `93-BLY ANTIPODAL SEAM ${this.stage}/3 PROVEN`,
+          `93-BLY ANTIPODAL SEAM ${this.stage}/${this.maxStages} PROVEN`,
           0.6,
           nCx,
           nCy

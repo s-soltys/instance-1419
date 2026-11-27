@@ -349,8 +349,8 @@ export class StarfieldBlinkSpotterGame extends BaseCosmicMinigame {
       this.particles.emitPhotonSparks(sx, sy, 5, 36, this.palette.lockHex);
       this.triggerStageClear(
         this.stage === 2 && this.variantCfg.stage2Mode === 'conjunction'
-          ? 'CONJUNCTION POINT LOCKED (2/3)'
-          : `EPOCH 4 FORECAST VERIFIED (${this.stage}/3)`,
+          ? 'CONJUNCTION POINT LOCKED (2/${this.maxStages})'
+          : `EPOCH 4 FORECAST VERIFIED (${this.stage}/${this.maxStages})`,
         0.76,
         sx,
         sy

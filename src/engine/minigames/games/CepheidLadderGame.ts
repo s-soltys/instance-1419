@@ -470,7 +470,7 @@ export class CepheidLadderGame extends BaseCosmicMinigame {
         const cy = this.compact ? this.height * 0.51 : this.height * 0.52;
         const dMpc = this.distMpcFrom01(this.targetDist).toFixed(1);
         this.triggerStageClear(
-          `CEPHEID RUNG ${this.stage}/3 · ${dMpc} Mpc LOCKED`,
+          `CEPHEID RUNG ${this.stage}/${this.maxStages} · ${dMpc} Mpc LOCKED`,
           0.55,
           cx,
           cy

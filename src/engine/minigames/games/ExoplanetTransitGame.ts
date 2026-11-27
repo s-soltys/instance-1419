@@ -588,7 +588,7 @@ export class ExoplanetTransitGame extends BaseCosmicMinigame {
       if (this.lockHoldSec >= this.lockHoldTargetSec) {
         const g = this.getLayoutGeometry(this.width, this.height);
         this.triggerStageClear(
-          `TRANSIT ORBIT ${this.stage}/3 CONFIRMED`,
+          `TRANSIT ORBIT ${this.stage}/${this.maxStages} CONFIRMED`,
           this.stage < 3 ? 0.58 : 0.42,
           g.starCx,
           g.starCy

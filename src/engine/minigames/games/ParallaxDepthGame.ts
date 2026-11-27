@@ -305,7 +305,7 @@ export class ParallaxDepthGame extends BaseCosmicMinigame {
         this.particles.emitLockCausticRing(pos.x, pos.y, 14, this.palette.lockHex);
         const targs = this.stars.filter((item) => item.isTarget);
         if (targs.every((item) => item.found)) {
-          this.triggerStageClear(`PARALLAX DEPTH ${this.stage}/3 SORTED`, 0.62, pos.x, pos.y);
+          this.triggerStageClear(`PARALLAX DEPTH ${this.stage}/${this.maxStages} SORTED`, 0.62, pos.x, pos.y);
         } else {
           this.emitHud(true);
         }
