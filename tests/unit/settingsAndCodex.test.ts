@@ -10,6 +10,10 @@ describe('SettingsStore persistence and sanitization', () => {
   });
 
   it('persists music, voice, display, and haptic preferences across store instances independently of run state', () => {
+    const defaults = new SettingsStore().getSettings();
+    expect(defaults.dialoguePacing).toBe('contemplative');
+    expect(defaults.autoEngageInstrument).toBe(false);
+
     const settingsA = new SettingsStore();
     settingsA.patch({
       musicEnabled: false,
@@ -18,6 +22,7 @@ describe('SettingsStore persistence and sanitization', () => {
       voiceVolume: 0.6,
       textSize: 'large',
       dialoguePacing: 'instant',
+      autoEngageInstrument: true,
       hapticsEnabled: false,
     });
 
@@ -33,6 +38,7 @@ describe('SettingsStore persistence and sanitization', () => {
     expect(s.voiceVolume).toBe(0.6);
     expect(s.textSize).toBe('large');
     expect(s.dialoguePacing).toBe('instant');
+    expect(s.autoEngageInstrument).toBe(true);
     expect(s.hapticsEnabled).toBe(false);
     expect('reducedMotion' in s).toBe(false);
     expect('graphicsQuality' in s).toBe(false);

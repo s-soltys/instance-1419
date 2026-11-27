@@ -522,3 +522,17 @@ Each agent session reads the latest entries here before starting work and append
 * **Rebalanced Economy & Spoiler-Free Codex (`balance.json`, `StateStore.ts`, `codex.json`, `scripts/sim-playthroughs.mjs`):**
   * Tuned `balance.json` (`0.4.0-rebalanced`) so 12 required clean scans yield `60% < 75%` (requiring optional scans or optical clarity from pruning to reach 75%), wired `clean` chaos cost (`+3`), optional target bonuses (`+3` anomaly / `+6` chaos / `+1` suspicion) and clarity proof bonus (`+2` when `opticalFidelity >= 0.68`) in `StateStore.ts`, clamped permanent `<70%` `Max_H` strictly below `70%`, added `canPetitionUpward()` & `evaluateEndingDetail()`, purged all Shift 1 Codex spoilers (`EVD-01`, `SKY-03`, `SKY-04`, `SKY-05`, `SYS-01`, `SYS-03`, `INS-03`, `INS-04`), and verified `sim-playthroughs.mjs` across 500 economy runs & 120 Ink runs.
 * **Verified:** `compile-ink`, `tsc --noEmit`, `vitest run` (13 files / 183 tests PASS), `sim-playthroughs.mjs`, `lint-narrative.mjs`, `check-hygiene.mjs`.
+
+---
+
+## Session 32 (Prep Sprint 2) — 2026-11-27 — Systemic Slow-Burn Pacing Overhaul
+* **Centralized Pacing & Preferences (`src/content/pacing.json`, `SettingsStore.ts`, `SettingsView.ts`):**
+  * Added `src/content/pacing.json` governing dialogue gaps, unvoiced reading holds, optics damping/lock rates, minigame hold/veil/finale timings, post-scan delays, hibernation interlude timing, and audio stillness intervals.
+  * Bumped `SettingsStore` to schema v2 with `'contemplative'` default `dialoguePacing` (`'contemplative' | 'standard' | 'instant'`) and `autoEngageInstrument: false` (manual Space / button inspection by default, auto-dive opt-in in Settings).
+* **Contemplative Line-by-Line Reveal & Interlude (`VoiceEngine.ts`, `DialogueRunner.ts`, `DialogueFeedView.ts`, `HibernationInterludeView.ts`, `StatusShiftOverlay.ts`):**
+  * Parsed `# pause:<ms>` and `# beat:short|long` tags in `DialogueRunner.ts` and added single-line async `VoiceEngine.speakEntry()` + inter-line pacing callbacks on `speakQueue`.
+  * Upgraded `DialogueFeedView.ts` with VO-synced sequential reveal in `'contemplative'` mode (holding choices in `.is-awaiting-reveal` until lines finish, with click/Space early-advance), plus `replyEchoHoldMs: 580`.
+  * Built `HibernationInterludeView.ts` (`#hibernation-interlude`), wired into `UIController.onWakeToSky()` across shift transitions so multi-year deep cryo sleeps register perceptually (6s default, Space/click skip after 1.8s).
+  * Slowed sky optics (`panDampRate: 5.2`, `0.6x` lock rate), minigame holds/veils (`BaseCosmicMinigame.ts`), finale reveal (`1350ms`, `finaleAutoCloseEnabled: false` in `MinigameHostView.ts`), `AudioEngine.ts` sky chimes (`11.5s`, 35% silence), and post-scan stillness (moving whispers/toasts to `onComplete`, converting Target 2 forced popup into clickable incoming toast).
+* **Verified:** `node scripts/verify.mjs --fast` PASS (13 test files / 183 tests) + `node scripts/e2e-visual.mjs --flows=prologue,sky,dream` PASS (0 errors).
+

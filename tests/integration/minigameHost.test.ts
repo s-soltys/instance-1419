@@ -251,7 +251,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-optional').length).toBe(2);
       expect(root.querySelectorAll('#mg-finale-visual .mg-finale-node.is-just-earned').length).toBe(1);
 
-      vi.advanceTimersByTime(450);
+      vi.advanceTimersByTime(1400);
       expect(root.querySelector('#mg-capture-finale')?.classList.contains('hidden')).toBe(false);
     } finally {
       vi.useRealTimers();
@@ -287,7 +287,7 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('DEEP OVERCLOCK');
       expect(root.querySelector('.mg-finale-ring-delta')?.textContent).toContain('HORIZON');
 
-      vi.advanceTimersByTime(450);
+      vi.advanceTimersByTime(1400);
       expect(root.querySelector('#mg-capture-finale')?.classList.contains('hidden')).toBe(false);
     } finally {
       vi.useRealTimers();

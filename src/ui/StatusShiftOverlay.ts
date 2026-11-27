@@ -1,3 +1,4 @@
+import pacing from '../content/pacing.json';
 import type { AudioEngine } from '../engine/AudioEngine';
 import type { StatusShiftEvent } from '../engine/StateStore';
 
@@ -87,7 +88,12 @@ export class StatusShiftOverlay {
       }
     }, 90);
 
-    this.hideTimer = window.setTimeout(() => this.dismiss(), 2400);
+    const ceilingDropped =
+      typeof ev.prevMax === 'number' && typeof ev.nextMax === 'number' && ev.nextMax < ev.prevMax;
+    const stayMs = ceilingDropped
+      ? pacing.postScan.statusShiftCeilingDropDurationMs
+      : pacing.postScan.statusShiftDurationMs;
+    this.hideTimer = window.setTimeout(() => this.dismiss(), stayMs);
   }
 
   dismiss(): void {

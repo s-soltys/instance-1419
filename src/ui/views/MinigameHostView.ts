@@ -1,3 +1,4 @@
+import pacing from '../../content/pacing.json';
 import shiftsData from '../../content/shifts.json';
 import type { AudioEngine } from '../../engine/AudioEngine';
 import type { MinigameRegistry } from '../../engine/minigames/MinigameRegistry';
@@ -550,7 +551,11 @@ export class MinigameHostView {
 
       const showFinale = () => {
         if (this.isExiting || !this.isFinishing) return;
-        if (timerFill) {
+        const timerBarWrap = timerFill?.parentElement;
+        if (timerBarWrap) {
+          timerBarWrap.classList.toggle('hidden', !pacing.minigames.finaleAutoCloseEnabled);
+        }
+        if (timerFill && pacing.minigames.finaleAutoCloseEnabled) {
           timerFill.classList.remove('is-running');
           void timerFill.offsetWidth;
           timerFill.classList.add('is-running');
@@ -563,10 +568,12 @@ export class MinigameHostView {
             nextArc.style.strokeDashoffset = nextDash;
           }
         }, 80);
-        this.finaleTimerId = window.setTimeout(finishClose, 10000);
+        if (pacing.minigames.finaleAutoCloseEnabled) {
+          this.finaleTimerId = window.setTimeout(finishClose, pacing.minigames.finaleAutoCloseMs);
+        }
       };
 
-      this.finaleRevealTimerId = window.setTimeout(showFinale, 320);
+      this.finaleRevealTimerId = window.setTimeout(showFinale, pacing.minigames.finaleRevealDelayMs);
     } else {
       onDecoded?.(spec);
       this.requestExit(true, spec);

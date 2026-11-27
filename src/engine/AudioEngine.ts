@@ -1,3 +1,4 @@
+import pacing from '../content/pacing.json';
 import { MusicDirector, type MusicContext } from './audio/MusicDirector';
 import type { GameMode } from './StateStore';
 import type { BeatSynthParams, InstrumentAudioHandle, MinigameGrade } from './minigames/types';
@@ -380,10 +381,13 @@ export class AudioEngine {
   private startGenerativeScheduler(): void {
     if (this.musicTimerId !== null) return;
     // Play first gentle atmospheric motif shortly after audio unlocks
-    window.setTimeout(() => this.triggerGenerativePhrase(), 650);
+    window.setTimeout(() => this.triggerGenerativePhrase(), 950);
     this.musicTimerId = window.setInterval(() => {
+      if (this.mode === 'waking_3d' && Math.random() < pacing.audio.skyHarmonicSilenceChance) {
+        return; // Intentional quiet observatory silence pocket
+      }
       this.triggerGenerativePhrase();
-    }, 4800);
+    }, pacing.audio.skyHarmonicIntervalMs);
   }
 
   private triggerGenerativePhrase(): void {

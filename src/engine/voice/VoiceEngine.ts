@@ -1,3 +1,4 @@
+import pacing from '../../content/pacing.json';
 import voiceProfilesJson from '../../content/voice_profiles.json';
 import voiceScriptJson from '../../content/dialogue/compiled/voice_script.json';
 import type { AudioEngine } from '../AudioEngine';
@@ -17,6 +18,13 @@ export interface VoiceRequest {
   text: string;
   speaker: string;
   emotion?: string;
+  pauseBeforeMs?: number;
+}
+
+export interface SpeakQueueCallbacks {
+  onEntryStart?: (index: number, req: VoiceRequest, durationSec: number) => void;
+  onEntryEnd?: (index: number, req: VoiceRequest, played: boolean) => void;
+  onQueueComplete?: (playedAny: boolean) => void;
 }
 
 export interface IVoiceProvider {
@@ -344,6 +352,7 @@ export class VoiceEngine {
   private finalClipEndWaiters: Array<{ leadMs: number; resolve: () => void }> = [];
   private finalClipTimer: number | null = null;
   private queueDoneWaiters: Array<(playedAny: boolean) => void> = [];
+  private singleEntryResolvers: Array<(played: boolean) => void> = [];
 
   constructor(audio: AudioEngine) {
     this.audio = audio;
@@ -396,23 +405,80 @@ export class VoiceEngine {
     return this.activeProvider.getAmplitude();
   }
 
-  speakQueue(requests: VoiceRequest[]): void {
+  speakQueue(requests: VoiceRequest[], callbacks?: SpeakQueueCallbacks): void {
     this.stop();
-    if (!this.enabled) return;
+    if (!this.enabled) {
+      callbacks?.onQueueComplete?.(false);
+      return;
+    }
 
     const filtered = requests.filter((r) => {
       if (PROFILES[r.speaker]?.voiced === false) return false;
       const t = stripInlineMarkup(r.text).trim();
       return t.length > 0 && !(t.startsWith('[') && t.endsWith(']'));
     });
-    if (filtered.length === 0) return;
+    if (filtered.length === 0) {
+      callbacks?.onQueueComplete?.(false);
+      return;
+    }
 
     this.queue = [...filtered];
-    void this.drainQueue(++this.runToken);
+    void this.drainQueue(++this.runToken, callbacks);
   }
 
   speakSingle(text: string, speaker: string, emotion?: string, lineId?: string): void {
     this.speakQueue([{ lineId, text, speaker, emotion }]);
+  }
+
+  /**
+   * Speaks a single VoiceRequest and resolves `true` when playback completes,
+   * or `false` if unvoiced/disabled/stopped early. Used by contemplative line-by-line reveal.
+   */
+  async speakEntry(req: VoiceRequest): Promise<boolean> {
+    this.stop();
+    if (!this.enabled) return false;
+    if (PROFILES[req.speaker]?.voiced === false) return false;
+    const t = stripInlineMarkup(req.text).trim();
+    if (!t || (t.startsWith('[') && t.endsWith(']'))) return false;
+
+    const token = ++this.runToken;
+    this.processing = true;
+    let played = false;
+
+    const onPlaybackStart = (_durationSec: number) => {
+      if (token !== this.runToken) return;
+      this.playedInCurrentQueue = true;
+      this.notifySpeaker(req.speaker, req.lineId ?? null);
+    };
+
+    let finishEarly!: (ok: boolean) => void;
+    const stopRace = new Promise<boolean>((resolve) => {
+      finishEarly = resolve;
+      this.singleEntryResolvers.push(resolve);
+    });
+
+    const playAttempt = (async (): Promise<boolean> => {
+      if (this.remoteProvider) {
+        this.activeProvider = this.remoteProvider;
+        played = await this.remoteProvider.speak(req, onPlaybackStart);
+      }
+      if (!played && token === this.runToken && this.enabled) {
+        this.activeProvider = this.prebaked;
+        played = await this.prebaked.speak(req, onPlaybackStart);
+      }
+      return token === this.runToken ? played : false;
+    })();
+
+    const result = await Promise.race([playAttempt, stopRace]);
+    const idx = this.singleEntryResolvers.indexOf(finishEarly);
+    if (idx >= 0) this.singleEntryResolvers.splice(idx, 1);
+
+    if (token === this.runToken) {
+      this.activeProvider = null;
+      this.processing = false;
+      this.notifySpeaker(null, null);
+    }
+    return result;
   }
 
   stop(): void {
@@ -424,6 +490,8 @@ export class VoiceEngine {
       window.clearTimeout(this.finalClipTimer);
       this.finalClipTimer = null;
     }
+    const entryWaiters = this.singleEntryResolvers.splice(0);
+    for (const resolve of entryWaiters) resolve(false);
     const endWaiters = this.finalClipEndWaiters.splice(0);
     for (const w of endWaiters) w.resolve();
     const doneWaiters = this.queueDoneWaiters.splice(0);
@@ -476,19 +544,27 @@ export class VoiceEngine {
     });
   }
 
-  private async drainQueue(token: number): Promise<void> {
+  private async drainQueue(token: number, callbacks?: SpeakQueueCallbacks): Promise<void> {
     if (this.processing) return;
     this.processing = true;
     this.playedInCurrentQueue = false;
     let prevSpeaker: string | null = null;
+    let entryIndex = 0;
 
     while (this.queue.length > 0 && token === this.runToken && this.enabled) {
       const req = this.queue.shift()!;
+      const idx = entryIndex++;
       const isLastInQueue = this.queue.length === 0;
 
-      if (prevSpeaker !== null && this.playedInCurrentQueue) {
-        const gapMs = prevSpeaker === req.speaker ? 220 : 420;
-        const ok = await this.waitPauseMs(gapMs, token);
+      const baseGapMs =
+        prevSpeaker !== null && this.playedInCurrentQueue
+          ? prevSpeaker === req.speaker
+            ? pacing.dialogue.postVoicePauseSameSpeakerMs
+            : pacing.dialogue.postVoicePauseSpeakerChangeMs
+          : 0;
+      const totalWaitMs = Math.max(baseGapMs, req.pauseBeforeMs ?? 0);
+      if (totalWaitMs > 0) {
+        const ok = await this.waitPauseMs(totalWaitMs, token);
         if (!ok) break;
       }
 
@@ -497,6 +573,7 @@ export class VoiceEngine {
         if (token !== this.runToken) return;
         this.playedInCurrentQueue = true;
         this.notifySpeaker(req.speaker, req.lineId ?? null);
+        callbacks?.onEntryStart?.(idx, req, durationSec);
         if (isLastInQueue && this.finalClipEndWaiters.length > 0) {
           const waiters = this.finalClipEndWaiters.splice(0);
           for (const w of waiters) {
@@ -520,6 +597,9 @@ export class VoiceEngine {
       if (played) {
         this.playedInCurrentQueue = true;
       }
+      if (token === this.runToken) {
+        callbacks?.onEntryEnd?.(idx, req, played);
+      }
       prevSpeaker = req.speaker;
     }
 
@@ -532,6 +612,7 @@ export class VoiceEngine {
       for (const w of endWaiters) w.resolve();
       const doneWaiters = this.queueDoneWaiters.splice(0);
       for (const resolve of doneWaiters) resolve(playedAny);
+      callbacks?.onQueueComplete?.(playedAny);
     }
   }
 }

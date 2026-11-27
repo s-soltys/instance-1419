@@ -1,6 +1,7 @@
 import { Story } from 'inkjs';
 import anomaliesData from '../content/anomalies.json';
 import compiledSpikeStory from '../content/dialogue/compiled/spike_shift1.ink.json';
+import pacing from '../content/pacing.json';
 import type { AuditOutcome, StateStore } from './StateStore';
 
 export type ChoiceAffinity = 'warm' | 'cold';
@@ -20,6 +21,7 @@ export interface DialogueEntry {
   tableauCue?: string;
   hWaveCue?: string;
   whisper?: boolean;
+  pauseBeforeMs?: number;
   auditState?: 'active' | 'inactive';
   isPlayerChoice?: boolean;
 }
@@ -78,7 +80,14 @@ function parseTags(rawTags: string[] | null): ParsedTags {
     else if (key === 'tableau' && val) meta.tableauCue = val;
     else if (key === 'h_wave' && val) meta.hWaveCue = val;
     else if (key === 'whisper') meta.whisper = val.toLowerCase() !== 'false' && val !== '0';
-    else if (key === 'codex' && val) meta.codexUnlocks.push(val);
+    else if (key === 'pause' && val) {
+      const ms = Number(val);
+      if (Number.isFinite(ms) && ms > 0) meta.pauseBeforeMs = Math.min(8000, Math.round(ms));
+    } else if (key === 'beat' && val) {
+      const b = val.toLowerCase();
+      if (b === 'long') meta.pauseBeforeMs = pacing.dialogue.beatLongMs;
+      else if (b === 'short') meta.pauseBeforeMs = pacing.dialogue.beatShortMs;
+    } else if (key === 'codex' && val) meta.codexUnlocks.push(val);
     else if (key === 'audit' && (val === 'active' || val === 'inactive')) {
       meta.auditState = val;
     } else if (key === 'auto_interrupt' && val) {
@@ -380,6 +389,7 @@ export class DialogueRunner {
           tableauCue: meta.tableauCue,
           hWaveCue: meta.hWaveCue,
           whisper: meta.whisper,
+          pauseBeforeMs: meta.pauseBeforeMs,
           auditState: meta.auditState,
         };
         this.entries.push(entry);

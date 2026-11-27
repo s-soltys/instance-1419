@@ -1,3 +1,4 @@
+import pacing from '../../../content/pacing.json';
 import { platform } from '../../../platform/PlatformAdapter';
 import { setupRetinaCanvas } from '../canvasUtils';
 import {
@@ -108,7 +109,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
   protected stageFlashText = '';
   protected stageClearTimer = 0;
   protected lockHoldSec = 0;
-  protected lockHoldTargetSec = 0.92;
+  protected lockHoldTargetSec = pacing.minigames.lockHoldTargetSec;
 
   private stageTransitionPhase: 'idle' | 'holding' | 'closing' | 'opening' = 'idle';
   private stageTransitionElapsed = 0;
@@ -558,8 +559,8 @@ export abstract class BaseCosmicMinigame implements IMinigame {
         if (this.stage < 3) {
           this.stageTransitionPhase = 'closing';
           this.stageTransitionElapsed = 0;
-          this.stageTransitionDuration = 0.3;
-          this.stageClearTimer = 0.3;
+          this.stageTransitionDuration = pacing.minigames.stageVeilCloseSec;
+          this.stageClearTimer = pacing.minigames.stageVeilCloseSec;
         } else {
           this.stageClearTimer = 0;
           this.stageTransitionPhase = 'idle';
@@ -576,7 +577,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
         this.setupStage((this.stage + 1) as 2 | 3);
         this.stageTransitionPhase = 'opening';
         this.stageTransitionElapsed = 0;
-        this.stageTransitionDuration = 0.56;
+        this.stageTransitionDuration = pacing.minigames.stageVeilOpenSec;
         this.stageVeilAlpha = 0.86;
         this.stageClearTimer = 0;
         this.emitHud(true);
@@ -869,7 +870,7 @@ export abstract class BaseCosmicMinigame implements IMinigame {
         this.onAllStagesCleared();
       }
     } else {
-      const holdDur = this.stage === 3 ? Math.max(0.95, delaySec) : Math.max(0.82, delaySec);
+      const holdDur = Math.max(pacing.minigames.stageHoldSec, delaySec);
       this.stageClearTimer = holdDur;
       this.stageTransitionPhase = 'holding';
       this.stageTransitionElapsed = 0;

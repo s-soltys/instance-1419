@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "dialogue": {
+    "postVoicePauseSameSpeakerMs": 550,
+    "postVoicePauseSpeakerChangeMs": 850,
+    "beatShortMs": 650,
+    "beatLongMs": 1450,
+    "choiceAppearDelayMs": 550,
+    "replyEchoHoldMs": 580,
+    "unvoicedBaseMs": 1450,
+    "unvoicedMsPerChar": 36,
+    "unvoicedMaxMs": 4800
+  },
+  "optics": {
+    "targetLockRateMultiplier": 0.6,
+    "panDampRate": 5.2,
+    "autoEngageEnabledDefault": false,
+    "autoDiveCountdownMs": 7500,
+    "idleDragHintDelayMs": 9000
+  },
+  "minigames": {
+    "lockHoldTargetSec": 1.12,
+    "stageHoldSec": 1.1,
+    "stageVeilCloseSec": 0.48,
+    "stageVeilOpenSec": 0.72,
+    "finaleRevealDelayMs": 1350,
+    "finaleAutoCloseEnabled": false,
+    "finaleAutoCloseMs": 10000
+  },
+  "postScan": {
+    "psycheWhisperDelayAfterPullbackMs": 450,
+    "psycheWhisperDurationMs": 9000,
+    "siblingToastDelayAfterPullbackMs": 4800,
+    "postRequiredToastDelayAfterPullbackMs": 3200,
+    "shiftWakeCommsDelayMs": 12000,
+    "statusShiftDurationMs": 4200,
+    "statusShiftCeilingDropDurationMs": 5400
+  },
+  "hibernation": {
+    "interludeDurationMs": 6000,
+    "minSkipWaitMs": 1800
+  },
+  "audio": {
+    "skyHarmonicIntervalMs": 11500,
+    "skyHarmonicSilenceChance": 0.35,
+    "musicCrossfadeSec": 2.8,
+    "pruneQuietBreathSec": 1.8
+  }
+}

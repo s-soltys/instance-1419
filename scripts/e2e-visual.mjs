@@ -327,9 +327,10 @@ async function run() {
           !reticleState.etch.includes('GALAXY CLUSTER') ||
           !reticleState.hasSchematic ||
           !reticleState.goal.includes('UNWARP') ||
-          !reticleState.hasCountdown
+          reticleState.hasCountdown ||
+          !reticleState.cta.includes('SPACE')
         ) {
-          throw new Error(`Reticle schematic brief mismatch for J1419-A: ${JSON.stringify(reticleState)}`);
+          throw new Error(`Reticle schematic brief mismatch for J1419-A (autoEngage default false): ${JSON.stringify(reticleState)}`);
         }
         if ((await page.locator('.status-shift-overlay:not(.hidden)').count()) > 0) {
           await page.click('.status-shift-overlay:not(.hidden)', { force: true });
@@ -558,23 +559,36 @@ async function run() {
       }
 
       if (activeFlows.has('dream')) {
-        // Flow 4: 2D Dream Cache & Dialogue Progression
+        // Flow 4: 2D Dream Cache & Contemplative Reveal Progression
         await ensureQaOpen(page);
         await page.click('[data-qa-tab="scenes"]');
         await page.click('[data-scene-mode="dream_2d"]');
         await page.waitForSelector('#dream-layer:not(.hidden)', { timeout: 8000 });
         await page.waitForSelector('#optics-layer', { state: 'hidden', timeout: 6000 });
         await ensureQaClosed(page);
-        await page.waitForSelector('#dream-layer .choice-line', { timeout: 6000 });
-        await page.waitForTimeout(250);
+        await page.waitForSelector('#dream-layer .choice-line', { state: 'attached', timeout: 6000 });
+        for (let step = 0; step < 12; step++) {
+          const ready = await page.locator('#dream-choices:not(.is-awaiting-reveal) .choice-line').first().isVisible().catch(() => false);
+          if (ready) break;
+          await page.keyboard.press('Space');
+          await page.waitForTimeout(140);
+        }
+        await page.waitForSelector('#dream-choices:not(.is-awaiting-reveal) .choice-line', { timeout: 4000 });
+        await page.waitForTimeout(200);
         const codexVisibleInDream = await page.locator('#btn-codex').isVisible();
         if (codexVisibleInDream) {
           throw new Error('Wake-World Codex button must not be visible inside 2D Dream View');
         }
-        const choiceCount = await page.locator('#dream-layer .choice-line').count();
+        const choiceCount = await page.locator('#dream-choices:not(.is-awaiting-reveal) .choice-line').count();
         if (choiceCount > 0) {
-          await page.locator('#dream-layer .choice-line').first().click();
-          await page.waitForTimeout(480);
+          await page.locator('#dream-choices .choice-line').first().click();
+          await page.waitForTimeout(750);
+          for (let step = 0; step < 12; step++) {
+            const awaiting = await page.locator('#dream-choices.is-awaiting-reveal').count();
+            if (awaiting === 0) break;
+            await page.keyboard.press('Space');
+            await page.waitForTimeout(140);
+          }
         }
         await saveCheckedScreenshot(page, '05_dream_cache.png');
       }

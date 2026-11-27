@@ -1,7 +1,8 @@
+import pacing from '../content/pacing.json';
 import { platform } from '../platform/PlatformAdapter';
 
 export type TextSizeSetting = 'standard' | 'large';
-export type DialoguePacingSetting = 'standard' | 'instant';
+export type DialoguePacingSetting = 'contemplative' | 'standard' | 'instant';
 
 export interface UserSettings {
   schemaVersion: number;
@@ -16,10 +17,11 @@ export interface UserSettings {
   voiceDucking: boolean;
   textSize: TextSizeSetting;
   dialoguePacing: DialoguePacingSetting;
+  autoEngageInstrument: boolean;
   hapticsEnabled: boolean;
 }
 
-const SETTINGS_SCHEMA_VERSION = 1;
+const SETTINGS_SCHEMA_VERSION = 2;
 const SETTINGS_STORAGE_KEY = 'instance_1419_settings_v1';
 
 export type SettingsListener = (settings: UserSettings) => void;
@@ -42,9 +44,20 @@ export function createDefaultSettings(): UserSettings {
     voiceVolume: 0.92,
     voiceDucking: true,
     textSize: 'standard',
-    dialoguePacing: 'standard',
+    dialoguePacing: 'contemplative',
+    autoEngageInstrument: pacing.optics.autoEngageEnabledDefault,
     hapticsEnabled: true,
   };
+}
+
+function sanitizeDialoguePacing(rawVal: unknown, rawSchemaVersion: unknown): DialoguePacingSetting {
+  if (rawVal === 'instant') return 'instant';
+  if (rawVal === 'contemplative') return 'contemplative';
+  if (rawVal === 'standard') {
+    // Migrate legacy schema v1 default ('standard') smoothly to new 'contemplative' default
+    return Number(rawSchemaVersion) >= 2 ? 'standard' : 'contemplative';
+  }
+  return 'contemplative';
 }
 
 function sanitizeSettings(raw: Partial<UserSettings> | null): UserSettings {
@@ -63,7 +76,11 @@ function sanitizeSettings(raw: Partial<UserSettings> | null): UserSettings {
     voiceVolume: clamp01(raw.voiceVolume, defaults.voiceVolume),
     voiceDucking: typeof raw.voiceDucking === 'boolean' ? raw.voiceDucking : defaults.voiceDucking,
     textSize: raw.textSize === 'large' ? 'large' : 'standard',
-    dialoguePacing: raw.dialoguePacing === 'instant' ? 'instant' : 'standard',
+    dialoguePacing: sanitizeDialoguePacing(raw.dialoguePacing, raw.schemaVersion),
+    autoEngageInstrument:
+      typeof raw.autoEngageInstrument === 'boolean'
+        ? raw.autoEngageInstrument
+        : defaults.autoEngageInstrument,
     hapticsEnabled: typeof raw.hapticsEnabled === 'boolean' ? raw.hapticsEnabled : defaults.hapticsEnabled,
   };
 }

@@ -1,7 +1,7 @@
 import manifestJson from '../../../assets/MANIFEST.json';
 import uiCopy from '../../content/ui_copy.json';
 import type { AudioEngine } from '../../engine/AudioEngine';
-import type { SettingsStore, UserSettings } from '../../engine/SettingsStore';
+import type { DialoguePacingSetting, SettingsStore, UserSettings } from '../../engine/SettingsStore';
 
 type SettingsTabId = 'audio' | 'display' | 'credits';
 
@@ -154,13 +154,24 @@ export class SettingsView {
             <div class="settings-row">
               <div class="settings-meta">
                 <strong>DIALOGUE PACING</strong>
-                <span>Choose natural conversational reply beats or immediate text arrival.</span>
+                <span>Contemplative reveals lines one by one with voice; Standard/Instant show full bursts.</span>
               </div>
               <div class="settings-controls">
                 <div class="segmented-bar" role="group" aria-label="Dialogue Pacing">
+                  <button class="seg-btn" data-pacing="contemplative" type="button">CONTEMPLATIVE</button>
                   <button class="seg-btn" data-pacing="standard" type="button">STANDARD</button>
                   <button class="seg-btn" data-pacing="instant" type="button">INSTANT</button>
                 </div>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-meta">
+                <strong>AUTO-ENGAGE LOCKED TARGETS</strong>
+                <span>When OFF, locking a sky target lets you read the schematic calmly before pressing Space or Enter.</span>
+              </div>
+              <div class="settings-controls">
+                <button class="etched-toggle" id="toggle-auto-engage" type="button" aria-pressed="false">OFF</button>
               </div>
             </div>
 
@@ -342,9 +353,15 @@ export class SettingsView {
 
     overlay.querySelectorAll<HTMLButtonElement>('[data-pacing]').forEach((btn) => {
       btn.addEventListener('click', () => {
-        this.settingsStore.patch({ dialoguePacing: btn.dataset.pacing as 'standard' | 'instant' });
+        this.settingsStore.patch({ dialoguePacing: btn.dataset.pacing as DialoguePacingSetting });
         this.audio.playCue('tick');
       });
+    });
+
+    overlay.querySelector('#toggle-auto-engage')?.addEventListener('click', () => {
+      const cur = this.settingsStore.getSettings();
+      this.settingsStore.patch({ autoEngageInstrument: !cur.autoEngageInstrument });
+      this.audio.playCue('tick');
     });
 
     overlay.querySelector('#toggle-haptics')?.addEventListener('click', () => {
@@ -490,6 +507,13 @@ export class SettingsView {
     overlay.querySelectorAll<HTMLButtonElement>('[data-pacing]').forEach((b) => {
       b.classList.toggle('active', b.dataset.pacing === s.dialoguePacing);
     });
+
+    const autoBtn = overlay.querySelector<HTMLButtonElement>('#toggle-auto-engage');
+    if (autoBtn) {
+      autoBtn.textContent = s.autoEngageInstrument ? 'ON' : 'OFF';
+      autoBtn.classList.toggle('is-on', s.autoEngageInstrument);
+      autoBtn.setAttribute('aria-pressed', String(s.autoEngageInstrument));
+    }
 
     const hapBtn = overlay.querySelector<HTMLButtonElement>('#toggle-haptics');
     if (hapBtn) {

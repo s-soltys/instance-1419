@@ -5590,3 +5590,149 @@ body:has(#qa-pull-tab:not(.hidden)) .mg-top-left {
     -webkit-backdrop-filter: blur(8px);
   }
 }
+
+/* ==================== PREP SPRINT 2: CONTEMPLATIVE REVEAL & HIBERNATION INTERLUDE ==================== */
+.dialogue-entry.is-reveal-pending {
+  display: none;
+}
+
+.dialogue-entry.is-reveal-live {
+  animation: fadeInLine 0.42s ease-out both;
+}
+
+.dialogue-reveal-cue {
+  display: block;
+  width: 100%;
+  background: rgba(10, 17, 27, 0.42);
+  border: 1px dashed rgba(176, 206, 232, 0.24);
+  color: rgba(188, 214, 234, 0.72);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 6px;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.dialogue-reveal-cue:hover {
+  color: rgba(232, 242, 250, 0.94);
+  border-color: rgba(176, 206, 232, 0.5);
+}
+
+.dialogue-choices.is-awaiting-reveal .choice-line {
+  opacity: 0;
+  pointer-events: none;
+  max-height: 0;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+  overflow: hidden;
+  transition: opacity 0.35s ease;
+}
+
+.hibernation-interlude {
+  position: fixed;
+  inset: 0;
+  z-index: 640;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 50% 42%, rgba(8, 16, 28, 0.97) 0%, rgba(2, 5, 10, 0.99) 78%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  opacity: 1;
+  transition: opacity 0.65s ease;
+}
+
+.hibernation-interlude.hidden {
+  opacity: 0;
+  pointer-events: none;
+  display: none;
+}
+
+.hib-star-drift {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1px 1px at 18% 26%, rgba(220, 236, 252, 0.45) 0%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 74% 34%, rgba(255, 226, 178, 0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 42% 72%, rgba(190, 224, 248, 0.35) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 84% 78%, rgba(228, 240, 255, 0.35) 0%, transparent 100%);
+  animation: hibDriftSlow 12s linear infinite alternate;
+}
+
+@keyframes hibDriftSlow {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.45;
+  }
+  to {
+    transform: translate3d(-12px, 8px, 0) scale(1.03);
+    opacity: 0.8;
+  }
+}
+
+.hib-card {
+  position: relative;
+  text-align: center;
+  max-width: 520px;
+  padding: 36px 40px;
+  border: 1px solid rgba(164, 198, 224, 0.22);
+  background: rgba(5, 10, 18, 0.72);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+}
+
+.hibernation-interlude.is-cold .hib-card {
+  border-color: rgba(140, 196, 238, 0.32);
+}
+
+.hib-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  color: rgba(176, 206, 228, 0.72);
+  margin-bottom: 14px;
+}
+
+.hib-years {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 32px;
+  letter-spacing: 0.08em;
+  color: #f4d8a8;
+  margin-bottom: 10px;
+}
+
+.hibernation-interlude.is-cold .hib-years {
+  color: #bfe0f8;
+}
+
+.hib-title {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  color: rgba(235, 243, 250, 0.92);
+  margin: 0 0 12px;
+}
+
+.hib-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  color: rgba(166, 192, 214, 0.68);
+}
+
+.hib-skip {
+  margin-top: 22px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(188, 214, 234, 0.56);
+  animation: fadeInLine 0.45s ease-out both;
+}

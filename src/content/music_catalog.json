@@ -4,8 +4,8 @@
   "loudnessTargetLufs": -16,
   "mix": {
     "musicBaseGain": 0.44,
-    "crossfadeSec": 1.35,
-    "pruneSnapSec": 0.35,
+    "crossfadeSec": 2.8,
+    "pruneSnapSec": 0.45,
     "warmFullH": 72,
     "coldFullH": 22
   },

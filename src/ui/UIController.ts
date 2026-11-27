@@ -1,4 +1,5 @@
 import charactersData from '../content/characters.json';
+import pacing from '../content/pacing.json';
 import shiftsData from '../content/shifts.json';
 import uiCopy from '../content/ui_copy.json';
 import type { AudioEngine } from '../engine/AudioEngine';
@@ -23,6 +24,7 @@ import { TelemetryLogger } from '../engine/TelemetryLogger';
 import type { VoiceEngine } from '../engine/voice/VoiceEngine';
 import { platform } from '../platform/PlatformAdapter';
 import type { DevHarnessBridge } from './DevHarness';
+import { HibernationInterludeView } from './HibernationInterludeView';
 import { getInstrumentSchematic } from './InstrumentSchematics';
 import { renderSpeakerAvatar, updateAvatarVoiceAnimations } from './SpeakerAvatar';
 import { StatusShiftOverlay } from './StatusShiftOverlay';
@@ -275,7 +277,10 @@ export class UIController {
   private unbindVoiceSub: (() => void) | null = null;
 
   private pendingCommsStorylet: StoryletSpec | null = null;
+  private pendingPostTarget2 = false;
   private isWakingFromDream = false;
+  private totalRealYearsElapsed = 0;
+  private readonly hibernationInterlude: HibernationInterludeView;
 
   private hasDraggedSkyInIntro = false;
   private skyDragAccumPx = 0;
@@ -333,6 +338,7 @@ export class UIController {
     this.renderShell();
     this.transitions = new TransitionDirector(this.root);
     this.statusShift = new StatusShiftOverlay(this.root.querySelector('.stage')!, audio);
+    this.hibernationInterlude = new HibernationInterludeView(this.root.querySelector('.stage')!, audio);
     this.bootView = new BootView(this.root);
     this.bootView.populate();
     this.wakeupCanvas = new WakeupBriefingCanvas(this.root.querySelector<HTMLElement>('#wakeup-canvas-mount')!);
@@ -386,6 +392,7 @@ export class UIController {
     this.bindUIEvents();
     window.addEventListener('resize', this.onResizeBound);
     this.updateZoomTrackHeights();
+    this.applyUserSettings(this.settingsStore.getSettings());
     this.settingsStore.subscribe((settings) => this.applyUserSettings(settings));
     this.store.subscribe((state) => this.syncStateToUI(state));
     this.store.subscribeStatusShift((ev) => {
@@ -449,7 +456,10 @@ export class UIController {
     this.voice.setEnabled(s.masterEnabled && s.voiceEnabled);
     this.voice.setVolume?.(s.voiceVolume);
     platform.setHapticsEnabled(s.hapticsEnabled);
-    this.dialogueFeed.setInstantPacing(s.dialoguePacing === 'instant');
+    this.dialogueFeed.setPacingMode(s.dialoguePacing);
+    if (!s.autoEngageInstrument) {
+      this.cancelAutoDive(false);
+    }
 
     const stage = this.root.querySelector<HTMLElement>('.stage');
     if (stage) {
@@ -981,7 +991,7 @@ export class UIController {
   private startAutoDive(targetId: string): void {
     if (this.autoDiveTargetId === targetId && this.autoDiveTickTimer !== null) return;
     this.cancelAutoDive(false);
-    const DURATION_MS = 7500;
+    const DURATION_MS = pacing.optics.autoDiveCountdownMs;
     this.autoDiveTargetId = targetId;
     this.autoDiveDeadlineMs = Date.now() + DURATION_MS;
     this.updateAutoDiveUi();
@@ -1016,7 +1026,7 @@ export class UIController {
       }
       return;
     }
-    const DURATION_MS = 7500;
+    const DURATION_MS = pacing.optics.autoDiveCountdownMs;
     const rem = Math.max(0, this.autoDiveDeadlineMs - Date.now());
     const frac = Math.min(1, Math.max(0, 1 - rem / DURATION_MS));
     const secs = Math.max(1, Math.ceil(rem / 1000));
@@ -1034,7 +1044,7 @@ export class UIController {
       if (this.store.getState().introStage === 'scan_target_1' && !this.hasDraggedSkyInIntro) {
         this.idleDragHintShown = true;
       }
-    }, 3500);
+    }, pacing.optics.idleDragHintDelayMs);
   }
 
   // ==================== INTERACTIVE PROLOGUE & LIVE-COSMOS TITLE ====================
@@ -1751,6 +1761,7 @@ export class UIController {
 
     window.addEventListener('keydown', (e) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (this.hibernationInterlude.handleKeyDown(e)) return;
       if (e.key === 'Escape') {
         if (this.settingsView.isOpen()) {
           this.audio.playCue('tick');
@@ -1781,6 +1792,15 @@ export class UIController {
       const overseerOpen = !this.root.querySelector('#overseer-panel')?.classList.contains('hidden');
       const commsOpen = !this.root.querySelector('#comms-panel')?.classList.contains('hidden');
       const stateNow = this.store.getState();
+      if (
+        (e.key === ' ' || e.key === 'Enter') &&
+        (overseerOpen || commsOpen || stateNow.mode === 'dream_2d') &&
+        this.dialogueFeed.isRevealing()
+      ) {
+        e.preventDefault();
+        this.dialogueFeed.advanceReveal();
+        return;
+      }
       if (
         (e.key === ' ' || e.key === 'Enter') &&
         stateNow.mode === 'waking_3d' &&
@@ -1990,7 +2010,13 @@ export class UIController {
           briefMgId = chosenMgId;
           nextPrompt = `${spec.label} · LOCKED`;
           stateKey = `ready:${spec.id}`;
-          if (!decoded && this.autoDiveTargetId !== spec.id && this.autoDiveHeldTargetId !== spec.id && !this.isSkyOverlayOpen()) {
+          if (
+            this.settingsStore.getSettings().autoEngageInstrument &&
+            !decoded &&
+            this.autoDiveTargetId !== spec.id &&
+            this.autoDiveHeldTargetId !== spec.id &&
+            !this.isSkyOverlayOpen()
+          ) {
             this.startAutoDive(spec.id);
           }
         } else if (t.fovDeg > spec.recommendedFovMax + 10) {
@@ -2231,7 +2257,13 @@ export class UIController {
           new Set(updatedState.decodedMinigameTargets),
           resolvedDecoded?.id
         );
+      },
+      onComplete: () => {
+        this.minigameHost.destroy(preserveDecoded);
+        this.showcase.setMinigameBackdropMode(null);
+        this.showcase.setActive(false);
 
+        const updatedState = this.store.getState();
         const stage = updatedState.introStage;
         const decodedTargets = updatedState.decodedMinigameTargets;
         const completedTarget1 =
@@ -2251,7 +2283,7 @@ export class UIController {
             ) {
               this.showProactiveCommsToast(uiCopy.commsToast.introTeaser);
             }
-          }, 1450);
+          }, pacing.postScan.siblingToastDelayAfterPullbackMs);
         } else if (completedTarget2 && stage === 'scan_target_2') {
           this.store.setIntroStage('mg_2_done');
           if (this.postTarget2Timer !== null) window.clearTimeout(this.postTarget2Timer);
@@ -2262,20 +2294,30 @@ export class UIController {
               this.store.getState().introStage === 'mg_2_done' &&
               !this.minigameHost.isActive()
             ) {
-              this.openPostTarget2Transmission();
+              this.pendingPostTarget2 = true;
+              const label =
+                (uiCopy.commsToast as { postTarget2?: string }).postTarget2 ??
+                'ARCHIVE BLEED · INCOMING OVERSEER CHECK — OPEN RELAY';
+              this.showProactiveCommsToast(label);
             }
-          }, 950);
+          }, pacing.postScan.postRequiredToastDelayAfterPullbackMs);
         } else if (resolvedDecoded && (stage === 'complete' || stage === 'mg_2_done')) {
-          const commsTriggered = this.maybeTriggerProactiveComms(resolvedDecoded);
-          if (!commsTriggered) {
-            this.showSkyPsycheWhisper(resolvedDecoded);
-          }
+          if (this.skyPsycheTimer !== null) window.clearTimeout(this.skyPsycheTimer);
+          this.skyPsycheTimer = window.setTimeout(() => {
+            this.skyPsycheTimer = null;
+            if (this.store.getState().mode === 'waking_3d' && !this.minigameHost.isActive()) {
+              this.showSkyPsycheWhisper(resolvedDecoded);
+            }
+          }, pacing.postScan.psycheWhisperDelayAfterPullbackMs);
+
+          if (this.proactiveCommsTimer !== null) window.clearTimeout(this.proactiveCommsTimer);
+          this.proactiveCommsTimer = window.setTimeout(() => {
+            this.proactiveCommsTimer = null;
+            if (this.store.getState().mode === 'waking_3d' && !this.minigameHost.isActive()) {
+              this.maybeTriggerProactiveComms(resolvedDecoded);
+            }
+          }, pacing.postScan.siblingToastDelayAfterPullbackMs);
         }
-      },
-      onComplete: () => {
-        this.minigameHost.destroy(preserveDecoded);
-        this.showcase.setMinigameBackdropMode(null);
-        this.showcase.setActive(false);
       },
     });
   }
@@ -2303,7 +2345,7 @@ export class UIController {
     this.skyPsycheTimer = window.setTimeout(() => {
       this.skyPsycheTimer = null;
       this.hideSkyPsycheWhisper();
-    }, 5000);
+    }, pacing.postScan.psycheWhisperDurationMs);
   }
 
   private hideSkyPsycheWhisper(): void {
@@ -2352,7 +2394,7 @@ export class UIController {
         this.proactiveCommsSent = true;
         this.showProactiveCommsToast();
       }
-    }, 6200);
+    }, pacing.postScan.shiftWakeCommsDelayMs);
   }
 
   private maybeTriggerProactiveComms(spec?: AnomalySpec): boolean {
@@ -2404,6 +2446,11 @@ export class UIController {
   }
 
   private openSiblingComms(): void {
+    if (this.pendingPostTarget2) {
+      this.pendingPostTarget2 = false;
+      this.openPostTarget2Transmission();
+      return;
+    }
     this.hideCommsToast();
     this.hideSkyPsycheWhisper();
     this.hideInstrumentBrief();
@@ -2435,13 +2482,14 @@ export class UIController {
       (desiredKnot === 'intro_sibling_first_call' && this.activeCommsSnapshot.knot !== 'intro_sibling_first_call')
     ) {
       this.activeCommsSnapshot = this.commsDialogue.startKnot(desiredKnot);
-      this.dialogueFeed.speakEntries(this.activeCommsSnapshot.lastAddedEntries);
+      this.dialogueFeed.speakEntriesIfImmediate(this.activeCommsSnapshot.lastAddedEntries);
     }
     this.updateCommsAvatarBay(state);
     this.renderCommsDialogue();
   }
 
   private openPostTarget2Transmission(): void {
+    this.pendingPostTarget2 = false;
     this.hideCommsToast();
     this.hideSkyPsycheWhisper();
     this.hideInstrumentBrief();
@@ -2456,7 +2504,7 @@ export class UIController {
     const state = this.store.getState();
     this.activeCommsSnapshot = this.commsDialogue.startKnot('intro_post_target2_overseer');
     this.updateCommsAvatarBay(state);
-    this.dialogueFeed.speakEntries(this.activeCommsSnapshot.lastAddedEntries);
+    this.dialogueFeed.speakEntriesIfImmediate(this.activeCommsSnapshot.lastAddedEntries);
     this.renderCommsDialogue();
   }
 
@@ -2646,7 +2694,7 @@ export class UIController {
 
   private startDreamDialogue(knot: string): void {
     this.activeDreamSnapshot = this.dreamDialogue.startKnot(knot);
-    this.dialogueFeed.speakEntries(this.activeDreamSnapshot.lastAddedEntries);
+    this.dialogueFeed.speakEntriesIfImmediate(this.activeDreamSnapshot.lastAddedEntries);
     this.renderDreamDialogue();
   }
 
@@ -2666,11 +2714,15 @@ export class UIController {
         if (this.isWakingFromDream) return;
         this.isWakingFromDream = true;
         this.audio.playCue('dream_wake');
+        const prevSnapshot = this.store.getState();
+        const shouldHibernate = prevSnapshot.shift < 6;
+        const yearsSlept =
+          shiftsData.shifts.find((sh) => sh.shift === prevSnapshot.shift)?.realHibernationYearsAfter ?? 5.0;
         this.transitions.play({
           kind: 'dream_wake',
           label: 'WAKING TO SKY APERTURE…',
           tone: 'cold',
-          fromSelector: this.modeToSelector(this.store.getState().mode),
+          fromSelector: this.modeToSelector(prevSnapshot.mode),
           toSelector: '#optics-layer',
           onMidpoint: () => {
             this.hideOverseerPanel();
@@ -2680,13 +2732,33 @@ export class UIController {
             }
             if (prev.shift < 6) {
               this.store.advanceShift();
+              this.totalRealYearsElapsed += yearsSlept;
             }
             this.optics.setAmbientDrift(false);
             this.optics.triggerPullbackArrival?.();
             this.store.patch({ mode: 'waking_3d', overseerAuditActive: false });
           },
           onComplete: () => {
-            this.isWakingFromDream = false;
+            if (!shouldHibernate) {
+              this.isWakingFromDream = false;
+              return;
+            }
+            const nextState = this.store.getState();
+            const nextShiftSpec = shiftsData.shifts.find((sh) => sh.shift === nextState.shift);
+            void this.hibernationInterlude
+              .play({
+                yearsSlept,
+                totalYearsElapsed: this.totalRealYearsElapsed,
+                nextShift: nextState.shift,
+                nextTitle: nextShiftSpec?.title ?? `Shift ${nextState.shift}`,
+                monthsLeft: nextState.subjectiveMonthsLeft,
+                humanity: nextState.humanity,
+              })
+              .then(() => {
+                this.isWakingFromDream = false;
+                this.proactiveCommsSent = false;
+                this.scheduleProactiveComms();
+              });
           },
         });
       },
@@ -2766,12 +2838,14 @@ export class UIController {
       this.updateOverseerAvatarBay(this.store.getState());
       this.renderOverseerDialogue();
       const entriesToSpeak = this.activeOverseerSnapshot.lastAddedEntries;
-      this.overseerSpeakTimer = window.setTimeout(() => {
-        this.overseerSpeakTimer = null;
-        if (revealToken === this.overseerInterruptToken) {
-          this.dialogueFeed.speakEntries(entriesToSpeak);
-        }
-      }, 550);
+      if (!this.dialogueFeed.isContemplative()) {
+        this.overseerSpeakTimer = window.setTimeout(() => {
+          this.overseerSpeakTimer = null;
+          if (revealToken === this.overseerInterruptToken) {
+            this.dialogueFeed.speakEntriesIfImmediate(entriesToSpeak);
+          }
+        }, 550);
+      }
     }, 950);
   }
 
@@ -2823,7 +2897,7 @@ export class UIController {
     this.hideOverseerPanel();
     this.store.patch({ overseerAuditActive: false });
     this.activeDreamSnapshot = this.dreamDialogue.appendKnot(knot);
-    this.dialogueFeed.speakEntries(this.activeDreamSnapshot.lastAddedEntries);
+    this.dialogueFeed.speakEntriesIfImmediate(this.activeDreamSnapshot.lastAddedEntries);
     this.renderDreamDialogue();
   }
 

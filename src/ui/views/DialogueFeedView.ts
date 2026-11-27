@@ -1,4 +1,5 @@
 import charactersData from '../../content/characters.json';
+import pacing from '../../content/pacing.json';
 import type { AudioEngine } from '../../engine/AudioEngine';
 import type {
   DialogueChoice,
@@ -6,6 +7,7 @@ import type {
   DialogueRunner,
   DialogueSnapshot,
 } from '../../engine/DialogueRunner';
+import type { DialoguePacingSetting } from '../../engine/SettingsStore';
 import type { StateStore } from '../../engine/StateStore';
 import type { TelemetryLogger } from '../../engine/TelemetryLogger';
 import type { VoiceEngine, VoiceRequest } from '../../engine/voice/VoiceEngine';
@@ -322,7 +324,13 @@ function prefixMatches(prev: DialogueEntry[], next: DialogueEntry[], count: numb
  */
 export class DialogueFeedView {
   private replyBeatTimer: number | null = null;
-  private instantPacing = false;
+  private pacingMode: DialoguePacingSetting = 'contemplative';
+  private revealToken = 0;
+  private revealActive = false;
+  private revealAdvanceFn: (() => void) | null = null;
+  private revealScrollEl: HTMLElement | null = null;
+  private revealChoicesEl: HTMLElement | null = null;
+  private readonly boundAdvanceScrolls = new WeakSet<HTMLElement>();
   private readonly feedCache = new WeakMap<HTMLElement, ScrollFeedCache>();
 
   constructor(
@@ -333,11 +341,66 @@ export class DialogueFeedView {
     private readonly telemetry: TelemetryLogger
   ) {}
 
+  setPacingMode(mode: DialoguePacingSetting): void {
+    this.pacingMode = mode;
+    if (mode !== 'contemplative' && this.revealActive) {
+      this.flushRevealImmediately();
+    }
+  }
+
   setInstantPacing(instant: boolean): void {
-    this.instantPacing = instant;
+    this.setPacingMode(instant ? 'instant' : 'standard');
+  }
+
+  isContemplative(): boolean {
+    return this.pacingMode === 'contemplative';
+  }
+
+  getPacingMode(): DialoguePacingSetting {
+    return this.pacingMode;
+  }
+
+  isRevealing(): boolean {
+    return this.revealActive;
+  }
+
+  advanceReveal(): boolean {
+    if (!this.revealActive || !this.revealAdvanceFn) return false;
+    this.revealAdvanceFn();
+    return true;
+  }
+
+  cancelReveal(): void {
+    this.revealToken++;
+    this.revealActive = false;
+    this.revealAdvanceFn = null;
+    if (this.revealChoicesEl) {
+      this.revealChoicesEl.classList.remove('is-awaiting-reveal');
+      this.revealChoicesEl.querySelector('.dialogue-reveal-cue')?.remove();
+    }
+    this.revealScrollEl = null;
+    this.revealChoicesEl = null;
+  }
+
+  private flushRevealImmediately(): void {
+    const scrollEl = this.revealScrollEl;
+    const choicesEl = this.revealChoicesEl;
+    this.cancelReveal();
+    if (scrollEl) {
+      scrollEl.querySelectorAll<HTMLElement>('.dialogue-entry.is-reveal-pending').forEach((el) => {
+        el.classList.remove('is-reveal-pending');
+        el.classList.add('is-reveal-live');
+      });
+      this.scrollToLatest(scrollEl);
+    }
+    if (choicesEl) {
+      choicesEl.classList.remove('is-awaiting-reveal');
+      choicesEl.querySelector('.dialogue-reveal-cue')?.remove();
+    }
   }
 
   clearReplyBeatTimer(): void {
+    this.cancelReveal();
     if (this.replyBeatTimer !== null) {
       window.clearTimeout(this.replyBeatTimer);
       this.replyBeatTimer = null;
@@ -351,8 +414,14 @@ export class DialogueFeedView {
       text: stripInlineHighlights(e.text),
       speaker: e.speaker,
       emotion: e.emotion,
+      pauseBeforeMs: e.pauseBeforeMs,
     }));
     this.voice.speakQueue(reqs);
+  }
+
+  speakEntriesIfImmediate(entries: DialogueEntry[]): void {
+    if (this.pacingMode === 'contemplative') return;
+    this.speakEntries(entries);
   }
 
   handleChoice(
@@ -375,7 +444,7 @@ export class DialogueFeedView {
     const choicesEl = this.root.querySelector<HTMLElement>(choicesSel);
     const channel = inferChannel(scrollSel);
 
-    if (!this.instantPacing && scrollEl && choicesEl && snap.lastAddedEntries.length > 0) {
+    if (this.pacingMode !== 'instant' && scrollEl && choicesEl && snap.lastAddedEntries.length > 0) {
       const preReplyCount = Math.max(0, snap.entries.length - snap.lastAddedEntries.length);
       const preReplyEntries = snap.entries.slice(0, preReplyCount);
       this.renderEntriesOnly(scrollEl, preReplyEntries, {
@@ -390,15 +459,17 @@ export class DialogueFeedView {
         btn.classList.toggle('is-dismissed', !isPicked);
       });
 
+      const holdMs =
+        this.pacingMode === 'contemplative' ? pacing.dialogue.replyEchoHoldMs : 260;
       this.replyBeatTimer = window.setTimeout(() => {
         this.replyBeatTimer = null;
-        this.speakEntries(snap.lastAddedEntries);
+        this.speakEntriesIfImmediate(snap.lastAddedEntries);
         onSettled(snap);
-      }, 260);
+      }, holdMs);
       return;
     }
 
-    this.speakEntries(snap.lastAddedEntries);
+    this.speakEntriesIfImmediate(snap.lastAddedEntries);
     onSettled(snap);
   }
 
@@ -542,7 +613,7 @@ export class DialogueFeedView {
       scrollEl.scrollTop = scrollEl.scrollHeight;
     };
 
-    if (opts?.instant || this.instantPacing || typeof requestAnimationFrame !== 'function') {
+    if (opts?.instant || this.pacingMode === 'instant' || typeof requestAnimationFrame !== 'function') {
       pinNow();
     }
 
@@ -627,9 +698,21 @@ export class DialogueFeedView {
       closeCommsLabel?: string;
     }
   ): void {
+    this.cancelReveal();
+
     const scrollEl = this.root.querySelector<HTMLElement>(scrollSel)!;
     const choicesEl = this.root.querySelector<HTMLElement>(choicesSel)!;
     const channel = inferChannel(scrollSel);
+
+    if (!this.boundAdvanceScrolls.has(scrollEl)) {
+      this.boundAdvanceScrolls.add(scrollEl);
+      scrollEl.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement | null)?.closest('.voice-replay-btn')) return;
+        if (this.revealActive) {
+          this.advanceReveal();
+        }
+      });
+    }
 
     const animateFrom = Math.max(0, snap.entries.length - Math.max(1, snap.lastAddedEntries.length));
     this.renderEntriesOnly(scrollEl, snap.entries, {
@@ -690,7 +773,140 @@ export class DialogueFeedView {
       choicesEl.innerHTML = '';
     }
 
+    if (this.pacingMode === 'contemplative' && snap.lastAddedEntries.length > 0) {
+      const hasInteractiveChoices = choicesEl.querySelector('.choice-line') !== null;
+      if (snap.lastAddedEntries.length > 1 || hasInteractiveChoices) {
+        this.startContemplativeReveal(scrollEl, choicesEl, snap.lastAddedEntries, hasInteractiveChoices);
+      }
+    }
+
     // Scroll only after choicesEl has updated so flex-shrink never clips the latest line
     this.scrollToLatest(scrollEl);
+  }
+
+  private startContemplativeReveal(
+    scrollEl: HTMLElement,
+    choicesEl: HTMLElement,
+    addedEntries: DialogueEntry[],
+    hasInteractiveChoices: boolean
+  ): void {
+    const token = ++this.revealToken;
+    this.revealActive = true;
+    this.revealScrollEl = scrollEl;
+    this.revealChoicesEl = choicesEl;
+
+    const allEls = Array.from(scrollEl.querySelectorAll<HTMLElement>('.dialogue-entry'));
+    const startIdx = Math.max(0, allEls.length - addedEntries.length);
+    for (let i = startIdx + 1; i < allEls.length; i++) {
+      allEls[i].classList.add('is-reveal-pending');
+    }
+    if (allEls[startIdx]) {
+      allEls[startIdx].classList.add('is-reveal-live');
+    }
+
+    if (hasInteractiveChoices) {
+      choicesEl.classList.add('is-awaiting-reveal');
+      const cue = document.createElement('button');
+      cue.type = 'button';
+      cue.className = 'dialogue-reveal-cue';
+      cue.textContent = 'Listening · Click or press Space to advance';
+      cue.addEventListener('click', () => this.advanceReveal());
+      choicesEl.prepend(cue);
+    }
+
+    const waitMsOrSkip = (ms: number): Promise<void> => {
+      if (ms <= 0 || token !== this.revealToken) return Promise.resolve();
+      return new Promise<void>((resolve) => {
+        let settled = false;
+        const finish = () => {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          if (this.revealAdvanceFn === onAdvance) this.revealAdvanceFn = null;
+          resolve();
+        };
+        const onAdvance = () => finish();
+        this.revealAdvanceFn = onAdvance;
+        const timer = window.setTimeout(finish, ms);
+      });
+    };
+
+    const waitReadingOrVoice = async (entry: DialogueEntry): Promise<void> => {
+      const plain = stripInlineHighlights(entry.text).trim();
+      const canSpeak =
+        !entry.isPlayerChoice &&
+        plain.length > 0 &&
+        !(plain.startsWith('[') && plain.endsWith(']'));
+
+      if (canSpeak && typeof this.voice.speakEntry === 'function') {
+        let skipped = false;
+        const skipPromise = new Promise<'skip'>((resolve) => {
+          this.revealAdvanceFn = () => {
+            skipped = true;
+            this.voice.stop();
+            resolve('skip');
+          };
+        });
+        const played = await Promise.race([
+          this.voice.speakEntry({
+            lineId: entry.lineId,
+            text: plain,
+            speaker: entry.speaker,
+            emotion: entry.emotion,
+            pauseBeforeMs: entry.pauseBeforeMs,
+          }),
+          skipPromise,
+        ]);
+        if (this.revealAdvanceFn) this.revealAdvanceFn = null;
+        if (skipped || token !== this.revealToken || played === true) {
+          return;
+        }
+      }
+
+      if (token !== this.revealToken) return;
+      const readMs = entry.isPlayerChoice
+        ? 240
+        : Math.min(
+            pacing.dialogue.unvoicedMaxMs,
+            pacing.dialogue.unvoicedBaseMs + plain.length * pacing.dialogue.unvoicedMsPerChar
+          );
+      await waitMsOrSkip(readMs);
+    };
+
+    void (async () => {
+      for (let i = 0; i < addedEntries.length; i++) {
+        if (token !== this.revealToken) return;
+        const entry = addedEntries[i];
+        const prev = i > 0 ? addedEntries[i - 1] : null;
+        if (i > 0) {
+          const basePause =
+            prev && prev.speaker === entry.speaker
+              ? pacing.dialogue.postVoicePauseSameSpeakerMs
+              : pacing.dialogue.postVoicePauseSpeakerChangeMs;
+          const pauseMs = Math.max(basePause, entry.pauseBeforeMs ?? 0);
+          await waitMsOrSkip(pauseMs);
+          if (token !== this.revealToken) return;
+          const el = allEls[startIdx + i];
+          if (el) {
+            el.classList.remove('is-reveal-pending');
+            el.classList.add('is-reveal-live');
+            this.scrollToLatest(scrollEl);
+          }
+        }
+        await waitReadingOrVoice(entry);
+      }
+
+      if (token !== this.revealToken) return;
+      if (hasInteractiveChoices) {
+        await waitMsOrSkip(pacing.dialogue.choiceAppearDelayMs);
+      }
+      if (token !== this.revealToken) return;
+
+      this.revealActive = false;
+      this.revealAdvanceFn = null;
+      choicesEl.classList.remove('is-awaiting-reveal');
+      choicesEl.querySelector('.dialogue-reveal-cue')?.remove();
+      this.scrollToLatest(scrollEl);
+    })();
   }
 }

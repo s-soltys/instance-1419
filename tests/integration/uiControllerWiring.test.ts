@@ -296,7 +296,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     expect(appRoot.querySelector('#reticle-brief-meta')?.textContent).toContain('STAR SYSTEM');
     expect(appRoot.querySelector('#reticle-brief-schematic svg.schematic-svg')).not.toBeNull();
     expect(appRoot.querySelector('#reticle-brief-goal')?.textContent).toContain('GOAL');
-    expect(appRoot.querySelector('#reticle-brief-countdown')?.classList.contains('hidden')).toBe(false);
+    expect(appRoot.querySelector('#reticle-brief-countdown')?.classList.contains('hidden')).toBe(true);
     expect(appRoot.querySelector('#reticle-scale-etch')?.textContent).toContain('STAR SYSTEM');
     expect(appRoot.querySelector('.reticle')?.getAttribute('data-scale-class')).toBe('star_system');
 
@@ -368,7 +368,7 @@ describe('UIController <-> MinigameHostView <-> DevHarness wiring', () => {
     firstChoice.click();
     expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(true);
     expect(firstChoice.classList.contains('is-selected')).toBe(true);
-    await vi.advanceTimersByTimeAsync(500);
+    await vi.advanceTimersByTimeAsync(650);
     expect(appRoot.querySelector('#dream-choices')?.classList.contains('is-locked')).toBe(false);
 
     // 6. Overseer interrogation triggers overseer_slice pulse + overseer channel

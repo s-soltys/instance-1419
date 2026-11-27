@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import starCatalogUrl from '../../assets/astro/star_catalog_10ly.bin?url';
 import anomaliesData from '../content/anomalies.json';
+import pacing from '../content/pacing.json';
 import shiftsData from '../content/shifts.json';
 import {
   ANOMALY_FRAGMENT,
@@ -1184,7 +1185,13 @@ export class OpticsScene {
     }
 
     const dampRate =
-      now < this.transitionBoostUntil ? 12.5 : now < this.introPullUntil ? 3.8 : this.ambientDrift ? 2.8 : 7.5;
+      now < this.transitionBoostUntil
+        ? 11.0
+        : now < this.introPullUntil
+          ? 3.4
+          : this.ambientDrift
+            ? 2.4
+            : pacing.optics.panDampRate;
     const damp = 1 - Math.exp(-dampRate * dt);
     this.yawDeg += (this.targetYawDeg - this.yawDeg) * damp;
     this.pitchDeg += (this.targetPitchDeg - this.pitchDeg) * damp;
@@ -1269,7 +1276,7 @@ export class OpticsScene {
       bestWaveMatch > 0.48 &&
       this.fovDeg <= bestSpec.recommendedFovMax + 10
     ) {
-      const rate = 0.46 * (0.65 + 0.6 * this.opticalFidelity);
+      const rate = 0.46 * (0.65 + 0.6 * this.opticalFidelity) * pacing.optics.targetLockRateMultiplier;
       this.lockProgress = Math.min(1, this.lockProgress + dt * rate);
       if (this.lockProgress >= 1 && this.lastLockedId !== bestSpec.id) {
         this.lastLockedId = bestSpec.id;
