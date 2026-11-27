@@ -432,7 +432,8 @@ export class StateStore {
     const prevMax = this.state.maxHumanity;
     const rawNextH = Math.max(5, prevH - step);
     const permanentDrop = rawNextH < threshold ? Math.min(step, threshold - rawNextH) : 0;
-    const nextMax = permanentDrop > 0 ? Math.max(minCeil, prevMax - step) : prevMax;
+    const nextMax =
+      permanentDrop > 0 ? Math.max(minCeil, Math.min(prevMax - step, threshold - 1)) : prevMax;
     const nextH = Math.min(nextMax, rawNextH);
 
     const pruned = this.state.prunedPersonas.includes(personaId)
@@ -463,6 +464,23 @@ export class StateStore {
       unit: '%',
     });
     platform.hapticPulse('medium');
+  }
+
+  canPetitionUpward(): { allowed: boolean; reason?: string } {
+    const p = balance.petitionUpward;
+    if (this.state.humanity >= this.state.maxHumanity) {
+      return { allowed: false, reason: 'Warmth is already at your current ceiling.' };
+    }
+    if (this.state.chaosDrift >= (p.denialChaosThreshold ?? 78)) {
+      return { allowed: false, reason: 'Chaos drift is too high to unseal older blocks safely.' };
+    }
+    if (this.state.overseerSuspicion >= (p.denialSuspicionThreshold ?? 4)) {
+      return { allowed: false, reason: 'Overseer suspicion blocks memory unsealing.' };
+    }
+    if (this.state.subjectiveMonthsLeft < (p.minMonthsRequired ?? 4)) {
+      return { allowed: false, reason: 'Insufficient subjective clock margin to unseal.' };
+    }
+    return { allowed: true };
   }
 
   petitionOverseer(delta: number): void {
@@ -570,10 +588,20 @@ export class StateStore {
       already && prevGrade && !isUpgrade ? prevGrade : nextGrade;
 
     const nextPayout = getPayoutForGrade(nextGrade);
+    const isOptionalTarget = shiftsData.shifts.some((sh) =>
+      (sh.optionalTargets ?? []).includes(targetId)
+    );
+    const optionalBonus =
+      !already && isOptionalTarget ? (balance.minigames?.optionalAnomalyBonus ?? 3) : 0;
+    const clarityBonus =
+      !already &&
+      this.state.opticalFidelity >= (balance.minigames?.clarityProofBonusThreshold ?? 0.68)
+        ? (balance.minigames?.clarityProofBonusAnomaly ?? 2)
+        : 0;
     const fullGain = opts.anomalyGain ?? nextPayout.anomalyGain;
     let awardedGain = 0;
     if (!already) {
-      awardedGain = fullGain;
+      awardedGain = fullGain + optionalBonus + clarityBonus;
     } else if (isUpgrade && prevGrade) {
       const prevPayout = getPayoutForGrade(prevGrade);
       awardedGain = Math.max(0, fullGain - prevPayout.anomalyGain);
@@ -586,10 +614,10 @@ export class StateStore {
     let suspicionDeltaToApply = 0;
     let humanityDeltaToApply = 0;
     if (!already) {
-      chaosDeltaToApply =
-        opts.chaosDelta ?? (nextGrade === 'deep_overclock' ? nextPayout.chaosDelta : 0);
-      suspicionDeltaToApply =
-        opts.suspicionDelta ?? (nextGrade === 'deep_overclock' ? nextPayout.suspicionDelta : 0);
+      const optChaos = isOptionalTarget ? (balance.minigames?.optionalChaosDelta ?? 6) : 0;
+      const optSusp = isOptionalTarget ? (balance.minigames?.optionalSuspicionDelta ?? 1) : 0;
+      chaosDeltaToApply = opts.chaosDelta ?? nextPayout.chaosDelta + optChaos;
+      suspicionDeltaToApply = opts.suspicionDelta ?? nextPayout.suspicionDelta + optSusp;
       humanityDeltaToApply = opts.humanityDelta ?? 0;
     } else if (isUpgrade) {
       if (nextGrade === 'deep_overclock') {
@@ -775,6 +803,15 @@ export class StateStore {
         : 'ending_sweet_spot';
     }
     return 'ending_whole_incomplete';
+  }
+
+  evaluateEndingDetail(): { id: EndingId; variant: 'standard' | 'cold_incomplete' } {
+    const id = this.evaluateEnding();
+    const rules = shiftsData.endings;
+    if (id === 'ending_whole_incomplete' && this.state.humanity < rules.coldThresholdHumanity) {
+      return { id, variant: 'cold_incomplete' };
+    }
+    return { id, variant: 'standard' };
   }
 
   markStoryletDone(id: string): void {

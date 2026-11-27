@@ -17,7 +17,8 @@
       "once": false,
       "priority": 5,
       "conditions": {
-        "minShift": 1
+        "minShift": 1,
+        "maxShift": 1
       }
     },
     {

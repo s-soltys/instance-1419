@@ -273,7 +273,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     ],
   },
 
-  // ==================== DREAM PERSONAS (9: 2 FIXED + 7 ROTATING) ====================
+  // ==================== DREAM PERSONAS (1 PROLOGUE ANCHOR + 2 FIXED + 6 ROTATING) ====================
   {
     id: 'phantom_spouse',
     group: 'dream',
@@ -338,8 +338,8 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     id: 'phantom_upload_witness',
     group: 'dream',
     displayName: CHARS.phantom_upload_witness.displayName,
-    subtitle: 'Upload Intake Clinician',
-    tierLabel: 'Rotating (1 of 7)',
+    subtitle: 'Intake Assistant · Prologue Anchor',
+    tierLabel: 'Prologue / Bookend',
     accentColor: CHARS.phantom_upload_witness.accentColor,
     avatarKind: CHARS.phantom_upload_witness.avatarKind,
     objectGlyph: CHARS.phantom_upload_witness.objectGlyph,
@@ -347,21 +347,21 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     roomTitle: CHARS.phantom_upload_witness.roomTitle,
     musicCueId: 'dream_rhodes_cello',
     musicCueLabel: cueLabel('dream_rhodes_cello'),
-    voiceSummary: 'Locked Take C (Seed 14523) · Mid-40s composed female alto, politely nihilistic',
+    voiceSummary: 'Locked · Mid-40s composed female alto, bedside intake empathy & dry candor',
     eqSummary: PROFILES.phantom_upload_witness?.ffmpegFilter ?? '',
     coreIdea:
-      'The calm, quietly nihilistic clinician from your final hour. Assumes nothing lasts forty thousand years anyway—so consent without comforting illusions.',
+      'Dedicated Prologue calibration guide from Hour Zero. Gently walks you through realizing you are a copy and previews the H% warmth dial before handing off to the Overseer.',
     toneNotes:
-      'Polite, detached, unnervingly candid: treats both uploading and pruning as temporary bookkeeping before eventual entropy.',
+      'Warm, unhurried, and candid—never falsely reassuring, yet grounded in human care at the clinic desk.',
     visualBrief:
-      '4-painting evolution: Pale green-ivory intake desk -> detached pen tap behind glass -> rain window / bare geometric partition.',
+      '4-painting evolution across the Prologue: Pale green-ivory intake desk -> quiet realization -> calibration sweep -> handoff lamp.',
     sampleLine:
-      '"Nothing survives forty millennia intact anyway. Sign the sheet, and pick one small ordinary trinket you feel like watching dissolve."',
-    sampleCueNote: 'INTAKE ROOM · FINAL HOUR',
+      '"Standard check before we begin. Tell me one ordinary thing from this week you do not want compressed."',
+    sampleCueNote: 'INTAKE ROOM · HOUR ZERO PROLOGUE',
     arcBeats: [
-      { label: 'Arrival', text: 'Quietly nihilistic intake check—no promises of immortality, only tidy paperwork.' },
-      { label: 'Deepening', text: 'Mirrors Overseer audits with zero illusions about what compression throws away.' },
-      { label: 'Crossroads', text: 'Cutting someone who never lied to you deletes your witness; surviving adds unsentimental consent.' },
+      { label: 'Arrival (Prologue)', text: 'Quiet calibration awakening; eases you into discovering you stayed in the chair.' },
+      { label: 'Sweep', text: 'Runs the initial 100% -> 20% -> 70% warmth sweep so you feel what cold optics cost.' },
+      { label: 'Handoff', text: 'Dedicated Prologue/bookend anchor (never recycled into the rotating Dream pool).' },
     ],
   },
   {
@@ -369,7 +369,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     group: 'dream',
     displayName: CHARS.phantom_afternoon_stranger.displayName,
     subtitle: 'Stranger From One Perfect Afternoon',
-    tierLabel: 'Rotating (1 of 7)',
+    tierLabel: 'Rotating (1 of 6)',
     accentColor: CHARS.phantom_afternoon_stranger.accentColor,
     avatarKind: CHARS.phantom_afternoon_stranger.avatarKind,
     objectGlyph: CHARS.phantom_afternoon_stranger.objectGlyph,
@@ -377,21 +377,21 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     roomTitle: CHARS.phantom_afternoon_stranger.roomTitle,
     musicCueId: 'dream_nylon_sunbeam',
     musicCueLabel: cueLabel('dream_nylon_sunbeam'),
-    voiceSummary: 'Auditioning · Late-20s airy, unhurried female (warm + fractured)',
+    voiceSummary: 'Locked Take A (Seed 14331) · Late-20s airy, unhurried female (warm + fractured)',
     eqSummary: PROFILES.phantom_afternoon_stranger?.ffmpegFilter ?? '',
     coreIdea:
-      'You never knew their name even in life. Pure "zero-utility" beauty—the ultimate test of keeping something unoptimized.',
+      'Pure intact pre-upload memory: a stranger you never asked the name of on a sunlit bench. Pure "zero-utility" beauty.',
     toneNotes:
-      'Light, dryly amused, zero drama. Laughs that a probe kept twenty minutes on a bench across 41,802 years.',
+      'Light, dryly amused, zero drama. Unaware of the probe or 41,802 years—just twenty quiet minutes in golden-hour air.',
     visualBrief:
       'Golden-hour transit bench dissolving into violet-cerulean haze, folded ticket and curled orange peel, thin translucent oil wash.',
     sampleLine:
-      '"Funny, isn\'t it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked."',
+      '"Funny, isn\'t it? Out of an entire week, we spent twenty minutes on a cold bench and still never asked each other\'s names."',
     sampleCueNote: 'TRANSIT BENCH · GOLDEN HOUR',
     arcBeats: [
-      { label: 'Arrival', text: 'Amused curiosity at still existing inside deep-space storage.' },
-      { label: 'Deepening', text: 'Overseer flags them as 100% non-functional "prune bait."' },
-      { label: 'Crossroads', text: 'Easy to sacrifice—yet keeping them proves humanity isn’t an efficiency chart.' },
+      { label: 'Arrival', text: 'Amused curiosity in late afternoon sun—unhurried, unnamed, unoptimized.' },
+      { label: 'Deepening', text: 'Overseer flags them as 100% non-functional "prune bait" in audits.' },
+      { label: 'Crossroads', text: 'Easy to sacrifice—yet keeping them proves humanity is not an efficiency chart.' },
     ],
   },
   {
@@ -399,7 +399,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     group: 'dream',
     displayName: CHARS.phantom_rival.displayName,
     subtitle: 'Rival / Intellectual Equal',
-    tierLabel: 'Rotating (1 of 7)',
+    tierLabel: 'Rotating (1 of 6)',
     accentColor: CHARS.phantom_rival.accentColor,
     avatarKind: CHARS.phantom_rival.avatarKind,
     objectGlyph: CHARS.phantom_rival.objectGlyph,
@@ -410,18 +410,18 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     voiceSummary: 'Locked Take B (Seed 14442) · Early-30s sharp, neurotic, fiercely competitive female',
     eqSummary: PROFILES.phantom_rival?.ffmpegFilter ?? '',
     coreIdea:
-      'Neurotic, fiercely competitive, patterned/autistic precision and darkly extravagant flair—a brilliant Earthbound peer obsessed with exact orbital margins.',
+      'Neurotic, fiercely competitive, patterned precision and darkly extravagant flair—a brilliant Earthbound peer obsessed with exact math.',
     toneNotes:
-      'Rapid-fire fixation on decimals, dramatic theatrical flourishes, zero patience for sloppy intuition—sharply distinct from Sibling 1420’s tired deadpan.',
+      'Rapid-fire fixation on decimals and theatrical flourishes inside her sodium-lit study—completely unaware of the probe.',
     visualBrief:
-      '4-painting evolution: Sodium desk -> dramatic coat & pinned coordinate grids brandishing calipers -> draped scarf triumph / rigid symmetrical stacks.',
+      '4-painting evolution: Sodium desk -> dramatic coat & pinned grids brandishing calipers -> draped scarf triumph / rigid symmetrical stacks.',
     sampleLine:
-      '"Four decimal places off on the baseline and you dare call it a sphere? Sit down—hand me the calipers before you ruin a perfectly good miracle."',
-    sampleCueNote: 'OBSERVATORY DESK · SODIUM LAMP',
+      '"Four decimal places off on the baseline and you dare call it clean? Hand me the calipers before you ruin a perfectly good proof."',
+    sampleCueNote: 'STUDY DESK · SODIUM LAMP',
     arcBeats: [
-      { label: 'Arrival', text: 'Immediately dissects your orbital math down to the arcsecond with manic focus.' },
-      { label: 'Deepening', text: 'Turns neurotic perfectionism against your complacency when numbers wobble.' },
-      { label: 'Crossroads', text: 'Pruning leaves only an empty chair to beat; surviving injects fierce theatrical rigor into Shift 6.' },
+      { label: 'Arrival', text: 'Immediately dissects your draft math down to the fourth decimal with manic focus.' },
+      { label: 'Deepening', text: 'Turns neurotic perfectionism against sloppy shortcuts while desk details loop.' },
+      { label: 'Crossroads', text: 'Pruning leaves only an empty chair to beat; surviving gives Shift 6 fierce rigor.' },
     ],
   },
   {
@@ -429,7 +429,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     group: 'dream',
     displayName: CHARS.phantom_younger_self.displayName,
     subtitle: 'Younger Biological Self',
-    tierLabel: 'Rotating (1 of 7)',
+    tierLabel: 'Rotating (1 of 6)',
     accentColor: CHARS.phantom_younger_self.accentColor,
     avatarKind: CHARS.phantom_younger_self.avatarKind,
     objectGlyph: CHARS.phantom_younger_self.objectGlyph,
@@ -437,21 +437,21 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     roomTitle: CHARS.phantom_younger_self.roomTitle,
     musicCueId: 'dream_rhodes_cello',
     musicCueLabel: cueLabel('dream_rhodes_cello'),
-    voiceSummary: 'Auditioning · Early-20s unguarded, brighter male (warm + fractured)',
+    voiceSummary: 'Locked Take C (Seed 14553) · Early-20s unguarded, brighter male (warm + fractured)',
     eqSummary: PROFILES.phantom_younger_self?.ffmpegFilter ?? '',
     coreIdea:
-      'Your messy twenty-something self appalled by what 41,802 years of copying kept—and what you’re willing to trim.',
+      'Your messy twenty-something self inside a steamed bathroom mirror—unguarded, skeptical of turning life into tidy schedules.',
     toneNotes:
-      'Faster, unguarded, slightly incredulous—contrasts sharply with Sibling 1420’s burned-out 3 AM precision.',
+      'Faster, unguarded, slightly incredulous—unaware of probes or millennia, contrasting sharply with Sibling 1420\'s burnout.',
     visualBrief:
       'Dim bulb over steamed bathroom mirror (condensation wipes reflected face), wristwatch on sink ledge, cool damp tiles.',
     sampleLine:
-      '"Wait—forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?"',
+      '"Wait—you kept the radiator hum and every late-shift bus schedule, and threw away half the summer without noticing?"',
     sampleCueNote: 'BATHROOM MIRROR · STEAMED GLASS',
     arcBeats: [
-      { label: 'Arrival', text: 'Stares at what became of him—half-amused, half-horrified.' },
-      { label: 'Deepening', text: 'Challenges your trade-off between optical perfection and feeling alive.' },
-      { label: 'Crossroads', text: 'Pruning deletes your baseline youth; surviving puts raw human recklessness in the signal.' },
+      { label: 'Arrival', text: 'Stares through steamed glass at how careful and joyless you became.' },
+      { label: 'Deepening', text: 'Challenges your habit of trading unstructured life for clean metrics.' },
+      { label: 'Crossroads', text: 'Pruning deletes your baseline youth; surviving puts raw human nerve in the signal.' },
     ],
   },
   {
@@ -459,7 +459,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     group: 'dream',
     displayName: CHARS.phantom_skeptic.displayName,
     subtitle: 'The Skeptic',
-    tierLabel: 'Rotating (1 of 7)',
+    tierLabel: 'Rotating (1 of 6)',
     accentColor: CHARS.phantom_skeptic.accentColor,
     avatarKind: CHARS.phantom_skeptic.avatarKind,
     objectGlyph: CHARS.phantom_skeptic.objectGlyph,
@@ -467,20 +467,20 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     roomTitle: CHARS.phantom_skeptic.roomTitle,
     musicCueId: 'dream_vibraphone_nocturne',
     musicCueLabel: cueLabel('dream_vibraphone_nocturne'),
-    voiceSummary: 'Auditioning · Mid-40s dry, gravelly blunt male (warm + fractured)',
+    voiceSummary: 'Locked Take A (Seed 14361) · Mid-40s dry, gravelly blunt male (warm + fractured)',
     eqSummary: PROFILES.phantom_skeptic?.ffmpegFilter ?? '',
     coreIdea:
-      'The blunt voice from a 1 AM bar booth who told you flatly: "A copy isn\'t you." Brutal when you actually are Instance-1419.',
+      'The blunt friend from a 1 AM bar booth who told you before upload: "A copy wakes up wearing your shoes, not your skin."',
     toneNotes:
-      'Zero politeness, low barroom candor, never cruel for sport—just refuses comforting lies.',
+      'Zero politeness, low barroom candor, stays anchored in that 1 AM booth—never meta-lecturing about pruning.',
     visualBrief:
       '1 AM corner booth, shaded amber lamp glare on lowball whiskey glass, dark wool coat over chair, heavy chiaroscuro.',
     sampleLine:
-      '"I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on—tell me the machine proved me wrong."',
+      '"I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on—tell me the clinic proved me wrong."',
     sampleCueNote: '1 AM BOOTH · LOWBALL GLASS',
     arcBeats: [
-      { label: 'Arrival', text: 'Replays the midnight argument that never got settled.' },
-      { label: 'Deepening', text: 'Stays inside that 1 AM booth—unaware of the probe, while his scene loops and thins as memory blocks are cut.' },
+      { label: 'Arrival', text: 'Replays the midnight argument over whether an upload is still you.' },
+      { label: 'Deepening', text: 'Stays inside that 1 AM booth while the bar clock resets to 1:04 and shadows thicken.' },
       { label: 'Crossroads', text: 'Surviving grants Shift 6 stubborn, unsentimental defiance ("send it anyway").' },
     ],
   },
@@ -489,7 +489,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     group: 'dream',
     displayName: CHARS.phantom_technician.displayName,
     subtitle: 'Night-Shift Observatory Machinist',
-    tierLabel: 'Rotating (1 of 7)',
+    tierLabel: 'Rotating (1 of 6)',
     accentColor: CHARS.phantom_technician.accentColor,
     avatarKind: CHARS.phantom_technician.avatarKind,
     objectGlyph: CHARS.phantom_technician.objectGlyph,
@@ -497,12 +497,12 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     roomTitle: CHARS.phantom_technician.roomTitle,
     musicCueId: 'dream_nylon_sunbeam',
     musicCueLabel: cueLabel('dream_nylon_sunbeam'),
-    voiceSummary: 'Auditioning · Mid-50s weathered pragmatic female alto (warm + fractured)',
+    voiceSummary: 'Locked Take C (Seed 14573) · Mid-50s weathered pragmatic female alto (warm + fractured)',
     eqSummary: PROFILES.phantom_technician?.ffmpegFilter ?? '',
     coreIdea:
-      'Blue-collar craftsperson from cold 3 AM observatory catwalks—grounds spiraling cosmic dread in frost, grease, and thermos tea.',
+      'Blue-collar craftsperson from cold 3 AM observatory catwalks—grounds spiraling dread in frost, grease, and thermos tea.',
     toneNotes:
-      'Earthy, practical, dry humor. Couldn’t care less about 93B-ly theory if the bearing ring freezes.',
+      'Earthy, practical, dry humor. Couldn\'t care less about grand theory if the bearing ring freezes.',
     visualBrief:
       'Steel telescope dome catwalk, red-amber caged inspection lamp on gloved hands holding wrench & steaming thermos against indigo slit.',
     sampleLine:
@@ -510,7 +510,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     sampleCueNote: 'DOME CATWALK · 03:00 SHIFT',
     arcBeats: [
       { label: 'Arrival', text: 'Pours burnt tea on the catwalk and cuts through lofty dread.' },
-      { label: 'Deepening', text: 'Treats your connectome like a telescope dome—maintenance without self-destruction.' },
+      { label: 'Deepening', text: 'Treats upkeep like a telescope dome—maintenance without self-destruction.' },
       { label: 'Crossroads', text: 'Surviving anchors the Shift 6 signal in ordinary working human hands.' },
     ],
   },
@@ -519,7 +519,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     group: 'dream',
     displayName: CHARS.phantom_waiting_room.displayName,
     subtitle: 'Waiting-Room Stranger',
-    tierLabel: 'Rotating (1 of 7)',
+    tierLabel: 'Rotating (1 of 6)',
     accentColor: CHARS.phantom_waiting_room.accentColor,
     avatarKind: CHARS.phantom_waiting_room.avatarKind,
     objectGlyph: CHARS.phantom_waiting_room.objectGlyph,
@@ -527,12 +527,12 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     roomTitle: CHARS.phantom_waiting_room.roomTitle,
     musicCueId: 'dream_harmonium_breath',
     musicCueLabel: cueLabel('dream_harmonium_breath'),
-    voiceSummary: 'Auditioning · Late-50s tired, wryly funny male (warm + fractured)',
+    voiceSummary: 'Locked Take A (Seed 14381) · Late-50s tired, dryly funny male (warm + fractured)',
     eqSummary: PROFILES.phantom_waiting_room?.ffmpegFilter ?? '',
     coreIdea:
       'Ten quiet minutes in plastic chairs beside a humming vending machine before one of you was called through an unknown door.',
     toneNotes:
-      'Quiet gallows solidarity, wry, unhurried—makes the final 20-year deep freeze feel strangely shared.',
+      'Quiet gallows solidarity, wry, unhurried—echoes the coming 20-year deep freeze through pure pre-upload memory.',
     visualBrief:
       'Late-night clinic corridor, warm amber vending glow contrasting cool teal glass, man in rumpled coat holding a coin.',
     sampleLine:
@@ -540,7 +540,7 @@ export const STUDIO_ROSTER: StudioCharacterSpec[] = [
     sampleCueNote: 'NIGHT CORRIDOR · VENDING GLOW',
     arcBeats: [
       { label: 'Arrival', text: 'Two chairs, a broken machine, and quiet camaraderie in the dark.' },
-      { label: 'Deepening', text: 'Mirrors the probe’s hibernation shifts and the coming 20-year leap.' },
+      { label: 'Deepening', text: 'Clinic corridor echoes quietly while waiting for your turn through the door.' },
       { label: 'Crossroads', text: 'Surviving frames Shift 6 as stepping through the door with calm nerve.' },
     ],
   },

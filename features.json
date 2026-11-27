@@ -136,13 +136,13 @@
     {
       "id": "P1-01",
       "phase": "Phase 1",
-      "title": "Finalize 2-hour Beat Sheet, Coordinated Overseer timeline, and 8–12 Persona Pool (2 Fixed Anchors + 2 Rotating)",
+      "title": "Finalize 2-hour Beat Sheet, Coordinated Overseer timeline, and 1 Prologue + 8 Dream Persona Pool (2 Fixed Anchors + 2 Rotating)",
       "owner": "narrative-director",
-      "status": "pending",
+      "status": "passing",
       "acceptance_criteria": [
         "Prologue + 6 Shifts + 3 Endings mapped to ~120 min and 12k-16k words per run in docs/BEAT_SHEET.md §1.5 Shift Cohesion Matrix",
         "2 required + 1-2 optional push-your-luck deeper scans per shift locked in shifts.json v2 (requiredTargets/optionalTargets) & runtime flow",
-        "9 Dream Persona pool finalized with 2 Fixed Anchors + 2 rotating surfaced per run (4 cached/run) + persona-sacrifice pruning rules",
+        "Prologue Anchor (phantom_upload_witness) + 8 Dream Persona pool finalized with 2 Fixed Anchors + 2 of 6 rotating surfaced per run (4 cached/run) + active-room persona-sacrifice pruning rules",
         "Subtle archived log echoes from earlier 1,417 copies placed sparingly and all cohesion gates pass cleanly"
       ]
     },

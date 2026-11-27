@@ -64,27 +64,27 @@
       "title": "Dust Penetration & Horizon Noise",
       "shiftMandate": "Rule out stellar glare and polarized Milky Way dust as optical illusions before the seam spreads.",
       "requiredTargets": [
-        "fomalhaut_glare_well",
-        "dust_polarized_veil"
+        "dust_polarized_veil",
+        "deep_exposure_window"
       ],
       "optionalTargets": [
-        "kepler_transit_arc",
-        "deep_exposure_window"
+        "fomalhaut_glare_well",
+        "kepler_transit_arc"
       ],
       "targetAnomalies": [
-        "fomalhaut_glare_well",
         "dust_polarized_veil",
-        "kepler_transit_arc",
-        "deep_exposure_window"
+        "deep_exposure_window",
+        "fomalhaut_glare_well",
+        "kepler_transit_arc"
       ],
       "baseChaosPerShift": 18,
       "monthsPerShift": 4,
       "realHibernationYearsAfter": 5.2,
       "fractalStage": 2,
-      "siblingDriftRange": [56, 68],
+      "siblingDriftRange": [52, 74],
       "overseerAuditChaosThreshold": 32,
       "desyncSuspicionThreshold": 4,
-      "minAnomalyForNextShift": 31,
+      "minAnomalyForNextShift": 10,
       "skyRevealTier": {
         "catalogLayer": "local_corridor",
         "maxMagnitude": 5.5,
@@ -127,26 +127,26 @@
       "shiftMandate": "Test whether the recursive notch persists in high-energy X-ray and ultraviolet bands across opposite sky sectors.",
       "requiredTargets": [
         "sector_s04_seam",
-        "fraunhofer_prism_knot"
+        "vlbi_quad_beacon"
       ],
       "optionalTargets": [
-        "vlbi_quad_beacon",
+        "fraunhofer_prism_knot",
         "compact_binary_scale"
       ],
       "targetAnomalies": [
         "sector_s04_seam",
-        "fraunhofer_prism_knot",
         "vlbi_quad_beacon",
+        "fraunhofer_prism_knot",
         "compact_binary_scale"
       ],
       "baseChaosPerShift": 20,
       "monthsPerShift": 4,
       "realHibernationYearsAfter": 5.5,
       "fractalStage": 3,
-      "siblingDriftRange": [46, 62],
+      "siblingDriftRange": [40, 76],
       "overseerAuditChaosThreshold": 35,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 47,
+      "minAnomalyForNextShift": 20,
       "skyRevealTier": {
         "catalogLayer": "galactic_disk",
         "maxMagnitude": 6.3,
@@ -194,24 +194,24 @@
       "shiftMandate": "Cross-check cosmic distance rungs and supernova light-echoes while hiding your findings from the Overseer network.",
       "requiredTargets": [
         "cepheid_candle_field",
-        "tycho_echo_shell"
+        "gravity_slingshot_pass"
       ],
       "optionalTargets": [
-        "gravity_slingshot_pass"
+        "tycho_echo_shell"
       ],
       "targetAnomalies": [
         "cepheid_candle_field",
-        "tycho_echo_shell",
-        "gravity_slingshot_pass"
+        "gravity_slingshot_pass",
+        "tycho_echo_shell"
       ],
       "baseChaosPerShift": 22,
       "monthsPerShift": 4,
       "realHibernationYearsAfter": 5.8,
       "fractalStage": 4,
-      "siblingDriftRange": [34, 54],
+      "siblingDriftRange": [30, 78],
       "overseerAuditChaosThreshold": 35,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 63,
+      "minAnomalyForNextShift": 30,
       "skyRevealTier": {
         "catalogLayer": "extragalactic_rungs",
         "maxMagnitude": 6.9,
@@ -276,10 +276,10 @@
       "monthsPerShift": 4,
       "realHibernationYearsAfter": 6.0,
       "fractalStage": 5,
-      "siblingDriftRange": [26, 48],
+      "siblingDriftRange": [22, 76],
       "overseerAuditChaosThreshold": 38,
       "desyncSuspicionThreshold": 3,
-      "minAnomalyForNextShift": 72,
+      "minAnomalyForNextShift": 40,
       "skyRevealTier": {
         "catalogLayer": "antipodal_deep_sky",
         "maxMagnitude": 7.4,
@@ -331,22 +331,22 @@
       "title": "Carrier Composition & Twenty-Year Freeze",
       "shiftMandate": "Separate local stellar parallax from the 93-billion-light-year enclosure seam and compile the homeward carrier.",
       "requiredTargets": [
-        "orbital_parallax_drift",
+        "epoch_trajectory_seam",
         "horizon_facet_stitch"
       ],
       "optionalTargets": [
-        "epoch_trajectory_seam"
+        "orbital_parallax_drift"
       ],
       "targetAnomalies": [
-        "orbital_parallax_drift",
+        "epoch_trajectory_seam",
         "horizon_facet_stitch",
-        "epoch_trajectory_seam"
+        "orbital_parallax_drift"
       ],
       "baseChaosPerShift": 26,
       "monthsPerShift": 4,
       "realHibernationYearsAfter": 20.0,
       "fractalStage": 6,
-      "siblingDriftRange": [20, 44],
+      "siblingDriftRange": [18, 74],
       "overseerAuditChaosThreshold": 40,
       "desyncSuspicionThreshold": 3,
       "minAnomalyForNextShift": 0,

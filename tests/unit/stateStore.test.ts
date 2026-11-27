@@ -99,21 +99,22 @@ describe('StateStore invariants & economy', () => {
     expect(store.getNextIterationIndex('wave_shaper', 4)).toBe(0);
   });
 
-  it('enforces permanent maxHumanity ceiling drop when pruning below 70%', () => {
+  it('enforces permanent maxHumanity ceiling drop below 70% and blocks climbing back above 70%', () => {
     const store = new StateStore();
     store.pruneHumanity(12, 'phantom_spouse');
     const afterPrune = store.getState();
     expect(afterPrune.humanity).toBe(58);
-    expect(afterPrune.maxHumanity).toBeLessThan(90);
+    expect(afterPrune.maxHumanity).toBeLessThan(70);
     expect(afterPrune.prunedPersonas).toContain('phantom_spouse');
 
     store.petitionOverseer(40);
     const afterPetition = store.getState();
     expect(afterPetition.humanity).toBeLessThanOrEqual(afterPrune.maxHumanity);
+    expect(afterPetition.humanity).toBeLessThan(70);
     expect(afterPetition.maxHumanity).toBe(afterPrune.maxHumanity);
   });
 
-  it('supports partial/clean/deep_overclock grade persistence, marginal upgrades, and shift quota status', () => {
+  it('supports partial/clean grade persistence, optional target & clarity bonuses, and shift quota status', () => {
     const store = new StateStore();
     const first = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
       grade: 'partial',
@@ -123,7 +124,7 @@ describe('StateStore invariants & economy', () => {
       physicalPrinciple: 'Thin-lens inversion',
     });
     expect(first).toBe(true);
-    expect(store.getState().anomalyProgress).toBe(4);
+    expect(store.getState().anomalyProgress).toBe(2);
     expect(store.getState().decodedGrades.cluster_j1419_a).toBe('partial');
 
     // Replaying at same or lower grade awards 0 additional anomalyProgress
@@ -132,9 +133,9 @@ describe('StateStore invariants & economy', () => {
       proofFragmentId: 'j1419_caustic_seam',
     });
     expect(repeat).toBe(false);
-    expect(store.getState().anomalyProgress).toBe(4);
+    expect(store.getState().anomalyProgress).toBe(2);
 
-    // Upgrading partial -> clean awards marginal difference (7 - 4 = +3)
+    // Upgrading partial -> clean awards marginal difference (4 - 2 = +2)
     const toClean = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
       grade: 'clean',
       proofFragmentId: 'j1419_caustic_seam',
@@ -142,27 +143,22 @@ describe('StateStore invariants & economy', () => {
       instrumentCode: 'LNS-04',
     });
     expect(toClean).toBe(true);
-    expect(store.getState().anomalyProgress).toBe(7);
+    expect(store.getState().anomalyProgress).toBe(4);
     expect(store.getState().decodedGrades.cluster_j1419_a).toBe('clean');
     expect(store.getState().proofDossier[0].grade).toBe('clean');
 
-    // Upgrading clean -> deep_overclock awards marginal anomalyProgress (11 - 7 = +4) plus overclock chaos/suspicion
+    // Optional target awards clean + optional bonus (4 + 3 = 7) plus optional chaos/suspicion
     const chaosBefore = store.getState().chaosDrift;
     const suspBefore = store.getState().overseerSuspicion;
-    const toOverclock = store.recordMinigameCompletion('cluster_j1419_a', 'CLUSTER J1419-A', {
-      grade: 'deep_overclock',
-      proofFragmentId: 'j1419_caustic_seam',
-      dossierSnippet: 'Deep seam overclock',
-      instrumentCode: 'LNS-04',
+    const optOk = store.recordMinigameCompletion('carina_rift_nebula', 'CARINA RIFT NURSERY', {
+      grade: 'clean',
     });
-    expect(toOverclock).toBe(true);
+    expect(optOk).toBe(true);
     expect(store.getState().anomalyProgress).toBe(11);
-    expect(store.getState().decodedGrades.cluster_j1419_a).toBe('deep_overclock');
-    expect(store.getState().chaosDrift).toBe(chaosBefore + 7);
+    expect(store.getState().chaosDrift).toBe(chaosBefore + 9);
     expect(store.getState().overseerSuspicion).toBe(suspBefore + 1);
-    expect(store.getState().proofDossier[0].grade).toBe('deep_overclock');
 
-    // Saved partial & deep_overclock grades persist across migration
+    // Saved partial grades persist across migration
     const migratedPartial = migrateSavedState({
       saveSchemaVersion: 6,
       decodedMinigameTargets: ['cluster_j1419_a'],
@@ -175,14 +171,13 @@ describe('StateStore invariants & economy', () => {
       requiredIds: ['sol_centauri_bearing', 'cluster_j1419_a'],
       optionalIds: ['carina_rift_nebula', 'asterism_drift_01'],
       requiredDone: 1,
-      optionalDone: 0,
+      optionalDone: 1,
       mandateMet: false,
       allDone: false,
     });
     store.recordMinigameCompletion('sol_centauri_bearing', 'SOL–CENTAURI BEARING', { grade: 'clean' });
     expect(store.getShiftQuotaStatus(1).mandateMet).toBe(true);
     expect(store.getShiftQuotaStatus(1).allDone).toBe(false);
-    store.recordMinigameCompletion('carina_rift_nebula', 'CARINA RIFT NURSERY', { grade: 'clean' });
     store.recordMinigameCompletion('asterism_drift_01', 'EAGLE DUST PILLARS K-01', { grade: 'clean' });
     expect(store.getShiftQuotaStatus(1).allDone).toBe(true);
     store.dispose();
@@ -200,12 +195,19 @@ describe('StateStore invariants & economy', () => {
 
     store.patch({ anomalyProgress: 40, humanity: 80 });
     expect(store.evaluateEnding()).toBe('ending_whole_incomplete');
+    expect(store.evaluateEndingDetail()).toEqual({ id: 'ending_whole_incomplete', variant: 'standard' });
+
+    store.patch({ anomalyProgress: 40, humanity: 30 });
+    expect(store.evaluateEnding()).toBe('ending_whole_incomplete');
+    expect(store.evaluateEndingDetail()).toEqual({ id: 'ending_whole_incomplete', variant: 'cold_incomplete' });
 
     store.patch({ anomalyProgress: 80, humanity: 30 });
     expect(store.evaluateEnding()).toBe('ending_cold_complete');
+    expect(store.evaluateEndingDetail()).toEqual({ id: 'ending_cold_complete', variant: 'standard' });
 
     store.patch({ anomalyProgress: 80, humanity: 68 });
     expect(store.evaluateEnding()).toBe('ending_sweet_spot');
+    expect(store.evaluateEndingDetail()).toEqual({ id: 'ending_sweet_spot', variant: 'standard' });
   });
 
   it('advances shift cleanly and bounds chaos inside 0..100', () => {

@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0-backbone",
+  "version": "0.4.0-rebalanced",
   "startingState": {
     "shift": 1,
     "humanity": 70,
@@ -13,7 +13,7 @@
   },
   "pruning": {
     "defaultDelta": 12,
-    "chaosRelief": 14,
+    "chaosRelief": 16,
     "lifespanGainMonths": 4,
     "opticalFidelityBonus": 0.14,
     "permanentCeilingDrop": true,
@@ -26,7 +26,10 @@
     "lifespanCostMonths": 2,
     "maxHumanityCap": 90,
     "opticalFidelityPenalty": 0.08,
-    "minOpticalFidelity": 0.32
+    "minOpticalFidelity": 0.32,
+    "denialChaosThreshold": 78,
+    "denialSuspicionThreshold": 4,
+    "minMonthsRequired": 4
   },
   "deeperScanPush": {
     "anomalyGain": 18,
@@ -34,21 +37,26 @@
     "suspicionGain": 1
   },
   "minigameCompletion": {
-    "anomalyGain": 5,
-    "cleanGain": 5
+    "anomalyGain": 4,
+    "cleanGain": 4
   },
   "minigames": {
     "vibeThresholds": {
       "warmMinH": 65,
       "coldMaxH": 44
     },
+    "optionalAnomalyBonus": 3,
+    "optionalChaosDelta": 6,
+    "optionalSuspicionDelta": 1,
+    "clarityProofBonusThreshold": 0.68,
+    "clarityProofBonusAnomaly": 2,
     "payouts": {
-      "clean": { "anomalyGain": 7, "chaosDelta": 2, "suspicionDelta": 0 },
-      "deep_overclock": { "anomalyGain": 11, "chaosDelta": 7, "suspicionDelta": 1 },
-      "partial": { "anomalyGain": 4, "chaosDelta": 1, "suspicionDelta": 0 }
+      "clean": { "anomalyGain": 4, "chaosDelta": 3, "suspicionDelta": 0 },
+      "deep_overclock": { "anomalyGain": 4, "chaosDelta": 3, "suspicionDelta": 0 },
+      "partial": { "anomalyGain": 2, "chaosDelta": 2, "suspicionDelta": 0 }
     }
   },
   "dreamDefrag": {
-    "chaosRelief": 18
+    "chaosRelief": 16
   }
 }

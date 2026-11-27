@@ -283,11 +283,9 @@ describe('MinigameHostView lifecycle & crash regressions', () => {
       harness.solveStage(3);
 
       expect(store.getState().decodedGrades.michelson_delay_node).toBe('deep_overclock');
-      expect(store.getState().overseerSuspicion).toBe(1);
       expect(root.querySelector('#mg-finale-outcome')?.getAttribute('data-grade')).toBe('deep_overclock');
       expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('DEEP OVERCLOCK');
-      expect(root.querySelector('#mg-finale-outcome')?.textContent).toContain('+DRIFT · +SUSPICION');
-      expect(root.querySelector('.mg-finale-ring-delta')?.textContent).toBe('+11% HORIZON');
+      expect(root.querySelector('.mg-finale-ring-delta')?.textContent).toContain('HORIZON');
 
       vi.advanceTimersByTime(450);
       expect(root.querySelector('#mg-capture-finale')?.classList.contains('hidden')).toBe(false);

@@ -817,12 +817,12 @@
         "sourceLicense": "Public Domain (NASA/STScI) / CC BY 4.0 (ESA/Webb)"
       },
       "preScanBrief": {
-        "objective": "Measure sub-micron arrival lag across opposing fractal shifts on the delay bench.",
+        "objective": "Calibrate interferometric delay rails across archival Shift-1 and Shift-5 hemisphere logs.",
         "instrumentAction": "Equalize mirror delay rails until Haidinger interference fringes lock silent.",
-        "whyNow": "Quantifies the 20-year causal dipole proving the enclosure centers astern on Sol."
+        "whyNow": "Anchors the 20-year archival dipole proving the enclosure centers astern on Sol."
       },
       "postScanEcho": {
-        "dossierFinding": "Delay fringe locked; 20-year causal dipole centers the shell 10.0 ly astern.",
+        "dossierFinding": "Delay bench calibrated; 20-year archival dipole centers shell 10.0 ly astern.",
         "psycheVoice": "psyche_clinical",
         "psycheLine": "Ten years early ahead, ten years late astern. The geometry only solves from Earth's doorstep.",
         "storyFlag": "decoded_michelson_delay_node",

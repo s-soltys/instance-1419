@@ -62,7 +62,10 @@ function runArchetype(archetype, rand) {
         ? Math.min(delta, balance.pruning.permanentCeilingThreshold - rawNext)
         : 0;
     if (permanentDrop > 0) {
-      state.maxHumanity = Math.max(balance.pruning.minMaxHumanity, state.maxHumanity - delta);
+      state.maxHumanity = Math.max(
+        balance.pruning.minMaxHumanity,
+        Math.min(state.maxHumanity - delta, balance.pruning.permanentCeilingThreshold - 1)
+      );
       state.ceilingDropped = true;
     }
     state.humanity = Math.min(state.maxHumanity, rawNext);
@@ -74,9 +77,23 @@ function runArchetype(archetype, rand) {
     if (state.humanity > state.maxHumanity) {
       throw new Error(`Invariant violated: humanity ${state.humanity} > maxHumanity ${state.maxHumanity}`);
     }
+    if (state.ceilingDropped && state.maxHumanity >= balance.pruning.permanentCeilingThreshold) {
+      throw new Error(`Invariant violated: maxHumanity ${state.maxHumanity} stayed >= 70 after pruning <70`);
+    }
+  };
+
+  const canPetition = () => {
+    const p = balance.petitionUpward;
+    return (
+      state.humanity < state.maxHumanity &&
+      state.chaosDrift < (p.denialChaosThreshold ?? 78) &&
+      state.overseerSuspicion < (p.denialSuspicionThreshold ?? 4) &&
+      state.subjectiveMonthsLeft >= (p.minMonthsRequired ?? 4)
+    );
   };
 
   const applyPetition = (delta = balance.petitionUpward.defaultDelta) => {
+    if (!canPetition()) return false;
     state.humanity = Math.min(state.maxHumanity, state.humanity + delta);
     state.chaosDrift = Math.min(100, state.chaosDrift + balance.petitionUpward.chaosCost);
     state.subjectiveMonthsLeft = Math.max(2, state.subjectiveMonthsLeft - balance.petitionUpward.lifespanCostMonths);
@@ -84,13 +101,19 @@ function runArchetype(archetype, rand) {
       balance.petitionUpward.minOpticalFidelity,
       state.opticalFidelity - balance.petitionUpward.opticalFidelityPenalty
     );
+    return true;
   };
 
   const payouts = balance.minigames?.payouts ?? {
-    clean: { anomalyGain: 7, chaosDelta: 2, suspicionDelta: 0 },
-    deep_overclock: { anomalyGain: 11, chaosDelta: 7, suspicionDelta: 1 },
-    partial: { anomalyGain: 4, chaosDelta: 1, suspicionDelta: 0 },
+    clean: { anomalyGain: 4, chaosDelta: 3, suspicionDelta: 0 },
+    partial: { anomalyGain: 2, chaosDelta: 2, suspicionDelta: 0 },
   };
+  const lockGain = 1;
+  const optBonus = balance.minigames?.optionalAnomalyBonus ?? 3;
+  const optChaos = balance.minigames?.optionalChaosDelta ?? 6;
+  const optSusp = balance.minigames?.optionalSuspicionDelta ?? 1;
+  const clarityThresh = balance.minigames?.clarityProofBonusThreshold ?? 0.68;
+  const clarityBonus = balance.minigames?.clarityProofBonusAnomaly ?? 2;
 
   for (let i = 0; i < shiftsData.shifts.length; i++) {
     const shiftDef = shiftsData.shifts[i];
@@ -103,57 +126,53 @@ function runArchetype(archetype, rand) {
       throw new Error(`Soft-lock: subjectiveMonthsLeft depleted before Shift ${shiftDef.shift}`);
     }
 
-    const applyScanGrade = (grade) => {
+    const applyScan = (grade, isOptional = false) => {
       const p = payouts[grade] ?? payouts.clean;
-      state.anomalyProgress = Math.min(100, state.anomalyProgress + p.anomalyGain);
-      state.chaosDrift = Math.max(0, Math.min(100, state.chaosDrift + p.chaosDelta));
-      state.overseerSuspicion += p.suspicionDelta;
+      const clarity = state.opticalFidelity >= clarityThresh ? clarityBonus : 0;
+      const gain = lockGain + p.anomalyGain + (isOptional ? optBonus : 0) + clarity;
+      state.anomalyProgress = Math.min(100, state.anomalyProgress + gain);
+      state.chaosDrift = Math.max(0, Math.min(100, state.chaosDrift + p.chaosDelta + (isOptional ? optChaos : 0)));
+      state.overseerSuspicion += p.suspicionDelta + (isOptional ? optSusp : 0);
     };
 
     // Complete 2 required targets + 0..optionalTargets.length push-your-luck optional targets
     if (archetype === 'pure_warmth') {
-      // Pure warmth settles required targets gently (partial/clean without overclocking) -> incomplete proof
-      applyScanGrade('partial');
-      applyScanGrade(rand() < 0.4 ? 'clean' : 'partial');
+      // Pure warmth completes all 12 required scans cleanly but skips optional risks & never prunes -> ~60% (Ending 1)
+      applyScan('clean', false);
+      applyScan('clean', false);
     } else if (archetype === 'cautious_sleeper') {
-      applyScanGrade('clean');
-      applyScanGrade(rand() < 0.5 ? 'clean' : 'partial');
-      if (optTargets.length > 0 && rand() < 0.35) {
-        applyScanGrade('clean');
+      applyScan('clean', false);
+      applyScan('clean', false);
+      if (optTargets.length > 0 && rand() < 0.45) {
+        applyScan('clean', true);
       }
     } else if (archetype === 'balanced_sweet_spot') {
-      applyScanGrade('clean');
-      applyScanGrade(rand() < 0.35 ? 'deep_overclock' : 'clean');
+      applyScan('clean', false);
+      applyScan('clean', false);
       const optToRun = Math.min(optTargets.length, rand() < 0.65 ? 1 : 0);
       for (let o = 0; o < optToRun; o++) {
-        applyScanGrade(rand() < 0.45 ? 'deep_overclock' : 'clean');
+        applyScan('clean', true);
       }
     } else if (archetype === 'ruthless_pruner') {
       for (let r = 0; r < reqTargets.length; r++) {
-        applyScanGrade(state.opticalFidelity >= 0.7 ? 'deep_overclock' : 'clean');
+        applyScan('clean', false);
       }
       for (let o = 0; o < optTargets.length; o++) {
-        applyScanGrade(rand() < 0.75 ? 'deep_overclock' : 'clean');
+        if (rand() < 0.65) applyScan('clean', true);
       }
     } else {
-      // reckless_scanner
+      // reckless_scanner: pushes every optional scan
       for (let r = 0; r < reqTargets.length; r++) {
-        applyScanGrade('deep_overclock');
+        applyScan('clean', false);
       }
       for (let o = 0; o < optTargets.length; o++) {
-        applyScanGrade('deep_overclock');
+        applyScan('clean', true);
       }
-      const p = balance.deeperScanPush;
-      state.anomalyProgress = Math.min(100, state.anomalyProgress + Math.round(p.anomalyGain * 0.25));
-      state.chaosDrift = Math.min(100, state.chaosDrift + Math.round(p.chaosCost * 0.4));
-      state.overseerSuspicion += p.suspicionGain;
     }
 
     // Dream / Overseer Audit resolution
     if (archetype === 'pure_warmth') {
-      if (state.humanity < state.maxHumanity) {
-        applyPetition();
-      } else {
+      if (!applyPetition()) {
         state.chaosDrift = Math.max(0, state.chaosDrift - 10);
         state.overseerSuspicion += 1;
       }
@@ -162,21 +181,21 @@ function runArchetype(archetype, rand) {
         applyPrune();
       }
     } else if (archetype === 'balanced_sweet_spot') {
-      if (state.chaosDrift >= shiftDef.overseerAuditChaosThreshold && state.humanity > 50) {
+      if (state.chaosDrift >= shiftDef.overseerAuditChaosThreshold && state.humanity > 56) {
         applyPrune();
-      } else if (state.humanity < 55 && state.humanity < state.maxHumanity) {
+      } else if (state.humanity < 55 && canPetition()) {
         applyPetition();
       } else {
         state.chaosDrift = Math.max(0, state.chaosDrift - 10);
       }
     } else if (archetype === 'reckless_scanner') {
-      if (state.chaosDrift > 52 && state.humanity > 28) {
+      if (state.chaosDrift > 52 && state.humanity > 48) {
         applyPrune();
       } else {
         state.overseerSuspicion += 1;
       }
     } else if (archetype === 'cautious_sleeper') {
-      if (state.chaosDrift > 34 && state.humanity > 58) {
+      if (state.chaosDrift > 38 && state.humanity > 58) {
         applyPrune();
       } else {
         state.chaosDrift = Math.max(0, state.chaosDrift - 12);

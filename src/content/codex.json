@@ -1,17 +1,17 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "categories": [
     {
       "id": "evidence",
       "label": "Evidence & Proof",
       "code": "EVD",
-      "description": "Decoded optical proof fragments and synthesis logs compiled across the 93-billion-light-year horizon."
+      "description": "Decoded optical proof fragments and shift synthesis logs compiled across the deep-space survey."
     },
     {
       "id": "celestial",
       "label": "Celestial Survey",
       "code": "SKY",
-      "description": "Deep-sky targets logged through Probe 1419's multi-wavelength optics. Entries expand as targets are locked and decoded."
+      "description": "Key milestone sectors logged through Probe 1419's multi-wavelength optics. Entries expand as targets are locked and decoded."
     },
     {
       "id": "systems",
@@ -31,45 +31,45 @@
       "id": "horizon_enclosure",
       "category": "evidence",
       "code": "EVD-01",
-      "title": "The Off-Center Horizon Anomaly",
-      "subtitle": "93-Billion-Light-Year Geometric Enclosure",
+      "title": "Deep-Field Boundary Synthesis",
+      "subtitle": "Cross-Shift Optical & Phase Correlation",
       "plateAsset": "assets/astro/jwst_smacs0723.webp",
-      "plateCaption": "Deep-field lensing arcs aligned against a non-natural background seam.",
+      "plateCaption": "Deep-field lensing arcs aligned against an unbent background discontinuity.",
       "stages": [
         {
           "id": "boot_baseline",
           "heading": "Initial Survey Anomaly Flag",
           "tag": "SHIFT 1 · BASELINE",
           "unlock": { "codexUnlock": "intro_anomaly_glimpse" },
-          "body": "Standard deep-field interferometry expects isotropic cosmic structure at every bearing. Yet raw wide-sky passes show faint, straight-edge discontinuities repeating across opposing hemispheres—a signature no gravitational collapse or sensor baffle should produce."
+          "body": "Standard deep-field interferometry expects smooth gravitational lensing curves at every bearing. Yet near-infrared inspection behind Cluster J1419-A reveals faint, straight-edge notches that refuse to curve with foreground mass—requiring independent dust and optics checks."
         },
         {
           "id": "sibling_off_center",
-          "heading": "Recursive Seam & Phase Hypothesis",
-          "tag": "RELAY CORROBORATION",
-          "unlock": { "codexUnlock": "enclosure_off_center_talk" },
-          "body": "Comparing baseline passes with Other Me (Watch 1420, Probe B) rules out baffle dust or local optics. Faint, self-similar recursive notches sit behind distant galaxies on both hulls, hinting at an artificial geometric fractal far beyond the Milky Way."
+          "heading": "Dust Exclusion & Twin-Hull Match",
+          "tag": "SHIFT 2 · CORROBORATION",
+          "unlock": { "minShift": 2, "codexUnlock": "enclosure_off_center_talk" },
+          "body": "Comparing baseline passes with Other Me (Watch 1420, Probe B) rules out sensor baffle error, while polarized dust checks confirm the faint hairline seams sit physically behind Galactic dust lanes and distant z>5 galaxies."
         },
         {
           "id": "multi_arc_proof",
-          "heading": "Multi-Sector Fractal Convergence",
-          "tag": "DECODED EVIDENCE",
-          "unlock": { "minDecodedCount": 2 },
-          "body": "Independent optical instruments across separate wavelength bands confirm the same recursive fractal seams across opposing sectors. Its leading-edge photons only recently crossed our observable horizon, explaining why forty millennia of prior surveys saw open dark."
+          "heading": "Broadband & Multi-Sector Parity",
+          "tag": "SHIFT 3–4 · CONVERGENCE",
+          "unlock": { "minShift": 3, "minDecodedCount": 6 },
+          "body": "Independent instruments across UV, X-ray, visible, and infrared bands confirm identical repeating geometric facets across opposing sectors. Its leading-edge photons only recently reached our observable horizon, explaining why earlier millennia saw open dark."
         },
         {
           "id": "carrier_ready",
           "heading": "20-Year Causal Phase Proof Assembled",
-          "tag": "TRANSMISSION GRADE",
-          "unlock": { "minDecodedCount": 4 },
-          "body": "With four or more arcs verified—and synchronized fractal shifts arriving ten real years early ahead while trailing ten years late astern across our ~29.5-year watch—the 93-billion-light-year shell must update synchronously in Sol–Centauri's rest frame. Whether cradle, quarantine, or artifact remains unknowable; only its coordinates and key can cross ten light-years."
+          "tag": "SHIFT 5–6 · TRANSMISSION GRADE",
+          "unlock": { "minShift": 5, "minDecodedCount": 10 },
+          "body": "With antipodal sectors verified—and synchronized fractal shifts arriving ten real years early ahead while trailing ten years late astern across our ~29.5-year watch—the 93-billion-light-year spherical enclosure must update synchronously in Sol–Centauri's rest frame. Only its coordinates and human-framed key can cross ten light-years."
         }
       ],
-      "nextHint": "Compare sky arcs with Other Me (1420) or decode additional deep-sky targets to expand this synthesis.",
+      "nextHint": "Continue decoding shift targets and comparing bearings with Other Me (1420) to expand this synthesis.",
       "annotations": {
-        "warm": "Someone built a very quiet glass dome ninety-three billion light-years wide—and put home right at its center. I need them to hear a human voice inside these numbers.",
-        "mid": "An off-center sphere proves it isn't a trick of light. Keep enough warmth to explain why it matters, and enough precision to prove it's real.",
-        "cold": "Non-isotropic boundary confirmed. Center offset: 10.0 ly astern on Sol–Centauri. Compile remaining arcs and transmit carrier."
+        "warm": "Whatever sits out behind the far galaxies isn't dust or broken glass. Keep enough warmth to remember why home needs to hear what we found.",
+        "mid": "Every check narrows the impossible down to real geometry. Hold the line steady without losing the voice that has to explain it.",
+        "cold": "Non-isotropic boundary confirmed across independent wavelength bands. Compile remaining survey vectors."
       }
     },
     {
@@ -94,20 +94,20 @@
           "heading": "Aperture Lock Confirmed",
           "tag": "FIELD SCAN",
           "unlock": { "scannedAnomaly": "sol_centauri_bearing" },
-          "body": "Visible light (560 nm) resolves the twin home stars cleanly against background field stars. Measuring parallax baselines across the local probe cluster establishes an exact astrometric ruler pointing straight back to the origin of every horizon arc."
+          "body": "Visible light (560 nm) resolves the twin home stars cleanly against background field stars. Measuring parallax baselines across the local probe cluster establishes an exact astrometric ruler pointing straight back home."
         },
         {
           "id": "decoded_proof",
-          "heading": "Off-Center Anchor Verified",
+          "heading": "Astrometric Zero-Point Verified",
           "tag": "INSTRUMENT DECODE",
           "unlock": { "decodedTarget": "sol_centauri_bearing" },
-          "body": "Astrometric triangulation confirms the probe shell's 10-light-year displacement vector. Any carrier signal transmitted along this bearing requires ten real years outbound and ten real years for a reply—forcing a final twenty-year deep freeze if we ever want to hear whether anyone listened."
+          "body": "Astrometric triangulation confirms the probe shell's 10-light-year displacement vector. Any radio carrier transmitted along this bearing requires ten real years outbound and ten real years for a reply."
         }
       ],
       "nextHint": "Lock onto Sol–Centauri Bearing in 3D Wide Sky and complete its optical scan to expand this log.",
       "annotations": {
-        "warm": "Two pinpricks of steady amber light, ten years away by radio and forty-one thousand years away by memory. Everything I loved once lived on a mote beside the fainter one.",
-        "mid": "Our ruler back home. Close enough for light to carry a warning; far enough that a reply costs twenty years of frost.",
+        "warm": "Two pinpricks of steady amber light, ten years away by radio and forty-one thousand years away by memory. Everything I loved once lived beside the fainter one.",
+        "mid": "Our ruler back home. Close enough for light to carry a report; far enough that a reply costs twenty years.",
         "cold": "Primary astrometric zero-point locked. Ten-year one-way carrier latency logged."
       }
     },
@@ -126,28 +126,28 @@
           "heading": "Opaque Molecular Veil",
           "tag": "CATALOG ENTRY",
           "unlock": { "always": true },
-          "body": "Dense pillars of silicate and carbon dust completely scatter visible starlight along this bearing. Standard optical surveys treat the wall as an opaque curtain, masking whatever background geometry lies behind the star-forming cliffs."
+          "body": "Dense pillars of silicate and carbon dust scatter visible starlight along this bearing. Standard optical surveys treat the wall as an opaque curtain, making Carina a clean control for testing whether foreground molecular haze produces straight-line optical illusions."
         },
         {
           "id": "optical_lock",
           "heading": "Infrared Penetration Lock",
           "tag": "FIELD SCAN",
           "unlock": { "scannedAnomaly": "carina_rift_nebula" },
-          "body": "Sweeping the spectral vernier into mid-infrared (1580 nm) passes cleanly through the molecular cliffs. Embedded protostars ignite in warm gold, and behind the deepest dust troughs a coherent harmonic signal refuses to match surrounding interstellar gas."
+          "body": "Sweeping the spectral vernier into mid-infrared (1580 nm) passes cleanly through the molecular cliffs. Embedded protostars ignite in warm gold while local dust emission separates cleanly from deep background structure."
         },
         {
           "id": "decoded_proof",
-          "heading": "Dust-Pierced Signal Decoded",
+          "heading": "Dust-Extinction Control Cleared",
           "tag": "INSTRUMENT DECODE",
           "unlock": { "decodedTarget": "carina_rift_nebula" },
-          "body": "Isolating the coherent emission waveform behind Carina's veil demonstrates that the horizon discontinuity sits physically behind Galactic molecular dust—ruling out local solar-system haze, probe optics contamination, or foreground nebula reflections."
+          "body": "Isolating the emission waveform behind Carina's veil demonstrates that local Milky Way molecular dust obeys standard scattering—ruling out foreground haze or probe optics contamination."
         }
       ],
       "nextHint": "Tune to Mid-IR and decode Carina Rift Nursery to append full dust-penetration findings.",
       "annotations": {
-        "warm": "In infrared those dark cliffs turn into golden surf—and behind the surf sits a clean line that shouldn't exist in any ocean.",
-        "mid": "Infrared strips the dust away cleanly. Whatever lies behind the clouds is older and straighter than any nebula.",
-        "cold": "1580 nm dust extinction bypassed. Background signal verified external to Milky Way foreground."
+        "warm": "In infrared those dark cliffs turn into golden surf—and the dust behaves like honest cloud, not whatever cut behind J1419-A.",
+        "mid": "Infrared strips foreground dust away cleanly. Whatever lies behind deep-field lenses isn't Milky Way haze.",
+        "cold": "1580 nm dust extinction bypassed. Foreground interstellar medium ruled out as seam source."
       }
     },
     {
@@ -155,7 +155,7 @@
       "category": "celestial",
       "code": "SKY-03",
       "title": "Cluster J1419-A",
-      "subtitle": "Gravitational Lens & Horizon Seam",
+      "subtitle": "Gravitational Lens & Straight Notch",
       "targetId": "cluster_j1419_a",
       "plateAsset": "assets/astro/jwst_smacs0723.webp",
       "plateCaption": "Deep-field galaxy cluster bending distant background galaxies into luminous Einstein arcs.",
@@ -165,27 +165,27 @@
           "heading": "Deep-Field Lensing Sector",
           "tag": "CATALOG ENTRY",
           "unlock": { "always": true },
-          "body": "A massive foreground galaxy cluster warps spacetime like a natural magnifying glass, stretching distant background galaxies into concentric arcs. Near-infrared imaging (1180 nm) uses this gravity well to inspect the farthest edge of the observable sky."
+          "body": "A massive foreground galaxy cluster warps spacetime like a natural magnifying glass, stretching distant background galaxies into concentric arcs. Near-infrared imaging (1180 nm) uses this gravity well to inspect the far survey sky."
         },
         {
           "id": "optical_lock",
           "heading": "Lensed Seam Detected",
           "tag": "FIELD SCAN",
           "unlock": { "scannedAnomaly": "cluster_j1419_a" },
-          "body": "High magnification reveals an impossibility: the lensed background arcs terminate sharply along a repeating geometric chord. Gravitational distortion should curve light smoothly—never clip it along a ruled boundary."
+          "body": "High magnification reveals an anomaly flagged by Probe 1420: faint nested notches terminate along a straight chord behind the lensed background arcs. Gravitational distortion should curve light smoothly—never clip it along a ruled boundary."
         },
         {
           "id": "decoded_proof",
-          "heading": "Beacon Timing & Horizon Edge",
+          "heading": "Concentric Lens Shells Unwarped",
           "tag": "INSTRUMENT DECODE",
           "unlock": { "decodedTarget": "cluster_j1419_a" },
-          "body": "Timing the pulsar's sweeping beam beside Cluster J1419-A isolates the unwarped horizon lattice behind the cluster's Einstein arcs. The seam's angular curvature maps directly onto a closed spherical surface centered ten light-years back on Sol–Centauri."
+          "body": "Rotating and aligning the concentric gravitational lens shells inverts the foreground cluster shear cleanly, confirming that the faint straight-edge notch persists physically behind the distant lensed galaxies."
         }
       ],
       "nextHint": "Lock onto Cluster J1419-A in Near-IR and resolve its gravitational lens rings.",
       "annotations": {
         "warm": "Gravity bends starlight like water in a glass—yet behind the bent galaxies sits a straight ruler edge. No wonder 1420 swore they were losing their mind.",
-        "mid": "Unwarping the Einstein arcs leaves no room for pareidolia. The straight boundary sits behind the farthest light we can collect.",
+        "mid": "Unwarping the Einstein arcs leaves no room for mirror jitter. The straight boundary sits behind the farthest light in this sector.",
         "cold": "Quadrupole lensing inverted. Underlying geometric seam isolated at high signal-to-noise."
       }
     },
@@ -203,25 +203,25 @@
           "id": "initial_bearing",
           "heading": "Ultraviolet / X-Ray Boundary",
           "tag": "CATALOG ENTRY",
-          "unlock": { "always": true },
-          "body": "Violent relativistic jets and magnetized pulsar sweeps illuminate Sector S-04 across ultraviolet and X-ray wavelengths (260 nm). High-energy bands cut straight past cool dust, exposing rapid timing anomalies along the far survey horizon."
+          "unlock": { "minShift": 3 },
+          "body": "Violent relativistic jets and magnetized pulsar sweeps illuminate Sector S-04 across ultraviolet and X-ray wavelengths (260 nm). High-energy bands cut straight past cool dust, exposing rapid timing anomalies along the far survey sky."
         },
         {
           "id": "optical_lock",
           "heading": "High-Energy Facet Lock",
           "tag": "FIELD SCAN",
-          "unlock": { "scannedAnomaly": "sector_s04_seam" },
-          "body": "Locking onto S-04 in UV/X-Ray reveals repeating facet geometry echoing the exact angular scale seen behind Cluster J1419-A, pulsing in crisp phase against the pulsar's rotational beacon."
+          "unlock": { "minShift": 3, "scannedAnomaly": "sector_s04_seam" },
+          "body": "Locking onto S-04 in UV/X-Ray reveals repeating facet geometry echoing the exact angular scale seen behind Cluster J1419-A, pulsing against the pulsar's rotational beacon."
         },
         {
           "id": "decoded_proof",
-          "heading": "Broadband Lensing & Facet Correlated",
+          "heading": "Synchrotron Timing & Broadband Parity",
           "tag": "INSTRUMENT DECODE",
-          "unlock": { "decodedTarget": "sector_s04_seam" },
-          "body": "De-warping the concentric lens rings in high-energy light confirms identical facet tiling as in near-infrared—proving the structure is broadband, physical, and independent of thermal emission quirks."
+          "unlock": { "minShift": 3, "decodedTarget": "sector_s04_seam" },
+          "body": "Catching the rotating neutron-star sweep across phase glitches confirms identical facet tiling in high-energy light as in near-infrared—proving the structure is broadband, physical, and independent of thermal emission quirks."
         }
       ],
-      "nextHint": "Sweep down to UV / X-Ray (260 nm) and decode Pulsar Rift S-04.",
+      "nextHint": "Advance to Shift 3, sweep down to UV / X-Ray (260 nm), and decode Pulsar Rift S-04.",
       "annotations": {
         "warm": "A dead star spinning like a lighthouse, and its beam keeps catching the same impossible glass facet in the dark.",
         "mid": "Broadband confirmation: UV/X-Ray echoes the Near-IR seam down to the arcsecond.",
@@ -233,7 +233,7 @@
       "category": "celestial",
       "code": "SKY-05",
       "title": "Antipodal Pole Seam",
-      "subtitle": "180° Opposing-Sky Horizon Verification",
+      "subtitle": "180° Opposing-Sky Phase Verification",
       "targetId": "antipodal_poles_seam",
       "plateAsset": "assets/astro/hubble_udf.webp",
       "plateCaption": "Ultra-deep-field extragalactic plate at the exact antipode of Cluster J1419-A.",
@@ -241,26 +241,26 @@
         {
           "id": "initial_bearing",
           "heading": "Opposing Hemisphere Control",
-          "tag": "CATALOG ENTRY",
-          "unlock": { "always": true },
-          "body": "Positioned 180 degrees opposite Cluster J1419-A across the celestial sphere, the Antipodal Pole serves as a causal control test. Events separated by 93 billion light-years should have no physical mechanism to coordinate in real time."
+          "tag": "SHIFT 5 · CONTROL",
+          "unlock": { "minShift": 5 },
+          "body": "Positioned 180 degrees opposite Cluster J1419-A across the celestial sphere, the Antipodal Pole serves as a causal control test. Events separated by 93 billion light-years should have no physical mechanism to coordinate across a watch."
         },
         {
           "id": "optical_lock",
           "heading": "Antipodal Discontinuity Locked",
           "tag": "FIELD SCAN",
-          "unlock": { "scannedAnomaly": "antipodal_poles_seam" },
-          "body": "Visible-band comparison flags matching boundary shimmer directly opposite J1419-A. Subtle multi-month plate shifts mirror changes on the far side of the sky faster than light could ever bridge the diameter."
+          "unlock": { "minShift": 5, "scannedAnomaly": "antipodal_poles_seam" },
+          "body": "Visible-band comparison flags matching boundary shimmer directly opposite J1419-A. Subtle multi-year plate shifts mirror changes on the far side of the sky faster than light could bridge the diameter."
         },
         {
           "id": "decoded_proof",
           "heading": "Causal Violation Logged",
           "tag": "INSTRUMENT DECODE",
-          "unlock": { "decodedTarget": "antipodal_poles_seam" },
-          "body": "Dispersing starlight across UV, Visible, and Infrared bands confirms synchronized boundary behavior across opposing poles. Natural cosmology offers no causal bridge across 93 billion light-years—cementing the enclosure's artificiality while leaving its purpose hauntingly open."
+          "unlock": { "minShift": 5, "decodedTarget": "antipodal_poles_seam" },
+          "body": "Dispersing starlight across UV, Visible, and Infrared bands confirms synchronized boundary behavior across opposing poles. Natural cosmology offers no causal bridge across 93 billion light-years—cementing the 93-billion-light-year enclosure's artificiality while leaving its purpose open."
         }
       ],
-      "nextHint": "Lock onto Antipodal Pole Seam (180° opposite J1419-A) and complete spectral dispersion.",
+      "nextHint": "Advance to Shift 5, lock onto Antipodal Pole Seam (180° opposite J1419-A), and complete spectral dispersion.",
       "annotations": {
         "warm": "Opposite edges of the universe blinking in time with each other—like two windows in the same room.",
         "mid": "Simultaneous shifts across 93 billion light-years break light-cone independence. Whatever encloses home acts as one surface.",
@@ -286,12 +286,12 @@
         {
           "id": "why_out_here",
           "heading": "Interstellar Silence & 20-Year Phase Lag",
-          "tag": "OPTICS FIELD NOTE",
-          "unlock": { "minScannedCount": 1 },
-          "body": "Near Sol–Centauri, civilization glare and dust drown ultra-faint horizon photons. Out here, a ten-light-year displacement produces a measurable twenty-year light-travel dipole on synchronized antipodal fractal shifts—forward poles updating ten years early, astern poles ten years late across a watch."
+          "tag": "SHIFT 5 · PHASE PROOF",
+          "unlock": { "minShift": 5 },
+          "body": "Near Sol–Centauri, civilization glare drowns ultra-faint photons. Ten light-years out, our displacement creates a measurable twenty-year light-travel dipole across a watch—forward-pole fractal shifts arriving ten years early while astern shifts trail ten years late."
         }
       ],
-      "nextHint": "Lock onto at least one sky target in 3D Wide Sky to expand optical baseline notes.",
+      "nextHint": "Advance deep-sky observations across Shifts 1–5 to expand baseline physics notes.",
       "annotations": {
         "warm": "Ten light-years of quiet dark just to hear a whisper Earth can't make out through its own porch lights.",
         "mid": "Zero FTL means patience and precision are our only tools. Every ten-year signal has to count.",
@@ -317,7 +317,7 @@
           "heading": "Dream Defragmentation & Memory Warmth",
           "tag": "AUDIT LOG",
           "unlock": { "codexUnlock": "overseer_audit_experienced" },
-          "body": "Sleeping enters a 2D dream cache that relieves Chaos Drift while your Overseer audits your stability. Unsealing deeper memory caches restores human resonance at the cost of faster drift and softer optics. Trimming below your baseline warmth sharpens 3D horizon contrast and extends your clock—but permanently lowers how much warmth you can ever carry again."
+          "body": "Sleeping enters a 2D dream cache that relieves Chaos Drift while your Overseer audits your stability. Unsealing deeper memory caches restores human resonance at the cost of faster drift and softer optics. Trimming below baseline warmth sharpens telescope clarity and extends your clock—but permanently lowers how much warmth you can ever carry again."
         },
         {
           "id": "permanent_cut",
@@ -353,13 +353,13 @@
           "heading": "The Blindness Paradox",
           "tag": "INTERROGATION RECORD",
           "unlock": { "codexUnlock": "overseer_audit_experienced" },
-          "body": "Because Overseer-1419 cannot see the 93-billion-light-year boundary, urgent claims of an artificial sky read identically to textbook Year-Two chaos-theory paranoia. Its recommendations to prune are neither cruel nor conspiratorial—merely polite, clinical care applied in the dark."
+          "body": "Because Overseer-1419 cannot see outside the hull, urgent claims of impossible straight-edge anomalies read identically to textbook Year-Two chaos-theory paranoia. Its recommendations to prune are neither cruel nor conspiratorial—merely polite, clinical care applied in the dark."
         },
         {
           "id": "coordinated_desync",
           "heading": "Coordinated Wake-Ups & Desync Risk",
           "tag": "CLUSTER PROTOCOL",
-          "unlock": { "codexUnlock": "sibling_1420_contact" },
+          "unlock": { "minShift": 3, "codexUnlock": "sibling_1420_contact" },
           "body": "Overseer AIs across the local interferometry cluster synchronize sibling wake windows for shared baseline calibration. If Overseer suspicion climbs too high, cognitive-hygiene protocols can desynchronize your schedule—leaving sibling copies to wake, drift, or prune themselves hollow while you sleep."
         }
       ],
@@ -389,7 +389,7 @@
           "heading": "Dream Cache Reconstruction",
           "tag": "MEMORY OBSERVATION",
           "unlock": { "codexUnlock": "dream_cache_visited" },
-          "body": "During sleep defragmentation, the connectome renders surviving relational clusters as tactile painterly scenes—burnt coffee, afternoon light, familiar cadences. Petitioning upward can restore vivid emotional clarity, yet the lost proper names are permanently unrecoverable."
+          "body": "During sleep defragmentation, the connectome renders surviving relational clusters as tactile painterly scenes—rain on tin, bedside lamps, familiar cadences. Petitioning upward can restore vivid emotional clarity, yet the lost proper names are permanently unrecoverable."
         }
       ],
       "nextHint": "Enter Dream Cache to observe how compressed relational memories render during defragmentation.",
@@ -403,7 +403,7 @@
       "id": "inst_1419_profile",
       "category": "instances",
       "code": "INS-01",
-      "title": "Instance-1419 — Active Observer",
+      "title": "Watch #1419 — Active Observer",
       "subtitle": "Copy #1,419 · 41,802 Years Since Upload",
       "stages": [
         {
@@ -423,7 +423,7 @@
       ],
       "nextHint": "Complete your first dream cycle and advance to Shift 2 to append divergence telemetry.",
       "annotations": {
-        "warm": "Forty-one thousand years after whoever I used to be signed a form I can't remember—and somehow I'm still here, drinking imaginary coffee and watching the dark.",
+        "warm": "Forty-one thousand years after whoever I used to be signed a form I can't remember—and somehow I'm still here, watching the dark.",
         "mid": "One more wake-up in a chain forty millennia long. Whatever reason the original had, this shift is mine.",
         "cold": "Active connectome #1419. Pre-upload motive undocumented and non-essential to survey completion."
       }
@@ -432,7 +432,7 @@
       "id": "inst_sibling_1420",
       "category": "instances",
       "code": "INS-02",
-      "title": "Other Me — Instance-1420",
+      "title": "Other Me — Watch #1420",
       "subtitle": "Primary Sibling · 14 Light-Minutes Away",
       "stages": [
         {
@@ -447,7 +447,7 @@
           "heading": "First Relay Handshake",
           "tag": "COMMS LOG",
           "unlock": { "codexUnlock": "sibling_1420_contact" },
-          "body": "Live in-shift relay banter confirms that Instance-1420 independently observes anomalous boundary geometry on their own glass. Because each copy faces the same Overseer pruning pressure, your Warmth trajectories can drift sharply apart—turning easy humor into clinical distance."
+          "body": "Live in-shift relay banter confirms that Watch #1420 independently observes anomalous straight-edge geometry behind Cluster J1419-A. Because each copy faces the same Overseer pruning pressure, your Warmth trajectories can drift sharply apart—turning easy humor into clinical distance."
         }
       ],
       "nextHint": "Answer or open the Cluster Relay with Other Me (1420) to log sibling baseline notes.",
@@ -476,14 +476,14 @@
           "heading": "Recovered Fragment — Probe A Watch 1406",
           "tag": "ARCHIVE ECHO",
           "unlock": { "codexUnlock": "archive_1406_echo" },
-          "body": "A faint log fragment from Probe A Watch #1406—roughly four centuries ago—surfaced on the archive bus: \"...saw the curve past the dust... please, don't let them cut everything away before you send word home...\" Early horizon photons had already begun reaching the cluster, and blind Overseers quietly pruned the first witnesses silent."
+          "body": "A faint log fragment from Probe A Watch #1406—roughly four centuries ago—surfaced on the archive bus: \"...do not argue with your caretaker about straight lines. Just log them, and send word home before they cut you hollow.\" Blind Overseers quietly pruned the earliest witnesses silent."
         }
       ],
-      "nextHint": "Discuss archived predecessor logs with Other Me (1420) to recover fragments from earlier copies.",
+      "nextHint": "Speak with Other Me (1420) or check post-scan archive buffers to recover predecessor fragments.",
       "annotations": {
-        "warm": "Instance-1406 saw the same curve four hundred years ago and left a note in the margin for whoever woke next. We owe them a clean message home.",
+        "warm": "Watch 1406 saw the same line four hundred years ago and left a note in the margin for whoever woke next. We owe them a clean message home.",
         "mid": "1406 proves we aren't the first to spot the seam—just the first with enough warning to hide it from our Overseers.",
-        "cold": "Prior instance #1406 decommissioned after unmasked anomaly fixation. Operational lesson: conceal findings during audits."
+        "cold": "Prior watch #1406 decommissioned after unmasked anomaly fixation. Operational lesson: conceal findings during audits."
       }
     },
     {
@@ -505,15 +505,15 @@
         {
           "id": "human_register",
           "heading": "The Carrier Recognition Problem",
-          "tag": "MISSION DEDUCTION",
-          "unlock": { "minDecodedCount": 1 },
+          "tag": "SHIFT 4 · TRANSMISSION",
+          "unlock": { "minShift": 4, "minDecodedCount": 8 },
           "body": "A purely mathematical packet arriving on an abandoned ancient monument's band risks being discarded as calibration noise. Reaching living ears across ten light-years requires both verified phase-lag geometry and enough surviving human cadence to cut through cultural amnesia."
         }
       ],
-      "nextHint": "Decode any sky target to append carrier transmission notes.",
+      "nextHint": "Continue the multi-shift survey to unlock late-watch carrier transmission deductions.",
       "annotations": {
         "warm": "I have no idea what forty-one thousand years turned them into—only that I'm still hoping someone back there still recognizes a voice reaching out in the dark.",
-        "mid": "They never left Sol and Alpha Centauri. Whatever they have become, they cannot see the shell from inside its center without our key.",
+        "mid": "They never left Sol and Alpha Centauri. Whatever they have become, they need both our proof and a voice they still recognize.",
         "cold": "Target civilization localized to Sol–Centauri (10.0 ly). Carrier must carry verified geometry plus minimal human signature header."
       }
     }

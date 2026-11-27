@@ -1,4 +1,4 @@
-# Vibe-Coded Production Playbook: *Instance-1419*
+# Vibe-Coded Production Playbook: *Instance-1419* `[HISTORICAL ARCHIVE — SEE CANON.md / BEAT_SHEET.md / HARNESS.md FOR CURRENT SPECS]`
 
 This roadmap adapts [ORIGINAL_CONCEPT.md](./ORIGINAL_CONCEPT.md) to your exact constraints:
 * **Workflow:** Vibe-coding first (AI-assisted coding, shaders, asset curation/creation, and iteration; your role is Creative Director, Editor, and Playtester).

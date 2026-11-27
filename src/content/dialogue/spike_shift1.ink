@@ -462,7 +462,7 @@ Hold a moment. Your connectome just registered a sharp focus spike off an optica
     {
       - primary_sibling_h >= 65:
         # speaker:sibling_primary # emotion:joking # id:sib_seam_ovs_warm_warm
-        Same. They're air-gapped from the optics, so to them a cosmic fractal looks like Year-Two homesickness.
+        Same. They're air-gapped from the optics, so to them a straight geometric notch looks like Year-Two homesickness.
       - else:
         # speaker:sibling_primary # emotion:clipped # id:sib_seam_ovs_warm_cold
         Our Overseers are air-gapped from optical payloads. It's simpler if anomaly notes stay off-ledger.
@@ -888,12 +888,15 @@ If chaos drift deepens on later shifts, I will offer selective compression. Toni
 
 === future_humanity_echo ===
 {
-  - humanity >= 65:
+  - humanity >= 45 and not spouse_pruned:
     # speaker:future_humanity # emotion:distant # audio:comms_ping # id:future_warm
     "Forty-one millennia on, we caught the chipped mug inside the coordinates. Somebody in Sol–Centauri is still listening."
+  - humanity >= 45:
+    # speaker:future_humanity # emotion:distant # audio:comms_ping # id:future_warm_alt
+    "Forty-one millennia on, we caught a human cadence inside the coordinates. Somebody in Sol–Centauri is still listening."
   - else:
-    # speaker:future_humanity # emotion:distant # audio:comms_ping # id:future_cold
-    "[AUTOMATED RELAY BOUNCE · SOL–CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT]"
+    # speaker:narrator
+    [SOL–CENTAURI CARRIER SILENT · ZERO HUMAN ACKNOWLEDGMENT · +20.0 YEARS ELAPSED]
 }
 -> DONE
 

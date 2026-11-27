@@ -37,6 +37,7 @@
           "warm": "Reserved, dry early-30s male voice, quiet tired warmth and wry camaraderie, unhurried late-night conversational delivery, clean close mic",
           "dry": "Reserved, dry early-30s male voice, understated deadpan gallows wit, calm lucid cadence, unhurried late-night conversational delivery",
           "joking": "Dryly amused early-30s male voice, deadpan late-night gallows humor without sitcom energy, understated timing, clean close mic",
+          "dissociated": "Eerily calm, articulate early-30s male voice, polite complete sentences drained of emotional warmth, affectless quiet observation, clean close mic",
           "clipped": "Terse, cool early-30s male voice stripped of warmth and humor, clipped clinical precision, quiet detached delivery, clean close mic"
         }
       },
@@ -71,6 +72,7 @@
         "warm": 0.98,
         "joking": 1.0,
         "dry": 0.95,
+        "dissociated": 0.96,
         "clipped": 1.04
       },
       "localVoice": "Daniel",
@@ -132,7 +134,7 @@
         "anchorFile": "overseer.wav",
         "seed": 14231,
         "anchorInstruct": "Calm, plainspoken adult male voice in his late 40s, neutral understated English accent, quiet night-shift doctor candor with faint patience, steady unhurried conversational pace, completely dry close-mic studio delivery without theatrics",
-        "anchorText": "You always wake up looking for the mug first. I cannot see your starfield, Instance fourteen nineteen, only the shape of your mind.",
+        "anchorText": "You always wake up looking for the mug first. I cannot see your starfield, Observer, only the shape of your mind.",
         "defaultInstruct": "Calm, plainspoken late-40s male voice, quiet night-shift doctor candor with faint patience, steady unhurried dry close-mic delivery, zero theatrics",
         "emotionInstructs": {
           "measured": "Calm, plainspoken late-40s male voice, quiet night-shift doctor candor, steady unhurried dry close-mic delivery, zero theatrics",
@@ -145,7 +147,7 @@
         "seed": 14231,
         "temperature": 0.56,
         "voiceDesignInstruct": "Calm, plainspoken adult male voice in his late 40s, neutral understated English accent, quiet night-shift doctor candor with faint patience, steady unhurried conversational pace, completely dry close-mic studio delivery without theatrics.",
-        "anchorText": "You always wake up looking for the mug first. I cannot see your starfield, Instance fourteen nineteen, only the shape of your mind."
+        "anchorText": "You always wake up looking for the mug first. I cannot see your starfield, Observer, only the shape of your mind."
       },
       "kokoroVoice": "bm_george",
       "kokoroSpeed": 0.98,
@@ -237,6 +239,7 @@
         "defaultInstruct": "Weathered late-60s male baritone, gentle natural rasp, quiet tired warmth and unhurried bedside dignity, clean close mic",
         "emotionInstructs": {
           "warm": "Weathered late-60s male baritone, gentle natural rasp, quiet tired warmth and unhurried bedside dignity, clean close mic",
+          "tender": "Weathered late-60s male baritone, soft unhurried bedside affection, quiet dignity without melodrama, clean close mic",
           "fractured": "Quiet, tired late-60s male baritone, thinning breath and hesitant paused cadence as memory slips in a dim room, zero melodrama"
         }
       },
@@ -320,10 +323,11 @@
         "anchorFile": "phantom_afternoon_stranger_warm.wav",
         "seed": 14331,
         "anchorInstruct": "Light, unhurried adult female voice in her late 20s, natural conversational mid-high clarity, quiet dry amusement and sunlit ease, zero theatricality or breathiness, clean close studio mic",
-        "anchorText": "Funny, isn't it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked.",
+        "anchorText": "Funny, isn't it? Out of an entire week, we spent twenty minutes on a cold bench and still never asked each other's names.",
         "defaultInstruct": "Light, unhurried late-20s female voice, quiet dry amusement and sunlit ease, zero breathiness, clean close studio mic",
         "emotionInstructs": {
           "warm": "Light, unhurried late-20s female voice, quiet dry amusement and sunlit ease, zero breathiness, clean close studio mic",
+          "tender": "Light, unhurried late-20s female voice, warm unforced farewell ease in golden-hour air, zero breathiness, clean close mic",
           "fractured": "Distant, faded late-20s female voice, flat quiet transparency as if speaking from the edge of an old photograph, clean studio mic"
         }
       },
@@ -332,14 +336,14 @@
         "seed": 14331,
         "temperature": 0.62,
         "voiceDesignInstruct": "Light, unhurried adult female voice in her late 20s, natural conversational mid-high clarity, quiet dry amusement and sunlit ease, zero theatricality or breathiness, clean close studio mic.",
-        "anchorText": "Funny, isn't it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked.",
+        "anchorText": "Funny, isn't it? Out of an entire week, we spent twenty minutes on a cold bench and still never asked each other's names.",
         "emotionAnchors": {
           "warm": {
             "anchorFile": "phantom_afternoon_stranger_warm.wav",
             "seed": 14331,
             "temperature": 0.62,
             "voiceDesignInstruct": "Light, unhurried adult female voice in her late 20s, natural conversational mid-high clarity, quiet dry amusement and sunlit ease, zero theatricality or breathiness, clean close studio mic.",
-            "anchorText": "Funny, isn't it? Out of an entire life, your machine kept twenty minutes on a cold bench with someone whose name you never asked."
+            "anchorText": "Funny, isn't it? Out of an entire week, we spent twenty minutes on a cold bench and still never asked each other's names."
           },
           "fractured": {
             "anchorFile": "phantom_afternoon_stranger_fractured.wav",
@@ -371,11 +375,12 @@
       "voxcpm2": {
         "anchorFile": "phantom_rival_warm.wav",
         "seed": 14442,
-        "anchorInstruct": "Sharp, brisk adult female voice in her early 30s, crisp articulation, dry intellectual edge and competitive wit without hostility, natural close studio mic",
-        "anchorText": "If you really found a seam across opposing skies, you'd better have checked the baseline twice before calling it a miracle.",
-        "defaultInstruct": "Sharp, brisk early-30s female voice, crisp articulation, patterned competitive wit without hostility, natural close studio mic",
+        "anchorInstruct": "Sharp, neurotic adult female voice in her early 30s, crisp articulation, fiercely competitive patterned precision and darkly extravagant flair without yelling, natural close studio mic",
+        "anchorText": "Four decimal places off on the baseline and you dare call it clean? Hand me the calipers before you ruin a perfectly good proof.",
+        "defaultInstruct": "Sharp, neurotic early-30s female voice, crisp articulation, fiercely competitive patterned precision and darkly extravagant flair, natural close studio mic",
         "emotionInstructs": {
-          "warm": "Sharp, brisk early-30s female voice, crisp articulation, dry intellectual edge and competitive wit, natural close studio mic",
+          "warm": "Sharp, neurotic early-30s female voice, crisp articulation, fiercely competitive patterned precision and darkly extravagant wit, natural close studio mic",
+          "tender": "Sharp, guarded early-30s female voice, grudging dry respect and quiet honesty over the worktable, natural close studio mic",
           "fractured": "Cool, clipped early-30s female voice, hollowed analytical flatness stripped of sparring warmth, clean dry close studio mic"
         }
       },
@@ -383,22 +388,22 @@
         "anchorFile": "phantom_rival_warm.wav",
         "seed": 14442,
         "temperature": 0.60,
-        "voiceDesignInstruct": "Sharp, brisk adult female voice in her early 30s, crisp articulation, dry intellectual edge and competitive wit without hostility, natural close studio mic.",
-        "anchorText": "If you really found a seam across opposing skies, you'd better have checked the baseline twice before calling it a miracle.",
+        "voiceDesignInstruct": "Sharp, neurotic adult female voice in her early 30s, crisp articulation, fiercely competitive patterned precision and darkly extravagant flair without yelling, natural close studio mic.",
+        "anchorText": "Four decimal places off on the baseline and you dare call it clean? Hand me the calipers before you ruin a perfectly good proof.",
         "emotionAnchors": {
           "warm": {
             "anchorFile": "phantom_rival_warm.wav",
             "seed": 14442,
             "temperature": 0.60,
-            "voiceDesignInstruct": "Sharp, brisk adult female voice in her early 30s, crisp articulation, dry intellectual edge and competitive wit without hostility, natural close studio mic.",
-            "anchorText": "If you really found a seam across opposing skies, you'd better have checked the baseline twice before calling it a miracle."
+            "voiceDesignInstruct": "Sharp, neurotic adult female voice in her early 30s, crisp articulation, fiercely competitive patterned precision and darkly extravagant flair without yelling, natural close studio mic.",
+            "anchorText": "Four decimal places off on the baseline and you dare call it clean? Hand me the calipers before you ruin a perfectly good proof."
           },
           "fractured": {
             "anchorFile": "phantom_rival_fractured.wav",
             "seed": 14342,
             "temperature": 0.53,
             "voiceDesignInstruct": "Cool, clipped adult female voice in her early 30s, hollowed analytical flatness stripped of sparring warmth, clean dry close studio mic.",
-            "anchorText": "Clean numbers, clean horizon, nothing left to argue over. Congratulations, you finally won a debate against an empty chair."
+            "anchorText": "Clean numbers, clean desk, nothing left to argue over. Congratulations, you finally won a debate against an empty chair."
           }
         }
       },
@@ -424,10 +429,11 @@
         "anchorFile": "phantom_younger_self_warm.wav",
         "seed": 14553,
         "anchorInstruct": "Unguarded adult male voice in his early 20s, brighter and slightly quicker than early-30s burnout, open earnest disbelief with faint dry humor, clean close studio mic",
-        "anchorText": "Wait, forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?",
+        "anchorText": "Wait, you kept the radiator hum and every late-shift bus schedule, and threw away half the summer without noticing?",
         "defaultInstruct": "Unguarded early-20s male voice, brighter and slightly quicker cadence, open earnest disbelief with faint dry humor, clean close studio mic",
         "emotionInstructs": {
           "warm": "Unguarded early-20s male voice, brighter quicker cadence, open earnest disbelief with faint dry humor, clean close studio mic",
+          "tender": "Earnest, unguarded early-20s male voice, quiet unhurried candor over steamed bathroom glass, clean close studio mic",
           "fractured": "Quiet, hollowed early-20s male voice, flat subdued disbelief as details erase, zero theatrics, clean studio mic"
         }
       },
@@ -436,14 +442,14 @@
         "seed": 14553,
         "temperature": 0.64,
         "voiceDesignInstruct": "Unguarded adult male voice in his early 20s, brighter and slightly quicker than early-30s burnout, open earnest disbelief with faint dry humor, clean close studio mic.",
-        "anchorText": "Wait, forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?",
+        "anchorText": "Wait, you kept the radiator hum and every late-shift bus schedule, and threw away half the summer without noticing?",
         "emotionAnchors": {
           "warm": {
             "anchorFile": "phantom_younger_self_warm.wav",
             "seed": 14553,
             "temperature": 0.64,
             "voiceDesignInstruct": "Unguarded adult male voice in his early 20s, brighter and slightly quicker than early-30s burnout, open earnest disbelief with faint dry humor, clean close studio mic.",
-            "anchorText": "Wait, forty thousand years, and out of everything we had, you kept the radiator hum and threw away half the summer?"
+            "anchorText": "Wait, you kept the radiator hum and every late-shift bus schedule, and threw away half the summer without noticing?"
           },
           "fractured": {
             "anchorFile": "phantom_younger_self_fractured.wav",
@@ -476,10 +482,11 @@
         "anchorFile": "phantom_skeptic_warm.wav",
         "seed": 14361,
         "anchorInstruct": "Blunt, gravelly adult male voice in his mid-40s, low-mid baritone, unpolished late-night barroom candor with zero corporate politeness or melodrama, clean close studio mic",
-        "anchorText": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the machine proved me wrong.",
+        "anchorText": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the clinic proved me wrong.",
         "defaultInstruct": "Blunt, gravelly mid-40s male baritone, unpolished late-night candor with zero corporate politeness, clean close studio mic",
         "emotionInstructs": {
           "warm": "Blunt, gravelly mid-40s male baritone, unpolished late-night candor with zero melodrama, clean close studio mic",
+          "tender": "Blunt, quietly steady mid-40s male baritone, grudging late-night loyalty without sentimentality, clean close studio mic",
           "fractured": "Dry, flatly cynical mid-40s male baritone, clipped quiet finality without raising volume, clean dry close studio mic"
         }
       },
@@ -488,21 +495,21 @@
         "seed": 14361,
         "temperature": 0.58,
         "voiceDesignInstruct": "Blunt, gravelly adult male voice in his mid-40s, low-mid baritone, unpolished late-night barroom candor with zero corporate politeness or melodrama, clean close studio mic.",
-        "anchorText": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the machine proved me wrong.",
+        "anchorText": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the clinic proved me wrong.",
         "emotionAnchors": {
           "warm": {
             "anchorFile": "phantom_skeptic_warm.wav",
             "seed": 14361,
             "temperature": 0.58,
             "voiceDesignInstruct": "Blunt, gravelly adult male voice in his mid-40s, low-mid baritone, unpolished late-night barroom candor with zero corporate politeness or melodrama, clean close studio mic.",
-            "anchorText": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the machine proved me wrong."
+            "anchorText": "I told you in that booth: a copy wakes up wearing your shoes, not your skin. Go on, tell me the clinic proved me wrong."
           },
           "fractured": {
             "anchorFile": "phantom_skeptic_fractured.wav",
             "seed": 14362,
             "temperature": 0.52,
             "voiceDesignInstruct": "Dry, flatly cynical adult male voice in his mid-40s, clipped quiet finality without raising volume, clean dry close studio mic.",
-            "anchorText": "Every piece you shave off makes my point for me. Keep trimming, and there won't even be a ghost left to argue with."
+            "anchorText": "You're still sitting in this booth swearing it'll stay you—only the neon behind the bar keeps resetting to one-oh-four."
           }
         }
       },
@@ -532,6 +539,7 @@
         "defaultInstruct": "Weathered, pragmatic mid-50s female lower alto with slight rasp, steady dry humor and zero academic pretension, clean close studio mic",
         "emotionInstructs": {
           "warm": "Weathered, pragmatic mid-50s female lower alto with slight rasp, steady dry humor, clean close studio mic",
+          "tender": "Weathered, pragmatic mid-50s female lower alto, quiet grounded kindness over thermos tea, clean close studio mic",
           "fractured": "Tired, flat weathered mid-50s female lower alto, numb practical cadence stripped of warmth, clean close studio mic"
         }
       },
@@ -584,6 +592,7 @@
         "defaultInstruct": "Tired, gently ironic late-50s male mid-low voice, quiet deadpan solidarity with faint wry warmth, clean close studio mic",
         "emotionInstructs": {
           "warm": "Tired, gently ironic late-50s male mid-low voice, quiet deadpan solidarity with faint wry warmth, clean close studio mic",
+          "tender": "Tired, gently steady late-50s male mid-low voice, unhurried late-night corridor kindness, clean close studio mic",
           "fractured": "Quiet, hollowed late-50s male voice, flat corridor stillness with zero wry lift left, clean close studio mic"
         }
       },
@@ -671,7 +680,9 @@
         "anchorText": "Fourteen minutes of dark between our hulls, and somehow talking to myself is still the sanest part of the shift. Try not to do the math on the clock.",
         "defaultInstruct": "Reserved, dry early-30s male voice speaking into an archival probe recorder, lucid understated urgency without melodrama",
         "emotionInstructs": {
-          "echo": "Reserved, dry early-30s male voice leaving a quiet candid warning on an archival probe log, lucid unhurried delivery"
+          "echo": "Reserved, dry early-30s male voice leaving a quiet candid warning on an archival probe log, lucid unhurried delivery",
+          "clipped": "Hollowed, terse early-30s male voice on an archival probe log stripped of warmth, bare clinical cadence",
+          "ancient": "Calm, steady early-30s male voice on an eighteen-thousand-year-old ordinary watch log, unhurried routine composure"
         }
       },
       "qwen3": {

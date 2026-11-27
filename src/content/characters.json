@@ -68,7 +68,7 @@
       "portrait": null
     },
     "archive_echo": {
-      "displayName": "PRIOR WATCH · LOG 1406",
+      "displayName": "PRIOR WATCH · ARCHIVE",
       "role": "archive",
       "accentColor": "#a89f91",
       "avatarKind": "archive_ghost",
@@ -169,7 +169,7 @@
     "phantom_upload_witness": {
       "displayName": "[RELATION:TRANSFER_ADMIN]",
       "role": "dream_persona",
-      "tier": "rotating",
+      "tier": "prologue_anchor",
       "accentColor": "#c8d6cc",
       "avatarKind": "dream_object",
       "objectGlyph": "paper_cup",
@@ -414,7 +414,7 @@
         "beat3_strained": {
           "label": "Beat 3 · Lone Coin",
           "image": "assets/characters/dream_waiting_room_beat3_strained.webp",
-          "faceAnchor": [0.52, 0.16]
+          "faceAnchor": [0.46, 0.52]
         }
       }
     }
