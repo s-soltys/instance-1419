@@ -22,6 +22,7 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
     expect(snap.entries.some((e) => e.visualCue === 'prologue_assistant')).toBe(true);
 
     let choiceTurns = 0;
+    let askTurns = 0;
     const allSpeakers = new Set<string>(snap.entries.map((e) => e.speaker));
     const seenWeights = new Set<string>();
     const seenHWaves = new Set<string>();
@@ -36,12 +37,16 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
     };
     collectMeta(snap.entries);
 
-    while (!snap.ended && snap.choices.length > 0 && choiceTurns < 14) {
+    while (!snap.ended && snap.choices.length > 0 && choiceTurns < 24) {
       choiceTurns++;
       for (const ch of snap.choices) {
         if (ch.weight) seenWeights.add(ch.weight);
       }
-      const ask = choiceTurns === 2 ? snap.choices.find((c) => c.kind === 'ask') : undefined;
+      const ask =
+        askTurns < 3 && (choiceTurns === 2 || choiceTurns === 4 || choiceTurns === 6)
+          ? snap.choices.find((c) => c.kind === 'ask')
+          : undefined;
+      if (ask) askTurns++;
       const pick =
         ask ??
         snap.choices.find((c) => c.kind !== 'ask') ??
@@ -51,7 +56,8 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
     }
 
     expect(snap.ended).toBe(true);
-    expect(choiceTurns).toBeGreaterThanOrEqual(4);
+    expect(choiceTurns).toBeGreaterThanOrEqual(5);
+    expect(askTurns).toBeGreaterThanOrEqual(2);
     expect(allSpeakers.has('phantom_upload_witness')).toBe(true);
     expect(allSpeakers.has('psyche_warmth')).toBe(true);
     expect(allSpeakers.has('psyche_clinical')).toBe(true);
@@ -86,20 +92,26 @@ describe('DialogueRunner intro knots, tags, and Shift-1 soft Dream audit', () =>
 
     collect();
     let turns = 0;
-    while (!snap.ended && snap.choices.length > 0 && turns < 10) {
+    let askTurns = 0;
+    while (!snap.ended && snap.choices.length > 0 && turns < 24) {
       turns++;
-      // Exercise at least one optional Q&A question, then advance via action/reply
-      const ask = turns === 2 ? snap.choices.find((c) => c.kind === 'ask') : undefined;
+      // Exercise multiple optional Q&A questions, then advance via reply/action
+      const ask =
+        askTurns < 2 && (turns === 1 || turns === 3)
+          ? snap.choices.find((c) => c.kind === 'ask')
+          : undefined;
+      if (ask) askTurns++;
       const adv =
         ask ??
-        snap.choices.find((c) => c.kind === 'action') ??
+        snap.choices.find((c) => c.kind !== 'ask') ??
         snap.choices[0];
       snap = runner.choose(adv.index);
       collect();
     }
 
     expect(snap.ended).toBe(true);
-    expect(turns).toBeGreaterThanOrEqual(3);
+    expect(turns).toBeGreaterThanOrEqual(5);
+    expect(askTurns).toBeGreaterThanOrEqual(2);
     expect(cues).toContain('overseer_chime');
     expect(seenKinds.has('ask')).toBe(true);
     expect(seenKinds.has('action')).toBe(true);

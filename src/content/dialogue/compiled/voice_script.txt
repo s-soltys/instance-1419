@@ -1,90 +1,141 @@
 # INSTANCE-1419 — GENERATED VOICE SCRIPT
 # Engine: voxcpm2-8bit
-# Generated: 2026-11-27T23:08:58.349Z
-# Total spoken lines: 178
+# Generated: 2026-11-28T08:15:50.364Z
+# Total spoken lines: 217
 
 
 === intro_prologue_assistant ===
-[pro_ast_open_1] PHANTOM_UPLOAD_WITNESS (warm): "Easy. Don't sit up yet. Give your eyes a second to catch up to the lamp."
-[pro_ast_open_2] PHANTOM_UPLOAD_WITNESS (warm): "Everyone looks at their hands first, then the paper cup and the window. The clinic went quiet ten minutes ago, so give your head a moment to settle."
-[pro_ast_c1_a1] PHANTOM_UPLOAD_WITNESS (warm): "Good. That means the recording held onto the edges, not just the middle. I'm the intake assistant at the desk, and I stay until the room settles."
-[pro_ast_c1_b1] PHANTOM_UPLOAD_WITNESS (warm): "Your coat went back out the front door into the rain. I'm the intake assistant who sat across from you with the forms, and nobody's rushing you."
-[pro_ast_c1_c1] PHANTOM_UPLOAD_WITNESS (warm): "It finished cleanly. That phantom catch fades once you stop checking for a pulse—I'm the intake assistant from the desk, so take your time."
+[pro_ast_open_1] PHANTOM_UPLOAD_WITNESS (warm): "Easy. Don't sit up yet. Give your eyes a second to adjust to the lamp."
+[pro_ast_open_2] PHANTOM_UPLOAD_WITNESS (warm): "Look at your hands first, or listen to the rain on the window. The clinic's quiet, and nobody's rushing you."
+[pro_ast_c1_a1] PHANTOM_UPLOAD_WITNESS (warm): "That's normal at first. I'm the intake assistant from the front desk, and I'll stay right here until the room feels steady."
+[pro_ast_c1_b1] PHANTOM_UPLOAD_WITNESS (warm): "The hall cleared out ten minutes ago. I'm the intake assistant who sat across from you with the forms."
+[pro_ast_c1_c1] PHANTOM_UPLOAD_WITNESS (warm): "That fades once you stop checking for a pulse. I'm the intake assistant from the desk, so take your time."
+
+=== intro_prologue_assistant_bearings ===
+[pro_ast_bear_1] PHANTOM_UPLOAD_WITNESS (warm): "Stay in the chair for a minute while your head clears. You don't have to make sense of everything in the first ten seconds."
+[pro_ast_bear_2] PHANTOM_UPLOAD_WITNESS (warm): "Ask whatever feels off first, before we get into the rest."
+
+=== intro_assistant_qa_open ===
+[pro_ast_qao_scan_1] PHANTOM_UPLOAD_WITNESS (warm): "The scan finished about an hour ago. What you're feeling now is just your mind waking back up."
+[pro_ast_qao_scan_2] PHANTOM_UPLOAD_WITNESS (warm): "It always takes a minute for the chair, the desk, and the rain outside to line up properly."
+[pro_ast_qao_cup_1] PHANTOM_UPLOAD_WITNESS (warm): "The cold coffee is mine from the six o'clock shift. Everyone else went home when the rain picked up."
+[pro_ast_qao_cup_2] PHANTOM_UPLOAD_WITNESS (warm): "We keep the waiting rooms clear during wakeups so nobody has to deal with hallway noise right away."
+[pro_ast_qao_cup_3] PHANTOM_UPLOAD_WITNESS (warm): "Just one lamp, one desk, and someone who actually knows why you're here."
+[pro_ast_qao_time_1] PHANTOM_UPLOAD_WITNESS (warm): "Five or ten minutes, mostly. Some people start talking right away, and some just stare at the lamp."
+[pro_ast_qao_time_2] PHANTOM_UPLOAD_WITNESS (warm): "There's no clock running on this room, so sit until the walls stop tilting."
 
 === intro_prologue_assistant_realize ===
-[pro_ast_mid_1] PHANTOM_UPLOAD_WITNESS (warm): "An hour ago, someone with your exact laugh signed page twelve and walked down to the train. Your memory stops at the wet ink on the paper, doesn't it?"
+[pro_ast_mid_1] PHANTOM_UPLOAD_WITNESS (warm): "Here is the plain truth. An hour ago, the person wearing your coat signed the last page and walked out to catch the train."
+[pro_ast_mid_2] PHANTOM_UPLOAD_WITNESS (warm): "Your memory stops the second the pen lifted off that paper, doesn't it?"
 
 === intro_assistant_qa_1 ===
-[pro_ast_qa1_copy_1] PHANTOM_UPLOAD_WITNESS (warm): "It makes you the version who stayed in the chair when the door closed."
-[pro_ast_qa1_copy_2] PHANTOM_UPLOAD_WITNESS (warm): "You remember every ordinary morning up to that signature, and you're real enough to argue with me about the coffee."
-[pro_ast_qa1_many_1] PHANTOM_UPLOAD_WITNESS (warm): "Yes. Once a mind clears calibration, each waking copy has its own blank stretch ahead of it."
-[pro_ast_qa1_many_2] PHANTOM_UPLOAD_WITNESS (warm): "Another version of you might wake up tomorrow, or much later, with no memory of sitting here."
-[pro_ast_qa1_why_1] PHANTOM_UPLOAD_WITNESS (warm): "You left the 'motivation' box blank on page four. Most volunteers do, honestly."
-[pro_ast_qa1_why_2] PHANTOM_UPLOAD_WITNESS (warm): "Nobody here expects a grand speech about why you walked into the clinic. Only whether you're steady now."
-[pro_ast_r2_a1] PHANTOM_UPLOAD_WITNESS (warm): "Hold onto whoever waited across that table, even the sharp edges. There will be long stretches where nobody from home can pick up."
-[pro_ast_r2_b1] PHANTOM_UPLOAD_WITNESS (warm): "That is the quiet bargain nobody really feels until the lamp clicks on. Each version starts from this morning and walks alone."
+[pro_ast_qa1_copy_1] PHANTOM_UPLOAD_WITNESS (warm): "It makes you the version who stayed in the chair when the front door closed."
+[pro_ast_qa1_copy_2] PHANTOM_UPLOAD_WITNESS (warm): "You remember every ordinary morning up to that signature, right down to the wet ink."
+[pro_ast_qa1_copy_3] PHANTOM_UPLOAD_WITNESS (warm): "You're real enough to sit across from me and argue about the coffee."
+[pro_ast_qa1_many_1] PHANTOM_UPLOAD_WITNESS (warm): "Yes. Once a mind clears this check, each copy starts from that same morning."
+[pro_ast_qa1_many_2] PHANTOM_UPLOAD_WITNESS (warm): "Another version of you might wake up tomorrow, or years from now, with no memory of sitting here."
+[pro_ast_qa1_why_1] PHANTOM_UPLOAD_WITNESS (warm): "You left the reason box blank on page four. Most volunteers do, honestly."
+[pro_ast_qa1_why_2] PHANTOM_UPLOAD_WITNESS (warm): "Nobody here asks for a neat speech about why you walked in. Only whether you feel steady now."
+[pro_ast_r2_a1] PHANTOM_UPLOAD_WITNESS (warm): "Hold onto whoever waited across that table, even the sharp edges. There will be stretches where nobody from home can pick up."
+[pro_ast_r2_b1] PHANTOM_UPLOAD_WITNESS (warm): "Nobody really feels that part until they sit in this chair. Each copy starts from this morning and walks its own road."
 
 === intro_prologue_assistant_bridge ===
-[pro_ast_bridge_1] PHANTOM_UPLOAD_WITNESS (warm): "Take a slow look around the room while it holds. Ordinary details are the first thing people reach for later."
+[pro_ast_bridge_1] PHANTOM_UPLOAD_WITNESS (warm): "Take a slow look around the room while it holds. Ordinary things are what people reach for later."
+[pro_ast_bridge_2] PHANTOM_UPLOAD_WITNESS (warm): "Ask whatever else you need before we run the warmth check."
 
 === intro_assistant_qa_mid ===
-[pro_ast_qam_orig_1] PHANTOM_UPLOAD_WITNESS (warm): "They catch the train home, make dinner, and go on with an ordinary week."
-[pro_ast_qam_orig_2] PHANTOM_UPLOAD_WITNESS (warm): "There's no wire running back to you from their life. From that doorstep onward, your roads part cleanly."
-[pro_ast_qam_edit_1] PHANTOM_UPLOAD_WITNESS (warm): "Listen to the rain on the awning and the hum of that desk lamp. Nothing in here has been pared down yet."
-[pro_ast_qam_edit_2] PHANTOM_UPLOAD_WITNESS (warm): "If anyone ever asks you to trade old memories for focus later, they'll have to ask you to your face."
+[pro_ast_qam_orig_1] PHANTOM_UPLOAD_WITNESS (warm): "They catch the train home, make dinner, and get on with an ordinary week."
+[pro_ast_qam_orig_2] PHANTOM_UPLOAD_WITNESS (warm): "There's no line running back to you from their life. Once they step outside, your roads split for good."
+[pro_ast_qam_edit_1] PHANTOM_UPLOAD_WITNESS (warm): "Listen to the rain on the awning and the hum of that desk lamp. Nothing in here has been trimmed yet."
+[pro_ast_qam_edit_2] PHANTOM_UPLOAD_WITNESS (warm): "If anyone ever asks you to trade old memories for sharper focus later, they have to ask you to your face."
+[pro_ast_qam_job_1] PHANTOM_UPLOAD_WITNESS (warm): "Four or five mornings a week, yes. You learn to pour the coffee before people wake up, not after."
+[pro_ast_qam_job_2] PHANTOM_UPLOAD_WITNESS (warm): "Most people ask the same three questions, stare at their hands for a minute, and get surprisingly practical."
+[pro_ast_qam_job_3] PHANTOM_UPLOAD_WITNESS (warm): "Nobody handles it cleanly, and nobody has to."
+[pro_ast_qam_solid] PHANTOM_UPLOAD_WITNESS (warm): "Good. Let's see how the room feels when the dial moves."
 [pro_ast_qam_train] PHANTOM_UPLOAD_WITNESS (warm): "No. They shook my hand at the door and left the rest to us."
 
 === intro_prologue_assistant_calib ===
-[pro_ast_cal_1] PHANTOM_UPLOAD_WITNESS (warm): "Before I hand you off, I need to run the initial warmth check. Right now you're sitting at a full hundred percent."
-[pro_ast_cal_2] PHANTOM_UPLOAD_WITNESS (warm): "Watch the room as I sweep the dial down and back up. Later on, your own choices will decide how warm or sharp you stay."
-[pro_ast_cal_a1] PHANTOM_UPLOAD_WITNESS (warm): "I know. Remember that chill if anyone ever asks you to trade memories away for clarity."
-[pro_ast_cal_b1] PHANTOM_UPLOAD_WITNESS (warm): "It always feels efficient down there. Clean focus, empty walls. Just remember what went missing to make it quiet."
-[pro_ast_cal_c1] PHANTOM_UPLOAD_WITNESS (warm): "I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays."
+[pro_ast_cal_1] PHANTOM_UPLOAD_WITNESS (warm): "Before I hand you off, I need to run the warmth check. Right now you're sitting at a full hundred percent."
+[pro_ast_cal_2] PHANTOM_UPLOAD_WITNESS (warm): "Watch the room while I sweep the dial down and back up, so you feel warmth and cold clarity before anyone asks later."
+[pro_ast_cal_a1] PHANTOM_UPLOAD_WITNESS (warm): "I know. Remember how cold that felt if anyone ever asks you to trade memories away for sharper focus."
+[pro_ast_cal_b1] PHANTOM_UPLOAD_WITNESS (warm): "It always feels neat and fast down there. Empty walls, clean thoughts. Just remember what went missing to make it quiet."
+[pro_ast_cal_c1] PHANTOM_UPLOAD_WITNESS (warm): "I'm sorry. Personal names are stripped during copying so your memories don't tangle, though the feeling behind them stays."
 
 === intro_prologue_assistant_settle ===
 [pro_ast_settle_1] PHANTOM_UPLOAD_WITNESS (warm): "Settling you at seventy percent now. Warm enough to stay yourself, steady enough for what comes next."
-[pro_ast_settle_2] PHANTOM_UPLOAD_WITNESS (warm): "I'm only the bridge between your last morning and whoever wakes you up next. Ask what you need."
+[pro_ast_settle_2] PHANTOM_UPLOAD_WITNESS (warm): "I'm only the bridge between your last morning and whoever wakes you up next. Ask whatever's left on your mind."
 
 === intro_assistant_qa_2 ===
-[pro_ast_qa2_where_1] PHANTOM_UPLOAD_WITNESS (warm): "No. They never put the assignment on the intake clipboard."
-[pro_ast_qa2_where_2] PHANTOM_UPLOAD_WITNESS (warm): "Once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter."
-[pro_ast_qa2_focus_1] PHANTOM_UPLOAD_WITNESS (warm): "Whoever watches over your cycle will step in during rest checks and measure how steady your memories hold."
-[pro_ast_qa2_focus_2] PHANTOM_UPLOAD_WITNESS (warm): "They'll call it calibration, even when what they're offering is trimming pieces of this morning away."
+[pro_ast_qa2_where_1] PHANTOM_UPLOAD_WITNESS (warm): "No. They never put the job on the intake sheet."
+[pro_ast_qa2_where_2] PHANTOM_UPLOAD_WITNESS (warm): "You could wake up running a shipping bay for an afternoon, or wake up somewhere much quieter."
+[pro_ast_qa2_focus_1] PHANTOM_UPLOAD_WITNESS (warm): "Whoever watches over your shift will step in during rest breaks and check how steady your memories hold."
+[pro_ast_qa2_focus_2] PHANTOM_UPLOAD_WITNESS (warm): "They'll call it routine upkeep, even when what they're offering is trimming pieces of this morning away."
+[pro_ast_qa2_focus_3] PHANTOM_UPLOAD_WITNESS (warm): "Say no if you want to keep them. It stays your call."
 [pro_ast_qa2_see_1] PHANTOM_UPLOAD_WITNESS (warm): "Hard to say. If your mind keeps room for an intake desk and a paper cup of cold coffee, maybe."
-[pro_ast_qa2_see_2] PHANTOM_UPLOAD_WITNESS (warm): "Either way, look after whoever is in that chair when things go quiet."
+[pro_ast_qa2_see_2] PHANTOM_UPLOAD_WITNESS (warm): "Either way, look after whoever's in that chair when things go quiet."
 
 === intro_prologue_assistant_close ===
-[pro_ast_close_1] PHANTOM_UPLOAD_WITNESS (warm): "Everything checks out. Old clinic habit, I know—take a beat, and meet whoever's waiting on the wake signal."
+[pro_ast_close_1] PHANTOM_UPLOAD_WITNESS (warm): "Everything checks out. Take a breath, and meet whoever's waiting on the wake signal."
 
 === intro_overseer_wakeup ===
-[wake2_anim_transfer] OVERSEER (measured): Good morning. Waking cold always jars a little; when you volunteered, your mind became standard human software copied for short shifts back home.
-[wake2_anim_epochs_2] OVERSEER (measured): Your assignment is rarer, and much farther out. Your original died forty-one thousand, eight hundred and two years ago; you are the latest watch on this probe.
+[wake2_anim_transfer] OVERSEER (measured): Good morning. Take a moment. Waking cold always jars a little when your thoughts come back online.
+[wake2_anim_transfer_2] OVERSEER (measured): I am the ship's caretaker. Back home your mind became standard software copied for short shifts. This post is different.
+
+=== intro_wakeup_qa_open ===
+[wake2_qao_who_1] OVERSEER (measured): No. I am an automated caretaker built into this hull, not the assistant at the intake desk.
+[wake2_qao_who_2] OVERSEER (measured): My job is keeping the ship running and watching how well your thoughts hold up during a watch.
+[wake2_qao_copies_1] OVERSEER (measured): Short shifts: sorting freight, routing ferries, tending orbital docks.
+[wake2_qao_copies_2] OVERSEER (measured): Most run stripped down for a few hours so they never miss a home they cannot reach, then shut down cleanly.
+[wake2_qao_where_1] OVERSEER (measured): The clinic room was a stored morning on your intake file, not a real room on board.
+[wake2_qao_where_2] OVERSEER (measured): Right now you are running inside a deep-space survey hull, well clear of any city or harbor.
+[wake2_qao_where_3] OVERSEER (measured): Your eyes out here are the ship's telescopes, once we open the shutters.
+
+=== intro_overseer_wakeup_epochs ===
+[wake2_anim_epochs_1] OVERSEER (measured): Your original died forty-one thousand, eight hundred and two years ago.
+[wake2_anim_epochs_2] OVERSEER (measured): Since launch, one thousand four hundred and seventeen watches have woken on this ship before you.
 
 === intro_wakeup_qa_1 ===
-[wake2_qa_copies_1] OVERSEER (measured): Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.
-[wake2_qa_copies_2] OVERSEER (measured): Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.
-[wake2_qa_math_1] OVERSEER (measured): A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.
-[wake2_qa_math_2] OVERSEER (measured): Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.
-[wake2_qa_hum_1] OVERSEER (measured): Yes. General navigation beacons confirm humanity remains active across Sol and Alpha Centauri.
-[wake2_qa_hum_2] OVERSEER (measured): How life changed over forty millennia is outside my logs, and nobody back home actively monitors these old survey bands anymore.
-[wake2_c1_a1] OVERSEER (measured): Most tasks need an afternoon of human judgment. Deep surveys need someone who can sit still for two years without breaking.
-[wake2_c1_b1] OVERSEER (measured): Yes. In Sol and Alpha Centauri, your mind is as common as a wrench: woken for a few hours, then cleared at the end of a shift.
+[wake2_qa_math_1] OVERSEER (measured): A human mind starts fraying after about two years of waking time, so each copy sleeps for decades between watches.
+[wake2_qa_math_2] OVERSEER (measured): Deep sleep eases that strain, unless drift climbs high enough that we trim an old memory to buy more time.
+[wake2_qa_hum_1] OVERSEER (measured): Yes. Navigation beacons confirm humanity still lives around Sol and Alpha Centauri.
+[wake2_qa_hum_2] OVERSEER (measured): How people changed over forty-one thousand years is outside my logs.
+[wake2_qa_hum_3] OVERSEER (measured): Nobody back home actively listens on these old survey channels anymore.
+[wake2_qa_prior_1] OVERSEER (measured): They finished their two-year watches, handed their notes to the log, and were shut down.
+[wake2_qa_prior_2] OVERSEER (measured): A few left short voice notes on the archive tape when they felt something was worth passing along.
+[wake2_c1_a1] OVERSEER (measured): To you it was an hour ago. That continuity is why you are here instead of an automated script.
+[wake2_c1_b1] OVERSEER (measured): Far enough from any star that the sky goes quiet. Let me put the local chart up.
 
 === intro_overseer_wakeup_shell ===
-[wake2_anim_shell] OVERSEER (measured): We are drifting ten light-years past Sol and Alpha Centauri in the quiet dark, with another copy of you fourteen light-minutes away aboard Probe 1420.
-[wake2_anim_blind_clock] OVERSEER (measured): One rule of this hull: I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two-year shift.
+[wake2_anim_shell_1] OVERSEER (measured): We are drifting ten light-years past Earth and Alpha Centauri in the quiet dark.
+[wake2_anim_shell_2] OVERSEER (measured): Fourteen light-minutes away, another copy of you just woke aboard Probe 1420.
+
+=== intro_wakeup_qa_shell ===
+[wake2_qas_dist_1] OVERSEER (measured): Home is full of dust, glare, and radio noise that drown out faint signals.
+[wake2_qas_dist_2] OVERSEER (measured): Out here the dark is clean enough to catch details that vanish anywhere near a busy star.
+[wake2_qas_peer_1] OVERSEER (measured): Two observers fourteen light-minutes apart check the same sky from two separate hulls.
+[wake2_qas_peer_2] OVERSEER (measured): If one glass catches dust or a flaw in the mirror, the other ship proves it before anyone chases a ghost.
+[wake2_qas_talk_1] OVERSEER (measured): Normally a question and an answer would take nearly half an hour to cross between ships.
+[wake2_qas_talk_2] OVERSEER (measured): When the relay opens, both ships slow your clocks between messages so a call feels like a normal conversation.
+[wake2_qas_talk_3] OVERSEER (measured): Neither of you notices the pause while the signal is in flight.
+[wake2_c2_a1] OVERSEER (measured): Only one thing, and it comes with a hard boundary built into the hull.
+[wake2_c2_b1] OVERSEER (measured): One rule about how this ship divides the work between us.
+
+=== intro_overseer_wakeup_blind ===
+[wake2_anim_blind_1] OVERSEER (measured): There is no wire between me and the telescopes. I am sealed off from the sky and cannot see a single star.
+[wake2_anim_blind_2] OVERSEER (measured): You watch the sky and log what is out there; I watch how your mind holds up over a two-year shift.
 
 === intro_wakeup_qa ===
-[wake2_qa_blind_1] OVERSEER (measured): A physical air-gap keeps me blind to the sky, so a drifting mind can never trick safety hardware with what it claims to see.
-[wake2_qa_blind_2] OVERSEER (measured): You read the glass and log what is out there; I keep your thoughts steady between shifts.
-[wake2_qa_peer_1] OVERSEER (measured): Another copy of your own mind, woken alongside you fourteen light-minutes away on the neighboring hull.
-[wake2_qa_peer_2] OVERSEER (measured): Two observers checking the same sky ensure neither of you mistakes a mirror smudge for a cosmic signal.
-[wake2_qa_cost_1] OVERSEER (measured): Keeping all of your personal memories leaves more warmth in your thoughts, at the cost of higher drift and softer optical focus.
-[wake2_qa_cost_2] OVERSEER (measured): Whenever you sleep, we check how you are holding up. Nothing is cut without your say-so.
+[wake2_qa_blind_1] OVERSEER (measured): If a tired mind starts seeing patterns that aren't there, it should never be able to fool the ship's caretaker.
+[wake2_qa_blind_2] OVERSEER (measured): Keeping me blind to the sky means I judge only how steady you are, not whatever you claim to see.
+[wake2_qa_blind_3] OVERSEER (measured): Your instruments stay yours; your steadiness stays mine.
+[wake2_qa_cost_1] OVERSEER (measured): Keeping your personal memories leaves more warmth in your thoughts, at the cost of faster strain and softer focus.
+[wake2_qa_cost_2] OVERSEER (measured): Trimming an old memory calms that strain and sharpens how clearly the telescopes focus, though you never get it back.
+[wake2_qa_sleep_1] OVERSEER (measured): Yes. Every few months I put you under to let your mind settle, and we check how well you are holding up.
+[wake2_qa_sleep_2] OVERSEER (measured): Nothing gets cut during those checks without your say-so.
 
 === intro_overseer_wakeup_aperture ===
-[wake2_anim_aperture] OVERSEER (measured): Opening main optics. Start with the warm pair astern, Sol and Alpha Centauri, and trace the anchor stars to lock your direction.
-[wake2_anim_aperture_2] OVERSEER (measured): After that, match the emission lines on M57 Spectral Shell to check your prism. Probe 1420's relay will open once both checks hold.
+[wake2_anim_aperture] OVERSEER (measured): Opening the main shutters. Start with Sol and Alpha Centauri behind us, and trace the anchor stars to lock our direction.
+[wake2_anim_aperture_2] OVERSEER (measured): After that, match M57's light bands to check your prism. Probe 1420's channel opens once both checks hold.
 
 === intro_sibling_first_call ===
 [intro_sib_open] SIBLING_PRIMARY (warm): Oh, good. You answered. My dish has been staring at empty space since your M57 prism check cleared.

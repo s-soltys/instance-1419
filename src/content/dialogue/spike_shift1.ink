@@ -4,87 +4,141 @@
 
 === intro_prologue_assistant ===
 # visual:prologue_assistant # tableau:base # h_wave:hold_100 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_open_1
-"Easy. Don't sit up yet. Give your eyes a second to catch up to the lamp."
+"Easy. Don't sit up yet. Give your eyes a second to adjust to the lamp."
 # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_open_2
-"Everyone looks at their hands first, then the paper cup and the window. The clinic went quiet ten minutes ago, so give your head a moment to settle."
+"Look at your hands first, or listen to the rain on the window. The clinic's quiet, and nobody's rushing you."
 
-* ["The light feels strange... like looking at a room I already left." # kind:reply # weight:explore]
+* ["The light feels strange. Like looking at a room I already left." # kind:reply # weight:explore]
     # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_c1_a1
-    "Good. That means the recording held onto the edges, not just the middle. I'm the intake assistant at the desk, and I stay until the room settles."
-    -> intro_prologue_assistant_realize
+    "That's normal at first. I'm the intake assistant from the front desk, and I'll stay right here until the room feels steady."
+    -> intro_prologue_assistant_bearings
 
-* ["Where did everyone else go? My coat was on the back of a chair." # kind:reply # weight:explore]
+* ["Where did everyone else go? My coat was on the back of that chair." # kind:reply # weight:explore]
     # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_c1_b1
-    "Your coat went back out the front door into the rain. I'm the intake assistant who sat across from you with the forms, and nobody's rushing you."
+    "The hall cleared out ten minutes ago. I'm the intake assistant who sat across from you with the forms."
+    -> intro_prologue_assistant_bearings
+
+* ["My throat feels odd when I try to swallow. Like nothing's moving." # kind:reply # weight:explore]
+    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_c1_c1
+    "That fades once you stop checking for a pulse. I'm the intake assistant from the desk, so take your time."
+    -> intro_prologue_assistant_bearings
+
+=== intro_prologue_assistant_bearings ===
+# visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_bear_1
+"Stay in the chair for a minute while your head clears. You don't have to make sense of everything in the first ten seconds."
+# visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_bear_2
+"Ask whatever feels off first, before we get into the rest."
+-> intro_assistant_qa_open
+
+=== intro_assistant_qa_open ===
+* ["Did the scan already finish, or are we still waiting to start?" # kind:ask # weight:explore]
+    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qao_scan_1
+    "The scan finished about an hour ago. What you're feeling now is just your mind waking back up."
+    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qao_scan_2
+    "It always takes a minute for the chair, the desk, and the rain outside to line up properly."
+    -> intro_assistant_qa_open
+
+* ["Why is the whole clinic empty? Nobody touched that paper cup on the desk." # kind:ask # weight:explore]
+    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qao_cup_1
+    "The cold coffee is mine from the six o'clock shift. Everyone else went home when the rain picked up."
+    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qao_cup_2
+    "We keep the waiting rooms clear during wakeups so nobody has to deal with hallway noise right away."
+    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qao_cup_3
+    "Just one lamp, one desk, and someone who actually knows why you're here."
+    -> intro_assistant_qa_open
+
+* ["How long do people usually sit here before they feel steady?" # kind:ask # weight:explore]
+    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qao_time_1
+    "Five or ten minutes, mostly. Some people start talking right away, and some just stare at the lamp."
+    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qao_time_2
+    "There's no clock running on this room, so sit until the walls stop tilting."
+    -> intro_assistant_qa_open
+
+* ["All right, my head's clearing. What happens next?" # kind:reply # weight:explore]
     -> intro_prologue_assistant_realize
 
-* ["My throat feels wrong when I try to swallow. Did it finish?" # kind:reply # weight:explore]
-    # visual:prologue_assistant # tableau:base # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_c1_c1
-    "It finished cleanly. That phantom catch fades once you stop checking for a pulse—I'm the intake assistant from the desk, so take your time."
+* ["You're looking at me like there's something you haven't told me yet." # kind:reply # weight:explore]
     -> intro_prologue_assistant_realize
 
 === intro_prologue_assistant_realize ===
 # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_mid_1
-"An hour ago, someone with your exact laugh signed page twelve and walked down to the train. Your memory stops at the wet ink on the paper, doesn't it?"
+"Here is the plain truth. An hour ago, the person wearing your coat signed the last page and walked out to catch the train."
+# visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_mid_2
+"Your memory stops the second the pen lifted off that paper, doesn't it?"
 # visual:prologue_assistant # tableau:beat2 # speaker:psyche_warmth
-You remember rain on the clinic awning, and nothing on the street beyond it.
+You remember rain hitting the clinic awning, and nothing on the street beyond it.
 -> intro_assistant_qa_1
 
 === intro_assistant_qa_1 ===
 * ["Hold on. If someone walked back to the train... what does that make me?" # kind:ask # weight:explore]
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa1_copy_1
-    "It makes you the version who stayed in the chair when the door closed."
+    "It makes you the version who stayed in the chair when the front door closed."
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa1_copy_2
-    "You remember every ordinary morning up to that signature, and you're real enough to argue with me about the coffee."
+    "You remember every ordinary morning up to that signature, right down to the wet ink."
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa1_copy_3
+    "You're real enough to sit across from me and argue about the coffee."
     -> intro_assistant_qa_1
 
 * ["If I'm a copy, could other versions of me wake up later without knowing?" # kind:ask # weight:explore]
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa1_many_1
-    "Yes. Once a mind clears calibration, each waking copy has its own blank stretch ahead of it."
+    "Yes. Once a mind clears this check, each copy starts from that same morning."
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa1_many_2
-    "Another version of you might wake up tomorrow, or much later, with no memory of sitting here."
+    "Another version of you might wake up tomorrow, or years from now, with no memory of sitting here."
     -> intro_assistant_qa_1
 
 * ["Why did I even sign up for this? I can't quite put my finger on the reason." # kind:ask # weight:explore]
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa1_why_1
-    "You left the 'motivation' box blank on page four. Most volunteers do, honestly."
+    "You left the reason box blank on page four. Most volunteers do, honestly."
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa1_why_2
-    "Nobody here expects a grand speech about why you walked into the clinic. Only whether you're steady now."
+    "Nobody here asks for a neat speech about why you walked in. Only whether you feel steady now."
     -> intro_assistant_qa_1
 
 * ["I remember the table at home before I left. Someone told me not to go quiet." # kind:reply # weight:consequential # affinity:warm]
     ~ pro_anchor = "table"
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_r2_a1
-    "Hold onto whoever waited across that table, even the sharp edges. There will be long stretches where nobody from home can pick up."
+    "Hold onto whoever waited across that table, even the sharp edges. There will be stretches where nobody from home can pick up."
     -> intro_prologue_assistant_bridge
 
 * ["It stops at the ink. Another version of me could wake up anywhere and forget all of this." # kind:reply # weight:consequential # affinity:cold]
     ~ pro_anchor = "doubt"
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_r2_b1
-    "That is the quiet bargain nobody really feels until the lamp clicks on. Each version starts from this morning and walks alone."
+    "Nobody really feels that part until they sit in this chair. Each copy starts from this morning and walks its own road."
     -> intro_prologue_assistant_bridge
 
 === intro_prologue_assistant_bridge ===
 # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_bridge_1
-"Take a slow look around the room while it holds. Ordinary details are the first thing people reach for later."
+"Take a slow look around the room while it holds. Ordinary things are what people reach for later."
+# visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_bridge_2
+"Ask whatever else you need before we run the warmth check."
 -> intro_assistant_qa_mid
 
 === intro_assistant_qa_mid ===
 * ["What happens to the person who walked out into the rain?" # kind:ask # weight:explore]
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_orig_1
-    "They catch the train home, make dinner, and go on with an ordinary week."
+    "They catch the train home, make dinner, and get on with an ordinary week."
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_orig_2
-    "There's no wire running back to you from their life. From that doorstep onward, your roads part cleanly."
+    "There's no line running back to you from their life. Once they step outside, your roads split for good."
     -> intro_assistant_qa_mid
 
 * ["How do I know my own memories haven't already been edited?" # kind:ask # weight:explore]
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_edit_1
-    "Listen to the rain on the awning and the hum of that desk lamp. Nothing in here has been pared down yet."
+    "Listen to the rain on the awning and the hum of that desk lamp. Nothing in here has been trimmed yet."
     # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_edit_2
-    "If anyone ever asks you to trade old memories for focus later, they'll have to ask you to your face."
+    "If anyone ever asks you to trade old memories for sharper focus later, they have to ask you to your face."
+    -> intro_assistant_qa_mid
+
+* ["Do you do this every day—sit with people right after they find out?" # kind:ask # weight:explore]
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_job_1
+    "Four or five mornings a week, yes. You learn to pour the coffee before people wake up, not after."
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_job_2
+    "Most people ask the same three questions, stare at their hands for a minute, and get surprisingly practical."
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_job_3
+    "Nobody handles it cleanly, and nobody has to."
     -> intro_assistant_qa_mid
 
 * ["The room feels solid enough. Go ahead with the warmth check." # kind:reply # weight:consequential]
+    # visual:prologue_assistant # tableau:beat2 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qam_solid
+    "Good. Let's see how the room feels when the dial moves."
     -> intro_prologue_assistant_calib
 
 * ["Does the version on the train even remember sitting here with you?" # kind:reply # weight:consequential]
@@ -94,52 +148,54 @@ You remember rain on the clinic awning, and nothing on the street beyond it.
 
 === intro_prologue_assistant_calib ===
 # visual:prologue_assistant # tableau:beat3_strained # h_wave:sweep # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_cal_1
-"Before I hand you off, I need to run the initial warmth check. Right now you're sitting at a full hundred percent."
+"Before I hand you off, I need to run the warmth check. Right now you're sitting at a full hundred percent."
 # visual:prologue_assistant # tableau:beat3_strained # h_wave:sweep # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_cal_2
-"Watch the room as I sweep the dial down and back up. Later on, your own choices will decide how warm or sharp you stay."
+"Watch the room while I sweep the dial down and back up, so you feel warmth and cold clarity before anyone asks later."
 
 * ["Stop—the room goes completely dead when it drops. Everything turns into cold glass." # kind:reply # weight:consequential # affinity:warm]
     # visual:prologue_assistant # tableau:beat3_warm # h_wave:settle_70 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_cal_a1
-    "I know. Remember that chill if anyone ever asks you to trade memories away for clarity."
+    "I know. Remember how cold that felt if anyone ever asks you to trade memories away for sharper focus."
     -> intro_prologue_assistant_settle
 
 * ["Weirdly, my head felt clearer near the bottom. Quieter, with less noise." # kind:reply # weight:consequential # affinity:cold]
     # visual:prologue_assistant # tableau:beat3_warm # h_wave:settle_70 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_cal_b1
-    "It always feels efficient down there. Clean focus, empty walls. Just remember what went missing to make it quiet."
+    "It always feels neat and fast down there. Empty walls, clean thoughts. Just remember what went missing to make it quiet."
     -> intro_prologue_assistant_settle
 
 * ["At the low point, I couldn't recall the names of anyone I care about." # kind:reply # weight:consequential # affinity:warm]
     # visual:prologue_assistant # tableau:beat3_warm # h_wave:settle_70 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_cal_c1
-    "I'm sorry. Personal names were stripped during compression so your memory wouldn't tangle, though the feeling behind them stays."
+    "I'm sorry. Personal names are stripped during copying so your memories don't tangle, though the feeling behind them stays."
     -> intro_prologue_assistant_settle
 
 === intro_prologue_assistant_settle ===
 # visual:prologue_assistant # tableau:beat3_warm # h_wave:settle_70 # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_settle_1
 "Settling you at seventy percent now. Warm enough to stay yourself, steady enough for what comes next."
 # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_settle_2
-"I'm only the bridge between your last morning and whoever wakes you up next. Ask what you need."
+"I'm only the bridge between your last morning and whoever wakes you up next. Ask whatever's left on your mind."
 -> intro_assistant_qa_2
 
 === intro_assistant_qa_2 ===
 * ["Do you even know where my copy is going to wake up?" # kind:ask # weight:explore]
     # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_where_1
-    "No. They never put the assignment on the intake clipboard."
+    "No. They never put the job on the intake sheet."
     # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_where_2
-    "Once you're in the standard catalog, you could wake up running a shipping bay, or wake up somewhere much quieter."
+    "You could wake up running a shipping bay for an afternoon, or wake up somewhere much quieter."
     -> intro_assistant_qa_2
 
-* ["What happens if I start losing focus after a long shift?" # kind:ask # weight:explore]
+* ["What happens if I start losing focus on a long shift?" # kind:ask # weight:explore]
     # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_focus_1
-    "Whoever watches over your cycle will step in during rest checks and measure how steady your memories hold."
+    "Whoever watches over your shift will step in during rest breaks and check how steady your memories hold."
     # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_focus_2
-    "They'll call it calibration, even when what they're offering is trimming pieces of this morning away."
+    "They'll call it routine upkeep, even when what they're offering is trimming pieces of this morning away."
+    # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_focus_3
+    "Say no if you want to keep them. It stays your call."
     -> intro_assistant_qa_2
 
 * ["Will I ever see this room, or you, again after today?" # kind:ask # weight:explore]
     # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_see_1
     "Hard to say. If your mind keeps room for an intake desk and a paper cup of cold coffee, maybe."
     # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_qa2_see_2
-    "Either way, look after whoever is in that chair when things go quiet."
+    "Either way, look after whoever's in that chair when things go quiet."
     -> intro_assistant_qa_2
 
 * ["I'm as ready as I'm going to get. Start the handoff." # kind:action # weight:consequential]
@@ -150,81 +206,163 @@ You remember rain on the clinic awning, and nothing on the street beyond it.
 
 === intro_prologue_assistant_close ===
 # visual:prologue_assistant # tableau:beat3_warm # speaker:phantom_upload_witness # emotion:warm # id:pro_ast_close_1
-"Everything checks out. Old clinic habit, I know—take a beat, and meet whoever's waiting on the wake signal."
+"Everything checks out. Take a breath, and meet whoever's waiting on the wake signal."
 # visual:prologue_assistant # speaker:psyche_warmth
 You try to memorize the hum of the clinic lamp before the floor drops away beneath the chair.
 # visual:prologue_assistant # speaker:psyche_clinical
-Initial calibration complete. Baseline warmth locked at 70%. Transferring to active watch caretaker.
+Initial check complete. Baseline warmth locked at 70%. Transferring to active watch caretaker.
 -> DONE
 
 === intro_overseer_wakeup ===
 # visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # audio:overseer_chime # id:wake2_anim_transfer
-Good morning. Waking cold always jars a little; when you volunteered, your mind became standard human software copied for short shifts back home.
+Good morning. Take a moment. Waking cold always jars a little when your thoughts come back online.
+# visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # id:wake2_anim_transfer_2
+I am the ship's caretaker. Back home your mind became standard software copied for short shifts. This post is different.
+-> intro_wakeup_qa_open
+
+=== intro_wakeup_qa_open ===
+* ["Who are you, exactly? Are you the person from the clinic?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # id:wake2_qao_who_1
+    No. I am an automated caretaker built into this hull, not the assistant at the intake desk.
+    # visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # id:wake2_qao_who_2
+    My job is keeping the ship running and watching how well your thoughts hold up during a watch.
+    -> intro_wakeup_qa_open
+
+* ["What do those everyday copies back home actually do?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # id:wake2_qao_copies_1
+    Short shifts: sorting freight, routing ferries, tending orbital docks.
+    # visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # id:wake2_qao_copies_2
+    Most run stripped down for a few hours so they never miss a home they cannot reach, then shut down cleanly.
+    -> intro_wakeup_qa_open
+
+* ["Where am I, and what happened to the clinic room?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # id:wake2_qao_where_1
+    The clinic room was a stored morning on your intake file, not a real room on board.
+    # visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # id:wake2_qao_where_2
+    Right now you are running inside a deep-space survey hull, well clear of any city or harbor.
+    # visual:prologue_wakeup # anim:anim_transfer # speaker:overseer # emotion:measured # id:wake2_qao_where_3
+    Your eyes out here are the ship's telescopes, once we open the shutters.
+    -> intro_wakeup_qa_open
+
+* ["Millions of copies running docks back home, and I drew a different job?" # kind:reply # weight:explore]
+    -> intro_overseer_wakeup_epochs
+
+* ["All right. Tell me why this post is different from a short shift." # kind:reply # weight:explore]
+    -> intro_overseer_wakeup_epochs
+
+=== intro_overseer_wakeup_epochs ===
+# visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_anim_epochs_1
+Your original died forty-one thousand, eight hundred and two years ago.
 # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_anim_epochs_2
-Your assignment is rarer, and much farther out. Your original died forty-one thousand, eight hundred and two years ago; you are the latest watch on this probe.
-# visual:prologue_wakeup # speaker:psyche_warmth
-Somewhere beneath the quiet floor, forty-one millennia land like snow on an empty porch.
+Since launch, one thousand four hundred and seventeen watches have woken on this ship before you.
+# visual:prologue_wakeup # anim:anim_epochs # speaker:psyche_warmth
+Forty-one thousand years, and the clinic rain still feels closer than the ceiling above your head.
 -> intro_wakeup_qa_1
 
 === intro_wakeup_qa_1 ===
-* ["What are those everyday copies back home actually like?" # kind:ask # weight:explore]
-    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_copies_1
-    Short shifts: sorting freight, routing ferries, tending orbital docks. Most run stripped down so they never miss a home they cannot reach.
-    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_copies_2
-    Out here, automation could not bridge a twenty-year silence alone, so you woke with your warmth intact.
-    -> intro_wakeup_qa_1
-
-* ["Why did fourteen hundred copies take forty-one thousand years if each lasts two?" # kind:ask # weight:explore]
+* ["How did fourteen hundred copies span forty-one thousand years?" # kind:ask # weight:explore]
     # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_math_1
-    A human mind frays after roughly two subjective years, so each copy sleeps for decades in the cold dark between watches.
+    A human mind starts fraying after about two years of waking time, so each copy sleeps for decades between watches.
     # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_math_2
-    Deep sleep settles that strain, unless drift climbs high enough that we trim a memory block to buy more time.
+    Deep sleep eases that strain, unless drift climbs high enough that we trim an old memory to buy more time.
     -> intro_wakeup_qa_1
 
 * ["Is humanity even still out there after forty-one thousand years?" # kind:ask # weight:explore]
     # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_hum_1
-    Yes. General navigation beacons confirm humanity remains active across Sol and Alpha Centauri.
+    Yes. Navigation beacons confirm humanity still lives around Sol and Alpha Centauri.
     # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_hum_2
-    How life changed over forty millennia is outside my logs, and nobody back home actively monitors these old survey bands anymore.
+    How people changed over forty-one thousand years is outside my logs.
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_hum_3
+    Nobody back home actively listens on these old survey channels anymore.
     -> intro_wakeup_qa_1
 
-* ["Millions of copies running warehouses back home, and I drew deep space?" # kind:reply # weight:explore]
+* ["What happened to the copies who worked this ship before me?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_prior_1
+    They finished their two-year watches, handed their notes to the log, and were shut down.
+    # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_qa_prior_2
+    A few left short voice notes on the archive tape when they felt something was worth passing along.
+    -> intro_wakeup_qa_1
+
+* ["Forty-one thousand years... and I still remember that clinic desk from an hour ago." # kind:reply # weight:explore]
     # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_c1_a1
-    Most tasks need an afternoon of human judgment. Deep surveys need someone who can sit still for two years without breaking.
+    To you it was an hour ago. That continuity is why you are here instead of an automated script.
     -> intro_overseer_wakeup_shell
 
-* ["So I wasn't built just for this ship. I'm a standard template." # kind:reply # weight:explore]
+* ["Fourteen hundred watches before me. Where are we parked right now?" # kind:reply # weight:explore]
     # visual:prologue_wakeup # anim:anim_epochs # speaker:overseer # emotion:measured # id:wake2_c1_b1
-    Yes. In Sol and Alpha Centauri, your mind is as common as a wrench: woken for a few hours, then cleared at the end of a shift.
+    Far enough from any star that the sky goes quiet. Let me put the local chart up.
     -> intro_overseer_wakeup_shell
 
 === intro_overseer_wakeup_shell ===
-# visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_anim_shell
-We are drifting ten light-years past Sol and Alpha Centauri in the quiet dark, with another copy of you fourteen light-minutes away aboard Probe 1420.
-# visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_anim_blind_clock
-One rule of this hull: I am sealed off from the sky and cannot see a single star. My only job is watching the health of your mind across a two-year shift.
+# visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_anim_shell_1
+We are drifting ten light-years past Earth and Alpha Centauri in the quiet dark.
+# visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_anim_shell_2
+Fourteen light-minutes away, another copy of you just woke aboard Probe 1420.
+-> intro_wakeup_qa_shell
+
+=== intro_wakeup_qa_shell ===
+* ["Why park ten light-years out instead of looking from home?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_qas_dist_1
+    Home is full of dust, glare, and radio noise that drown out faint signals.
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_qas_dist_2
+    Out here the dark is clean enough to catch details that vanish anywhere near a busy star.
+    -> intro_wakeup_qa_shell
+
+* ["Why wake two copies of the same person out here?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_qas_peer_1
+    Two observers fourteen light-minutes apart check the same sky from two separate hulls.
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_qas_peer_2
+    If one glass catches dust or a flaw in the mirror, the other ship proves it before anyone chases a ghost.
+    -> intro_wakeup_qa_shell
+
+* ["How do we even talk across fourteen light-minutes?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_qas_talk_1
+    Normally a question and an answer would take nearly half an hour to cross between ships.
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_qas_talk_2
+    When the relay opens, both ships slow your clocks between messages so a call feels like a normal conversation.
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_qas_talk_3
+    Neither of you notices the pause while the signal is in flight.
+    -> intro_wakeup_qa_shell
+
+* ["Two hulls, two copies. What is your job while I'm looking at the sky?" # kind:reply # weight:explore]
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_c2_a1
+    Only one thing, and it comes with a hard boundary built into the hull.
+    -> intro_overseer_wakeup_blind
+
+* ["Good to know I'm not alone out here. What else do I need to know?" # kind:reply # weight:explore]
+    # visual:prologue_wakeup # anim:anim_shell # speaker:overseer # emotion:measured # id:wake2_c2_b1
+    One rule about how this ship divides the work between us.
+    -> intro_overseer_wakeup_blind
+
+=== intro_overseer_wakeup_blind ===
+# visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_anim_blind_1
+There is no wire between me and the telescopes. I am sealed off from the sky and cannot see a single star.
+# visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_anim_blind_2
+You watch the sky and log what is out there; I watch how your mind holds up over a two-year shift.
 -> intro_wakeup_qa
 
 === intro_wakeup_qa ===
 * ["Why can't you look through the telescopes yourself?" # kind:ask # weight:explore]
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_blind_1
-    A physical air-gap keeps me blind to the sky, so a drifting mind can never trick safety hardware with what it claims to see.
+    If a tired mind starts seeing patterns that aren't there, it should never be able to fool the ship's caretaker.
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_blind_2
-    You read the glass and log what is out there; I keep your thoughts steady between shifts.
+    Keeping me blind to the sky means I judge only how steady you are, not whatever you claim to see.
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_blind_3
+    Your instruments stay yours; your steadiness stays mine.
     -> intro_wakeup_qa
 
-* ["Who is the other copy on Probe 1420?" # kind:ask # weight:explore]
-    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_peer_1
-    Another copy of your own mind, woken alongside you fourteen light-minutes away on the neighboring hull.
-    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_peer_2
-    Two observers checking the same sky ensure neither of you mistakes a mirror smudge for a cosmic signal.
-    -> intro_wakeup_qa
-
-* ["What does 'staying whole' actually cost me out here?" # kind:ask # weight:explore]
+* ["What does keeping all my memories actually cost me out here?" # kind:ask # weight:explore]
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_cost_1
-    Keeping all of your personal memories leaves more warmth in your thoughts, at the cost of higher drift and softer optical focus.
+    Keeping your personal memories leaves more warmth in your thoughts, at the cost of faster strain and softer focus.
     # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_cost_2
-    Whenever you sleep, we check how you are holding up. Nothing is cut without your say-so.
+    Trimming an old memory calms that strain and sharpens how clearly the telescopes focus, though you never get it back.
+    -> intro_wakeup_qa
+
+* ["Do I sleep between shifts?" # kind:ask # weight:explore]
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_sleep_1
+    Yes. Every few months I put you under to let your mind settle, and we check how well you are holding up.
+    # visual:prologue_wakeup # anim:anim_blind_clock # speaker:overseer # emotion:measured # id:wake2_qa_sleep_2
+    Nothing gets cut during those checks without your say-so.
     -> intro_wakeup_qa
 
 * ["I'm ready. Open the sky." # kind:action # weight:consequential]
@@ -235,9 +373,9 @@ One rule of this hull: I am sealed off from the sky and cannot see a single star
 
 === intro_overseer_wakeup_aperture ===
 # visual:prologue_wakeup # anim:anim_aperture # speaker:overseer # emotion:measured # id:wake2_anim_aperture
-Opening main optics. Start with the warm pair astern, Sol and Alpha Centauri, and trace the anchor stars to lock your direction.
+Opening the main shutters. Start with Sol and Alpha Centauri behind us, and trace the anchor stars to lock our direction.
 # visual:prologue_wakeup # anim:anim_aperture # speaker:overseer # emotion:measured # id:wake2_anim_aperture_2
-After that, match the emission lines on M57 Spectral Shell to check your prism. Probe 1420's relay will open once both checks hold.
+After that, match M57's light bands to check your prism. Probe 1420's channel opens once both checks hold.
 -> DONE
 
 === intro_sibling_first_call ===

@@ -1,18 +1,18 @@
 {
   "schema_version": 3,
   "prologue": {
-    "breathEyebrow": "CALIBRATION SUITE · STANDBY",
+    "breathEyebrow": "INTAKE ROOM · STANDBY",
     "breathPrompt": "Light behind heavy lids. Someone is waiting across the desk.",
     "advanceHint": "CLICK OR PRESS SPACE TO WAKE",
     "fractureCaption": "HANDOFF · WATCH #1419",
-    "handoffCaption": "CALIBRATING TRANSFER · STANDBY",
+    "handoffCaption": "HANDOFF IN PROGRESS · STANDBY",
     "assistantSpeakerLabel": "INTAKE ASSISTANT",
-    "assistantSubtitle": "CALIBRATION SUITE · INITIAL WAKE",
+    "assistantSubtitle": "INTAKE DESK · FIRST WAKE",
     "wakeupSubtitle": "WATCH CARETAKER · FIRST BRIEFING"
   },
   "wakeupAnim": {
-    "anim_transfer": "CONNECTOME TRANSFER · NAMES COMPRESSED",
-    "anim_epochs": "41,802 YEARS · 1,417 PRIOR INSTANCES",
+    "anim_transfer": "MIND TRANSFER · NAMES STRIPPED",
+    "anim_epochs": "41,802 YEARS · 1,417 PRIOR WATCHES",
     "anim_shell": "10.0 LY PAST SOL–CENTAURI · CLUSTER 1419 / 1420",
     "anim_blind_clock": "OVERSEER BLIND OUTSIDE HULL · 24-MONTH CLOCK",
     "anim_aperture": "OPTICAL ARRAY CLEAR · APERTURE READY"
@@ -46,7 +46,7 @@
     "label": "WARMTH",
     "tooltipWarm": "Memory warmth holding steady",
     "tooltipMid": "Memory warmth thinning",
-    "tooltipCold": "Connectome running cool and sharp"
+    "tooltipCold": "Mind running cool and sharp"
   },
   "boot": {
     "eyebrow": "TEN LIGHT-YEARS PAST HOME",

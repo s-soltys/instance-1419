@@ -579,6 +579,19 @@ Each agent session reads the latest entries here before starting work and append
   * Implemented clickable `[[target:<id>::<Label>]]` links across Ink dialogue & sky whispers wired to `OpticsScene.slewToAnomaly()` (shortest-yaw, mismatched detent clear, `950ms` transition boost), expanded Intake Assistant & Overseer prologue dialogue (~50% longer with richer `◇ ASK` Q&A hubs), simplified Sibling 1420 prose with less jargon, and added `Cluster J1419-A` hyperlinks.
 * **Verified:** `compile-ink` PASS, `tsc --noEmit` PASS, `vitest run` PASS (`13` files / `183` tests), `sim-playthroughs` PASS (`500` economy + `120` Ink runs, `0` soft-locks), `lint-narrative --strict-voice-sync` PASS (`4,547` Ink words, `178` synced clips), `check-hygiene` PASS, `vite build` PASS, and `e2e-visual.mjs` PASS (`0` errors across `prologue` and `sky` + `constellation_recall` + `spectral_prism`, PNGs inspected).
 
+---
+
+## Session 36 — 2026-11-28 — Prologue +50% Pacing Expansion, Low-Jargon Rewrite & Selective Voice Sync
+* **Unhurried Prologue Pacing & Direct Low-Jargon Prose (`src/content/dialogue/spike_shift1.ink`, `src/content/ui_copy.json`):**
+  * Expanded Intake Assistant (`intro_prologue_assistant`: `34 → 51` voiced lines) by holding the copy reveal until after `intro_prologue_assistant_bearings` → `intro_assistant_qa_open` (`3` `◇ ASK` + `2` `reply` choices), expanding `intro_assistant_qa_mid` to `3` `◇ ASK`, and trimming poetic aphorisms/jargon while leaving Shift 1 Sibling/Dream/Audit lines (`intro_sibling_first_call` onward) untouched.
+  * Expanded Overseer (`intro_overseer_wakeup`: `20 → 42` voiced lines) into 5 separate `# anim:` beats (`anim_transfer` → `intro_wakeup_qa_open`, `anim_epochs` → `intro_wakeup_qa_1`, `anim_shell` → `intro_wakeup_qa_shell`, `anim_blind_clock` → `intro_wakeup_qa`, `anim_aperture`), replacing sci-fi jargon (`subjective years`, `air-gap`, `safety hardware`, `optical focus`, `connectome`) with plain speech and cleaning `ui_copy.json` (`prologue`, `wakeupAnim`, `warmth.tooltipCold`).
+  * Independent Prose Critic review (`#9`) confirmed `VERDICT: PASS` (`93` voiced prologue lines, `1–3` lines per burst across jumps, `<= 5` choices per menu, `<= 125` chars max, `0` spoken em-dashes, canon/tags intact).
+* **Test Updates & Selective VoxCPM2-8bit Voice Sync (`tests/unit/dialogueIntroAndAudit.test.ts`, `public/voices/`, `voice_script.json`, `voice_runtime.json`):**
+  * Updated `dialogueIntroAndAudit.test.ts` turn caps and explicit `◇ ASK` traversal for both `intro_prologue_assistant` and `intro_overseer_wakeup` (all 5 `# anim:` phases + `overseer_chime`).
+  * Ran selective `npm run generate:voices`: `90` prologue clips generated, `127` Shift-1 clips kept cached, `6` stale clips pruned (`avg_wer=0.009`, `217` total exported lines).
+* **Verified:** `node scripts/verify.mjs --release --fast` PASS (all 8 gates: `compile-ink`, `tsc --noEmit`, `vitest run` `13` files / `183` tests, `sim-playthroughs` `500` economy + `120` Ink runs / `0` soft-locks, `lint-narrative --release` `5,200` Ink words / `217` unique line IDs / `voice_runtime.json`, `check-hygiene`, `MANIFEST.json`, `vite build`) and `node scripts/e2e-visual.mjs --flows=prologue` PASS (`0` errors, screenshots inspected).
+* **Next Recommended Action:** Run human blind playtesting for `P3-01` (`features.json` left pending).
+
 
 
 
